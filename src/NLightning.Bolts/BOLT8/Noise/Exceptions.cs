@@ -1,23 +1,22 @@
-using System;
+namespace NLightning.Bolts.BOLT8.Noise;
 
-namespace Noise
+internal static class Exceptions
 {
-	internal static class Exceptions
+	public static void ThrowIfNull(object value, string name)
 	{
-		public static void ThrowIfNull(object value, string name)
+		if (value == null)
 		{
-			if (value == null)
-			{
-				throw new ArgumentNullException(name);
-			}
+			throw new ArgumentNullException(name);
+		}
+	}
+
+	public static void ThrowIfDisposed(bool disposed, string name)
+	{
+		if (!disposed)
+		{
+			return;
 		}
 
-		public static void ThrowIfDisposed(bool disposed, string name)
-		{
-			if (disposed)
-			{
-				throw new ObjectDisposedException(name);
-			}
-		}
+		throw new ObjectDisposedException(name);
 	}
 }
