@@ -7,15 +7,6 @@ namespace NLightning.Bolts.BOLT8.Noise.Interfaces;
 public interface ITransport : IDisposable
 {
     /// <summary>
-    /// Gets a value indicating whether the <see cref="ITransport"/> is one-way.
-    /// </summary>
-    /// <returns>True if the <see cref="ITransport"/> is one-way, false otherwise.</returns>
-    /// <exception cref="ObjectDisposedException">
-    /// Thrown if the current instance has already been disposed.
-    /// </exception>
-    bool IsOneWay { get; }
-
-    /// <summary>
     /// Encrypts the <paramref name="payload"/> and writes the result into <paramref name="messageBuffer"/>.
     /// </summary>
     /// <param name="payload">The payload to encrypt.</param>

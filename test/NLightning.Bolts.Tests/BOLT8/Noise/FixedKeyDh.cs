@@ -1,4 +1,3 @@
-using NLightning.Bolts.BOLT8.Noise;
 using NLightning.Bolts.BOLT8.Noise.Constants;
 using NLightning.Bolts.BOLT8.Noise.Interfaces;
 using NLightning.Bolts.BOLT8.Noise.Primitives;
@@ -7,26 +6,23 @@ namespace NLightning.Bolts.Tests.BOLT8.Noise;
 
 internal class FixedKeyDh(byte[] privateKey) : IDh
 {
-	private static readonly Curve25519 dh = new();
-	private readonly byte[] privateKey = privateKey;
+	private readonly IDh _dh = new Secp256k1();
 
-	public int DhLen => dh.DhLen;
+	public int PrivLen => _dh.PrivLen;
+	public int PubLen => _dh.PubLen;
 
 	public KeyPair GenerateKeyPair()
 	{
-		var publicKey = new byte[DhLen];
-		_ = Libsodium.crypto_scalarmult_curve25519_base(publicKey, privateKey);
-
-		return new KeyPair(privateKey, publicKey);
+		return _dh.GenerateKeyPair(privateKey);
 	}
 
-	public KeyPair GenerateKeyPair(ReadOnlySpan<byte> privateKey)
+	public KeyPair GenerateKeyPair(ReadOnlySpan<byte> privKey)
 	{
-		return dh.GenerateKeyPair(privateKey);
+		return _dh.GenerateKeyPair(privKey);
 	}
 
-	public void Dh(KeyPair keyPair, ReadOnlySpan<byte> publicKey, Span<byte> sharedKey)
+	public void Dh(NBitcoin.Key k, ReadOnlySpan<byte> rk, Span<byte> sharedKey)
 	{
-		dh.Dh(keyPair, publicKey, sharedKey);
+		_dh.Dh(k, rk, sharedKey);
 	}
 }

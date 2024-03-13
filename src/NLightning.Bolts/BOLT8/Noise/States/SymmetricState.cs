@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using NLightning.Bolts.BOLT8.Noise.Constants;
 using NLightning.Bolts.BOLT8.Noise.Interfaces;
+using NLightning.Bolts.BOLT8.Noise.Primitives;
 
 namespace NLightning.Bolts.BOLT8.Noise.States;
 
@@ -54,14 +55,14 @@ internal sealed class SymmetricState<CipherType, DhType, HashType> : IDisposable
 	public void MixKey(ReadOnlySpan<byte> inputKeyMaterial)
 	{
 		int length = inputKeyMaterial.Length;
-		Debug.Assert(length == 0 || length == Aead.KeySize || length == dh.DhLen);
+		Debug.Assert(length == 0 || length == Aead.KEY_SIZE || length == dh.PrivLen);
 
 		Span<byte> output = stackalloc byte[2 * hash.HashLen];
 		hkdf.ExtractAndExpand2(ck, inputKeyMaterial, output);
 
-		output.Slice(0, hash.HashLen).CopyTo(ck);
+		output[..hash.HashLen].CopyTo(ck);
 
-		var tempK = output.Slice(hash.HashLen, Aead.KeySize);
+		var tempK = output.Slice(hash.HashLen, Aead.KEY_SIZE);
 		state.InitializeKey(tempK);
 	}
 
@@ -84,7 +85,7 @@ internal sealed class SymmetricState<CipherType, DhType, HashType> : IDisposable
 	public void MixKeyAndHash(ReadOnlySpan<byte> inputKeyMaterial)
 	{
 		int length = inputKeyMaterial.Length;
-		Debug.Assert(length == 0 || length == Aead.KeySize || length == dh.DhLen);
+		Debug.Assert(length == 0 || length == Aead.KEY_SIZE || length == dh.PrivLen);
 
 		Span<byte> output = stackalloc byte[3 * hash.HashLen];
 		hkdf.ExtractAndExpand3(ck, inputKeyMaterial, output);
@@ -92,7 +93,7 @@ internal sealed class SymmetricState<CipherType, DhType, HashType> : IDisposable
 		output.Slice(0, hash.HashLen).CopyTo(ck);
 
 		var tempH = output.Slice(hash.HashLen, hash.HashLen);
-		var tempK = output.Slice(2 * hash.HashLen, Aead.KeySize);
+		var tempK = output.Slice(2 * hash.HashLen, Aead.KEY_SIZE);
 
 		MixHash(tempH);
 		state.InitializeKey(tempK);
@@ -114,7 +115,7 @@ internal sealed class SymmetricState<CipherType, DhType, HashType> : IDisposable
 	public int EncryptAndHash(ReadOnlySpan<byte> plaintext, Span<byte> ciphertext)
 	{
 		int bytesWritten = state.EncryptWithAd(h, plaintext, ciphertext);
-		MixHash(ciphertext.Slice(0, bytesWritten));
+		MixHash(ciphertext[..bytesWritten]);
 
 		return bytesWritten;
 	}
@@ -139,8 +140,8 @@ internal sealed class SymmetricState<CipherType, DhType, HashType> : IDisposable
 		Span<byte> output = stackalloc byte[2 * hash.HashLen];
 		hkdf.ExtractAndExpand2(ck, null, output);
 
-		var tempK1 = output.Slice(0, Aead.KeySize);
-		var tempK2 = output.Slice(hash.HashLen, Aead.KeySize);
+		var tempK1 = output[..Aead.KEY_SIZE];
+		var tempK2 = output.Slice(hash.HashLen, Aead.KEY_SIZE);
 
 		var c1 = new CipherState<CipherType>();
 		var c2 = new CipherState<CipherType>();

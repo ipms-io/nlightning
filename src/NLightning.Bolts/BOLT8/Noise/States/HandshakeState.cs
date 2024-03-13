@@ -12,155 +12,92 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 	where DhType : IDh, new()
 	where HashType : IHash, new()
 {
-	private IDh dh = new DhType();
-	private SymmetricState<CipherType, DhType, HashType> state;
-	private Protocol protocol;
-	private readonly Role role;
-	private Role initiator;
-	private bool turnToWrite;
-	private KeyPair e;
-	private KeyPair s;
-	private byte[] re;
-	private byte[] rs;
-	private bool isPsk;
-	private bool isOneWay;
-	private readonly Queue<MessagePattern> messagePatterns = new Queue<MessagePattern>();
-	private readonly Queue<byte[]> psks = new Queue<byte[]>();
-	private bool disposed;
+	private const byte HANDSHAKE_VERSION = 0x00;
 
-	public HandshakeState(
-		Protocol protocol,
-		bool initiator,
-		ReadOnlySpan<byte> prologue,
-		ReadOnlySpan<byte> s,
-		ReadOnlySpan<byte> rs,
-		IEnumerable<byte[]> psks)
+	private readonly SymmetricState<CipherType, DhType, HashType> _state;
+	private readonly Protocol _protocol;
+	private readonly Role _role;
+	private readonly Role _initiator;
+	private readonly KeyPair _s;
+	private readonly Queue<MessagePattern> _messagePatterns = new();
+
+	private IDh _dh = new DhType();
+	private KeyPair? _e;
+	private byte[]? _re;
+	private byte[] _rs;
+	private bool _turnToWrite;
+	private bool _disposed;
+
+	/// <summary>
+	/// Creates a new HandshakeState instance.
+	/// </summary>
+	/// <param name="protocol">A concrete Noise protocol</param>
+	/// <param name="initiator">If we are the initiator</param>
+	/// <param name="prologue">A prologue (lightning)</param>
+	/// <param name="s">Local Static Private Key</param>
+	/// <param name="rs">Remote Static Public Key</param>
+	/// <exception cref="ArgumentException"></exception>
+	public HandshakeState(Protocol protocol, bool initiator, ReadOnlySpan<byte> prologue, ReadOnlySpan<byte> s, ReadOnlySpan<byte> rs)
 	{
-		Debug.Assert(psks != null);
-
-		if (!s.IsEmpty && s.Length != dh.DhLen)
-		{
-			throw new ArgumentException("Invalid local static private key.", nameof(s));
-		}
-
-		if (!rs.IsEmpty && rs.Length != dh.DhLen)
-		{
-			throw new ArgumentException("Invalid remote static public key.", nameof(rs));
-		}
-
-		if (s.IsEmpty && protocol.HandshakePattern.LocalStaticRequired(initiator))
+		if (s.IsEmpty)
 		{
 			throw new ArgumentException("Local static private key required, but not provided.", nameof(s));
 		}
 
-		if (!s.IsEmpty && !protocol.HandshakePattern.LocalStaticRequired(initiator))
+		if (s.Length != _dh.PrivLen)
 		{
-			throw new ArgumentException("Local static private key provided, but not required.", nameof(s));
+			throw new ArgumentException("Invalid local static private key.", nameof(s));
 		}
 
-		if (rs.IsEmpty && protocol.HandshakePattern.RemoteStaticRequired(initiator))
+		if (rs.IsEmpty)
 		{
 			throw new ArgumentException("Remote static public key required, but not provided.", nameof(rs));
 		}
 
-		if (!rs.IsEmpty && !protocol.HandshakePattern.RemoteStaticRequired(initiator))
+		if (rs.Length != _dh.PubLen)
 		{
-			throw new ArgumentException("Remote static public key provided, but not required.", nameof(rs));
+			throw new ArgumentException("Invalid remote static public key.", nameof(rs));
 		}
 
-		if ((protocol.Modifiers & PatternModifiers.Fallback) != 0)
-		{
-			throw new ArgumentException($"Fallback modifier can only be applied by calling the {nameof(Fallback)} method.");
-		}
+		_state = new SymmetricState<CipherType, DhType, HashType>(protocol.Name);
+		_state.MixHash(prologue);
 
-		state = new SymmetricState<CipherType, DhType, HashType>(protocol.Name);
-		state.MixHash(prologue);
+		_protocol = protocol;
+		_role = initiator ? Role.Alice : Role.Bob;
+		_initiator = Role.Alice;
+		_turnToWrite = initiator;
+		_s = _dh.GenerateKeyPair(s);
+		_rs = rs.ToArray();
 
-		this.protocol = protocol;
-		role = initiator ? Role.Alice : Role.Bob;
-		this.initiator = Role.Alice;
-		turnToWrite = initiator;
-		this.s = s.IsEmpty ? null : dh.GenerateKeyPair(s);
-		this.rs = rs.IsEmpty ? null : rs.ToArray();
-
-		ProcessPreMessages(protocol.HandshakePattern);
-		ProcessPreSharedKeys(protocol, psks);
-
-		var pskModifiers = PatternModifiers.Psk0 | PatternModifiers.Psk1 | PatternModifiers.Psk2 | PatternModifiers.Psk3;
-
-		isPsk = (protocol.Modifiers & pskModifiers) != 0;
-		isOneWay = messagePatterns.Count == 1;
+		ProcessPreMessages();
+		EnqueueMessages();
 	}
 
-	private void ProcessPreMessages(HandshakePattern handshakePattern)
+	private void ProcessPreMessages()
 	{
-		foreach (var token in handshakePattern.Initiator.Tokens)
+		foreach (var token in _protocol.HandshakePattern.Initiator.Tokens)
 		{
 			if (token == Token.S)
 			{
-				state.MixHash(role == Role.Alice ? s.PublicKey : rs);
+				_state.MixHash(_role == Role.Alice ? _s.PublicKeyBytes : _rs);
 			}
 		}
 
-		foreach (var token in handshakePattern.Responder.Tokens)
+		foreach (var token in _protocol.HandshakePattern.Responder.Tokens)
 		{
 			if (token == Token.S)
 			{
-				state.MixHash(role == Role.Alice ? rs : s.PublicKey);
+				_state.MixHash(_role == Role.Alice ? _rs : _s.PublicKeyBytes);
 			}
 		}
 	}
 
-	private void ProcessPreSharedKeys(Protocol protocol, IEnumerable<byte[]> psks)
+	private void EnqueueMessages()
 	{
-		var patterns = protocol.HandshakePattern.Patterns;
-		var modifiers = protocol.Modifiers;
-		var position = 0;
-
-		using (var enumerator = psks.GetEnumerator())
+		foreach (var pattern in _protocol.HandshakePattern.Patterns)
 		{
-			foreach (var pattern in patterns)
-			{
-				var modified = pattern;
-
-				if (position == 0 && modifiers.HasFlag(PatternModifiers.Psk0))
-				{
-					modified = modified.PrependPsk();
-					ProcessPreSharedKey(enumerator);
-				}
-
-				if (((int)modifiers & ((int)PatternModifiers.Psk1 << position)) != 0)
-				{
-					modified = modified.AppendPsk();
-					ProcessPreSharedKey(enumerator);
-				}
-
-				messagePatterns.Enqueue(modified);
-				++position;
-			}
-
-			if (enumerator.MoveNext())
-			{
-				throw new ArgumentException("Number of pre-shared keys was greater than the number of PSK modifiers.");
-			}
+			_messagePatterns.Enqueue(pattern);
 		}
-	}
-
-	private void ProcessPreSharedKey(IEnumerator<byte[]> enumerator)
-	{
-		if (!enumerator.MoveNext())
-		{
-			throw new ArgumentException("Number of pre-shared keys was less than the number of PSK modifiers.");
-		}
-
-		var psk = enumerator.Current;
-
-		if (psk.Length != Aead.KeySize)
-		{
-			throw new ArgumentException($"Pre-shared keys must be {Aead.KeySize} bytes in length.");
-		}
-
-		psks.Enqueue(psk.AsSpan().ToArray());
 	}
 
 	/// <summary>
@@ -169,7 +106,7 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 	/// </summary>
 	internal void SetDh(IDh dh)
 	{
-		this.dh = dh;
+		_dh = dh;
 	}
 
 	public ReadOnlySpan<byte> RemoteStaticPublicKey
@@ -177,90 +114,25 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 		get
 		{
 			ThrowIfDisposed();
-			return rs;
+			return _rs;
 		}
 	}
 
-	public void Fallback(Protocol protocol, ProtocolConfig config)
-	{
-		ThrowIfDisposed();
-		Exceptions.ThrowIfNull(protocol, nameof(protocol));
-		Exceptions.ThrowIfNull(config, nameof(config));
-
-		if (protocol.HandshakePattern != HandshakePattern.XX || protocol.Modifiers != PatternModifiers.Fallback)
-		{
-			throw new ArgumentException("The only fallback pattern currently supported is XXfallback.");
-		}
-
-		if (config.LocalStatic == null)
-		{
-			throw new ArgumentException("Local static private key is required for the XXfallback pattern.");
-		}
-
-		if (initiator == Role.Bob)
-		{
-			throw new InvalidOperationException("Fallback cannot be applied to a Bob-initiated pattern.");
-		}
-
-		if (messagePatterns.Count + 1 != this.protocol.HandshakePattern.Patterns.Count())
-		{
-			throw new InvalidOperationException("Fallback can only be applied after the first handshake message.");
-		}
-
-		this.protocol = null;
-		initiator = Role.Bob;
-		turnToWrite = role == Role.Bob;
-
-		s = dh.GenerateKeyPair(config.LocalStatic);
-		rs = null;
-
-		isPsk = false;
-		isOneWay = false;
-
-		while (psks.Count > 0)
-		{
-			var psk = psks.Dequeue();
-			Utilities.ZeroMemory(psk);
-		}
-
-		state.Dispose();
-		state = new SymmetricState<CipherType, DhType, HashType>(protocol.Name);
-		state.MixHash(config.Prologue);
-
-		if (role == Role.Alice)
-		{
-			Debug.Assert(e != null && re == null);
-			state.MixHash(e.PublicKey);
-		}
-		else
-		{
-			Debug.Assert(e == null && re != null);
-			state.MixHash(re);
-		}
-
-		messagePatterns.Clear();
-
-		foreach (var pattern in protocol.HandshakePattern.Patterns.Skip(1))
-		{
-			messagePatterns.Enqueue(pattern);
-		}
-	}
-
-	public (int, byte[], ITransport) WriteMessage(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
+	public (int, byte[]?, ITransport?) WriteMessage(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
 	{
 		ThrowIfDisposed();
 
-		if (messagePatterns.Count == 0)
+		if (_messagePatterns.Count == 0)
 		{
 			throw new InvalidOperationException("Cannot call WriteMessage after the handshake has already been completed.");
 		}
 
-		var overhead = messagePatterns.Peek().Overhead(dh.DhLen, state.HasKey(), isPsk);
+		var overhead = _messagePatterns.Peek().Overhead(_dh.PubLen, _state.HasKey());
 		var ciphertextSize = payload.Length + overhead;
 
-		if (ciphertextSize > Protocol.MaxMessageLength)
+		if (ciphertextSize > Protocol.MAX_MESSAGE_LENGTH)
 		{
-			throw new ArgumentException($"Noise message must be less than or equal to {Protocol.MaxMessageLength} bytes in length.");
+			throw new ArgumentException($"Noise message must be less than or equal to {Protocol.MAX_MESSAGE_LENGTH} bytes in length.");
 		}
 
 		if (ciphertextSize > messageBuffer.Length)
@@ -268,13 +140,16 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 			throw new ArgumentException("Message buffer does not have enough space to hold the ciphertext.");
 		}
 
-		if (!turnToWrite)
+		if (!_turnToWrite)
 		{
 			throw new InvalidOperationException("Unexpected call to WriteMessage (should be ReadMessage).");
 		}
 
-		var next = messagePatterns.Dequeue();
+		var next = _messagePatterns.Dequeue();
 		var messageBufferLength = messageBuffer.Length;
+
+		// write version to message buffer
+		messageBuffer[0] = HANDSHAKE_VERSION;
 
 		foreach (var token in next.Tokens)
 		{
@@ -282,75 +157,74 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 			{
 				case Token.E: messageBuffer = WriteE(messageBuffer); break;
 				case Token.S: messageBuffer = WriteS(messageBuffer); break;
-				case Token.EE: DhAndMixKey(e, re); break;
+				case Token.EE: DhAndMixKey(_e, _re); break;
 				case Token.ES: ProcessES(); break;
 				case Token.SE: ProcessSE(); break;
-				case Token.SS: DhAndMixKey(s, rs); break;
-				case Token.PSK: ProcessPSK(); break;
+				case Token.SS: DhAndMixKey(_s, _rs); break;
 			}
 		}
 
-		int bytesWritten = state.EncryptAndHash(payload, messageBuffer);
+		int bytesWritten = _state.EncryptAndHash(payload, messageBuffer);
 		int size = messageBufferLength - messageBuffer.Length + bytesWritten;
 
 		Debug.Assert(ciphertextSize == size);
 
-		byte[] handshakeHash = null;
-		ITransport transport = null;
+		byte[]? handshakeHash = null;
+		ITransport? transport = null;
 
-		if (messagePatterns.Count == 0)
+		if (_messagePatterns.Count == 0)
 		{
 			(handshakeHash, transport) = Split();
 		}
 
-		turnToWrite = false;
+		_turnToWrite = false;
 		return (ciphertextSize, handshakeHash, transport);
 	}
 
 	private Span<byte> WriteE(Span<byte> buffer)
 	{
-		Debug.Assert(e == null);
+		Debug.Assert(_e == null);
 
-		e = dh.GenerateKeyPair();
-		e.PublicKey.CopyTo(buffer);
-		state.MixHash(e.PublicKey);
+		_e = _dh.GenerateKeyPair();
+		// Start from position 1, since we need our version there
+		_e.PublicKeyBytes.CopyTo(buffer[1..]);
+		_state.MixHash(_e.PublicKeyBytes);
 
-		if (isPsk)
-		{
-			state.MixKey(e.PublicKey);
-		}
-
-		return buffer.Slice(e.PublicKey.Length);
+		// Don't forget to add our version length to the resulting Span
+		return buffer[(_e.PublicKeyBytes.Length + 1)..];
 	}
 
 	private Span<byte> WriteS(Span<byte> buffer)
 	{
-		Debug.Assert(s != null);
+		Debug.Assert(_s != null);
 
-		var bytesWritten = state.EncryptAndHash(s.PublicKey, buffer);
-		return buffer.Slice(bytesWritten);
+		// Start from position 1, since we need our version there
+		var bytesWritten = _state.EncryptAndHash(_s.PublicKeyBytes, buffer[1..]);
+
+		// Don't forget to add our version length to the resulting Span
+		return buffer[(bytesWritten + 1)..];
 	}
 
-	public (int, byte[], ITransport) ReadMessage(ReadOnlySpan<byte> message, Span<byte> payloadBuffer)
+	public (int, byte[]?, ITransport?) ReadMessage(ReadOnlySpan<byte> message, Span<byte> payloadBuffer)
 	{
 		ThrowIfDisposed();
 
-		if (messagePatterns.Count == 0)
+		if (_messagePatterns.Count == 0)
 		{
 			throw new InvalidOperationException("Cannot call WriteMessage after the handshake has already been completed.");
 		}
 
-		var overhead = messagePatterns.Peek().Overhead(dh.DhLen, state.HasKey(), isPsk);
+		var overhead = _messagePatterns.Peek().Overhead(_dh.PubLen, _state.HasKey());
 		var plaintextSize = message.Length - overhead;
 
-		if (message.Length > Protocol.MaxMessageLength)
+		if (message.Length > Protocol.MAX_MESSAGE_LENGTH)
 		{
-			throw new ArgumentException($"Noise message must be less than or equal to {Protocol.MaxMessageLength} bytes in length.");
+			throw new ArgumentException($"Noise message must be less than or equal to {Protocol.MAX_MESSAGE_LENGTH} bytes in length.");
 		}
 
-		if (message.Length < overhead)
+		if (message.Length != overhead)
 		{
-			throw new ArgumentException($"Noise message must be greater than or equal to {overhead} bytes in length.");
+			throw new ArgumentException($"Noise message must be equal to {overhead} bytes in length.");
 		}
 
 		if (plaintextSize > payloadBuffer.Length)
@@ -358,12 +232,12 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 			throw new ArgumentException("Payload buffer does not have enough space to hold the plaintext.");
 		}
 
-		if (turnToWrite)
+		if (_turnToWrite)
 		{
 			throw new InvalidOperationException("Unexpected call to ReadMessage (should be WriteMessage).");
 		}
 
-		var next = messagePatterns.Dequeue();
+		var next = _messagePatterns.Dequeue();
 		var messageLength = message.Length;
 
 		foreach (var token in next.Tokens)
@@ -372,141 +246,130 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 			{
 				case Token.E: message = ReadE(message); break;
 				case Token.S: message = ReadS(message); break;
-				case Token.EE: DhAndMixKey(e, re); break;
+				case Token.EE: DhAndMixKey(_e, _re); break;
 				case Token.ES: ProcessES(); break;
 				case Token.SE: ProcessSE(); break;
-				case Token.SS: DhAndMixKey(s, rs); break;
-				case Token.PSK: ProcessPSK(); break;
+				case Token.SS: DhAndMixKey(_s, _rs); break;
 			}
 		}
 
-		int bytesRead = state.DecryptAndHash(message, payloadBuffer);
+		int bytesRead = _state.DecryptAndHash(message, payloadBuffer);
 		Debug.Assert(bytesRead == plaintextSize);
 
-		byte[] handshakeHash = null;
-		ITransport transport = null;
+		byte[]? handshakeHash = null;
+		ITransport? transport = null;
 
-		if (messagePatterns.Count == 0)
+		if (_messagePatterns.Count == 0)
 		{
 			(handshakeHash, transport) = Split();
 		}
 
-		turnToWrite = true;
+		_turnToWrite = true;
 		return (plaintextSize, handshakeHash, transport);
 	}
 
 	private ReadOnlySpan<byte> ReadE(ReadOnlySpan<byte> buffer)
 	{
-		Debug.Assert(re == null);
+		Debug.Assert(_re == null);
 
-		re = buffer.Slice(0, dh.DhLen).ToArray();
-		state.MixHash(re);
-
-		if (isPsk)
+		// Check version
+		if (buffer[0] != HANDSHAKE_VERSION)
 		{
-			state.MixKey(re);
+			throw new InvalidOperationException("Invalid handshake version.");
 		}
+		buffer = buffer[1..];
 
-		return buffer.Slice(re.Length);
+		// Skip the byte from the version and get all bytes from pubkey
+		_re = buffer[.._dh.PubLen].ToArray();
+		_state.MixHash(_re);
+
+		return buffer[_re.Length..];
 	}
 
 	private ReadOnlySpan<byte> ReadS(ReadOnlySpan<byte> message)
 	{
-		Debug.Assert(rs == null);
+		// Debug.Assert(_rs == null);
 
-		var length = state.HasKey() ? dh.DhLen + Aead.TagSize : dh.DhLen;
-		var temp = message.Slice(0, length);
+		// Check version
+		if (message[0] != HANDSHAKE_VERSION)
+		{
+			throw new InvalidOperationException("Invalid handshake version.");
+		}
+		message = message[1..];
 
-		rs = new byte[dh.DhLen];
-		state.DecryptAndHash(temp, rs);
+		var length = _state.HasKey() ? _dh.PubLen + Aead.TAG_SIZE : _dh.PubLen;
+		var temp = message[..length];
 
-		return message.Slice(length);
+		_rs = new byte[_dh.PubLen];
+		_state.DecryptAndHash(temp, _rs);
+
+		return message[length..];
 	}
 
 	private void ProcessES()
 	{
-		if (role == Role.Alice)
+		if (_role == Role.Alice)
 		{
-			DhAndMixKey(e, rs);
+			DhAndMixKey(_e, _rs);
 		}
 		else
 		{
-			DhAndMixKey(s, re);
+			DhAndMixKey(_s, _re);
 		}
 	}
 
 	private void ProcessSE()
 	{
-		if (role == Role.Alice)
+		if (_role == Role.Alice)
 		{
-			DhAndMixKey(s, re);
+			DhAndMixKey(_s, _re);
 		}
 		else
 		{
-			DhAndMixKey(e, rs);
+			DhAndMixKey(_e, _rs);
 		}
-	}
-
-	private void ProcessPSK()
-	{
-		var psk = psks.Dequeue();
-		state.MixKeyAndHash(psk);
-		Utilities.ZeroMemory(psk);
 	}
 
 	private (byte[], ITransport) Split()
 	{
-		var (c1, c2) = state.Split();
+		var (c1, c2) = _state.Split();
 
-		if (isOneWay)
-		{
-			c2.Dispose();
-			c2 = null;
-		}
-
-		Debug.Assert(psks.Count == 0);
-
-		var handshakeHash = state.GetHandshakeHash();
-		var transport = new Transport<CipherType>(role == initiator, c1, c2);
+		var handshakeHash = _state.GetHandshakeHash();
+		var transport = new Transport<CipherType>(_role == _initiator, c1, c2);
 
 		Clear();
 
 		return (handshakeHash, transport);
 	}
 
-	private void DhAndMixKey(KeyPair keyPair, ReadOnlySpan<byte> publicKey)
+	private void DhAndMixKey(KeyPair? keyPair, ReadOnlySpan<byte> publicKey)
 	{
 		Debug.Assert(keyPair != null);
 		Debug.Assert(!publicKey.IsEmpty);
 
-		Span<byte> sharedKey = stackalloc byte[dh.DhLen];
-		dh.Dh(keyPair, publicKey, sharedKey);
-		state.MixKey(sharedKey);
+		Span<byte> sharedKey = stackalloc byte[_dh.PrivLen];
+		_dh.Dh(keyPair.PrivateKey, publicKey, sharedKey);
+		_state.MixKey(sharedKey);
 	}
 
 	private void Clear()
 	{
-		state.Dispose();
-		e?.Dispose();
-		s?.Dispose();
-
-		foreach (var psk in psks)
-		{
-			Utilities.ZeroMemory(psk);
-		}
+		_state.Dispose();
+		_e?.Dispose();
+		_s?.Dispose();
 	}
 
 	private void ThrowIfDisposed()
 	{
-		Exceptions.ThrowIfDisposed(disposed, nameof(HandshakeState<CipherType, DhType, HashType>));
+		Exceptions.ThrowIfDisposed(_disposed, nameof(HandshakeState<CipherType, DhType, HashType>));
 	}
 
 	public void Dispose()
 	{
-		if (!disposed)
+		if (!_disposed)
 		{
 			Clear();
-			disposed = true;
+			_disposed = true;
 		}
 	}
 

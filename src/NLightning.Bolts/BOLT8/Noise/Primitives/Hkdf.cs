@@ -1,7 +1,8 @@
 using System.Diagnostics;
-using NLightning.Bolts.BOLT8.Noise.Interfaces;
 
-namespace NLightning.Bolts.BOLT8.Noise;
+namespace NLightning.Bolts.BOLT8.Noise.Primitives;
+
+using Interfaces;
 
 /// <summary>
 /// HMAC-based Extract-and-Expand Key Derivation Function, defined in

@@ -12,25 +12,25 @@ internal sealed class CipherState<CipherType> : IDisposable where CipherType : I
 {
 	private const ulong MaxNonce = ulong.MaxValue;
 
-	private static readonly byte[] zeroLen = [];
-	private static readonly byte[] zeros = new byte[32];
+	private static readonly byte[] _zeroLen = [];
+	private static readonly byte[] _zeros = new byte[32];
 
-	private readonly CipherType cipher = new CipherType();
-	private byte[]? k;
-	private ulong n;
-	private bool disposed;
+	private readonly CipherType _cipher = new();
+	private byte[]? _k;
+	private ulong _n;
+	private bool _disposed;
 
 	/// <summary>
 	/// Sets k = key. Sets n = 0.
 	/// </summary>
 	public void InitializeKey(ReadOnlySpan<byte> key)
 	{
-		Debug.Assert(key.Length == Aead.KeySize);
+		Debug.Assert(key.Length == Aead.KEY_SIZE);
 
-		k ??= new byte[Aead.KeySize];
-		key.CopyTo(k);
+		_k ??= new byte[Aead.KEY_SIZE];
+		key.CopyTo(_k);
 
-		n = 0;
+		_n = 0;
 	}
 
 	/// <summary>
@@ -38,7 +38,7 @@ internal sealed class CipherState<CipherType> : IDisposable where CipherType : I
 	/// </summary>
 	public bool HasKey()
 	{
-		return k != null;
+		return _k != null;
 	}
 
 	/// <summary>
@@ -46,7 +46,7 @@ internal sealed class CipherState<CipherType> : IDisposable where CipherType : I
 	/// </summary>
 	public void SetNonce(ulong nonce)
 	{
-		n = nonce;
+		_n = nonce;
 	}
 
 	/// <summary>
@@ -56,18 +56,18 @@ internal sealed class CipherState<CipherType> : IDisposable where CipherType : I
 	/// </summary>
 	public int EncryptWithAd(ReadOnlySpan<byte> ad, ReadOnlySpan<byte> plaintext, Span<byte> ciphertext)
 	{
-		if (n == MaxNonce)
+		if (_n == MaxNonce)
 		{
 			throw new OverflowException("Nonce has reached its maximum value.");
 		}
 
-		if (k == null)
+		if (_k == null)
 		{
 			plaintext.CopyTo(ciphertext);
 			return plaintext.Length;
 		}
 
-		return cipher.Encrypt(k, n++, ad, plaintext, ciphertext);
+		return _cipher.Encrypt(_k, _n++, ad, plaintext, ciphertext);
 	}
 
 	/// <summary>
@@ -78,19 +78,19 @@ internal sealed class CipherState<CipherType> : IDisposable where CipherType : I
 	/// </summary>
 	public int DecryptWithAd(ReadOnlySpan<byte> ad, ReadOnlySpan<byte> ciphertext, Span<byte> plaintext)
 	{
-		if (n == MaxNonce)
+		if (_n == MaxNonce)
 		{
 			throw new OverflowException("Nonce has reached its maximum value.");
 		}
 
-		if (k == null)
+		if (_k == null)
 		{
 			ciphertext.CopyTo(plaintext);
 			return ciphertext.Length;
 		}
 
-		int bytesRead = cipher.Decrypt(k, n, ad, ciphertext, plaintext);
-		++n;
+		int bytesRead = _cipher.Decrypt(_k, _n, ad, ciphertext, plaintext);
+		++_n;
 
 		return bytesRead;
 	}
@@ -102,19 +102,19 @@ internal sealed class CipherState<CipherType> : IDisposable where CipherType : I
 	{
 		Debug.Assert(HasKey());
 
-		Span<byte> key = stackalloc byte[Aead.KeySize + Aead.TagSize];
-		cipher.Encrypt(k, MaxNonce, zeroLen, zeros, key);
+		Span<byte> key = stackalloc byte[Aead.KEY_SIZE + Aead.TAG_SIZE];
+		_cipher.Encrypt(_k, MaxNonce, _zeroLen, _zeros, key);
 
-		k ??= new byte[Aead.KeySize];
-		key[Aead.KeySize..].CopyTo(k);
+		_k ??= new byte[Aead.KEY_SIZE];
+		key[Aead.KEY_SIZE..].CopyTo(_k);
 	}
 
 	public void Dispose()
 	{
-		if (!disposed)
+		if (!_disposed)
 		{
-			Utilities.ZeroMemory(k);
-			disposed = true;
+			Utilities.ZeroMemory(_k);
+			_disposed = true;
 		}
 	}
 }

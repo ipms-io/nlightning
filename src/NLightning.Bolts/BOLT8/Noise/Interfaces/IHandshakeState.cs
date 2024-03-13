@@ -1,6 +1,6 @@
-using NLightning.Bolts.BOLT8.Noise.Primitives;
-
 namespace NLightning.Bolts.BOLT8.Noise.Interfaces;
+
+using Primitives;
 
 /// <summary>
 /// A <see href="https://noiseprotocol.org/noise.html#the-handshakestate-object">HandshakeState</see>
@@ -18,29 +18,6 @@ public interface IHandshakeState : IDisposable
     /// Thrown if the current instance has already been disposed.
     /// </exception>
     ReadOnlySpan<byte> RemoteStaticPublicKey { get; }
-
-    /// <summary>
-    /// Converts an Alice-initiated pattern to a Bob-initiated pattern.
-    /// The only fallback pattern currently supported is XXfallback.
-    /// PSK modifiers are currently not supported with fallback protocols.
-    /// </summary>
-    /// <param name="protocol">A concrete Noise protocol (e.g. Noise_XXfallback_25519_AESGCM_BLAKE2b).</param>
-    /// <param name="config">A set of parameters used to instantiate a <see cref="IHandshakeState"/>.</param>
-    /// <exception cref="ObjectDisposedException">
-    /// Thrown if the current instance has already been disposed.
-    /// </exception>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown if either <paramref name="protocol"/> or <paramref name="config"/> is null.
-    /// </exception>
-    /// <exception cref="ArgumentException">
-    /// Thrown if <paramref name="protocol"/> is not XXfallback,
-    /// or if the provided local static private key is empty.
-    /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// Throw if the initial handshake pattern is Bob-initiated, or if this
-    /// method was not called immediately after the first handshake message.
-    /// </exception>
-    void Fallback(Protocol protocol, ProtocolConfig config);
 
     /// <summary>
     /// Performs the next step of the handshake,
@@ -66,10 +43,10 @@ public interface IHandshakeState : IDisposable
     /// or the handshake has already been completed.
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// Thrown if the output was greater than <see cref="Protocol.MaxMessageLength"/>
+    /// Thrown if the output was greater than <see cref="Protocol.MAX_MESSAGE_LENGTH"/>
     /// bytes in length, or if the output buffer did not have enough space to hold the ciphertext.
     /// </exception>
-    (int BytesWritten, byte[] HandshakeHash, ITransport Transport) WriteMessage(
+    (int BytesWritten, byte[]? HandshakeHash, ITransport? Transport) WriteMessage(
         ReadOnlySpan<byte> payload,
         Span<byte> messageBuffer
     );
@@ -98,13 +75,13 @@ public interface IHandshakeState : IDisposable
     /// or the handshake has already been completed.
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// Thrown if the message was greater than <see cref="Protocol.MaxMessageLength"/>
+    /// Thrown if the message was greater than <see cref="Protocol.MAX_MESSAGE_LENGTH"/>
     /// bytes in length, or if the output buffer did not have enough space to hold the plaintext.
     /// </exception>
     /// <exception cref="System.Security.Cryptography.CryptographicException">
     /// Thrown if the decryption of the message has failed.
     /// </exception>
-    (int BytesRead, byte[] HandshakeHash, ITransport Transport) ReadMessage(
+    (int BytesRead, byte[]? HandshakeHash, ITransport? Transport) ReadMessage(
         ReadOnlySpan<byte> message,
         Span<byte> payloadBuffer
     );

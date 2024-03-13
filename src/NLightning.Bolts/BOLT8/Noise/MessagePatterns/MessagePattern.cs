@@ -1,8 +1,9 @@
 using System.Diagnostics;
-using NLightning.Bolts.BOLT8.Noise.Constants;
-using NLightning.Bolts.BOLT8.Noise.Enums;
 
 namespace NLightning.Bolts.BOLT8.Noise.MessagePatterns;
+
+using Constants;
+using Enums;
 
 /// <summary>
 /// A message pattern is some sequence of tokens from
@@ -32,39 +33,23 @@ public sealed class MessagePattern
 	public IEnumerable<Token> Tokens { get; }
 
 	/// <summary>
-	/// Prepends the PSK token to the pattern.
-	/// </summary>
-	internal MessagePattern PrependPsk()
-	{
-		return new MessagePattern(Prepend(Tokens, Token.PSK));
-	}
-
-	/// <summary>
-	/// Appends the PSK token to the pattern.
-	/// </summary>
-	internal MessagePattern AppendPsk()
-	{
-		return new MessagePattern(Append(Tokens, Token.PSK));
-	}
-
-	/// <summary>
 	/// Calculate the message overhead in bytes (i.e. the
 	/// total size of all transmitted keys and AEAD tags).
 	/// </summary>
-	internal int Overhead(int dhLen, bool hasKey, bool isPsk)
+	internal int Overhead(int dhLen, bool hasKey)
 	{
-		int overhead = 0;
+		// OIverhead always includes the Version lenght, which is 1 byte
+		int overhead = 1;
 
 		foreach (var token in Tokens)
 		{
 			if (token == Token.E)
 			{
 				overhead += dhLen;
-				hasKey |= isPsk;
 			}
 			else if (token == Token.S)
 			{
-				overhead += hasKey ? dhLen + Aead.TagSize : dhLen;
+				overhead += hasKey ? dhLen + Aead.TAG_SIZE : dhLen;
 			}
 			else
 			{
@@ -72,7 +57,7 @@ public sealed class MessagePattern
 			}
 		}
 
-		return hasKey ? overhead + Aead.TagSize : overhead;
+		return hasKey ? overhead + Aead.TAG_SIZE : overhead;
 	}
 
 	private static IEnumerable<T> Prepend<T>(IEnumerable<T> source, T element)

@@ -46,14 +46,5 @@ public enum Token
 	/// the responder's static public key. The result is hashed along
 	/// with the old ck to derive a new ck and k, and n is set to zero.
 	/// </summary>
-	SS,
-
-	/// <summary>
-	/// Noise provides a pre-shared symmetric key or PSK mode to support
-	/// protocols where both parties have a 32-byte shared secret key.
-	/// In a PSK handshake, a "psk" token is allowed to appear one or
-	/// more times in a handshake pattern. This token can only appear
-	/// in message patterns (not pre-message patterns).
-	/// </summary>
-	PSK
+	SS
 }

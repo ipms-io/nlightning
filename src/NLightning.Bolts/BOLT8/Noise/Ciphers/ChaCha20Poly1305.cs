@@ -2,10 +2,11 @@ using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using NLightning.Bolts.BOLT8.Noise.Constants;
-using NLightning.Bolts.BOLT8.Noise.Interfaces;
 
 namespace NLightning.Bolts.BOLT8.Noise.Ciphers;
+
+using Constants;
+using Interfaces;
 
 /// <summary>
 /// AEAD_CHACHA20_POLY1305 from <see href="https://tools.ietf.org/html/rfc7539">RFC 7539</see>.
@@ -14,13 +15,14 @@ namespace NLightning.Bolts.BOLT8.Noise.Ciphers;
 /// </summary>
 internal sealed class ChaCha20Poly1305 : ICipher
 {
+	/// <inheritdoc/>
 	public int Encrypt(ReadOnlySpan<byte> k, ulong n, ReadOnlySpan<byte> ad, ReadOnlySpan<byte> plaintext, Span<byte> ciphertext)
 	{
-		Debug.Assert(k.Length == Aead.KeySize);
-		Debug.Assert(ciphertext.Length >= plaintext.Length + Aead.TagSize);
+		Debug.Assert(k.Length == Aead.KEY_SIZE);
+		Debug.Assert(ciphertext.Length >= plaintext.Length + Aead.TAG_SIZE);
 
-		Span<byte> nonce = stackalloc byte[Aead.NonceSize];
-		BinaryPrimitives.WriteUInt64LittleEndian(nonce.Slice(4), n);
+		Span<byte> nonce = stackalloc byte[Aead.NONCE_SIZE];
+		BinaryPrimitives.WriteUInt64LittleEndian(nonce[4..], n);
 
 		int result = Libsodium.crypto_aead_chacha20poly1305_ietf_encrypt(
 			ref MemoryMarshal.GetReference(ciphertext),
@@ -39,18 +41,19 @@ internal sealed class ChaCha20Poly1305 : ICipher
 			throw new CryptographicException("Encryption failed.");
 		}
 
-		Debug.Assert(length == plaintext.Length + Aead.TagSize);
+		Debug.Assert(length == plaintext.Length + Aead.TAG_SIZE);
 		return (int)length;
 	}
 
+	/// <inheritdoc/>
 	public int Decrypt(ReadOnlySpan<byte> k, ulong n, ReadOnlySpan<byte> ad, ReadOnlySpan<byte> ciphertext, Span<byte> plaintext)
 	{
-		Debug.Assert(k.Length == Aead.KeySize);
-		Debug.Assert(ciphertext.Length >= Aead.TagSize);
-		Debug.Assert(plaintext.Length >= ciphertext.Length - Aead.TagSize);
+		Debug.Assert(k.Length == Aead.KEY_SIZE);
+		Debug.Assert(ciphertext.Length >= Aead.TAG_SIZE);
+		Debug.Assert(plaintext.Length >= ciphertext.Length - Aead.TAG_SIZE);
 
-		Span<byte> nonce = stackalloc byte[Aead.NonceSize];
-		BinaryPrimitives.WriteUInt64LittleEndian(nonce.Slice(4), n);
+		Span<byte> nonce = stackalloc byte[Aead.NONCE_SIZE];
+		BinaryPrimitives.WriteUInt64LittleEndian(nonce[4..], n);
 
 		int result = Libsodium.crypto_aead_chacha20poly1305_ietf_decrypt(
 			ref MemoryMarshal.GetReference(plaintext),
@@ -69,7 +72,7 @@ internal sealed class ChaCha20Poly1305 : ICipher
 			throw new CryptographicException("Decryption failed.");
 		}
 
-		Debug.Assert(length == ciphertext.Length - Aead.TagSize);
+		Debug.Assert(length == ciphertext.Length - Aead.TAG_SIZE);
 		return (int)length;
 	}
 }

@@ -1,20 +1,15 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using NLightning.Bolts.BOLT8.Noise.Interfaces;
 
 namespace NLightning.Bolts.BOLT8.Noise.Hashes;
+
+using Interfaces;
 
 /// <summary>
 /// SHA-256 from <see href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf">FIPS 180-4</see>.
 /// </summary>
 internal sealed class SHA256 : IHash
 {
-	// typedef struct crypto_hash_sha256_state {
-	//     uint32_t state[8];
-	//     uint64_t count;
-	//     uint8_t  buf[64];
-	// } crypto_hash_sha256_state;
-
 	private readonly IntPtr state = Marshal.AllocHGlobal(104);
 	private bool disposed;
 
@@ -27,7 +22,7 @@ internal sealed class SHA256 : IHash
 	{
 		if (!data.IsEmpty)
 		{
-			Libsodium.crypto_hash_sha256_update(
+			_ = Libsodium.crypto_hash_sha256_update(
 				state,
 				ref MemoryMarshal.GetReference(data),
 				(ulong)data.Length
@@ -39,7 +34,7 @@ internal sealed class SHA256 : IHash
 	{
 		Debug.Assert(hash.Length == HashLen);
 
-		Libsodium.crypto_hash_sha256_final(
+		_ = Libsodium.crypto_hash_sha256_final(
 			state,
 			ref MemoryMarshal.GetReference(hash)
 		);
@@ -49,7 +44,7 @@ internal sealed class SHA256 : IHash
 
 	private void Reset()
 	{
-		Libsodium.crypto_hash_sha256_init(state);
+		_ = Libsodium.crypto_hash_sha256_init(state);
 	}
 
 	public void Dispose()

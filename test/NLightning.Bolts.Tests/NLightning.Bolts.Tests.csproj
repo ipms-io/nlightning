@@ -23,13 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="BOLT8/Noise/Vectors/blake2-kat.json" CopyToOutputDirectory="PreserveNewest" />
-    <None Update="BOLT8/Noise/Vectors/cacophony.txt" CopyToOutputDirectory="PreserveNewest" />
-    <None Update="BOLT8/Noise/Vectors/noise-c-fallback.txt" CopyToOutputDirectory="PreserveNewest" />
-    <None Update="BOLT8/Noise/Vectors/snow-multipsk.txt" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\src\NLightning.Bolts\NLightning.Bolts.csproj" />
   </ItemGroup>
 
