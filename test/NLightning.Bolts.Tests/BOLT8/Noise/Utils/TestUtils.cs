@@ -1,4 +1,4 @@
-namespace NLightning.Bolts.Tests.BOLT8.Noise;
+namespace NLightning.Bolts.Tests.BOLT8.Noise.Utils;
 
 public static class TestUtils
 {

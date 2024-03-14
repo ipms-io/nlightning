@@ -1,10 +1,9 @@
 using System.Reflection;
 using System.Text;
-using NLightning.Bolts.BOLT8.Noise.Ciphers;
-using NLightning.Bolts.BOLT8.Noise.Interfaces;
 using NLightning.Bolts.BOLT8.Noise.Primitives;
 using NLightning.Bolts.BOLT8.Noise.States;
 using NLightning.Bolts.Tests.BOLT8.Noise.Mock;
+using NLightning.Bolts.Tests.BOLT8.Noise.Utils;
 
 namespace NLightning.Bolts.Tests.BOLT8.Noise.IntegrationTests;
 
@@ -12,7 +11,7 @@ using static TestUtils;
 
 public partial class IntegrationTests
 {
-    private static readonly InitiatorValidKeys _validKeys = new();
+    private static readonly InitiatorValidKeysUtil _validKeys = new();
 
     [Fact]
     public void Given_ValidKeys_When_InitiatorWritesActOne_Then_OutputShouldBeValid()
@@ -23,10 +22,10 @@ public partial class IntegrationTests
 
         var flags = BindingFlags.Instance | BindingFlags.NonPublic;
         var setDh = initiator.GetType().GetMethod("SetDh", flags) ?? throw new MissingMethodException("SetDh");
-        setDh.Invoke(initiator, [new FixedKeyDh(_validKeys.EphemeralPrivateKey)]);
+        setDh.Invoke(initiator, [new FakeFixedKeyDh(_validKeys.EphemeralPrivateKey)]);
 
         var messageBuffer = new byte[Protocol.MAX_MESSAGE_LENGTH];
-        ITransport? transport;
+        Transport? transport;
         byte[]? handshakeHash;
         Span<byte> message;
         int messageSize;
@@ -50,10 +49,10 @@ public partial class IntegrationTests
 
         var flags = BindingFlags.Instance | BindingFlags.NonPublic;
         var setDh = initiator.GetType().GetMethod("SetDh", flags) ?? throw new MissingMethodException("SetDh");
-        setDh.Invoke(initiator, [new FixedKeyDh(_validKeys.EphemeralPrivateKey)]);
+        setDh.Invoke(initiator, [new FakeFixedKeyDh(_validKeys.EphemeralPrivateKey)]);
 
         var messageBuffer = new byte[Protocol.MAX_MESSAGE_LENGTH];
-        ITransport? transport;
+        Transport? transport;
         byte[]? handshakeHash;
         Span<byte> message;
         int messageSize;
@@ -80,10 +79,10 @@ public partial class IntegrationTests
 
         var flags = BindingFlags.Instance | BindingFlags.NonPublic;
         var setDh = initiator.GetType().GetMethod("SetDh", flags) ?? throw new MissingMethodException("SetDh");
-        setDh.Invoke(initiator, [new FixedKeyDh(_validKeys.EphemeralPrivateKey)]);
+        setDh.Invoke(initiator, [new FakeFixedKeyDh(_validKeys.EphemeralPrivateKey)]);
 
         var messageBuffer = new byte[Protocol.MAX_MESSAGE_LENGTH];
-        ITransport? transport;
+        Transport? transport;
         byte[]? handshakeHash;
         Span<byte> message;
         int messageSize;
@@ -112,10 +111,10 @@ public partial class IntegrationTests
 
         var flags = BindingFlags.Instance | BindingFlags.NonPublic;
         var setDh = initiator.GetType().GetMethod("SetDh", flags) ?? throw new MissingMethodException("SetDh");
-        setDh.Invoke(initiator, [new FixedKeyDh(_validKeys.EphemeralPrivateKey)]);
+        setDh.Invoke(initiator, [new FakeFixedKeyDh(_validKeys.EphemeralPrivateKey)]);
 
         var messageBuffer = new byte[Protocol.MAX_MESSAGE_LENGTH];
-        ITransport? transport;
+        Transport? transport;
 
         // - Play ActOne
         _ = initiator.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), messageBuffer);
@@ -127,10 +126,10 @@ public partial class IntegrationTests
 
         // Act
         // Get sk
-        var c1 = ((CipherState<ChaCha20Poly1305>?)transport.GetType().GetField("_sendingKey", flags)?.GetValue(transport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new ArgumentNullException("_sendingKey");
+        var c1 = ((CipherState?)transport.GetType().GetField("_sendingKey", flags)?.GetValue(transport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new ArgumentNullException("_sendingKey");
         var sk = ((byte[]?)c1.GetType().GetField("_k", flags)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new ArgumentNullException("_sendingKey._k");
         // Get rk
-        var c2 = ((CipherState<ChaCha20Poly1305>?)transport.GetType().GetField("_receivingKey", flags)?.GetValue(transport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new ArgumentNullException("_receivingKey");
+        var c2 = ((CipherState?)transport.GetType().GetField("_receivingKey", flags)?.GetValue(transport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new ArgumentNullException("_receivingKey");
         var rk = ((byte[]?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new ArgumentNullException("_receivingKey._k");
 
         Assert.Equal(_validKeys.OutputSk, sk);
@@ -150,7 +149,7 @@ public partial class IntegrationTests
 
         var flags = BindingFlags.Instance | BindingFlags.NonPublic;
         var setDh = initiator.GetType().GetMethod("SetDh", flags) ?? throw new MissingMethodException("SetDh");
-        setDh.Invoke(initiator, [new FixedKeyDh(_validKeys.EphemeralPrivateKey)]);
+        setDh.Invoke(initiator, [new FakeFixedKeyDh(_validKeys.EphemeralPrivateKey)]);
 
         var messageBuffer = new byte[Protocol.MAX_MESSAGE_LENGTH];
         var inputBytes = GetBytes(actTwoInput);

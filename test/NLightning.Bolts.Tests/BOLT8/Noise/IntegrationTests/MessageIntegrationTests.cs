@@ -1,6 +1,6 @@
 using System.Text;
 using NLightning.Bolts.BOLT8.Noise.Primitives;
-using NLightning.Bolts.Tests.BOLT8.Noise.Mock;
+using NLightning.Bolts.Tests.BOLT8.Noise.Utils;
 
 namespace NLightning.Bolts.Tests.BOLT8.Noise.IntegrationTests;
 
@@ -10,10 +10,14 @@ public partial class MessageIntegrationTests
     public void Given_TwoParties_When_MessageIsSent_Then_MessageIsReceived()
     {
         // Arrange
-        var _initializedParties = new InitializedParties();
-        var _validMessages = new ValidMessages();
+        var _initializedParties = new InitializedPartiesUtil();
+        var _validMessages = new ValidMessagesUtil();
 
-        var message = Encoding.ASCII.GetBytes("Hello");
+        // Make sure keys match
+        Assert.Equal(_validMessages.InitiatorSk, _initializedParties.InitiatorSk);
+        Assert.Equal(_validMessages.InitiatorRk, _initializedParties.InitiatorRk);
+
+        var message = Encoding.ASCII.GetBytes("hello");
         var messageBuffer = new byte[Protocol.MAX_MESSAGE_LENGTH];
         var receivedMessageBuffer = new byte[Protocol.MAX_MESSAGE_LENGTH];
 

@@ -1,20 +1,28 @@
 using System.Diagnostics;
-using NLightning.Bolts.BOLT8.Noise.Constants;
-using NLightning.Bolts.BOLT8.Noise.Enums;
-using NLightning.Bolts.BOLT8.Noise.Interfaces;
-using NLightning.Bolts.BOLT8.Noise.MessagePatterns;
-using NLightning.Bolts.BOLT8.Noise.Primitives;
 
 namespace NLightning.Bolts.BOLT8.Noise.States;
 
-internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeState
-	where CipherType : ICipher, new()
+using Constants;
+using Enums;
+using Interfaces;
+using MessagePatterns;
+using Primitives;
+
+/// <summary>
+/// A <see href="https://noiseprotocol.org/noise.html#the-handshakestate-object">HandshakeState</see>
+/// object contains a <see href="https://noiseprotocol.org/noise.html#the-symmetricstate-object">SymmetricState</see>
+/// plus the local and remote keys,
+/// a boolean indicating the initiator or responder role, and
+/// the remaining portion of the handshake pattern.
+/// </summary>
+/// <remarks>
+/// See <see href="https://github.com/lightning/bolts/blob/master/08-transport.md"/>Lightning Bolt8</see> for specific implementation information. 
+internal sealed class HandshakeState<DhType> : IDisposable
 	where DhType : IDh, new()
-	where HashType : IHash, new()
 {
 	private const byte HANDSHAKE_VERSION = 0x00;
 
-	private readonly SymmetricState<CipherType, DhType, HashType> _state;
+	private readonly SymmetricState<DhType> _state;
 	private readonly Protocol _protocol;
 	private readonly Role _role;
 	private readonly Role _initiator;
@@ -59,7 +67,7 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 			throw new ArgumentException("Invalid remote static public key.", nameof(rs));
 		}
 
-		_state = new SymmetricState<CipherType, DhType, HashType>(protocol.Name);
+		_state = new SymmetricState<DhType>(Protocol.Name);
 		_state.MixHash(prologue);
 
 		_protocol = protocol;
@@ -75,7 +83,7 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 
 	private void ProcessPreMessages()
 	{
-		foreach (var token in _protocol.HandshakePattern.Initiator.Tokens)
+		foreach (var token in Protocol.HandshakePattern.Initiator.Tokens)
 		{
 			if (token == Token.S)
 			{
@@ -83,7 +91,7 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 			}
 		}
 
-		foreach (var token in _protocol.HandshakePattern.Responder.Tokens)
+		foreach (var token in Protocol.HandshakePattern.Responder.Tokens)
 		{
 			if (token == Token.S)
 			{
@@ -94,7 +102,7 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 
 	private void EnqueueMessages()
 	{
-		foreach (var pattern in _protocol.HandshakePattern.Patterns)
+		foreach (var pattern in Protocol.HandshakePattern.Patterns)
 		{
 			_messagePatterns.Enqueue(pattern);
 		}
@@ -109,18 +117,51 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 		_dh = dh;
 	}
 
+	/// <summary>
+	/// The remote party's static public key.
+	/// </summary>
+	/// <exception cref="ObjectDisposedException">
+	/// Thrown if the current instance has already been disposed.
+	/// </exception>
 	public ReadOnlySpan<byte> RemoteStaticPublicKey
 	{
 		get
 		{
-			ThrowIfDisposed();
+			Exceptions.ThrowIfDisposed(_disposed, nameof(HandshakeState<DhType>));
 			return _rs;
 		}
 	}
 
-	public (int, byte[]?, ITransport?) WriteMessage(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
+	/// <summary>
+	/// Performs the next step of the handshake,
+	/// encrypts the <paramref name="payload"/>,
+	/// and writes the result into <paramref name="messageBuffer"/>.
+	/// The result is undefined if the <paramref name="payload"/>
+	/// and <paramref name="messageBuffer"/> overlap.
+	/// </summary>
+	/// <param name="payload">The payload to encrypt.</param>
+	/// <param name="messageBuffer">The buffer for the encrypted message.</param>
+	/// <returns>
+	/// The tuple containing the ciphertext size in bytes,
+	/// the handshake hash, and the <see cref="ITransport"/>
+	/// object for encrypting transport messages. If the
+	/// handshake is still in progress, the handshake hash
+	/// and the transport will both be null.
+	/// </returns>
+	/// <exception cref="ObjectDisposedException">
+	/// Thrown if the current instance has already been disposed.
+	/// </exception>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown if the call to <see cref="ReadMessage"/> was expected
+	/// or the handshake has already been completed.
+	/// </exception>
+	/// <exception cref="ArgumentException">
+	/// Thrown if the output was greater than <see cref="Protocol.MAX_MESSAGE_LENGTH"/>
+	/// bytes in length, or if the output buffer did not have enough space to hold the ciphertext.
+	/// </exception>
+	public (int, byte[]?, Transport?) WriteMessage(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
 	{
-		ThrowIfDisposed();
+		Exceptions.ThrowIfDisposed(_disposed, nameof(HandshakeState<DhType>));
 
 		if (_messagePatterns.Count == 0)
 		{
@@ -170,7 +211,7 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 		Debug.Assert(ciphertextSize == size);
 
 		byte[]? handshakeHash = null;
-		ITransport? transport = null;
+		Transport? transport = null;
 
 		if (_messagePatterns.Count == 0)
 		{
@@ -181,33 +222,39 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 		return (ciphertextSize, handshakeHash, transport);
 	}
 
-	private Span<byte> WriteE(Span<byte> buffer)
+	/// <summary>
+	/// Performs the next step of the handshake,
+	/// decrypts the <paramref name="message"/>,
+	/// and writes the result into <paramref name="payloadBuffer"/>.
+	/// The result is undefined if the <paramref name="message"/>
+	/// and <paramref name="payloadBuffer"/> overlap.
+	/// </summary>
+	/// <param name="message">The message to decrypt.</param>
+	/// <param name="payloadBuffer">The buffer for the decrypted payload.</param>
+	/// <returns>
+	/// The tuple containing the plaintext size in bytes,
+	/// the handshake hash, and the <see cref="ITransport"/>
+	/// object for encrypting transport messages. If the
+	/// handshake is still in progress, the handshake hash
+	/// and the transport will both be null.
+	/// </returns>
+	/// <exception cref="ObjectDisposedException">
+	/// Thrown if the current instance has already been disposed.
+	/// </exception>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown if the call to <see cref="WriteMessage"/> was expected
+	/// or the handshake has already been completed.
+	/// </exception>
+	/// <exception cref="ArgumentException">
+	/// Thrown if the message was greater than <see cref="Protocol.MAX_MESSAGE_LENGTH"/>
+	/// bytes in length, or if the output buffer did not have enough space to hold the plaintext.
+	/// </exception>
+	/// <exception cref="System.Security.Cryptography.CryptographicException">
+	/// Thrown if the decryption of the message has failed.
+	/// </exception>
+	public (int, byte[]?, Transport?) ReadMessage(ReadOnlySpan<byte> message, Span<byte> payloadBuffer)
 	{
-		Debug.Assert(_e == null);
-
-		_e = _dh.GenerateKeyPair();
-		// Start from position 1, since we need our version there
-		_e.PublicKeyBytes.CopyTo(buffer[1..]);
-		_state.MixHash(_e.PublicKeyBytes);
-
-		// Don't forget to add our version length to the resulting Span
-		return buffer[(_e.PublicKeyBytes.Length + 1)..];
-	}
-
-	private Span<byte> WriteS(Span<byte> buffer)
-	{
-		Debug.Assert(_s != null);
-
-		// Start from position 1, since we need our version there
-		var bytesWritten = _state.EncryptAndHash(_s.PublicKeyBytes, buffer[1..]);
-
-		// Don't forget to add our version length to the resulting Span
-		return buffer[(bytesWritten + 1)..];
-	}
-
-	public (int, byte[]?, ITransport?) ReadMessage(ReadOnlySpan<byte> message, Span<byte> payloadBuffer)
-	{
-		ThrowIfDisposed();
+		Exceptions.ThrowIfDisposed(_disposed, nameof(HandshakeState<DhType>));
 
 		if (_messagePatterns.Count == 0)
 		{
@@ -238,8 +285,6 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 		}
 
 		var next = _messagePatterns.Dequeue();
-		var messageLength = message.Length;
-
 		foreach (var token in next.Tokens)
 		{
 			switch (token)
@@ -257,7 +302,7 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 		Debug.Assert(bytesRead == plaintextSize);
 
 		byte[]? handshakeHash = null;
-		ITransport? transport = null;
+		Transport? transport = null;
 
 		if (_messagePatterns.Count == 0)
 		{
@@ -266,6 +311,30 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 
 		_turnToWrite = true;
 		return (plaintextSize, handshakeHash, transport);
+	}
+
+	private Span<byte> WriteE(Span<byte> buffer)
+	{
+		Debug.Assert(_e == null);
+
+		_e = _dh.GenerateKeyPair();
+		// Start from position 1, since we need our version there
+		_e.PublicKeyBytes.CopyTo(buffer[1..]);
+		_state.MixHash(_e.PublicKeyBytes);
+
+		// Don't forget to add our version length to the resulting Span
+		return buffer[(_e.PublicKeyBytes.Length + 1)..];
+	}
+
+	private Span<byte> WriteS(Span<byte> buffer)
+	{
+		Debug.Assert(_s != null);
+
+		// Start from position 1, since we need our version there
+		var bytesWritten = _state.EncryptAndHash(_s.PublicKeyBytes, buffer[1..]);
+
+		// Don't forget to add our version length to the resulting Span
+		return buffer[(bytesWritten + 1)..];
 	}
 
 	private ReadOnlySpan<byte> ReadE(ReadOnlySpan<byte> buffer)
@@ -288,8 +357,6 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 
 	private ReadOnlySpan<byte> ReadS(ReadOnlySpan<byte> message)
 	{
-		// Debug.Assert(_rs == null);
-
 		// Check version
 		if (message[0] != HANDSHAKE_VERSION)
 		{
@@ -330,12 +397,12 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 		}
 	}
 
-	private (byte[], ITransport) Split()
+	private (byte[], Transport) Split()
 	{
 		var (c1, c2) = _state.Split();
 
 		var handshakeHash = _state.GetHandshakeHash();
-		var transport = new Transport<CipherType>(_role == _initiator, c1, c2);
+		var transport = new Transport(_role == _initiator, c1, c2);
 
 		Clear();
 
@@ -357,11 +424,6 @@ internal sealed class HandshakeState<CipherType, DhType, HashType> : IHandshakeS
 		_state.Dispose();
 		_e?.Dispose();
 		_s?.Dispose();
-	}
-
-	private void ThrowIfDisposed()
-	{
-		Exceptions.ThrowIfDisposed(_disposed, nameof(HandshakeState<CipherType, DhType, HashType>));
 	}
 
 	public void Dispose()

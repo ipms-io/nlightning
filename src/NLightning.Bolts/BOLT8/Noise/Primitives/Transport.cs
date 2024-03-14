@@ -1,27 +1,28 @@
 using System.Diagnostics;
-using NLightning.Bolts.BOLT8.Noise.Constants;
-using NLightning.Bolts.BOLT8.Noise.Interfaces;
-using NLightning.Bolts.BOLT8.Noise.States;
 
 namespace NLightning.Bolts.BOLT8.Noise.Primitives;
 
-/// <inheritdoc/>
-internal sealed class Transport<CipherType> : ITransport where CipherType : ICipher, new()
+using Constants;
+using States;
+
+/// <summary>
+/// A pair of <see href="https://noiseprotocol.org/noise.html#the-cipherstate-object">CipherState</see>
+/// objects for encrypting transport messages.
+/// </summary>
+internal sealed class Transport : IDisposable
 {
-	private const int MAX_NONCE = 1000;
 	private const int LC_SIZE = 18;
 
 	private readonly bool _initiator;
-	private readonly CipherState<CipherType> _sendingKey;
-	private readonly CipherState<CipherType> _receivingKey;
+	private readonly CipherState _sendingKey;
+	private readonly CipherState _receivingKey;
 
-	private int _writeNonce = 0;
-	private int _readNonce = 0;
 	private bool disposed;
 
-	public Transport(bool initiator, CipherState<CipherType> c1, CipherState<CipherType> c2)
+	public Transport(bool initiator, CipherState c1, CipherState c2)
 	{
 		Exceptions.ThrowIfNull(c1, nameof(c1));
+		Exceptions.ThrowIfNull(c2, nameof(c2));
 
 		_initiator = initiator;
 		_sendingKey = c1;
@@ -45,7 +46,7 @@ internal sealed class Transport<CipherType> : ITransport where CipherType : ICip
 	/// <inheritdoc/>
 	public int ReadMessageLength(ReadOnlySpan<byte> lc)
 	{
-		Exceptions.ThrowIfDisposed(disposed, nameof(Transport<CipherType>));
+		Exceptions.ThrowIfDisposed(disposed, nameof(Transport));
 
 		if (lc.Length != LC_SIZE)
 		{
@@ -54,7 +55,7 @@ internal sealed class Transport<CipherType> : ITransport where CipherType : ICip
 
 		// Decrypt the payload length from the message buffer
 		var l = new byte[2];
-		var lcLen = ReadMessagePart(lc, l);
+		var lcLen = ReadMessagePart(lc, l); // TODO: Check lcLen == 2
 		return BitConverter.ToUInt16(l.Reverse().ToArray(), 0) + Aead.TAG_SIZE;
 	}
 
@@ -83,7 +84,7 @@ internal sealed class Transport<CipherType> : ITransport where CipherType : ICip
 	/// </exception>
 	private int WriteMessagePart(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
 	{
-		Exceptions.ThrowIfDisposed(disposed, nameof(Transport<CipherType>));
+		Exceptions.ThrowIfDisposed(disposed, nameof(Transport));
 
 		if (payload.Length + Aead.TAG_SIZE > Protocol.MAX_MESSAGE_LENGTH)
 		{
@@ -95,16 +96,10 @@ internal sealed class Transport<CipherType> : ITransport where CipherType : ICip
 			throw new ArgumentException("Message buffer does not have enough space to hold the ciphertext.");
 		}
 
-		if (_writeNonce > MAX_NONCE)
-		{
-			RekeyInitiatorToResponder();
-		}
-
 		var cipher = _initiator ? _sendingKey : _receivingKey;
 		Debug.Assert(cipher?.HasKey() ?? false);
 
-		_writeNonce++;
-		return cipher.EncryptWithAd(null, payload, messageBuffer);
+		return cipher.Encrypt(payload, messageBuffer);
 	}
 
 	/// <summary>
@@ -128,7 +123,7 @@ internal sealed class Transport<CipherType> : ITransport where CipherType : ICip
 	/// </exception>
 	private int ReadMessagePart(ReadOnlySpan<byte> message, Span<byte> payloadBuffer)
 	{
-		Exceptions.ThrowIfDisposed(disposed, nameof(Transport<CipherType>));
+		Exceptions.ThrowIfDisposed(disposed, nameof(Transport));
 
 		if (message.Length > Protocol.MAX_MESSAGE_LENGTH)
 		{
@@ -145,49 +140,10 @@ internal sealed class Transport<CipherType> : ITransport where CipherType : ICip
 			throw new ArgumentException("Payload buffer does not have enough space to hold the plaintext.");
 		}
 
-		if (_readNonce > MAX_NONCE)
-		{
-			RekeyResponderToInitiator();
-		}
-
 		var cipher = _initiator ? _receivingKey : _sendingKey;
 		Debug.Assert(cipher?.HasKey() ?? false);
 
-		_readNonce++;
-		return cipher.DecryptWithAd(null, message, payloadBuffer);
-	}
-
-	/// <summary>
-	/// Updates the symmetric key used to encrypt transport messages from
-	/// initiator to responder using a one-way function, so that a compromise
-	/// of keys will not decrypt older messages.
-	/// </summary>
-	/// <exception cref="ObjectDisposedException">
-	/// Thrown if the current instance has already been disposed.
-	/// </exception>
-	private void RekeyInitiatorToResponder()
-	{
-		Exceptions.ThrowIfDisposed(disposed, nameof(Transport<CipherType>));
-
-		_sendingKey.Rekey();
-	}
-
-	/// <summary>
-	/// Updates the symmetric key used to encrypt transport messages from
-	/// responder to initiator using a one-way function, so that a compromise
-	/// of keys will not decrypt older messages.
-	/// </summary>
-	/// <exception cref="ObjectDisposedException">
-	/// Thrown if the current instance has already been disposed.
-	/// </exception>
-	/// <exception cref="InvalidOperationException">
-	/// Thrown if the current instance is a one-way stream.
-	/// </exception>
-	private void RekeyResponderToInitiator()
-	{
-		Exceptions.ThrowIfDisposed(disposed, nameof(Transport<CipherType>));
-
-		_receivingKey.Rekey();
+		return cipher.Decrypt(message, payloadBuffer);
 	}
 
 	public void Dispose()

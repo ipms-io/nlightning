@@ -2,7 +2,7 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT8.Noise.Primitives;
 
-using Constants;
+using Dhs;
 
 /// <summary>
 /// A Diffie-Hellman private/public key pair.

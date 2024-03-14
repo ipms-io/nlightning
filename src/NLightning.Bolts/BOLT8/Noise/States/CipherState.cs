@@ -1,21 +1,25 @@
 using System.Diagnostics;
-using NLightning.Bolts.BOLT8.Noise.Constants;
-using NLightning.Bolts.BOLT8.Noise.Interfaces;
 
 namespace NLightning.Bolts.BOLT8.Noise.States;
+
+using Ciphers;
+using Constants;
+using Primitives;
 
 /// <summary>
 /// A CipherState can encrypt and decrypt data based on its variables k
 /// (a cipher key of 32 bytes) and n (an 8-byte unsigned integer nonce).
 /// </summary>
-internal sealed class CipherState<CipherType> : IDisposable where CipherType : ICipher, new()
+internal sealed class CipherState : IDisposable
 {
-	private const ulong MaxNonce = ulong.MaxValue;
+	private const ulong MAX_NONCE = 1000;
 
 	private static readonly byte[] _zeroLen = [];
 	private static readonly byte[] _zeros = new byte[32];
 
-	private readonly CipherType _cipher = new();
+	private readonly ChaCha20Poly1305 _cipher = new();
+	private readonly Hkdf _hkdf = new();
+	private byte[]? _ck;
 	private byte[]? _k;
 	private ulong _n;
 	private bool _disposed;
@@ -29,6 +33,23 @@ internal sealed class CipherState<CipherType> : IDisposable where CipherType : I
 
 		_k ??= new byte[Aead.KEY_SIZE];
 		key.CopyTo(_k);
+
+		_n = 0;
+	}
+
+	/// <summary>
+	/// Sets _k = key. Sets _ck = ck. Sets _n = 0.
+	/// </summary>
+	public void InitializeKeyAndChainingKey(ReadOnlySpan<byte> key, ReadOnlySpan<byte> chainingKey)
+	{
+		Debug.Assert(key.Length == Aead.KEY_SIZE);
+		Debug.Assert(chainingKey.Length == Aead.KEY_SIZE);
+
+		_k ??= new byte[Aead.KEY_SIZE];
+		key.CopyTo(_k);
+
+		_ck ??= new byte[Aead.KEY_SIZE];
+		chainingKey.CopyTo(_ck);
 
 		_n = 0;
 	}
@@ -56,7 +77,7 @@ internal sealed class CipherState<CipherType> : IDisposable where CipherType : I
 	/// </summary>
 	public int EncryptWithAd(ReadOnlySpan<byte> ad, ReadOnlySpan<byte> plaintext, Span<byte> ciphertext)
 	{
-		if (_n == MaxNonce)
+		if (_n == MAX_NONCE)
 		{
 			throw new OverflowException("Nonce has reached its maximum value.");
 		}
@@ -79,7 +100,7 @@ internal sealed class CipherState<CipherType> : IDisposable where CipherType : I
 	public int DecryptWithAd(ReadOnlySpan<byte> ad, ReadOnlySpan<byte> ciphertext, Span<byte> plaintext)
 	{
 		// If nonce reaches its maximum value, rekey
-		if (_n == MaxNonce)
+		if (_n == MAX_NONCE)
 		{
 			throw new OverflowException("Nonce has reached its maximum value.");
 		}
@@ -97,14 +118,50 @@ internal sealed class CipherState<CipherType> : IDisposable where CipherType : I
 	}
 
 	/// <summary>
+	/// Returns ENCRYPT(k, n, null, plaintext).
+	/// </summary>
+	/// <param name="plaintext">Bytes to be encrypted</param>
+	/// <param name="ciphertext">Encrypted bytes</param>
+	/// <returns>Number of bytes written to ciphertext</returns>
+	public int Encrypt(ReadOnlySpan<byte> plaintext, Span<byte> ciphertext)
+	{
+		if (_n == MAX_NONCE)
+		{
+			Rekey();
+		}
+
+		return _cipher.Encrypt(_k, _n++, null, plaintext, ciphertext);
+	}
+
+	/// <summary>
+	/// Returns DECRYPT(k, n, null, ciphertext).
+	/// </summary>
+	/// <param name="ciphertext">Bytes to be decrypted</param>
+	/// <param name="plaintext">Decrypted bytes</param>
+	/// <returns>Number of bytes written to plaintext</returns>
+	public int Decrypt(ReadOnlySpan<byte> ciphertext, Span<byte> plaintext)
+	{
+		if (_n == MAX_NONCE)
+		{
+			Rekey();
+		}
+		return _cipher.Decrypt(_k, _n++, null, ciphertext, plaintext);
+	}
+
+	/// <summary>
 	/// Sets k = REKEY(k).
 	/// </summary>
 	public void Rekey()
 	{
 		Debug.Assert(HasKey());
 
-		Span<byte> key = stackalloc byte[Aead.KEY_SIZE + Aead.TAG_SIZE];
-		_cipher.Encrypt(_k, MaxNonce, _zeroLen, _zeros, key);
+		_n = 0;
+
+		Span<byte> key = stackalloc byte[Aead.KEY_SIZE * 2];
+		_hkdf.ExtractAndExpand2(_ck, _k, key);
+
+		_ck ??= new byte[Aead.KEY_SIZE];
+		key[..Aead.KEY_SIZE].CopyTo(_ck);
 
 		_k ??= new byte[Aead.KEY_SIZE];
 		key[Aead.KEY_SIZE..].CopyTo(_k);

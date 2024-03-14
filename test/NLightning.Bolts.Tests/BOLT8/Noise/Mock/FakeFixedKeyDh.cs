@@ -1,12 +1,12 @@
-using NLightning.Bolts.BOLT8.Noise.Constants;
+using NLightning.Bolts.BOLT8.Noise.Dhs;
 using NLightning.Bolts.BOLT8.Noise.Interfaces;
 using NLightning.Bolts.BOLT8.Noise.Primitives;
 
-namespace NLightning.Bolts.Tests.BOLT8.Noise;
+namespace NLightning.Bolts.Tests.BOLT8.Noise.Mock;
 
-internal class FixedKeyDh(byte[] privateKey) : IDh
+internal class FakeFixedKeyDh(byte[] privateKey) : IDh
 {
-	private readonly IDh _dh = new Secp256k1();
+	private readonly Secp256k1 _dh = new();
 
 	public int PrivLen => _dh.PrivLen;
 	public int PubLen => _dh.PubLen;

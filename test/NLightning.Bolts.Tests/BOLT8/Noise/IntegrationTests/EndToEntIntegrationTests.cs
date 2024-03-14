@@ -1,17 +1,15 @@
 using System.Reflection;
 using System.Text;
-using NLightning.Bolts.BOLT8.Noise.Ciphers;
-using NLightning.Bolts.BOLT8.Noise.Interfaces;
 using NLightning.Bolts.BOLT8.Noise.Primitives;
 using NLightning.Bolts.BOLT8.Noise.States;
-using NLightning.Bolts.Tests.BOLT8.Noise.Mock;
+using NLightning.Bolts.Tests.BOLT8.Noise.Utils;
 
 namespace NLightning.Bolts.Tests.BOLT8.Noise.IntegrationTests;
 
 public partial class EndToEntIntegrationTests
 {
-    private static readonly InitiatorValidKeys _initiatorValidKeys = new();
-    private static readonly ResponderValidKeys _responderValidKeys = new();
+    private static readonly InitiatorValidKeysUtil _initiatorValidKeys = new();
+    private static readonly ResponderValidKeysUtil _responderValidKeys = new();
 
     [Fact]
     public void Given_TwoParties_When_HandshakeEnds_Then_KeysMatch()
@@ -22,13 +20,13 @@ public partial class EndToEntIntegrationTests
         var responder = protocol.Create(false, _responderValidKeys.LocalStaticPrivateKey, _responderValidKeys.LocalStaticPublicKey);
 
         var initiatorMessageBuffer = new byte[Protocol.MAX_MESSAGE_LENGTH];
-        ITransport? initiatorTransport;
+        Transport? initiatorTransport;
         byte[]? initiatorHandshakeHash;
         Span<byte> initiatorMessage;
         int initiatorMessageSize;
 
         var responderMessageBuffer = new byte[Protocol.MAX_MESSAGE_LENGTH];
-        ITransport? responderTransport;
+        Transport? responderTransport;
         byte[]? responderHandshakeHash;
         Span<byte> responderMessage;
         int responderMessageSize;
@@ -56,7 +54,7 @@ public partial class EndToEntIntegrationTests
 
         // - Responder reads act three
         (responderMessageSize, responderHandshakeHash, responderTransport) = responder.ReadMessage(initiatorMessage.ToArray(), responderMessageBuffer);
-        responderMessage = responderMessageBuffer.AsSpan(0, responderMessageSize);
+        _ = responderMessageBuffer.AsSpan(0, responderMessageSize);
 
         // Assert
         Assert.NotNull(initiatorHandshakeHash);
@@ -66,16 +64,16 @@ public partial class EndToEntIntegrationTests
 
         var flags = BindingFlags.Instance | BindingFlags.NonPublic;
         // Get initiator sk
-        var c1 = ((CipherState<ChaCha20Poly1305>?)initiatorTransport.GetType().GetField("_sendingKey", flags)?.GetValue(initiatorTransport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new ArgumentNullException("_sendingKey");
+        var c1 = ((CipherState?)initiatorTransport.GetType().GetField("_sendingKey", flags)?.GetValue(initiatorTransport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new ArgumentNullException("_sendingKey");
         var initiatorSk = ((byte[]?)c1.GetType().GetField("_k", flags)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new ArgumentNullException("_sendingKey._k");
         // Get initiator rk
-        var c2 = ((CipherState<ChaCha20Poly1305>?)initiatorTransport.GetType().GetField("_receivingKey", flags)?.GetValue(initiatorTransport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new ArgumentNullException("_receivingKey");
+        var c2 = ((CipherState?)initiatorTransport.GetType().GetField("_receivingKey", flags)?.GetValue(initiatorTransport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new ArgumentNullException("_receivingKey");
         var initiatorRk = ((byte[]?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new ArgumentNullException("_receivingKey._k");
         // Get responder sk
-        c1 = ((CipherState<ChaCha20Poly1305>?)responderTransport.GetType().GetField("_sendingKey", flags)?.GetValue(responderTransport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new ArgumentNullException("_sendingKey");
+        c1 = ((CipherState?)responderTransport.GetType().GetField("_sendingKey", flags)?.GetValue(responderTransport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new ArgumentNullException("_sendingKey");
         var responderSk = ((byte[]?)c1.GetType().GetField("_k", flags)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new ArgumentNullException("_sendingKey._k");
         // Get responder rk
-        c2 = ((CipherState<ChaCha20Poly1305>?)responderTransport.GetType().GetField("_receivingKey", flags)?.GetValue(responderTransport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new ArgumentNullException("_receivingKey");
+        c2 = ((CipherState?)responderTransport.GetType().GetField("_receivingKey", flags)?.GetValue(responderTransport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new ArgumentNullException("_receivingKey");
         var responderRk = ((byte[]?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new ArgumentNullException("_receivingKey._k");
 
         Assert.Equal(initiatorHandshakeHash, responderHandshakeHash);

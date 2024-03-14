@@ -10,15 +10,11 @@ The original Noise.NET project can be found here: [https://github.com/Metalnem/n
 
 The modifications made in this specific folder of the project are licensed under the MIT License, consistent with the original licensing of Noise.NET. This ensures that both the original work and our modifications remain open and accessible for use, modification, and distribution by the community.
 
-The rest of our project, outside of this specific folder, is licensed under a different license. Please refer to the corresponding [LICENSE](../../../../LICENSE) file located in the root of each folder for detailed licensing information.
-
 A copy of the MIT License for the original Noise.NET project is included in the LICENSE file at the root of the modified project folder.
 
 ## Modifications
 
-We have made several significant changes to the original Noise.NET project to better meet our needs, including:
-
-- Replaced libsodium: We replaced libsodium in favor of using BouncyCastle.Cryptography in order to keep our dependencies to a bare minimun.
+We have made several significant changes to the original Noise.NET project to better meet our needs.
 
 ## Credits
 

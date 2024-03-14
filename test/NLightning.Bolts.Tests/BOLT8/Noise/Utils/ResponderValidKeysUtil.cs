@@ -1,8 +1,8 @@
-namespace NLightning.Bolts.Tests.BOLT8.Noise.Mock;
+namespace NLightning.Bolts.Tests.BOLT8.Noise.Utils;
 
 using static TestUtils;
 
-internal sealed class ResponderValidKeys
+internal sealed class ResponderValidKeysUtil
 {
     public byte[] LocalStaticPrivateKey { get; }
     public byte[] LocalStaticPublicKey { get; }
@@ -13,7 +13,7 @@ internal sealed class ResponderValidKeys
     public byte[] OutputSk { get; }
     public byte[] OutputRk { get; }
 
-    public ResponderValidKeys()
+    public ResponderValidKeysUtil()
     {
         LocalStaticPrivateKey = GetBytes("0x2121212121212121212121212121212121212121212121212121212121212121");
         LocalStaticPublicKey = GetBytes("0x028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7");

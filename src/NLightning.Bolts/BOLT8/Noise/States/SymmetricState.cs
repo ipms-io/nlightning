@@ -1,27 +1,28 @@
 using System.Diagnostics;
-using NLightning.Bolts.BOLT8.Noise.Constants;
-using NLightning.Bolts.BOLT8.Noise.Interfaces;
-using NLightning.Bolts.BOLT8.Noise.Primitives;
 
 namespace NLightning.Bolts.BOLT8.Noise.States;
+
+using Ciphers;
+using Constants;
+using Hashes;
+using Interfaces;
+using Primitives;
 
 /// <summary>
 /// A SymmetricState object contains a CipherState plus ck (a chaining
 /// key of HashLen bytes) and h (a hash output of HashLen bytes).
 /// </summary>
-internal sealed class SymmetricState<CipherType, DhType, HashType> : IDisposable
-	where CipherType : ICipher, new()
+internal sealed class SymmetricState<DhType> : IDisposable
 	where DhType : IDh, new()
-	where HashType : IHash, new()
 {
-	private readonly ICipher cipher = new CipherType();
-	private readonly DhType dh = new();
-	private readonly IHash hash = new HashType();
-	private readonly Hkdf<HashType> hkdf = new();
-	private readonly CipherState<CipherType> state = new();
-	private readonly byte[] ck;
-	private readonly byte[] h;
-	private bool disposed;
+	private readonly ChaCha20Poly1305 _cipher = new();
+	private readonly DhType _dh = new();
+	private readonly SHA256 _hash = new();
+	private readonly Hkdf _hkdf = new();
+	private readonly CipherState _state = new();
+	private readonly byte[] _ck;
+	private readonly byte[] _h;
+	private bool _disposed;
 
 	/// <summary>
 	/// Initializes a new SymmetricState with an
@@ -29,22 +30,22 @@ internal sealed class SymmetricState<CipherType, DhType, HashType> : IDisposable
 	/// </summary>
 	public SymmetricState(ReadOnlySpan<byte> protocolName)
 	{
-		int length = hash.HashLen;
+		int length = _hash.HashLen;
 
-		ck = new byte[length];
-		h = new byte[length];
+		_ck = new byte[length];
+		_h = new byte[length];
 
 		if (protocolName.Length <= length)
 		{
-			protocolName.CopyTo(h);
+			protocolName.CopyTo(_h);
 		}
 		else
 		{
-			hash.AppendData(protocolName);
-			hash.GetHashAndReset(h);
+			_hash.AppendData(protocolName);
+			_hash.GetHashAndReset(_h);
 		}
 
-		Array.Copy(h, ck, length);
+		Array.Copy(_h, _ck, length);
 	}
 
 	/// <summary>
@@ -55,15 +56,15 @@ internal sealed class SymmetricState<CipherType, DhType, HashType> : IDisposable
 	public void MixKey(ReadOnlySpan<byte> inputKeyMaterial)
 	{
 		int length = inputKeyMaterial.Length;
-		Debug.Assert(length == 0 || length == Aead.KEY_SIZE || length == dh.PrivLen);
+		Debug.Assert(length == 0 || length == Aead.KEY_SIZE || length == _dh.PrivLen);
 
-		Span<byte> output = stackalloc byte[2 * hash.HashLen];
-		hkdf.ExtractAndExpand2(ck, inputKeyMaterial, output);
+		Span<byte> output = stackalloc byte[2 * _hash.HashLen];
+		_hkdf.ExtractAndExpand2(_ck, inputKeyMaterial, output);
 
-		output[..hash.HashLen].CopyTo(ck);
+		output[.._hash.HashLen].CopyTo(_ck);
 
-		var tempK = output.Slice(hash.HashLen, Aead.KEY_SIZE);
-		state.InitializeKey(tempK);
+		var tempK = output.Slice(_hash.HashLen, Aead.KEY_SIZE);
+		_state.InitializeKey(tempK);
 	}
 
 	/// <summary>
@@ -71,9 +72,9 @@ internal sealed class SymmetricState<CipherType, DhType, HashType> : IDisposable
 	/// </summary>
 	public void MixHash(ReadOnlySpan<byte> data)
 	{
-		hash.AppendData(h);
-		hash.AppendData(data);
-		hash.GetHashAndReset(h);
+		_hash.AppendData(_h);
+		_hash.AppendData(data);
+		_hash.GetHashAndReset(_h);
 	}
 
 	/// <summary>
@@ -85,18 +86,18 @@ internal sealed class SymmetricState<CipherType, DhType, HashType> : IDisposable
 	public void MixKeyAndHash(ReadOnlySpan<byte> inputKeyMaterial)
 	{
 		int length = inputKeyMaterial.Length;
-		Debug.Assert(length == 0 || length == Aead.KEY_SIZE || length == dh.PrivLen);
+		Debug.Assert(length == 0 || length == Aead.KEY_SIZE || length == _dh.PrivLen);
 
-		Span<byte> output = stackalloc byte[3 * hash.HashLen];
-		hkdf.ExtractAndExpand3(ck, inputKeyMaterial, output);
+		Span<byte> output = stackalloc byte[3 * _hash.HashLen];
+		_hkdf.ExtractAndExpand3(_ck, inputKeyMaterial, output);
 
-		output.Slice(0, hash.HashLen).CopyTo(ck);
+		output.Slice(0, _hash.HashLen).CopyTo(_ck);
 
-		var tempH = output.Slice(hash.HashLen, hash.HashLen);
-		var tempK = output.Slice(2 * hash.HashLen, Aead.KEY_SIZE);
+		var tempH = output.Slice(_hash.HashLen, _hash.HashLen);
+		var tempK = output.Slice(2 * _hash.HashLen, Aead.KEY_SIZE);
 
 		MixHash(tempH);
-		state.InitializeKey(tempK);
+		_state.InitializeKey(tempK);
 	}
 
 	/// <summary>
@@ -105,7 +106,7 @@ internal sealed class SymmetricState<CipherType, DhType, HashType> : IDisposable
 	/// </summary>
 	public byte[] GetHandshakeHash()
 	{
-		return h;
+		return _h;
 	}
 
 	/// <summary>
@@ -114,7 +115,7 @@ internal sealed class SymmetricState<CipherType, DhType, HashType> : IDisposable
 	/// </summary>
 	public int EncryptAndHash(ReadOnlySpan<byte> plaintext, Span<byte> ciphertext)
 	{
-		int bytesWritten = state.EncryptWithAd(h, plaintext, ciphertext);
+		int bytesWritten = _state.EncryptWithAd(_h, plaintext, ciphertext);
 		MixHash(ciphertext[..bytesWritten]);
 
 		return bytesWritten;
@@ -126,7 +127,7 @@ internal sealed class SymmetricState<CipherType, DhType, HashType> : IDisposable
 	/// </summary>
 	public int DecryptAndHash(ReadOnlySpan<byte> ciphertext, Span<byte> plaintext)
 	{
-		var bytesRead = state.DecryptWithAd(h, ciphertext, plaintext);
+		var bytesRead = _state.DecryptWithAd(_h, ciphertext, plaintext);
 		MixHash(ciphertext);
 
 		return bytesRead;
@@ -135,19 +136,19 @@ internal sealed class SymmetricState<CipherType, DhType, HashType> : IDisposable
 	/// <summary>
 	/// Returns a pair of CipherState objects for encrypting transport messages.
 	/// </summary>
-	public (CipherState<CipherType> c1, CipherState<CipherType> c2) Split()
+	public (CipherState c1, CipherState c2) Split()
 	{
-		Span<byte> output = stackalloc byte[2 * hash.HashLen];
-		hkdf.ExtractAndExpand2(ck, null, output);
+		Span<byte> output = stackalloc byte[2 * _hash.HashLen];
+		_hkdf.ExtractAndExpand2(_ck, null, output);
 
 		var tempK1 = output[..Aead.KEY_SIZE];
-		var tempK2 = output.Slice(hash.HashLen, Aead.KEY_SIZE);
+		var tempK2 = output.Slice(_hash.HashLen, Aead.KEY_SIZE);
 
-		var c1 = new CipherState<CipherType>();
-		var c2 = new CipherState<CipherType>();
+		var c1 = new CipherState();
+		var c2 = new CipherState();
 
-		c1.InitializeKey(tempK1);
-		c2.InitializeKey(tempK2);
+		c1.InitializeKeyAndChainingKey(tempK1, _ck);
+		c2.InitializeKeyAndChainingKey(tempK2, _ck);
 
 		return (c1, c2);
 	}
@@ -157,18 +158,18 @@ internal sealed class SymmetricState<CipherType, DhType, HashType> : IDisposable
 	/// </summary>
 	public bool HasKey()
 	{
-		return state.HasKey();
+		return _state.HasKey();
 	}
 
 	public void Dispose()
 	{
-		if (!disposed)
+		if (!_disposed)
 		{
-			hash.Dispose();
-			hkdf.Dispose();
-			state.Dispose();
-			Utilities.ZeroMemory(ck);
-			disposed = true;
+			_hash.Dispose();
+			_hkdf.Dispose();
+			_state.Dispose();
+			Utilities.ZeroMemory(_ck);
+			_disposed = true;
 		}
 	}
 }
