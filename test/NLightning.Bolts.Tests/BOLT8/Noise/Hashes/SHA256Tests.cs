@@ -5,13 +5,13 @@ namespace NLightning.Bolts.Tests.BOLT8.Noise.Hashes;
 using static Utils.TestUtils;
 
 /// <summary>
-/// Test our SHA256 implementations against the test vector available at
+/// Test our SHA256 implementation against the test vector available at
 /// <see href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/secure-hashing">NIST</see>.
 /// </summary>
 public partial class SHA256Tests
 {
     [Fact]
-    public void TestSha256()
+    public void Given_NistVectorInputs_When_DataIsHashed_Then_ResultIsKnown()
     {
         var hasher = new SHA256();
         var testVectors = ReadTestVectors("BOLT8/Noise/Vectors/SHA256LongMsg.rsp");
