@@ -127,11 +127,11 @@ public partial class ResponderTests
 
         // Act
         // Get rk
-        var c1 = ((CipherState<ChaCha20Poly1305>?)transport.GetType().GetField("_c1", flags)?.GetValue(transport) ?? throw new MissingFieldException("_c1")) ?? throw new ArgumentNullException("_c1");
-        var rk = ((byte[]?)c1.GetType().GetField("_k", flags)?.GetValue(c1) ?? throw new MissingFieldException("_c1._k")) ?? throw new ArgumentNullException("_c1._k");
+        var c1 = ((CipherState<ChaCha20Poly1305>?)transport.GetType().GetField("_sendingKey", flags)?.GetValue(transport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new ArgumentNullException("_sendingKey");
+        var rk = ((byte[]?)c1.GetType().GetField("_k", flags)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new ArgumentNullException("_sendingKey._k");
         // Get sk
-        var c2 = ((CipherState<ChaCha20Poly1305>?)transport.GetType().GetField("_c2", flags)?.GetValue(transport) ?? throw new MissingFieldException("_c2")) ?? throw new ArgumentNullException("_c2");
-        var sk = ((byte[]?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_c2._k")) ?? throw new ArgumentNullException("_c2._k");
+        var c2 = ((CipherState<ChaCha20Poly1305>?)transport.GetType().GetField("_receivingKey", flags)?.GetValue(transport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new ArgumentNullException("_receivingKey");
+        var sk = ((byte[]?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new ArgumentNullException("_receivingKey._k");
 
         Assert.Equal(_validKeys.OutputRk, rk);
         Assert.Equal(_validKeys.OutputSk, sk);

@@ -78,6 +78,7 @@ internal sealed class CipherState<CipherType> : IDisposable where CipherType : I
 	/// </summary>
 	public int DecryptWithAd(ReadOnlySpan<byte> ad, ReadOnlySpan<byte> ciphertext, Span<byte> plaintext)
 	{
+		// If nonce reaches its maximum value, rekey
 		if (_n == MaxNonce)
 		{
 			throw new OverflowException("Nonce has reached its maximum value.");

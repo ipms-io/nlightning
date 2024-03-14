@@ -66,20 +66,20 @@ public partial class EndToEntIntegrationTests
 
         var flags = BindingFlags.Instance | BindingFlags.NonPublic;
         // Get initiator sk
-        var c1 = ((CipherState<ChaCha20Poly1305>?)initiatorTransport.GetType().GetField("_c1", flags)?.GetValue(initiatorTransport) ?? throw new MissingFieldException("_c1")) ?? throw new ArgumentNullException("_c1");
-        var initiatorSk = ((byte[]?)c1.GetType().GetField("_k", flags)?.GetValue(c1) ?? throw new MissingFieldException("_c1._k")) ?? throw new ArgumentNullException("_c1._k");
+        var c1 = ((CipherState<ChaCha20Poly1305>?)initiatorTransport.GetType().GetField("_sendingKey", flags)?.GetValue(initiatorTransport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new ArgumentNullException("_sendingKey");
+        var initiatorSk = ((byte[]?)c1.GetType().GetField("_k", flags)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new ArgumentNullException("_sendingKey._k");
         // Get initiator rk
-        var c2 = ((CipherState<ChaCha20Poly1305>?)initiatorTransport.GetType().GetField("_c2", flags)?.GetValue(initiatorTransport) ?? throw new MissingFieldException("_c2")) ?? throw new ArgumentNullException("_c2");
-        var initiatorRk = ((byte[]?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_c2._k")) ?? throw new ArgumentNullException("_c2._k");
-        // Get responder rk
-        c1 = ((CipherState<ChaCha20Poly1305>?)responderTransport.GetType().GetField("_c1", flags)?.GetValue(responderTransport) ?? throw new MissingFieldException("_c1")) ?? throw new ArgumentNullException("_c1");
-        var responderRk = ((byte[]?)c1.GetType().GetField("_k", flags)?.GetValue(c1) ?? throw new MissingFieldException("_c1._k")) ?? throw new ArgumentNullException("_c1._k");
+        var c2 = ((CipherState<ChaCha20Poly1305>?)initiatorTransport.GetType().GetField("_receivingKey", flags)?.GetValue(initiatorTransport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new ArgumentNullException("_receivingKey");
+        var initiatorRk = ((byte[]?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new ArgumentNullException("_receivingKey._k");
         // Get responder sk
-        c2 = ((CipherState<ChaCha20Poly1305>?)responderTransport.GetType().GetField("_c2", flags)?.GetValue(responderTransport) ?? throw new MissingFieldException("_c2")) ?? throw new ArgumentNullException("_c2");
-        var responderSk = ((byte[]?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_c2._k")) ?? throw new ArgumentNullException("_c2._k");
+        c1 = ((CipherState<ChaCha20Poly1305>?)responderTransport.GetType().GetField("_sendingKey", flags)?.GetValue(responderTransport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new ArgumentNullException("_sendingKey");
+        var responderSk = ((byte[]?)c1.GetType().GetField("_k", flags)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new ArgumentNullException("_sendingKey._k");
+        // Get responder rk
+        c2 = ((CipherState<ChaCha20Poly1305>?)responderTransport.GetType().GetField("_receivingKey", flags)?.GetValue(responderTransport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new ArgumentNullException("_receivingKey");
+        var responderRk = ((byte[]?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new ArgumentNullException("_receivingKey._k");
 
         Assert.Equal(initiatorHandshakeHash, responderHandshakeHash);
-        Assert.Equal(initiatorSk, responderRk);
-        Assert.Equal(initiatorRk, responderSk);
+        Assert.Equal(initiatorSk, responderSk);
+        Assert.Equal(responderRk, initiatorRk);
     }
 }
