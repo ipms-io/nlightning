@@ -23,6 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="BOLT8/Noise/Vectors/SHA256LongMsg.rsp" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\NLightning.Bolts\NLightning.Bolts.csproj" />
   </ItemGroup>
 
