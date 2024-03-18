@@ -1,0 +1,79 @@
+using NLightning.Bolts.BOLT8.Interfaces;
+
+namespace NLightning.Bolts.Tests.BOLT8.Services;
+
+using System.Net;
+using System.Net.Sockets;
+using Mock;
+using NBitcoin;
+using NLightning.Bolts.BOLT8.Services;
+
+public partial class TransportServiceTests
+{
+    [Fact]
+    public async void Given_TransportServiceAsInitiator_When_InitializeIsCalled_Then_HandshakeServicePerformStepIsCalledTwice()
+    {
+        // Arrange
+        var handshakeServiceMock = new Mock<FakeHandshakeService>();
+        var steps = 2;
+        handshakeServiceMock.Setup(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny)).Returns((byte[] inMessage, out byte[] outMessage) =>
+        {
+            if (steps == 2)
+            {
+                steps--;
+                outMessage = new byte[50];
+                return 50;
+            }
+            else if (steps == 1)
+            {
+                steps--;
+                outMessage = new byte[66];
+
+                handshakeServiceMock.Object.SetTransport(new FakeTransport());
+
+                return 66;
+            }
+
+            throw new InvalidOperationException("There's no more steps to complete");
+        });
+        handshakeServiceMock.Object.SetIsInitiator(true);
+        var tcpClient1 = new TcpClient();
+        var tcpListener = new TcpListener(IPAddress.Loopback, 65535);
+        tcpListener.Start();
+        _ = Task.Run(async () =>
+        {
+            TcpClient tcpClient2 = await tcpListener.AcceptTcpClientAsync();
+            var stream = tcpClient2.GetStream();
+            var buffer = new byte[50];
+            await stream.ReadExactlyAsync(buffer);
+
+            await stream.WriteAsync(buffer);
+
+            buffer = new byte[66];
+            await stream.ReadExactlyAsync(buffer);
+        });
+        tcpClient1.Connect(IPEndPoint.Parse(tcpListener.LocalEndpoint.ToEndpointString()));
+        var transportService = new TransportService(handshakeServiceMock.Object, tcpClient1);
+
+        // Act
+        await transportService.Initialize();
+
+        // Assert
+        handshakeServiceMock.Verify(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny), Times.Exactly(2));
+    }
+
+    [Fact]
+    public void Given_TransportServiceAsInitiator_When_InitializeIsCalledAndTcpClinetIsDisconnected_Then_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var handshakeServiceMock = new Mock<FakeHandshakeService>();
+        var tcpClient1 = new TcpClient();
+        var transportService = new TransportService(handshakeServiceMock.Object, tcpClient1);
+
+        // Act
+        var exception = Assert.ThrowsAnyAsync<InvalidOperationException>(() => transportService.Initialize());
+
+        // Assert
+        Assert.Equal("TcpClient is not connected", exception.Result.Message);
+    }
+}
