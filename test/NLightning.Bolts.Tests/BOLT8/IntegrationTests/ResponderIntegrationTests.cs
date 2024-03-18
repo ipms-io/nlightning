@@ -13,13 +13,13 @@ using static TestUtils;
 
 public partial class ResponderIntegrationTests
 {
-    private static readonly IDh _dhFake = new FakeFixedKeyDh(ResponderValidKeysUtil.EphemeralPrivateKey);
+    private static readonly IDh s_dhFake = new FakeFixedKeyDh(ResponderValidKeysUtil.EphemeralPrivateKey);
 
     [Fact]
     public void Given_ValidKeys_When_ResponderReadsActOne_Then_ItDoesntThrow()
     {
         // Arrange
-        var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, _dhFake);
+        var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, s_dhFake);
 
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
         Transport? transport;
@@ -41,7 +41,7 @@ public partial class ResponderIntegrationTests
     public void Given_ValidActOneRead_When_ResponderWritesActTwo_Then_OutputShouldBeValid()
     {
         // Arrange
-        var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, _dhFake);
+        var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, s_dhFake);
 
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
         Transport? transport;
@@ -66,7 +66,7 @@ public partial class ResponderIntegrationTests
     public void Given_ValidActTwoMessage_When_ResponderReadsActThree_Then_ItDoesntThrow()
     {
         // Arrange
-        var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, _dhFake);
+        var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, s_dhFake);
 
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
         Transport? transport;
@@ -93,7 +93,7 @@ public partial class ResponderIntegrationTests
     public void Given_ValidActTwoRead_When_InitiatorWritesActThree_Then_KeysShouldBeValid()
     {
         // Arrange
-        var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, _dhFake);
+        var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, s_dhFake);
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
         Transport? transport;
         var flags = BindingFlags.Instance | BindingFlags.NonPublic;
@@ -126,7 +126,7 @@ public partial class ResponderIntegrationTests
     public void Given_InvalidActOneMessage_When_ResponderReadsActOne_Then_Throws(string actOneInput, string exceptionMessage)
     {
         // Arrange
-        var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, _dhFake);
+        var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, s_dhFake);
 
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
         var inputBytes = GetBytes(actOneInput);
@@ -144,7 +144,7 @@ public partial class ResponderIntegrationTests
     public void Given_InvalidActThreeMessage_When_ResponderReadsActThree_Then_Throws(string actOneInput, string exceptionMessage)
     {
         // Arrange
-        var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, _dhFake);
+        var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, s_dhFake);
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
         var inputBytes = GetBytes(actOneInput);
 

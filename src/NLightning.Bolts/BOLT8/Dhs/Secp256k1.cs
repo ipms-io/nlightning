@@ -8,7 +8,7 @@ using Primitives;
 /// The Secp256k1 DH function (
 /// <see href="https://github.com/lightning/bolts/blob/master/08-transport.md#handshake-state">Bolt 8 - Handshake State</see>).
 /// </summary>
-public sealed class Secp256k1 : IDh
+internal sealed class Secp256k1 : IDh
 {
     public int PrivLen => 32; // Size of PrivateKey for Bitcoin
     public int PubLen => 33; // Size of PubKey for Bitcoin
@@ -22,7 +22,7 @@ public sealed class Secp256k1 : IDh
         NBitcoin.PubKey pubKey = new(rk);
 
         // ECDH operation
-        NBitcoin.PubKey sharedPubKey = pubKey.GetSharedPubkey(k);
+        var sharedPubKey = pubKey.GetSharedPubkey(k);
 
         // SHA256 hash of the compressed format of the shared public key
         using var hasher = new SHA256();

@@ -3,7 +3,7 @@ namespace NLightning.Bolts.BOLT8.Interfaces;
 /// <summary>
 /// A pair of <see href="https://noiseprotocol.org/noise.html#the-cipherstate-object">CipherState</see> objects for encrypting transport messages.
 /// </summary>
-public interface ITransport : IDisposable
+internal interface ITransport : IDisposable
 {
     /// <summary>
     /// Encrypts the <paramref name="payload"/> and writes the result into <paramref name="messageBuffer"/>.

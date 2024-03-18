@@ -1,5 +1,3 @@
-using NLightning.Bolts.BOLT8.Primitives;
-
 namespace NLightning.Bolts.Tests.BOLT8.Mock;
 
 internal interface ITestHandshakeService

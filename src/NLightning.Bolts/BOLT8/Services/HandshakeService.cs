@@ -3,7 +3,6 @@ namespace NLightning.Bolts.BOLT8.Services;
 using Constants;
 using Dhs;
 using Interfaces;
-using Primitives;
 using States;
 
 /// <summary>
@@ -13,15 +12,15 @@ using States;
 /// <param name="localStaticPrivateKey">Our local Private Key</param>
 /// <param name="staticPublicKey">If we are initiating, the remote Public Key, else our local Public Key</param>
 /// <param name="dh">A specific DH Function, or null to use the <see cref="Dhs.Secp256k1">Protocol Default</see></param>
-internal sealed class HandshakeService(bool _isInitiator, ReadOnlySpan<byte> _localStaticPrivateKey, ReadOnlySpan<byte> _staticPublicKey, IHandshakeState? _handshakeState = null) : IHandshakeService
+internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> localStaticPrivateKey, ReadOnlySpan<byte> staticPublicKey, IHandshakeState? handshakeState = null) : IHandshakeService
 {
-    private readonly IHandshakeState _handshakeState = _handshakeState ?? new HandshakeState(_isInitiator, _localStaticPrivateKey, _staticPublicKey, new Secp256k1());
+    private readonly IHandshakeState _handshakeState = handshakeState ?? new HandshakeState(isInitiator, localStaticPrivateKey, staticPublicKey, new Secp256k1());
 
     private byte _steps = 2;
     private bool _disposed;
 
     /// <inheritdoc/>
-    public bool IsInitiator => _isInitiator;
+    public bool IsInitiator => isInitiator;
 
     /// <inheritdoc/>
     public ITransport? Transport { get; private set; }
@@ -33,7 +32,7 @@ internal sealed class HandshakeService(bool _isInitiator, ReadOnlySpan<byte> _lo
         if (_steps == 2)
         {
             _steps--;
-            if (_isInitiator)
+            if (IsInitiator)
             {
                 return InitiatorWriteActOne(outMessage);
             }
@@ -45,7 +44,7 @@ internal sealed class HandshakeService(bool _isInitiator, ReadOnlySpan<byte> _lo
         else if (_steps == 1)
         {
             _steps--;
-            if (_isInitiator)
+            if (IsInitiator)
             {
                 return InitiatorReadActTwoAndWriteActThree(inMessage, outMessage);
             }

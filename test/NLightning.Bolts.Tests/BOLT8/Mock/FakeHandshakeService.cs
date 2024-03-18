@@ -2,7 +2,7 @@ using NLightning.Bolts.BOLT8.Interfaces;
 
 namespace NLightning.Bolts.Tests.BOLT8.Mock;
 
-public class FakeHandshakeService : IHandshakeService, ITestHandshakeService
+internal class FakeHandshakeService : IHandshakeService, ITestHandshakeService
 {
     private int _steps = 2;
     private bool _isInitiator;

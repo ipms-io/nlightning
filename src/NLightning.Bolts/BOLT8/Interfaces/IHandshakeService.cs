@@ -1,11 +1,9 @@
 namespace NLightning.Bolts.BOLT8.Interfaces;
 
-using Primitives;
-
 /// <summary>
 /// The Handshake Service
 /// </summary>
-public interface IHandshakeService : IDisposable
+internal interface IHandshakeService : IDisposable
 {
     /// <summary>
     /// Gets a value indicating whether the handshake is in the initiator role.

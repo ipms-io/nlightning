@@ -3,7 +3,7 @@ using NLightning.Bolts.BOLT8.Primitives;
 
 namespace NLightning.Bolts.Tests.BOLT8.Mock;
 
-public class FakeHandshakeState : IHandshakeState, ITestHandshakeState
+internal class FakeHandshakeState : IHandshakeState, ITestHandshakeState
 {
     public virtual (int, byte[]?, Transport?) WriteMessageTest(byte[] span, byte[] buffer)
     {

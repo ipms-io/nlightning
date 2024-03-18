@@ -11,46 +11,46 @@ using Enums;
 /// </summary>
 internal sealed class HandshakePattern
 {
-	/// <summary>
-	/// Gets the pre-message pattern for the initiator.
-	/// </summary>
-	public PreMessagePattern Initiator { get; }
+    /// <summary>
+    /// Gets the pre-message pattern for the initiator.
+    /// </summary>
+    public PreMessagePattern Initiator { get; }
 
-	/// <summary>
-	/// Gets the pre-message pattern for the responder.
-	/// </summary>
-	public PreMessagePattern Responder { get; }
+    /// <summary>
+    /// Gets the pre-message pattern for the responder.
+    /// </summary>
+    public PreMessagePattern Responder { get; }
 
-	/// <summary>
-	/// Gets the sequence of message patterns for the handshake messages.
-	/// </summary>
-	public IEnumerable<MessagePattern> Patterns { get; }
+    /// <summary>
+    /// Gets the sequence of message patterns for the handshake messages.
+    /// </summary>
+    public IEnumerable<MessagePattern> Patterns { get; }
 
-	/// <summary>
-	/// XK():
-	/// <para>- ← s</para>
-	/// <para>- ...</para>
-	/// <para>- → e, es</para>
-	/// <para>- ← e, ee</para>
-	/// <para>- → s, se</para>
-	/// </summary>
-	public static readonly HandshakePattern XK = new(
-		PreMessagePattern.Empty,
-		PreMessagePattern.S,
-		new MessagePattern(Token.E, Token.ES),
-		new MessagePattern(Token.E, Token.EE),
-		new MessagePattern(Token.S, Token.SE)
-	);
+    /// <summary>
+    /// XK():
+    /// <para>- ← s</para>
+    /// <para>- ...</para>
+    /// <para>- → e, es</para>
+    /// <para>- ← e, ee</para>
+    /// <para>- → s, se</para>
+    /// </summary>
+    public static readonly HandshakePattern XK = new(
+        PreMessagePattern.Empty,
+        PreMessagePattern.S,
+        new MessagePattern(Token.E, Token.ES),
+        new MessagePattern(Token.E, Token.EE),
+        new MessagePattern(Token.S, Token.SE)
+    );
 
-	internal HandshakePattern(PreMessagePattern initiator, PreMessagePattern responder, params MessagePattern[] patterns)
-	{
-		Debug.Assert(initiator != null);
-		Debug.Assert(responder != null);
-		Debug.Assert(patterns != null);
-		Debug.Assert(patterns.Length > 0);
+    internal HandshakePattern(PreMessagePattern initiator, PreMessagePattern responder, params MessagePattern[] patterns)
+    {
+        Debug.Assert(initiator != null);
+        Debug.Assert(responder != null);
+        Debug.Assert(patterns != null);
+        Debug.Assert(patterns.Length > 0);
 
-		Initiator = initiator;
-		Responder = responder;
-		Patterns = patterns;
-	}
+        Initiator = initiator;
+        Responder = responder;
+        Patterns = patterns;
+    }
 }

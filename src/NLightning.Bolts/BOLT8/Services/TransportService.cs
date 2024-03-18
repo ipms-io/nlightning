@@ -4,7 +4,6 @@ namespace NLightning.Bolts.BOLT8.Services;
 
 using Interfaces;
 using Constants;
-using Primitives;
 using Common.Interfaces;
 using static Common.Utils.Exceptions;
 

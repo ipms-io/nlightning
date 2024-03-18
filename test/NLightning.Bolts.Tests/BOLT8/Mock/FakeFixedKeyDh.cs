@@ -6,23 +6,23 @@ namespace NLightning.Bolts.Tests.BOLT8.Mock;
 
 internal class FakeFixedKeyDh(byte[] privateKey) : IDh
 {
-	private readonly Secp256k1 _dh = new();
+    private readonly Secp256k1 _dh = new();
 
-	public int PrivLen => _dh.PrivLen;
-	public int PubLen => _dh.PubLen;
+    public int PrivLen => _dh.PrivLen;
+    public int PubLen => _dh.PubLen;
 
-	public KeyPair GenerateKeyPair()
-	{
-		return _dh.GenerateKeyPair(privateKey);
-	}
+    public KeyPair GenerateKeyPair()
+    {
+        return _dh.GenerateKeyPair(privateKey);
+    }
 
-	public KeyPair GenerateKeyPair(ReadOnlySpan<byte> privKey)
-	{
-		return _dh.GenerateKeyPair(privKey);
-	}
+    public KeyPair GenerateKeyPair(ReadOnlySpan<byte> privKey)
+    {
+        return _dh.GenerateKeyPair(privKey);
+    }
 
-	public void Dh(NBitcoin.Key k, ReadOnlySpan<byte> rk, Span<byte> sharedKey)
-	{
-		_dh.Dh(k, rk, sharedKey);
-	}
+    public void Dh(NBitcoin.Key k, ReadOnlySpan<byte> rk, Span<byte> sharedKey)
+    {
+        _dh.Dh(k, rk, sharedKey);
+    }
 }

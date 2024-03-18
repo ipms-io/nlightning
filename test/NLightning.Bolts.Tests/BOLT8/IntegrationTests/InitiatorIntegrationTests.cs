@@ -13,13 +13,13 @@ using static TestUtils;
 
 public partial class InitiatorIntegrationTests
 {
-    private static readonly IDh _dhFake = new FakeFixedKeyDh(InitiatorValidKeysUtil.EphemeralPrivateKey);
+    private static readonly IDh s_dhFake = new FakeFixedKeyDh(InitiatorValidKeysUtil.EphemeralPrivateKey);
 
     [Fact]
     public void Given_ValidKeys_When_InitiatorWritesActOne_Then_OutputShouldBeValid()
     {
         // Arrange
-        var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey, _dhFake);
+        var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey, s_dhFake);
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
         Transport? transport;
         byte[]? handshakeHash;
@@ -40,7 +40,7 @@ public partial class InitiatorIntegrationTests
     public void Given_ValidActTwoMessage_When_InitiatorReadsActTwo_Then_ItDoesntThrow()
     {
         // Arrange
-        var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey, _dhFake);
+        var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey, s_dhFake);
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
         Transport? transport;
         byte[]? handshakeHash;
@@ -64,7 +64,7 @@ public partial class InitiatorIntegrationTests
     public void Given_ValidActTwoRead_When_InitiatorWritesActThree_Then_OutputShouldBeValid()
     {
         // Arrange
-        var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey, _dhFake);
+        var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey, s_dhFake);
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
         Transport? transport;
         byte[]? handshakeHash;
@@ -90,7 +90,7 @@ public partial class InitiatorIntegrationTests
     public void Given_ValidActTwoRead_When_InitiatorWritesActThree_Then_KeysShouldBeValid()
     {
         // Arrange
-        var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey, _dhFake);
+        var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey, s_dhFake);
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
         Transport? transport;
         var flags = BindingFlags.Instance | BindingFlags.NonPublic;
@@ -123,7 +123,7 @@ public partial class InitiatorIntegrationTests
     public void Given_InvalidActTwoMessage_When_InitiatorReadsActTwo_Then_Throws(string actTwoInput, string exceptionMessage)
     {
         // Arrange
-        var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey, _dhFake);
+        var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey, s_dhFake);
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
         var inputBytes = GetBytes(actTwoInput);
 

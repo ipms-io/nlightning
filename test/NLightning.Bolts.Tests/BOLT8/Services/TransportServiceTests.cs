@@ -1,5 +1,3 @@
-using NLightning.Bolts.BOLT8.Interfaces;
-
 namespace NLightning.Bolts.Tests.BOLT8.Services;
 
 using System.Net;
@@ -42,7 +40,7 @@ public partial class TransportServiceTests
         tcpListener.Start();
         _ = Task.Run(async () =>
         {
-            TcpClient tcpClient2 = await tcpListener.AcceptTcpClientAsync();
+            var tcpClient2 = await tcpListener.AcceptTcpClientAsync();
             var stream = tcpClient2.GetStream();
             var buffer = new byte[50];
             await stream.ReadExactlyAsync(buffer);
