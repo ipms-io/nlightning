@@ -1,5 +1,11 @@
 # NLightning - A C# dotNet Lightning Implementation
 
+[![CI Build](https://github.com/ipms-io/nlightning/actions/workflows/dotnet.yml/badge.svg)](https://github.com/ipms-io/nlightning/actions/workflows/dotnet.yml)
+&nbsp;
+[![GitHub](https://img.shields.io/badge/GitHub-ipms--io/nlightning-informational?style=flat&logo=github)](https://github.com/ipms-io/nlightning)
+&nbsp;
+![.NET 8.0](https://img.shields.io/badge/Version-.NET%208.0-informational?style=flat&logo=dotnet)
+
 Welcome to the C# implementation of the Lightning Network!
 
 This project aims to provide a robust and efficient implementation of the Lightning Network protocol in C#. We adhere to the Basis of Lightning Technology (BOLT) specifications to ensure compatibility with other Lightning Network implementations.
@@ -21,7 +27,7 @@ This project aims to provide a robust and efficient implementation of the Lightn
 - [ ] BOLT 4: Onion Routing Protocol
 - [ ] BOLT 5: Recommendations for On-chain Transaction Handling
 - [ ] BOLT 7: P2P Node and Channel Discovery
-- [ ] BOLT 8: Encrypted and Authenticated Transport
+- [x] BOLT 8: Encrypted and Authenticated Transport
 - [ ] BOLT 9: Assigned Feature Flags
 - [ ] BOLT 10: DNS Bootstrap and Assisted Node Location
 - [ ] BOLT 11: Invoice Protocol for Lightning Payments

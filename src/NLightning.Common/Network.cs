@@ -1,6 +1,6 @@
 namespace NLightning.Common;
 
-public class Network(string name)
+public sealed class Network(string name)
 {
     public static readonly Network MainNet = new("mainnet");
     public static readonly Network TestNet = new("testnet");

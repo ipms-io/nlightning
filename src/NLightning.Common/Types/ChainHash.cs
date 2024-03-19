@@ -2,7 +2,7 @@ namespace NLightning.Common;
 
 public readonly struct ChainHash
 {
-    private readonly byte[] Value;
+    private readonly byte[] _value;
 
     public ChainHash(byte[] value)
     {
@@ -11,12 +11,12 @@ public readonly struct ChainHash
             throw new ArgumentException("ChainHash must be 32 bytes", nameof(value));
         }
 
-        Value = value;
+        _value = value;
     }
 
     public readonly bool Equals(ChainHash other)
     {
-        return Value.SequenceEqual(other.Value);
+        return _value.SequenceEqual(other._value);
     }
 
     public override readonly bool Equals(object? obj)
@@ -31,10 +31,10 @@ public readonly struct ChainHash
 
     public override readonly int GetHashCode()
     {
-        return BitConverter.ToInt32(Value, 0);
+        return BitConverter.ToInt32(_value, 0);
     }
 
-    public static implicit operator byte[](ChainHash c) => c.Value;
+    public static implicit operator byte[](ChainHash c) => c._value;
     public static implicit operator ChainHash(byte[] value) => new(value);
 
     public static bool operator ==(ChainHash left, ChainHash right)

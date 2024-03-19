@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NLightning.Common\NLightning.Common.csproj" />
+    <ProjectReference Include="..\NLightning.Bolts\NLightning.Bolts.csproj" />
   </ItemGroup>
 
 </Project>
