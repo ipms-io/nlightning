@@ -8,9 +8,6 @@ internal class FakeFixedKeyDh(byte[] privateKey) : IDh
 {
     private readonly Secp256k1 _dh = new();
 
-    public int PrivLen => _dh.PrivLen;
-    public int PubLen => _dh.PubLen;
-
     public KeyPair GenerateKeyPair()
     {
         return _dh.GenerateKeyPair(privateKey);

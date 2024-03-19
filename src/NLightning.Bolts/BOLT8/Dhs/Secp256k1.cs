@@ -1,5 +1,6 @@
 namespace NLightning.Bolts.BOLT8.Dhs;
 
+using Constants;
 using Hashes;
 using Interfaces;
 using Primitives;
@@ -10,9 +11,6 @@ using Primitives;
 /// </summary>
 internal sealed class Secp256k1 : IDh
 {
-    public int PrivLen => 32; // Size of PrivateKey for Bitcoin
-    public int PubLen => 33; // Size of PubKey for Bitcoin
-
     /// <inheritdoc/>
     /// <param name="k">Private Key</param>
     /// <param name="rk">Remote Static PubKey</param>
@@ -39,7 +37,7 @@ internal sealed class Secp256k1 : IDh
     /// <inheritdoc/>
     public KeyPair GenerateKeyPair(ReadOnlySpan<byte> privateKey)
     {
-        if (privateKey.Length != PrivLen)
+        if (privateKey.Length != DhConstants.PRIVKEY_LEN)
         {
             throw new ArgumentException("Invalid private key length");
         }

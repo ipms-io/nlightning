@@ -19,14 +19,6 @@ internal sealed class MessagePattern
         Tokens = tokens;
     }
 
-    internal MessagePattern(IEnumerable<Token> tokens)
-    {
-        Debug.Assert(tokens != null);
-        Debug.Assert(tokens.Any());
-
-        Tokens = tokens;
-    }
-
     /// <summary>
     /// Gets the tokens of the message pattern.
     /// </summary>
