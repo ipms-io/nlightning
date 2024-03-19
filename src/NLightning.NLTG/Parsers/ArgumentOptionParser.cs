@@ -1,5 +1,6 @@
 using CommandLine;
 using CommandLine.Text;
+using NLightning.Common;
 using Serilog;
 
 namespace NLightning.NLTG.Parsers;
