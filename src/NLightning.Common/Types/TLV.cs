@@ -14,6 +14,9 @@ public sealed class TLV(BigSize type, BigSize length, byte[] value) : IEquatable
     public BigSize Length { get; set; } = length;
     public byte[] Value { get; set; } = value;
 
+    public TLV(BigSize type, byte[] value) : this(type, value.Length, value)
+    { }
+
     public byte[] Serialize()
     {
         try

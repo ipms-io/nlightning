@@ -2,10 +2,31 @@
 
 using Base;
 using Types;
+using Common.Constants;
 
-public sealed class InitMessage(byte[] globalFeatures, byte[] localFeatures) : BaseMessage<InitData>
+public sealed class InitMessage : BaseMessage<InitPayload>
 {
     public override ushort MessageType => 16;
 
-    public override InitData? Data => throw new NotImplementedException();
+    public override InitPayload? Payload { get; set; }
+
+    public override TLVStream? Extension { get; set; } = new();
+
+    public override Func<BinaryReader, InitPayload> PayloadFactory => InitPayload.Deserialize;
+
+    public InitMessage(byte[] globalFeatures, byte[] localFeatures)
+    {
+        Payload = new(globalFeatures, localFeatures);
+        Extension = new();
+
+        // using main for now
+        Extension.Add(new(new BigSize(1), ChainConstants.Main));
+    }
+    public InitMessage()
+    { }
+
+    public static InitMessage FromReader(BinaryReader reader)
+    {
+        return FromReader<InitMessage>(reader);
+    }
 }
