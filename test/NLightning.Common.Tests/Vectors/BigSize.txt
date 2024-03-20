@@ -1,0 +1,89 @@
+# zero
+Value: 0
+Bytes: 00
+Error: 
+
+# one byte high
+Value: 252
+Bytes: fc
+Error: 
+
+# two byte low
+Value: 253
+Bytes: fd00fd
+Error: 
+
+# two byte high
+Value: 65535
+Bytes: fdffff
+Error: 
+
+# four byte low
+Value: 65536
+Bytes: fe00010000
+Error: 
+
+# four byte high
+Value: 4294967295
+Bytes: feffffffff
+Error: 
+
+# eight byte low
+Value: 4294967296
+Bytes: ff0000000100000000
+Error: 
+
+# eight byte high
+Value: 18446744073709551615
+Bytes: ffffffffffffffffff
+Error: 
+
+# two byte not canonical
+# Value: 0
+# Bytes: fd00fc
+# Error: decoded bigsize is not canonical
+
+# four byte not canonical
+# Value: 0
+# Bytes: fe0000ffff
+# Error: decoded bigsize is not canonical
+
+# eight byte not canonical
+# Value: 0
+# Bytes: ff00000000ffffffff
+# Error: decoded bigsize is not canonical
+
+# two byte short read
+Value: 0
+Bytes: fd00
+Error: BigSize cannot be read from a stream with insufficient data.
+
+# four byte short read
+Value: 0
+Bytes: feffff
+Error: BigSize cannot be read from a stream with insufficient data.
+
+# eight byte short read
+Value: 0
+Bytes: ffffffffff
+Error: BigSize cannot be read from a stream with insufficient data.
+
+# one byte no read
+Value: 0
+Bytes: 
+Error: BigSize cannot be read from an empty stream.
+
+# two byte no read
+Value: 0
+Bytes: fd
+Error: BigSize cannot be read from a stream with insufficient data.
+
+# four byte no read
+Value: 0
+Bytes: fe
+Error: BigSize cannot be read from a stream with insufficient data.
+
+# eight byte no read
+Value: 0
+Bytes: ff
+Error: BigSize cannot be read from a stream with insufficient data.
