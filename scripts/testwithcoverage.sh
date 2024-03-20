@@ -9,6 +9,9 @@ directories=(
   "/test/NLightning.Common.Tests"
 )
 
+# Delete coverage directory
+rm -rf $root_dir/coverage
+
 # Loop over directories and run tests
 for directory in "${directories[@]}"
 do
