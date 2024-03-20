@@ -19,12 +19,20 @@ public partial class TransportServiceTests
             if (steps == 2)
             {
                 steps--;
+                if (inMessage.Length != 50 && inMessage.Length != 0)
+                {
+                    throw new InvalidOperationException("Expected 50 bytes");
+                }
                 outMessage = new byte[50];
                 return 50;
             }
             else if (steps == 1)
             {
                 steps--;
+                if (inMessage.Length != 50 && inMessage.Length != 66 && inMessage.Length != 0)
+                {
+                    throw new InvalidOperationException("Expected 66 bytes");
+                }
                 outMessage = new byte[66];
 
                 handshakeServiceMock.Object.SetTransport(new FakeTransport());
