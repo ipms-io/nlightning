@@ -17,5 +17,5 @@ for directory in "${directories[@]}"
 do
   echo "Running tests in $directory"
   cd $root_dir/$directory
-  dotnet test --settings coverlet.runsettings --collect:"XPlat Code Coverage" --no-build --verbosity normal --results-directory $root_dir/coverage
+  dotnet test --settings coverlet.runsettings --collect:"XPlat Code Coverage" --no-build --verbosity normal --results-directory $root_dir/coverage -l "console;verbosity=detailed" --logger "trx;LogFileName=test-results.trx"
 done
