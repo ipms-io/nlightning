@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install xmlstarlet
-      run: sudo apt-get install -y xmlstarlet
+      run: sudo apt-get update && sudo apt-get install -y xmlstarlet
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
@@ -30,7 +30,7 @@ jobs:
     - name: Test
       run: ./scripts/testwithcoverage.sh
     - name: Filter coverage reports to remove empty packages
-      run: find ./coverage -name 'coverage.cobertura.xml' -exec xmlstarlet ed -L -d "//package[classes='']" {} \;
+      run: find ./coverage -name 'coverage.cobertura.xml' -exec xmlstarlet ed -L -d "//package[not(classes/class)]" {} \;
     - name: Code Coverage Report
       uses: irongut/CodeCoverageSummary@v1.3.0
       with:
