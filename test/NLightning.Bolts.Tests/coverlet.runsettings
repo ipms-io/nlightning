@@ -5,9 +5,8 @@
             <DataCollector friendlyName="XPlat code coverage">
                 <Configuration>
                     <Format>cobertura</Format>
-                    <Include>
-                        <ModulePath>NLightning.Bolts.*</ModulePath>
-                    </Include>
+                    <Include>[*]NLightning.Bolts*</Include>
+                    <Exclude>[*]NLightning.Common*</Exclude>
                 </Configuration>
             </DataCollector>
         </DataCollectors>
