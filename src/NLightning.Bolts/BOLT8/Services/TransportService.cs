@@ -52,7 +52,7 @@ public sealed class TransportService : ITransportService
             await stream.WriteAsync(writeBuffer.AsMemory()[..len]);
 
             // Read exactly 50 bytes
-            byte[] readBuffer = [50];
+            var readBuffer = new byte[50];
             await stream.ReadExactlyAsync(readBuffer);
 
             // Read Act Two and Write Act Three
@@ -63,7 +63,7 @@ public sealed class TransportService : ITransportService
         else
         {
             // Read exactly 50 bytes
-            byte[] readBuffer = [50];
+            var readBuffer = new byte[50];
             await stream.ReadExactlyAsync(readBuffer);
 
             // Read Act One and Write Act Two
