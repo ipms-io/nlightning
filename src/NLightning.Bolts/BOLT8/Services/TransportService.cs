@@ -2,9 +2,9 @@ using System.Net.Sockets;
 
 namespace NLightning.Bolts.BOLT8.Services;
 
-using Common.Interfaces;
 using Constants;
 using Interfaces;
+using Bolts.Interfaces;
 using static Common.Utils.Exceptions;
 
 public sealed class TransportService : ITransportService
@@ -95,7 +95,7 @@ public sealed class TransportService : ITransportService
         _handshakeService = null;
     }
 
-    public void WriteMessage(IMessage message)
+    public void WriteMessage<PayloadType>(IMessage<PayloadType> message) where PayloadType : IMessagePayload
     {
         ThrowIfDisposed(_disposed, nameof(TransportService));
         if (_transport == null)
