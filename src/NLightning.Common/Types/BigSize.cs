@@ -6,6 +6,10 @@ using Utils;
 /// Represents a variable length integer.
 /// </summary>
 /// <param name="value">The value of the big size.</param>
+/// <remarks>
+/// Initializes a new instance of the <see cref="BigSize"/> struct.
+/// </remarks>
+/// <param name="value">The value of the big size.</param>
 public readonly struct BigSize(ulong value)
 {
     /// <summary>
@@ -95,10 +99,9 @@ public readonly struct BigSize(ulong value)
     #endregion
 
     #region Implicit Conversions
-    public static implicit operator ulong(BigSize bigSize)
-    {
-        return bigSize.Value;
-    }
+    public static implicit operator ulong(BigSize bigSize) => bigSize.Value;
+    public static implicit operator BigSize(ulong value) => new(value);
+
     public static implicit operator long(BigSize bigSize)
     {
         if (bigSize.Value > long.MaxValue)
@@ -108,6 +111,16 @@ public readonly struct BigSize(ulong value)
 
         return (long)bigSize.Value;
     }
+    public static implicit operator BigSize(long value)
+    {
+        if (value < 0)
+        {
+            throw new OverflowException($"Cannot convert {value} to BigSize because it's negative.");
+        }
+
+        return new BigSize((ulong)value);
+    }
+
     public static implicit operator uint(BigSize bigSize)
     {
         if (bigSize.Value > uint.MaxValue)
@@ -116,6 +129,8 @@ public readonly struct BigSize(ulong value)
         }
         return (uint)bigSize.Value;
     }
+    public static implicit operator BigSize(uint value) => new(value);
+
     public static implicit operator int(BigSize bigSize)
     {
         if (bigSize.Value > int.MaxValue)
@@ -124,6 +139,15 @@ public readonly struct BigSize(ulong value)
         }
         return (int)bigSize.Value;
     }
+    public static implicit operator BigSize(int value)
+    {
+        if (value < 0)
+        {
+            throw new OverflowException($"Cannot convert {value} to BigSize because it's negative.");
+        }
+        return new BigSize((ulong)value);
+    }
+
     public static implicit operator ushort(BigSize bigSize)
     {
         if (bigSize.Value > ushort.MaxValue)
@@ -132,6 +156,8 @@ public readonly struct BigSize(ulong value)
         }
         return (ushort)bigSize.Value;
     }
+    public static implicit operator BigSize(ushort value) => new(value);
+
     public static implicit operator short(BigSize bigSize)
     {
         if (bigSize.Value > (ulong)short.MaxValue)
@@ -140,6 +166,15 @@ public readonly struct BigSize(ulong value)
         }
         return (short)bigSize.Value;
     }
+    public static implicit operator BigSize(short value)
+    {
+        if (value < 0)
+        {
+            throw new OverflowException($"Cannot convert {value} to BigSize because it's negative.");
+        }
+        return new BigSize((ulong)value);
+    }
+
     public static implicit operator byte(BigSize bigSize)
     {
         if (bigSize.Value > byte.MaxValue)
@@ -148,6 +183,7 @@ public readonly struct BigSize(ulong value)
         }
         return (byte)bigSize.Value;
     }
+    public static implicit operator BigSize(byte value) => new(value);
     #endregion
 
     #region Equality

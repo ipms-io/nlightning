@@ -163,25 +163,25 @@ public partial class BigSizeTests
         switch (type)
         {
             case Type ulongType when ulongType == typeof(ulong):
-                Assert.Equal(value, bigSize);
+                Assert.Equal(value, (ulong)bigSize);
                 break;
             case Type longType when longType == typeof(long):
-                Assert.Equal((long)value, bigSize);
+                Assert.Equal((long)value, (long)bigSize);
                 break;
             case Type uintType when uintType == typeof(uint):
-                Assert.Equal((uint)value, bigSize);
+                Assert.Equal((uint)value, (uint)bigSize);
                 break;
             case Type intType when intType == typeof(int):
-                Assert.Equal((int)value, bigSize);
+                Assert.Equal((int)value, (int)bigSize);
                 break;
             case Type ushortType when ushortType == typeof(ushort):
-                Assert.Equal((ushort)value, bigSize);
+                Assert.Equal((ushort)value, (ushort)bigSize);
                 break;
             case Type shortType when shortType == typeof(short):
-                Assert.Equal((short)value, bigSize);
+                Assert.Equal((short)value, (short)bigSize);
                 break;
             case Type byteType when byteType == typeof(byte):
-                Assert.Equal((byte)value, bigSize);
+                Assert.Equal((byte)value, (byte)bigSize);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(type), type, null);

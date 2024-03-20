@@ -11,20 +11,19 @@ using System.Runtime.Serialization;
 public abstract class BaseMessage<PayloadType> : IMessage<PayloadType> where PayloadType : IMessagePayload
 {
     public abstract ushort MessageType { get; }
-    public abstract PayloadType? Data { get; }
-    public TLVStream? Extension { get; set; }
+    public abstract PayloadType? Payload { get; set; }
+    public abstract TLVStream? Extension { get; set; }
+    public abstract Func<BinaryReader, PayloadType> PayloadFactory { get; }
+
+    protected BaseMessage() { }
 
     /// <summary>
-    /// Serialize the message
+    /// Serialize the message to a writer
     /// </summary>
-    /// <returns>The serialized message</returns>
-    public byte[] Serialize()
+    public virtual void ToWriter(BinaryWriter writer)
     {
-        using var stream = new MemoryStream();
-        using var writer = new BinaryWriter(stream);
-
         writer.Write(EndianBitConverter.GetBytesBE(MessageType));
-        writer.Write(Data?.Serialize() ?? []);
+        Payload?.ToWriter(writer);
 
         if (Extension?.Any() ?? false)
         {
@@ -32,25 +31,28 @@ public abstract class BaseMessage<PayloadType> : IMessage<PayloadType> where Pay
                      .ToList()  // Convert to list
                      .ForEach(tlv => writer.Write(tlv.Serialize()));
         }
+    }
 
+    public virtual byte[] Serialize()
+    {
+        using var stream = new MemoryStream();
+        using var writer = new BinaryWriter(stream);
+        ToWriter(writer);
         return stream.ToArray();
     }
 
     /// <summary>
-    /// Deserialize the message
+    /// Deserialize the message from a reader
     /// </summary>
-    /// <param name="data">The serialized message</param>
+    /// <param name="reader">The reader to deserialize from</param>
     /// <exception cref="SerializationException">Thrown when the message type is invalid</exception>
     /// <exception cref="SerializationException">Thrown when the payload cannot be deserialized</exception>
-    public void Deserialize(byte[] data)
+    protected static MessageType FromReader<MessageType>(BinaryReader reader)
+        where MessageType : BaseMessage<PayloadType>, new()
     {
-        // Create a reader
-        using var stream = new MemoryStream(data);
-        using var reader = new BinaryReader(stream);
-
+        var message = new MessageType();
         // Read the message type
-        var messageType = EndianBitConverter.ToUInt16BE(reader.ReadBytes(2));
-        if (messageType != MessageType)
+        if (message.MessageType != EndianBitConverter.ToUInt16BE(reader.ReadBytes(2)))
         {
             throw new SerializationException("Invalid message type");
         }
@@ -58,10 +60,12 @@ public abstract class BaseMessage<PayloadType> : IMessage<PayloadType> where Pay
         try
         {
             // Read the payload
-            Data?.Deserialize(reader);
+            message.Payload = message.PayloadFactory(reader);
 
             // Read the TLVStream
-            Extension = TLVStream.Deserialize(reader);
+            message.Extension = TLVStream.Deserialize(reader);
+
+            return message;
         }
         catch (SerializationException e)
         {

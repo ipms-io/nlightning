@@ -2,6 +2,5 @@ namespace NLightning.Bolts.Interfaces;
 
 public interface IMessagePayload
 {
-    byte[] Serialize();
-    void Deserialize(BinaryReader data);
+    void ToWriter(BinaryWriter writer);
 }
