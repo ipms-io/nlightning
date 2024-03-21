@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
 [Collection("postgres")]
-public class PostgresTests 
+public class PostgresTests
 {
     private readonly PostgresFixture _postgresFixture;
 
