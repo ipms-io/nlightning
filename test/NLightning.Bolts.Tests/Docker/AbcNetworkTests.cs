@@ -7,7 +7,6 @@ using Docker.DotNet.Models;
 using Lnrpc;
 using LNUnit.Setup;
 using NLightning.Bolts.BOLT8.Services;
-using NLightning.Bolts.BOLT8.States;
 using NLightning.Bolts.Tests.BOLT8.Utils;
 using NLightning.Bolts.Tests.Utils;
 using ServiceStack;
@@ -16,32 +15,33 @@ using Xunit.Abstractions;
 
 namespace NLightning.Bolts.Tests.Docker;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class LightningRegtestNetworkFixture : IDisposable
 {
-    public readonly DockerClient Client = new DockerClientConfiguration().CreateClient();
+    private readonly DockerClient _client = new DockerClientConfiguration().CreateClient();
 
     public LightningRegtestNetworkFixture()
     {
         SetupNetwork().Wait();
     }
 
-    public LNUnitBuilder Builder { get; private set; }
+    public LNUnitBuilder? Builder { get; private set; }
 
     public void Dispose()
     {
-        Builder.Destroy();
-        Client.Dispose();
+        Builder?.Destroy();
+        _client.Dispose();
     }
 
-    public async Task SetupNetwork()
+    private async Task SetupNetwork()
     {
         RemoveContainer("miner");
         RemoveContainer("alice");
         RemoveContainer("bob");
         RemoveContainer("carol");
 
-        await Client.CreateDockerImageFromPath("../../../../Docker/custom_lnd",
-            new List<string> { "custom_lnd", "custom_lnd:latest" });
+        await _client.CreateDockerImageFromPath("../../../../Docker/custom_lnd",
+            ["custom_lnd", "custom_lnd:latest"]);
         Builder = new LNUnitBuilder();
 
         Builder.AddBitcoinCoreNode();
@@ -84,7 +84,7 @@ public class LightningRegtestNetworkFixture : IDisposable
     {
         try
         {
-            Client.Containers.RemoveContainerAsync(name,
+            _client.Containers.RemoveContainerAsync(name,
                 new ContainerRemoveParameters { Force = true, RemoveVolumes = true }).Wait();
         }
         catch
@@ -94,15 +94,13 @@ public class LightningRegtestNetworkFixture : IDisposable
     }
 }
 
-public class ABCNetworkTests : IClassFixture<LightningRegtestNetworkFixture>
+public class AbcNetworkTests : IClassFixture<LightningRegtestNetworkFixture>
 {
-    private readonly DockerClient _client;
     private readonly LightningRegtestNetworkFixture _lightningRegtestNetworkFixture;
 
-    public ABCNetworkTests(LightningRegtestNetworkFixture f, ITestOutputHelper output)
+    public AbcNetworkTests(LightningRegtestNetworkFixture f, ITestOutputHelper output)
     {
         _lightningRegtestNetworkFixture = f;
-        _client = f.Client;
         Console.SetOut(new TestOutputWriter(output));
     }
 
@@ -110,14 +108,11 @@ public class ABCNetworkTests : IClassFixture<LightningRegtestNetworkFixture>
     [Fact]
     public async Task NLightning_BOLT8_Test_Connect_Alice()
     {
-        var alice = _lightningRegtestNetworkFixture.Builder.LNDNodePool.ReadyNodes.First(x => x.LocalAlias == "alice");
-
-        var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey,
-            InitiatorValidKeysUtil.RemoteStaticPublicKey);
-
+        var alice = _lightningRegtestNetworkFixture.Builder?.LNDNodePool?.ReadyNodes.First(x => x.LocalAlias == "alice");
+        Assert.NotNull(alice);
         var tcpClient1 = new TcpClient();
-        tcpClient1.Connect(
-            new IPEndPoint(Dns.GetHostAddresses(alice.Host.SplitOnFirst("//")[1].SplitOnFirst(":")[0]).First(), 9735));
+        await tcpClient1.ConnectAsync(
+            new IPEndPoint((await Dns.GetHostAddressesAsync(alice.Host.SplitOnFirst("//")[1].SplitOnFirst(":")[0])).First(), 9735));
 
         var handshakeService = new HandshakeService(true,
             InitiatorValidKeysUtil.EphemeralPrivateKey,
@@ -133,12 +128,13 @@ public class ABCNetworkTests : IClassFixture<LightningRegtestNetworkFixture>
     }
 
     [Fact]
-    public async Task VerifyABCNetworkSetup()
+    public async Task Verify_Alice_Bob_Carol_Setup()
     {
-        var nodeCount = _lightningRegtestNetworkFixture.Builder.LNDNodePool?.ReadyNodes.Count();
-        Assert.Equal(nodeCount, 3);
+        var readyNodes = _lightningRegtestNetworkFixture.Builder!.LNDNodePool!.ReadyNodes.ToImmutableList();
+        var nodeCount = readyNodes.Count();
+        Assert.Equal(3, nodeCount);
         $"LND Nodes in Ready State: {nodeCount}".Print();
-        foreach (var node in _lightningRegtestNetworkFixture.Builder.LNDNodePool?.ReadyNodes.ToImmutableList())
+        foreach (var node in readyNodes)
         {
             var walletBalanceResponse = await node.LightningClient.WalletBalanceAsync(new WalletBalanceRequest());
             var channels = await node.LightningClient.ListChannelsAsync(new ListChannelsRequest());
@@ -147,7 +143,7 @@ public class ABCNetworkTests : IClassFixture<LightningRegtestNetworkFixture>
             channels.PrintDump();
         }
 
-        $"Bitcoin Node Balance: {_lightningRegtestNetworkFixture.Builder.BitcoinRpcClient?.GetBalance().Satoshi / 1e8}"
+        $"Bitcoin Node Balance: {(await _lightningRegtestNetworkFixture.Builder!.BitcoinRpcClient!.GetBalanceAsync()).Satoshi / 1e8}"
             .Print();
     }
 }
