@@ -70,7 +70,7 @@ public partial class TransportServiceTests
     }
 
     [Fact]
-    public void Given_TransportServiceAsInitiator_When_InitializeIsCalledAndTcpClinetIsDisconnected_Then_ThrowsInvalidOperationException()
+    public async Task Given_TransportServiceAsInitiator_When_InitializeIsCalledAndTcpClinetIsDisconnected_Then_ThrowsInvalidOperationException()
     {
         // Arrange
         var handshakeServiceMock = new Mock<FakeHandshakeService>();
@@ -78,9 +78,9 @@ public partial class TransportServiceTests
         var transportService = new TransportService(handshakeServiceMock.Object, tcpClient1);
 
         // Act
-        var exception = Assert.ThrowsAnyAsync<InvalidOperationException>(() => transportService.Initialize());
+        var exception = await Assert.ThrowsAnyAsync<InvalidOperationException>(() => transportService.Initialize());
 
         // Assert
-        Assert.Equal("TcpClient is not connected", exception.Result.Message);
+        Assert.Equal("TcpClient is not connected", exception.Message);
     }
 }
