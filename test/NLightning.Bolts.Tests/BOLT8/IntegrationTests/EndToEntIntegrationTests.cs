@@ -9,6 +9,7 @@ namespace NLightning.Bolts.Tests.BOLT8.IntegrationTests;
 
 public partial class EndToEntIntegrationTests
 {
+    
     [Fact]
     public void Given_TwoParties_When_HandshakeEnds_Then_KeysMatch()
     {
