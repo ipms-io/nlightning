@@ -12,27 +12,6 @@ using NLightning.Bolts.BOLT8.Services;
 
 public partial class TransportServiceTests
 {
-    
-    [Fact]
-    public async Task Remote()
-    {
-        var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey);
-
-        var tcpClient1 = new TcpClient();
-        tcpClient1.Connect(new IPEndPoint(Dns.GetHostAddresses("btcpay.xenon.fun").First(),9735 ));
-
-        var handshakeService = new HandshakeService(true, InitiatorValidKeysUtil.EphemeralPrivateKey,
-       Convert.FromHexString("03f80288f858251aed6f70142fab79dede5427a0ff4b618707bd0a616527a8cec7"));
-        
-        var transportService = new TransportService(handshakeService, tcpClient1);
-        transportService.MessageReceived += (sender, bytes) =>
-        {
-            Debug.Print(Convert.ToHexString(bytes));
-        };
-        await transportService.Initialize();
-        await Task.Delay(1000);
-    }
-
     [Fact]
     public async void Given_TransportServiceAsInitiator_When_InitializeIsCalled_Then_HandshakeServicePerformStepIsCalledTwice()
     {
