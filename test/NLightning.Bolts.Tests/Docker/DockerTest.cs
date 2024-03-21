@@ -9,34 +9,19 @@ using Xunit.Abstractions;
 
 namespace NLightning.Bolts.Tests.Docker;
 
-public class DockerFixture : IDisposable
+public class LightningRegtestNetworkFixture : IDisposable
 {
     public readonly DockerClient Client = new DockerClientConfiguration().CreateClient();
 
-    public void Dispose()
-    {
-        Client.Dispose();
-    }
-}
-
-public class DockerTest : IClassFixture<DockerFixture>
-{
-    private readonly DockerClient _client;
-    private readonly Random _random = new();
-
-    private bool _sampleImagePulled;
-
-    public DockerTest(DockerFixture f, ITestOutputHelper output)
-    {
-        _client = f.Client;
-        Console.SetOut(new TestOutputWriter(output));
+    public LightningRegtestNetworkFixture()
+    { 
     }
 
     private void RemoveContainer(string name)
     {
         try
         {
-            _client.Containers.RemoveContainerAsync(name,
+            Client.Containers.RemoveContainerAsync(name,
                 new ContainerRemoveParameters { Force = true, RemoveVolumes = true }).Wait();
         }
         catch
@@ -45,14 +30,17 @@ public class DockerTest : IClassFixture<DockerFixture>
         }
     }
 
-    [Fact]
-    public async Task SetupBitcoinNode()
+    public void DestoryBitcoinNode()
     {
+        RemoveContainer("btc_0");
+    }
+    public async Task SetupBitcoinNode()
+    { 
         RemoveContainer("btc_0"); //cleanup prior crud
         var image = "polarlightning/bitcoind";
         var tag = "26.0";
-        await _client.PullImageAndWaitForCompleted(image, tag);
-        var nodeContainer = await _client.Containers.CreateContainerAsync(new CreateContainerParameters
+        await Client.PullImageAndWaitForCompleted(image, tag);
+        var nodeContainer = await Client.Containers.CreateContainerAsync(new CreateContainerParameters
         {
             Image = $"{image}:{tag}",
             HostConfig = new HostConfig
@@ -86,10 +74,10 @@ public class DockerTest : IClassFixture<DockerFixture>
         });
         var dockerContainerId = nodeContainer.ID;
         var success =
-            await _client.Containers.StartContainerAsync(nodeContainer.ID, new ContainerStartParameters());
+            await Client.Containers.StartContainerAsync(nodeContainer.ID, new ContainerStartParameters());
         await Task.Delay(500);
         //Setup wallet and basic funds
-        var listContainers = await _client.Containers.ListContainersAsync(new ContainersListParameters());
+        var listContainers = await Client.Containers.ListContainersAsync(new ContainersListParameters());
         var bitcoinNode = listContainers.First(x => x.ID == nodeContainer.ID);
         var bitcoinRpcClient = new RPCClient("bitcoin:bitcoin",
             bitcoinNode.NetworkSettings.Networks.First().Value.IPAddress, Bitcoin.Instance.Regtest);
@@ -100,7 +88,48 @@ public class DockerTest : IClassFixture<DockerFixture>
         var balance = await bitcoinRpcClient.GetBalanceAsync();
         $"Running on Container Id: {dockerContainerId}".Print();
         $"Bitcoin Balance: {balance.Satoshi / 1e8} BTC".Print();
-        RemoveContainer("btc_0");
+    }
+    
+    public void Dispose()
+    {
+        DestoryBitcoinNode();
+        Client.Dispose();
+    }
+}
+
+public class DockerTest : IClassFixture<LightningRegtestNetworkFixture>
+{
+    private readonly DockerClient _client;
+    private readonly Random _random = new();
+
+    private bool _sampleImagePulled;
+    private readonly LightningRegtestNetworkFixture _lightningRegtestNetworkFixture;
+
+    public DockerTest(LightningRegtestNetworkFixture f, ITestOutputHelper output)
+    {
+        _lightningRegtestNetworkFixture = f; 
+        _client = f.Client; 
+        Console.SetOut(new TestOutputWriter(output));
+    }
+
+    private void RemoveContainer(string name)
+    {
+        try
+        {
+            _client.Containers.RemoveContainerAsync(name,
+                new ContainerRemoveParameters { Force = true, RemoveVolumes = true }).Wait();
+        }
+        catch
+        {
+            // ignored
+        }
+    }
+
+    [Fact]
+    public async Task SetupBitcoinNode()
+    {
+        await _lightningRegtestNetworkFixture.SetupBitcoinNode();
+        _lightningRegtestNetworkFixture.DestoryBitcoinNode();
     }
 
     [Fact]
@@ -169,14 +198,11 @@ public class DockerTest : IClassFixture<DockerFixture>
         return Convert.ToHexString(b);
     }
 
-
-    //  [Fact]
-    // // [Category("Docker")]
-    //  public async Task BuildDockerImage()
-    //  {
-    //      await _client.CreateDockerImageFromPath("./../../../../Docker/", new List<string> {"polar_lnd_0_16_1_test"});
-    //  }
-
+     [Fact] 
+     public async Task BuildDockerImage()
+     { 
+         await _client.CreateDockerImageFromPath("../../../../Docker/custom_lnd", new List<string> {"custom_lnd"});
+     }
 
     [Fact]
     public async Task DetectGitlabRunner()
