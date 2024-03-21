@@ -4,33 +4,30 @@ using Docker.DotNet;
 using Docker.DotNet.Models;
 namespace NLightning.Bolts.Tests.Docker;
  
-public class SomeFixture : IDisposable
+public class DockerFixture : IDisposable
 {
-    public SomeFixture()
+    public readonly DockerClient Client = new DockerClientConfiguration().CreateClient();
+    
+    public DockerFixture()
     {
-        Console.WriteLine("SomeFixture ctor: This should only be run once");
+        //We use this image for tests
+        Client.PullImageAndWaitForCompleted("redis", "5.0").Wait();
     }
-
-    public void SomeMethod()
-    {
-        Console.WriteLine("SomeFixture::SomeMethod()");
-    }
-
     public void Dispose()
     {
-        Console.WriteLine("SomeFixture: Disposing SomeFixture");
+        Client.Dispose();
     }
 }
-public class DockerTest: IClassFixture<SomeFixture>, IDisposable
+public class DockerTest: IClassFixture<DockerFixture> 
 {
-    private readonly DockerClient _client = new DockerClientConfiguration().CreateClient();
     private readonly Random _random = new();
 
     private bool _sampleImagePulled;
+    private readonly DockerClient _client;
 
-    public void SetFixture(SomeFixture f)
+    public DockerTest(DockerFixture f)
     {
-        PullRedis5().Wait();
+        _client = f.Client;
     }
     
     private void ResetContainer(string name)
