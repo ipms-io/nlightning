@@ -1,7 +1,6 @@
-using NLightning.Bolts.BOLT8.Services;
-
 namespace NLightning.Bolts.Tests.BOLT8.Services;
 
+using Bolts.BOLT8.Services;
 using Mock;
 using Utils;
 

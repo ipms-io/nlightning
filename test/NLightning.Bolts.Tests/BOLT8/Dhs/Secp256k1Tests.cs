@@ -1,6 +1,6 @@
-using NLightning.Bolts.BOLT8.Dhs;
-
 namespace NLightning.Bolts.Tests.BOLT8.Dhs;
+
+using Bolts.BOLT8.Dhs;
 
 public partial class Secp256k1Tests
 {

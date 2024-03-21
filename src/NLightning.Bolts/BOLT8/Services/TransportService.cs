@@ -2,9 +2,9 @@ using System.Net.Sockets;
 
 namespace NLightning.Bolts.BOLT8.Services;
 
-using Interfaces;
-using Constants;
 using Common.Interfaces;
+using Constants;
+using Interfaces;
 using static Common.Utils.Exceptions;
 
 public sealed class TransportService : ITransportService

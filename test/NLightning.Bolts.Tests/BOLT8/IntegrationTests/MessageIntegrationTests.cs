@@ -1,8 +1,9 @@
 using System.Text;
-using NLightning.Bolts.BOLT8.Constants;
-using NLightning.Bolts.Tests.BOLT8.Utils;
 
 namespace NLightning.Bolts.Tests.BOLT8.IntegrationTests;
+
+using Bolts.BOLT8.Constants;
+using Utils;
 
 public partial class MessageIntegrationTests
 {

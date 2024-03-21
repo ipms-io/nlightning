@@ -1,7 +1,7 @@
-using NLightning.Bolts.BOLT8.Interfaces;
-using NLightning.Bolts.BOLT8.Primitives;
-
 namespace NLightning.Bolts.Tests.BOLT8.Mock;
+
+using Bolts.BOLT8.Interfaces;
+using Bolts.BOLT8.Primitives;
 
 internal class FakeHandshakeState : IHandshakeState, ITestHandshakeState
 {

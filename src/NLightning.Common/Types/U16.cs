@@ -1,4 +1,4 @@
-﻿namespace NLightning.Common;
+namespace NLightning.Common;
 
 public readonly struct U16(ushort value)
 {
