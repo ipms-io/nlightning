@@ -9,7 +9,7 @@ namespace NLightning.Bolts.Tests.Docker.Fixtures;
 public class PostgresFixture : IDisposable
 {
     private readonly DockerClient _client = new DockerClientConfiguration().CreateClient();
-
+    private const string ContainerName = "postgres";
     public PostgresFixture()
     {
         StartPostgres().Wait();
@@ -20,7 +20,7 @@ public class PostgresFixture : IDisposable
         GC.SuppressFinalize(this);
 
         // Remove containers
-        RemoveContainer("postgres").Wait();
+        RemoveContainer(ContainerName).Wait();
 
         _client.Dispose();
     }
@@ -28,7 +28,7 @@ public class PostgresFixture : IDisposable
     public async Task StartPostgres()
     {
         await _client.PullImageAndWaitForCompleted("postgres", "16.2-alpine");
-        await RemoveContainer("postgres");
+        await RemoveContainer(ContainerName);
         var nodeContainer = await _client.Containers.CreateContainerAsync(new CreateContainerParameters
         {
             Image = $"postgres:16.2-alpine",
@@ -36,8 +36,8 @@ public class PostgresFixture : IDisposable
             {
                 NetworkMode = $"bridge"
             },
-            Name = "postgres",
-            Hostname = "postgres",
+            Name = $"{ContainerName}",
+            Hostname = $"{ContainerName}",
             Env = [
                 "POSTGRES_PASSWORD=superuser",
                 "POSTGRES_USER=superuser",
@@ -62,7 +62,7 @@ public class PostgresFixture : IDisposable
     {
         try
         {
-            var inspect = _client.Containers.InspectContainerAsync("postgres");
+            var inspect = _client.Containers.InspectContainerAsync(ContainerName);
             inspect.Wait();
             return inspect.Result.State.Running;
         }

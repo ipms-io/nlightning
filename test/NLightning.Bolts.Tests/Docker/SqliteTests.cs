@@ -7,7 +7,7 @@ using Fixtures;
 using Utils;
 
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
-public class SqliteTests : IClassFixture<PostgresFixture>
+public class SqliteTests
 {
     public SqliteTests(ITestOutputHelper output)
     {
