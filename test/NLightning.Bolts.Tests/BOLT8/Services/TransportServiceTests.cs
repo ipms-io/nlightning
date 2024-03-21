@@ -1,14 +1,11 @@
-using System.Diagnostics;
-using NLightning.Bolts.BOLT8.States;
-using NLightning.Bolts.Tests.BOLT8.Utils;
+using System.Net;
+using System.Net.Sockets;
 
 namespace NLightning.Bolts.Tests.BOLT8.Services;
 
-using System.Net;
-using System.Net.Sockets;
+using Bolts.BOLT8.Services;
 using Mock;
 using NBitcoin;
-using NLightning.Bolts.BOLT8.Services;
 
 public partial class TransportServiceTests
 {

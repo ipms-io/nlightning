@@ -1,4 +1,4 @@
-﻿using NLightning.Bolts.BOLT8;
+using NLightning.Bolts.BOLT8;
 
 namespace NLightning.Bolts.Tests.BOLT8;
 

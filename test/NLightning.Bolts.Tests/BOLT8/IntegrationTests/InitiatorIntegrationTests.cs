@@ -1,15 +1,16 @@
 using System.Reflection;
 using System.Text;
-using NLightning.Bolts.BOLT8.Constants;
-using NLightning.Bolts.BOLT8.Interfaces;
-using NLightning.Bolts.BOLT8.Primitives;
-using NLightning.Bolts.BOLT8.States;
-using NLightning.Bolts.Tests.BOLT8.Mock;
-using NLightning.Bolts.Tests.BOLT8.Utils;
 
 namespace NLightning.Bolts.Tests.BOLT8.IntegrationTests;
 
-using static TestUtils;
+using Bolts.BOLT8.Constants;
+using Bolts.BOLT8.Interfaces;
+using Bolts.BOLT8.Primitives;
+using Bolts.BOLT8.States;
+using Mock;
+using Utils;
+
+using static Utils.TestUtils;
 
 public partial class InitiatorIntegrationTests
 {

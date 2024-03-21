@@ -1,6 +1,6 @@
-using NLightning.Bolts.BOLT8.Interfaces;
-
 namespace NLightning.Bolts.Tests.BOLT8.Mock;
+
+using Bolts.BOLT8.Interfaces;
 
 internal class FakeHandshakeService : IHandshakeService, ITestHandshakeService
 {

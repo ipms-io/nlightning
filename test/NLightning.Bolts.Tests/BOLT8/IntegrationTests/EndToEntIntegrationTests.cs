@@ -1,15 +1,15 @@
 using System.Reflection;
 using System.Text;
-using NLightning.Bolts.BOLT8.Constants;
-using NLightning.Bolts.BOLT8.Primitives;
-using NLightning.Bolts.BOLT8.States;
-using NLightning.Bolts.Tests.BOLT8.Utils;
 
 namespace NLightning.Bolts.Tests.BOLT8.IntegrationTests;
 
+using Bolts.BOLT8.Constants;
+using Bolts.BOLT8.Primitives;
+using Bolts.BOLT8.States;
+using Utils;
+
 public partial class EndToEntIntegrationTests
 {
-    
     [Fact]
     public void Given_TwoParties_When_HandshakeEnds_Then_KeysMatch()
     {

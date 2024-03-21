@@ -2,8 +2,8 @@ using System.Diagnostics;
 
 namespace NLightning.Bolts.BOLT8.Primitives;
 
-using Hashes;
 using Constants;
+using Hashes;
 
 /// <summary>
 /// HMAC-based Extract-and-Expand Key Derivation Function, defined in

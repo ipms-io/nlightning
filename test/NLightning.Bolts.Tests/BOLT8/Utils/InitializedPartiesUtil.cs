@@ -1,11 +1,12 @@
 using System.Reflection;
 using System.Text;
-using NLightning.Bolts.BOLT8.Constants;
-using NLightning.Bolts.BOLT8.Primitives;
-using NLightning.Bolts.BOLT8.States;
-using NLightning.Bolts.Tests.BOLT8.Mock;
 
 namespace NLightning.Bolts.Tests.BOLT8.Utils;
+
+using Bolts.BOLT8.Constants;
+using Bolts.BOLT8.Primitives;
+using Bolts.BOLT8.States;
+using Mock;
 
 internal sealed class InitializedPartiesUtil
 {
