@@ -63,6 +63,7 @@ public class DockerTest: IClassFixture<SomeFixture>, IDisposable
 //    [Category("Docker")]
     public async Task MakeContainer()
     {
+        await PullRedis5(); 
         var x = await _client.Containers.CreateContainerAsync(new CreateContainerParameters
         {
             Image = "redis:5.0",
