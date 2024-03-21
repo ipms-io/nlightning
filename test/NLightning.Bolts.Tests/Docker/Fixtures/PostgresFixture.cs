@@ -28,6 +28,7 @@ public class PostgresFixture : IDisposable
     public async Task StartPostgres()
     {
         await _client.PullImageAndWaitForCompleted("postgres", "16.2-alpine");
+        await RemoveContainer("postgres");
         var nodeContainer = await _client.Containers.CreateContainerAsync(new CreateContainerParameters
         {
             Image = $"postgres:16.2-alpine",

@@ -16,7 +16,7 @@ public class PostgresTests : IClassFixture<PostgresFixture>
     }
 
     [Fact]
-    public async Task Check_Postgres_Exists()
+    public void Check_Postgres_Exists()
     {
         _postgresFixture.IsRunning();
     }
