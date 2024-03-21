@@ -1,6 +1,7 @@
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using LNUnit.Setup;
+using Microsoft.EntityFrameworkCore;
 
 namespace NLightning.Bolts.Tests.Docker.Fixtures;
 
@@ -69,5 +70,20 @@ public class PostgresFixture : IDisposable
             // ignored
         }
         return false;
+    }
+}
+
+public class QuickContext : DbContext
+{
+    public QuickContext(DbContextOptions<QuickContext> options)
+        : base(options)
+    {
+    }
+
+    public DbSet<X> Xs { get; set; }
+
+    public class X
+    {
+        public int Id { get; set; }
     }
 }

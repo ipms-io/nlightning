@@ -10,6 +10,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="8.0.0"/>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
+    <PackageReference Include="Npgsql.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="EFCore.NamingConventions" Version="8.0.0-rc.2"/>
     <PackageReference Include="LNUnit" Version="1.2.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
     <PackageReference Include="Moq" Version="4.20.70" />
