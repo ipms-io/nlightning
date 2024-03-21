@@ -1,7 +1,7 @@
 using System.Text;
 using Xunit.Abstractions;
 
-namespace NLightning.Bolts.Tests.Helper;
+namespace NLightning.Bolts.Tests.Utils;
 
 public class TestOutputWriter : TextWriter
 {

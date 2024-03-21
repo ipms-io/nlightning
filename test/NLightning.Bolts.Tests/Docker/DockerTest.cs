@@ -5,7 +5,7 @@ using Docker.DotNet;
 using Docker.DotNet.Models;
 using NBitcoin;
 using NBitcoin.RPC;
-using NLightning.Bolts.Tests.Helper;
+using NLightning.Bolts.Tests.Utils;
 using ServiceStack.Text;
 using Xunit.Abstractions;
 using Xunit.Sdk;
