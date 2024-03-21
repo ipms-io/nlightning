@@ -15,7 +15,8 @@ using Fixtures;
 using Utils;
 
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
-public class AbcNetworkTests : IClassFixture<LightningRegtestNetworkFixture>
+[Collection("regtest")]
+public class AbcNetworkTests //: IClassFixture<LightningRegtestNetworkFixture>
 {
     private readonly LightningRegtestNetworkFixture _lightningRegtestNetworkFixture;
 

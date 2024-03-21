@@ -1,18 +1,21 @@
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using LNUnit.Setup;
-using Microsoft.EntityFrameworkCore;
 
 namespace NLightning.Bolts.Tests.Docker.Fixtures;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+
 public class PostgresFixture : IDisposable
 {
     private readonly DockerClient _client = new DockerClientConfiguration().CreateClient();
     private const string ContainerName = "postgres";
+
     public PostgresFixture()
     {
+
         StartPostgres().Wait();
+
     }
 
     public void Dispose()
@@ -74,17 +77,10 @@ public class PostgresFixture : IDisposable
     }
 }
 
-public class QuickContext : DbContext
+[CollectionDefinition("postgres")]
+public class PostgresFixtureCollection : ICollectionFixture<PostgresFixture>
 {
-    public QuickContext(DbContextOptions<QuickContext> options)
-        : base(options)
-    {
-    }
-
-    public DbSet<X> Xs { get; set; }
-
-    public class X
-    {
-        public int Id { get; set; }
-    }
+    // This class has no code, and is never created. Its purpose is simply
+    // to be the place to apply [CollectionDefinition] and all the
+    // ICollectionFixture<> interfaces.
 }

@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using ServiceStack.Text;
 using Xunit.Abstractions;
 namespace NLightning.Bolts.Tests.Docker;
-using Fixtures;
 using Utils;
 
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
@@ -47,3 +46,18 @@ public class SqliteTests
     }
 }
 #pragma warning restore xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
+
+public class QuickContext : DbContext
+{
+    public QuickContext(DbContextOptions<QuickContext> options)
+        : base(options)
+    {
+    }
+
+    public DbSet<X> Xs { get; set; }
+
+    public class X
+    {
+        public int Id { get; set; }
+    }
+}
