@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Sockets;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using LNUnit.Setup;
@@ -5,18 +7,19 @@ using LNUnit.Setup;
 namespace NLightning.Bolts.Tests.Docker.Fixtures;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-
 public class PostgresFixture : IDisposable
 {
-    private readonly DockerClient _client = new DockerClientConfiguration().CreateClient();
     private const string ContainerName = "postgres";
+    private readonly DockerClient _client = new DockerClientConfiguration().CreateClient();
+    private string _containerId;
+    private string _ip;
 
     public PostgresFixture()
     {
-
         StartPostgres().Wait();
-
     }
+
+    public string DbConnectionString { get; private set; }
 
     public void Dispose()
     {
@@ -34,26 +37,70 @@ public class PostgresFixture : IDisposable
         await RemoveContainer(ContainerName);
         var nodeContainer = await _client.Containers.CreateContainerAsync(new CreateContainerParameters
         {
-            Image = $"postgres:16.2-alpine",
+            Image = "postgres:16.2-alpine",
             HostConfig = new HostConfig
             {
-                NetworkMode = $"bridge"
+                NetworkMode = "bridge"
             },
             Name = $"{ContainerName}",
             Hostname = $"{ContainerName}",
-            Env = [
+            Env =
+            [
                 "POSTGRES_PASSWORD=superuser",
                 "POSTGRES_USER=superuser",
                 "POSTGRES_DB=nlightning"
             ]
         });
+        Assert.NotNull(nodeContainer);
+        _containerId = nodeContainer.ID;
+        var started = await _client.Containers.StartContainerAsync(_containerId, new ContainerStartParameters());
+        while (!IsRunning)
+        {
+            await Task.Delay(50);
+        }
+
+        //Build connection string
+        var ipAddressReady = false;
+        while (!ipAddressReady)
+        {
+            var listContainers = await _client.Containers.ListContainersAsync(new ContainersListParameters());
+
+            var db = listContainers.FirstOrDefault(x => x.ID == nodeContainer.ID);
+
+            _ip = db.NetworkSettings.Networks.First().Value.IPAddress;
+            DbConnectionString = $"Host={_ip};Database=nlightning;Username=superuser;Password=superuser";
+            ipAddressReady = true;
+        }
+        //wait for TCP socket to open
+        var tcpConnectable = false;
+        while (!tcpConnectable)
+        {
+            try
+            {
+                TcpClient c = new()
+                {
+                    ReceiveTimeout = 1,
+                    SendTimeout = 1
+                };
+                await c.ConnectAsync(new IPEndPoint(IPAddress.Parse(_ip), 5432));
+                if (c.Connected)
+                {
+                    tcpConnectable = true;
+                }
+            }
+            catch (Exception e)
+            {
+                await Task.Delay(50);
+            }
+        }
     }
 
     private async Task RemoveContainer(string name)
     {
         try
         {
-            await _client.Containers.RemoveContainerAsync(name, new ContainerRemoveParameters { Force = true, RemoveVolumes = true });
+            await _client.Containers.RemoveContainerAsync(name,
+                new ContainerRemoveParameters { Force = true, RemoveVolumes = true });
         }
         catch
         {
@@ -61,19 +108,23 @@ public class PostgresFixture : IDisposable
         }
     }
 
-    public bool IsRunning()
+    public bool IsRunning
     {
-        try
+        get
         {
-            var inspect = _client.Containers.InspectContainerAsync(ContainerName);
-            inspect.Wait();
-            return inspect.Result.State.Running;
+            try
+            {
+                var inspect = _client.Containers.InspectContainerAsync(ContainerName);
+                inspect.Wait();
+                return inspect.Result.State.Running;
+            }
+            catch
+            {
+                // ignored
+            }
+
+            return false;
         }
-        catch
-        {
-            // ignored
-        }
-        return false;
     }
 }
 

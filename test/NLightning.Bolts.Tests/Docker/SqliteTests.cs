@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using NLightning.Bolts.Tests.Db;
 using ServiceStack.Text;
 using Xunit.Abstractions;
 namespace NLightning.Bolts.Tests.Docker;
@@ -21,43 +22,28 @@ public class SqliteTests
         var connection = new SqliteConnection("Filename=:memory:");
         connection.Open();
 
-        var contextOptions = new DbContextOptionsBuilder<QuickContext>()
+        var contextOptions = new DbContextOptionsBuilder<MockEfContext>()
             .UseSqlite(connection)
             .Options;
 
         // Create the schema and seed some data
-        using var context = new QuickContext(contextOptions);
+        using var context = new MockEfContext(contextOptions);
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
 
         context.Xs.Count().PrintDump();
 
         context.AddRange(
-            new QuickContext.X(),
-            new QuickContext.X());
+            new MockEfContext.TableX(),
+            new MockEfContext.TableX());
         context.SaveChanges();
         context.Xs.Count().PrintDump();
         context.AddRange(
-            new QuickContext.X(),
-            new QuickContext.X());
+            new MockEfContext.TableX(),
+            new MockEfContext.TableX());
         context.Xs.Count().PrintDump();
         context.SaveChanges();
         context.Xs.Count().PrintDump();
     }
 }
 #pragma warning restore xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
-
-public class QuickContext : DbContext
-{
-    public QuickContext(DbContextOptions<QuickContext> options)
-        : base(options)
-    {
-    }
-
-    public DbSet<X> Xs { get; set; }
-
-    public class X
-    {
-        public int Id { get; set; }
-    }
-}
