@@ -50,5 +50,5 @@ jobs:
       if: success() || failure()    # run this step even if previous step failed
       with:
           name: xUnit Tests            # Name of the check run which will be created
-          path: TestResults/net8.-/test-results*.trx    # Path to test results
+          path: TestResults/net8.0/test-results*.trx    # Path to test results
           reporter: dotnet-trx        # Format of test results
