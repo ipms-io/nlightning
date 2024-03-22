@@ -1,8 +1,8 @@
-﻿namespace NLightning.Bolts.BOLT1.Messages;
+namespace NLightning.Bolts.BOLT1.Messages;
 
 using Base;
-using Types;
 using Common.Constants;
+using Types;
 
 public sealed class InitMessage : BaseMessage<InitPayload>
 {

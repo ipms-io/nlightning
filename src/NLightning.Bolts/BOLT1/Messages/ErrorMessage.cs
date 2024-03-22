@@ -1,4 +1,4 @@
-﻿// namespace NLightning.Bolts.BOLT1.Messages;
+// namespace NLightning.Bolts.BOLT1.Messages;
 
 // public sealed class ErrorMessage(ChannelId channelId, byte[] data) : BaseMessage
 // {
