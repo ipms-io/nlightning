@@ -15,8 +15,8 @@ public class MockEfContext : DbContext
     public class TableX
     {
         public int Id { get; set; }
-// public string? ShowCasingTransform { get; set; }
-// public bool? ThirdBool { get; set; }
+        // public string? ShowCasingTransform { get; set; }
+        // public bool? ThirdBool { get; set; }
     }
 }
 
@@ -36,7 +36,6 @@ public class MockEfContextFactory : IDesignTimeDbContextFactory<MockEfContext>
     public MockEfContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<MockEfContext>();
-  
 
         var postgresString = Environment.GetEnvironmentVariable("NLIGHTNING_POSTGRES");
         if (postgresString != null)
@@ -53,7 +52,7 @@ public class MockEfContextFactory : IDesignTimeDbContextFactory<MockEfContext>
         var connectionString = Environment.GetEnvironmentVariable("NLIGHTNING_SQLITE");
         if (connectionString != null)
         {
-            optionsBuilder.UseSqlite(connectionString,x =>
+            optionsBuilder.UseSqlite(connectionString, x =>
             {
                 x.MigrationsAssembly("NLightning.Models.Sqlite");
             });
