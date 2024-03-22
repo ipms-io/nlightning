@@ -3,6 +3,8 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+test-results.trx
+
 # dotenv files
 .env
 
@@ -420,7 +422,7 @@ autom4te.cache/
 *.tar.gz
 tarballs/
 test-results/
-
+TestResults/
 # Mac bundle stuff
 *.dmg
 *.app
