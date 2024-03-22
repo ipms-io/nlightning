@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using NLightning.Common.Utils;
 
 namespace NLightning.Bolts.BOLT8.Primitives;
 

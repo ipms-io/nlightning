@@ -1,8 +1,9 @@
+using System.Runtime.Serialization;
+
 namespace NLightning.Bolts.Base;
 
-using Interfaces;
 using BOLT1.Types;
-using System.Runtime.Serialization;
+using Interfaces;
 
 /// <summary>
 /// Base class with built-in serialization and deserialization for messages
