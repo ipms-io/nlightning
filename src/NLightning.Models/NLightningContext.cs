@@ -3,39 +3,30 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace NLightning.Models;
 
-public class MockEfContext : DbContext
+public class NLightningContext : DbContext
 {
-    public MockEfContext(DbContextOptions<MockEfContext> options)
+    public NLightningContext(DbContextOptions<NLightningContext> options)
         : base(options)
     {
     }
 
-    public DbSet<TableX> Xs { get; set; }
+    public DbSet<Node> Nodes { get; set; }
 
-    public class TableX
+    [PrimaryKey(nameof(Id))]
+    public class Node
     {
-        public int Id { get; set; }
-        // public string? ShowCasingTransform { get; set; }
-        // public bool? ThirdBool { get; set; }
+        public long Id { get; set; }
     }
 }
 
-//
-// public class SqliteMockEfContext : MockEfContext
-// { 
-//     public SqliteMockEfContext(DbContextOptions<MockEfContext> options)
-//         : base(options)
-//     {
-//     }
-//     
-// }
-//
-
-public class MockEfContextFactory : IDesignTimeDbContextFactory<MockEfContext>
+/// <summary>
+/// This is used for dotnet ef CLI to setup connection for migration stuff
+/// </summary>
+public class NLightningContextFactory : IDesignTimeDbContextFactory<NLightningContext>
 {
-    public MockEfContext CreateDbContext(string[] args)
+    public NLightningContext CreateDbContext(string[] args)
     {
-        var optionsBuilder = new DbContextOptionsBuilder<MockEfContext>();
+        var optionsBuilder = new DbContextOptionsBuilder<NLightningContext>();
 
         var postgresString = Environment.GetEnvironmentVariable("NLIGHTNING_POSTGRES");
         if (postgresString != null)
@@ -46,7 +37,7 @@ public class MockEfContextFactory : IDesignTimeDbContextFactory<MockEfContext>
                 })
                 .EnableSensitiveDataLogging()
                 .UseSnakeCaseNamingConvention();
-            return new MockEfContext(optionsBuilder.Options);
+            return new NLightningContext(optionsBuilder.Options);
         }
 
         var sqlite = Environment.GetEnvironmentVariable("NLIGHTNING_SQLITE");
@@ -56,7 +47,7 @@ public class MockEfContextFactory : IDesignTimeDbContextFactory<MockEfContext>
             {
                 x.MigrationsAssembly("NLightning.Models.Sqlite");
             });
-            return new MockEfContext(optionsBuilder.Options);
+            return new NLightningContext(optionsBuilder.Options);
         }
 
         var sqlServer = Environment.GetEnvironmentVariable("NLIGHTNING_SQLSERVER");
@@ -66,7 +57,7 @@ public class MockEfContextFactory : IDesignTimeDbContextFactory<MockEfContext>
             {
                 x.MigrationsAssembly("NLightning.Models.SqlServer");
             });
-            return new MockEfContext(optionsBuilder.Options);
+            return new NLightningContext(optionsBuilder.Options);
         }
 
         throw new Exception("Must set NLIGHTNING_POSTGRES or NLIGHTNING_SQLITE or NLIGHTNING_SQLSERVER env for generation.");

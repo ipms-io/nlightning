@@ -11,15 +11,15 @@ namespace NLightning.Models.SqlServer.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Xs",
+                name: "Nodes",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Xs", x => x.Id);
+                    table.PrimaryKey("PK_Nodes", x => x.Id);
                 });
         }
 
@@ -27,7 +27,7 @@ namespace NLightning.Models.SqlServer.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Xs");
+                name: "Nodes");
         }
     }
 }

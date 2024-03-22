@@ -23,7 +23,7 @@ public class SqliteTests
         var connection = new SqliteConnection("Data Source=:memory:");
         connection.Open();
 
-        var contextOptions = new DbContextOptionsBuilder<MockEfContext>()
+        var contextOptions = new DbContextOptionsBuilder<NLightningContext>()
             .UseSqlite(connection, x =>
             {
                 x.MigrationsAssembly("NLightning.Models.Sqlite");
@@ -31,24 +31,24 @@ public class SqliteTests
             .Options;
 
         // Create the schema and seed some data
-        using var context = new MockEfContext(contextOptions);
+        using var context = new NLightningContext(contextOptions);
         context.Database.Migrate();
         // context.Database.EnsureDeleted();
         // context.Database.EnsureCreated();
 
-        context.Xs.Count().PrintDump();
+        context.Nodes.Count().PrintDump();
 
         context.AddRange(
-            new MockEfContext.TableX(),
-            new MockEfContext.TableX());
+            new NLightningContext.Node(),
+            new NLightningContext.Node());
         context.SaveChanges();
-        context.Xs.Count().PrintDump();
+        context.Nodes.Count().PrintDump();
         context.AddRange(
-            new MockEfContext.TableX(),
-            new MockEfContext.TableX());
-        context.Xs.Count().PrintDump();
+            new NLightningContext.Node(),
+            new NLightningContext.Node());
+        context.Nodes.Count().PrintDump();
         context.SaveChanges();
-        context.Xs.Count().PrintDump();
+        context.Nodes.Count().PrintDump();
     }
 }
 #pragma warning restore xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture

@@ -9,8 +9,8 @@ using NLightning.Models;
 
 namespace NLightning.Models.Sqlite.Migrations
 {
-    [DbContext(typeof(MockEfContext))]
-    [Migration("20240322071121_Init")]
+    [DbContext(typeof(NLightningContext))]
+    [Migration("20240322171303_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -19,15 +19,15 @@ namespace NLightning.Models.Sqlite.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.3");
 
-            modelBuilder.Entity("NLightning.Models.MockEfContext+TableX", b =>
+            modelBuilder.Entity("NLightning.Models.NLightningContext+Node", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Xs");
+                    b.ToTable("Nodes");
                 });
 #pragma warning restore 612, 618
         }

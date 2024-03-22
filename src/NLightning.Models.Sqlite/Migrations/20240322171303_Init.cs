@@ -1,9 +1,8 @@
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace NLightning.Models.Postgres.Migrations
+namespace NLightning.Models.Sqlite.Migrations
 {
     /// <inheritdoc />
     public partial class Init : Migration
@@ -12,15 +11,15 @@ namespace NLightning.Models.Postgres.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "xs",
+                name: "Nodes",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
+                    Id = table.Column<long>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_xs", x => x.id);
+                    table.PrimaryKey("PK_Nodes", x => x.Id);
                 });
         }
 
@@ -28,7 +27,7 @@ namespace NLightning.Models.Postgres.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "xs");
+                name: "Nodes");
         }
     }
 }

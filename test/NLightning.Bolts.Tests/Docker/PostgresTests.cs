@@ -23,7 +23,7 @@ public class PostgresTests
         Console.SetOut(new TestOutputWriter(output));
 
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddDbContextFactory<MockEfContext>(
+        serviceCollection.AddDbContextFactory<NLightningContext>(
             options =>
                 options.UseNpgsql(_postgresFixture.DbConnectionString, x =>
                     {
@@ -31,7 +31,7 @@ public class PostgresTests
                     })
                     .EnableSensitiveDataLogging()
                     .UseSnakeCaseNamingConvention());
-        serviceCollection.AddDbContext<MockEfContext>(x =>
+        serviceCollection.AddDbContext<NLightningContext>(x =>
         {
             x.UseNpgsql(_postgresFixture.DbConnectionString, x =>
             {
@@ -41,7 +41,7 @@ public class PostgresTests
                 .UseSnakeCaseNamingConvention();
         }, ServiceLifetime.Transient);
         _serviceProvider = serviceCollection.BuildServiceProvider();
-        var context = _serviceProvider.GetService<MockEfContext>();
+        var context = _serviceProvider.GetService<NLightningContext>();
         //Wait until really ready
         while (!context.Database.CanConnect())
         {
@@ -50,29 +50,23 @@ public class PostgresTests
         context.Database.Migrate();
     }
 
-    // [Fact]
-    // public async Task Check_Postgres_Exists()
-    // {
-    //     Assert.True(await _postgresFixture.IsRunning);
-    //}
-
     [Fact]
     public async Task TestDb()
     {
-        var context = _serviceProvider.GetService<MockEfContext>();
-        context.Xs.Count().PrintDump();
+        var context = _serviceProvider.GetService<NLightningContext>();
+        context.Nodes.Count().PrintDump();
 
-        context.Xs.AddRange(
-            new MockEfContext.TableX(),
-            new MockEfContext.TableX());
+        context.Nodes.AddRange(
+            new NLightningContext.Node(),
+            new NLightningContext.Node());
         context.SaveChanges();
-        context.Xs.Count().PrintDump();
+        context.Nodes.Count().PrintDump();
         context.AddRange(
-            new MockEfContext.TableX(),
-            new MockEfContext.TableX());
-        context.Xs.Count().PrintDump();
+            new NLightningContext.Node(),
+            new NLightningContext.Node());
+        context.Nodes.Count().PrintDump();
         context.SaveChanges();
-        context.Xs.Count().PrintDump();
+        context.Nodes.Count().PrintDump();
     }
 
 }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NLightning.Models;
 
@@ -9,10 +10,12 @@ using NLightning.Models;
 
 namespace NLightning.Models.SqlServer.Migrations
 {
-    [DbContext(typeof(MockEfContext))]
-    partial class MockEfContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(NLightningContext))]
+    [Migration("20240322171304_Init")]
+    partial class Init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,17 +24,17 @@ namespace NLightning.Models.SqlServer.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("NLightning.Models.MockEfContext+TableX", b =>
+            modelBuilder.Entity("NLightning.Models.NLightningContext+Node", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.HasKey("Id");
 
-                    b.ToTable("Xs");
+                    b.ToTable("Nodes");
                 });
 #pragma warning restore 612, 618
         }
