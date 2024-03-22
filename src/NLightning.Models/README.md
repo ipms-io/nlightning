@@ -8,10 +8,10 @@
 
 ### Tooling 
 - Run in `NLightning.Models` directory
-- MUST manually remove `DbContext` fields if you are `remove_migration.sh` migration
+- MUST manually remove `DbContext` fields if you are running `remove_migration.sh` migration
 - Postgres is run on port 15432 under `postgres_ef_gen` name so one can run unit-tests without blowing out DB.
-- set ENV var if you want to override database to point to, otherwise will spin up empty Postgres and memory db for Sqlite
-
+- Set ENV var if you want to override database to point to, otherwise will spin up empty Postgres and memory db for Sqlite
+- Name your Migrartion CamelCased to pass `dotnet format` validation
  | Task | Command |
  |-----------------------|---------------------------------------|
  | Add migration | `./add_migration.sh AddingFeatureXYZ` |

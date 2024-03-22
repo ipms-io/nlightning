@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NLightning.Models.Postgres.Migrations
 {
     [DbContext(typeof(MockEfContext))]
-    [Migration("20240322051447_base")]
-    partial class @base
+    [Migration("20240322053255_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
