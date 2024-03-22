@@ -56,7 +56,7 @@ public class SqlServerTests
     //     Assert.True(_sqlServerFixture.IsRunning);
     // }
 
-    [Fact(Skip = "Local Only until can figure out Github issue")]
+    [Fact()]
 
     public async Task TestDb()
     {
