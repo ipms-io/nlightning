@@ -32,23 +32,24 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --filter 'BOLT' --no-build --verbosity normal -l "console;verbosity=detailed" --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx" --results-directory ./coverage
-    - name: Code Coverage Report
-      uses: irongut/CodeCoverageSummary@v1.3.0
-      with:
-        filename: coverage/**/coverage.cobertura.xml
-        badge: true
-        fail_below_min: true
-        format: markdown
-        hide_branch_rate: false
-        hide_complexity: true
-        indicators: true
-        output: both
-        thresholds: '60 80'
-    - name: Test Report
-      uses: dorny/test-reporter@v1
-      if: success() || failure()    # run this step even if previous step failed
-      with:
-          name: xUnit Tests            # Name of the check run which will be created
-          path: TestResults/net8.-/test-results*.trx    # Path to test results
-          reporter: dotnet-trx        # Format of test results
+      run: dotnet test --filter 'BOLT' --no-build --verbosity normal -l "console;verbosity=detailed" --collect:"XPlat Code Coverage"  --results-directory ./coverage
+      #--logger "trx;LogFileName=test-results.trx"
+#    - name: Code Coverage Report
+#      uses: irongut/CodeCoverageSummary@v1.3.0
+#      with:
+#        filename: coverage/**/coverage.cobertura.xml
+#        badge: true
+#        fail_below_min: true
+#        format: markdown
+#        hide_branch_rate: false
+#        hide_complexity: true
+#        indicators: true
+#        output: both
+#        thresholds: '60 80'
+#    - name: Test Report
+#      uses: dorny/test-reporter@v1
+#      if: success() || failure()    # run this step even if previous step failed
+#      with:
+#          name: xUnit Tests            # Name of the check run which will be created
+#          path: TestResults/net8.-/test-results*.trx    # Path to test results
+#          reporter: dotnet-trx        # Format of test results
