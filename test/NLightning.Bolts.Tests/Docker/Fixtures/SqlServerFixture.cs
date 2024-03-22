@@ -55,10 +55,6 @@ public class SqlServerFixture : IDisposable
         Assert.NotNull(nodeContainer);
         _containerId = nodeContainer.ID;
         var started = await _client.Containers.StartContainerAsync(_containerId, new ContainerStartParameters());
-        while (!IsRunning)
-        {
-            await Task.Delay(100);
-        }
 
         //Build connection string
         var ipAddressReady = false;
@@ -118,23 +114,22 @@ public class SqlServerFixture : IDisposable
         }
     }
 
-    public bool IsRunning
+    public bool IsRunning()
     {
-        get
-        {
-            try
-            {
-                var inspect = _client.Containers.InspectContainerAsync(ContainerName);
-                inspect.Wait();
-                return inspect.Result.State.Running;
-            }
-            catch
-            {
-                // ignored
-            }
 
-            return false;
+        try
+        {
+            var inspect = _client.Containers.InspectContainerAsync(ContainerName);
+            inspect.Wait();
+            return inspect.Result.State.Running;
         }
+        catch
+        {
+            // ignored
+        }
+
+        return false;
+
     }
 }
 

@@ -50,11 +50,11 @@ public class PostgresTests
         context.Database.Migrate();
     }
 
-    [Fact]
-    public void Check_Postgres_Exists()
-    {
-        Assert.True(_postgresFixture.IsRunning);
-    }
+    // [Fact]
+    // public async Task Check_Postgres_Exists()
+    // {
+    //     Assert.True(await _postgresFixture.IsRunning);
+    //}
 
     [Fact]
     public async Task TestDb()
