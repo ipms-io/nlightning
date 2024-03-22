@@ -1,0 +1,21 @@
+name: 'Test Report'
+on:
+  workflow_run:
+    workflows: ['NLightning .NET Build & Tests']                     # runs after CI workflow
+    types:
+      - completed
+permissions:
+  contents: read 
+  checks: write
+  actions: write
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: xUnit Tests            # Name of the check run which will be created
+          path: coverage/test-results.trx   # Path to test results
+          reporter: dotnet-trx        # Format of test results
