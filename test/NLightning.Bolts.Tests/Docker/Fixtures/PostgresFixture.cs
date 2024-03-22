@@ -76,7 +76,7 @@ public class PostgresFixture : IDisposable
             {
                 await Task.Delay(100);
             }
-            
+
         }
         //wait for TCP socket to open
         var tcpConnectable = false;

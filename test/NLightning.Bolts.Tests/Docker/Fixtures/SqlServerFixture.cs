@@ -77,7 +77,7 @@ public class SqlServerFixture : IDisposable
             {
                 await Task.Delay(100);
             }
-           
+
         }
 
         //wait for TCP socket to open
