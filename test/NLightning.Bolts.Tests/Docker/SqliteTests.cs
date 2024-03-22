@@ -2,7 +2,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using NLightning.Models;
 using ServiceStack.Text;
-using Xunit.Abstractions; 
+using Xunit.Abstractions;
 
 namespace NLightning.Bolts.Tests.Docker;
 using Utils;
