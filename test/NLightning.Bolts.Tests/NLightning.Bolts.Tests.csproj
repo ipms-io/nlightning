@@ -7,8 +7,12 @@
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    
   </PropertyGroup>
-
+  <PropertyGroup>
+    <VSTestLogger>trx%3bLogFileName=$(MSBuildProjectName).trx</VSTestLogger>
+    <VSTestResultsDirectory>$(MSBuildThisFileDirectory)/TestResults/$(TargetFramework)</VSTestResultsDirectory>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="8.0.3" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.3" />
@@ -32,11 +36,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.3" /> 
   </ItemGroup>
 
   <ItemGroup>
     <None Update="BOLT8/Vectors/SHA256LongMsg.rsp" CopyToOutputDirectory="PreserveNewest" />
+    <None Remove="TestResults\**" />
   </ItemGroup>
   
   <ItemGroup>
@@ -45,6 +50,14 @@
     <ProjectReference Include="..\..\src\NLightning.Models.Postgres\NLightning.Models.Postgres.csproj" />
     <ProjectReference Include="..\..\src\NLightning.Models.Sqlite\NLightning.Models.Sqlite.csproj" />
     <ProjectReference Include="..\..\src\NLightning.Models.SqlServer\NLightning.Models.SqlServer.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Remove="TestResults\**" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Remove="TestResults\**" />
   </ItemGroup>
 
 </Project>
