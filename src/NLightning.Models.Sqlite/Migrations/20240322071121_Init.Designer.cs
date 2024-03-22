@@ -10,7 +10,7 @@ using NLightning.Models;
 namespace NLightning.Models.Sqlite.Migrations
 {
     [DbContext(typeof(MockEfContext))]
-    [Migration("20240322053256_Init")]
+    [Migration("20240322071121_Init")]
     partial class Init
     {
         /// <inheritdoc />

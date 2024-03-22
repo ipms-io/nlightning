@@ -49,16 +49,26 @@ public class MockEfContextFactory : IDesignTimeDbContextFactory<MockEfContext>
             return new MockEfContext(optionsBuilder.Options);
         }
 
-        var connectionString = Environment.GetEnvironmentVariable("NLIGHTNING_SQLITE");
-        if (connectionString != null)
+        var sqlite = Environment.GetEnvironmentVariable("NLIGHTNING_SQLITE");
+        if (sqlite != null)
         {
-            optionsBuilder.UseSqlite(connectionString, x =>
+            optionsBuilder.UseSqlite(sqlite, x =>
             {
                 x.MigrationsAssembly("NLightning.Models.Sqlite");
             });
             return new MockEfContext(optionsBuilder.Options);
         }
 
-        throw new Exception("Must set NLIGHTNING_POSTGRES or NLIGHTNING_SQLITE env for generation.");
+        var sqlServer = Environment.GetEnvironmentVariable("NLIGHTNING_SQLSERVER");
+        if (sqlServer != null)
+        {
+            optionsBuilder.UseSqlServer(sqlServer, x =>
+            {
+                x.MigrationsAssembly("NLightning.Models.SqlServer");
+            });
+            return new MockEfContext(optionsBuilder.Options);
+        }
+
+        throw new Exception("Must set NLIGHTNING_POSTGRES or NLIGHTNING_SQLITE or NLIGHTNING_SQLSERVER env for generation.");
     }
 }

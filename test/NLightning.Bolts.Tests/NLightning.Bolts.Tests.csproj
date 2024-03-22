@@ -32,17 +32,19 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="BOLT8/Vectors/SHA256LongMsg.rsp" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\..\src\NLightning.Bolts\NLightning.Bolts.csproj" />
     <ProjectReference Include="..\..\src\NLightning.Models\NLightning.Models.csproj" />
     <ProjectReference Include="..\..\src\NLightning.Models.Postgres\NLightning.Models.Postgres.csproj" />
     <ProjectReference Include="..\..\src\NLightning.Models.Sqlite\NLightning.Models.Sqlite.csproj" />
+    <ProjectReference Include="..\..\src\NLightning.Models.SqlServer\NLightning.Models.SqlServer.csproj" />
   </ItemGroup>
 
 </Project>
