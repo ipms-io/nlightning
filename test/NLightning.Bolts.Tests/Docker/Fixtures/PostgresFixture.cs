@@ -66,10 +66,17 @@ public class PostgresFixture : IDisposable
             var listContainers = await _client.Containers.ListContainersAsync(new ContainersListParameters());
 
             var db = listContainers.FirstOrDefault(x => x.ID == nodeContainer.ID);
-
-            _ip = db.NetworkSettings.Networks.First().Value.IPAddress;
-            DbConnectionString = $"Host={_ip};Database=nlightning;Username=superuser;Password=superuser";
-            ipAddressReady = true;
+            if (db != null)
+            {
+                _ip = db.NetworkSettings.Networks.First().Value.IPAddress;
+                DbConnectionString = $"Host={_ip};Database=nlightning;Username=superuser;Password=superuser";
+                ipAddressReady = true;
+            }
+            else
+            {
+                await Task.Delay(100);
+            }
+            
         }
         //wait for TCP socket to open
         var tcpConnectable = false;
