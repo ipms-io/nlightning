@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using NLightning.Bolts.Tests.Db;
-using ServiceStack.Text;
+using NLightning.Models; 
+using ServiceStack.Text; 
 
 namespace NLightning.Bolts.Tests.Docker;
 
@@ -24,15 +24,25 @@ public class PostgresTests
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddDbContextFactory<MockEfContext>(
-            options =>
-                options.UseNpgsql(_postgresFixture.DbConnectionString)
+            options => 
+                options.UseNpgsql(_postgresFixture.DbConnectionString, x=>
+                    {
+                        x.MigrationsAssembly("NLightning.Models.Postgres");
+                    })
                     .EnableSensitiveDataLogging()
                     .UseSnakeCaseNamingConvention());
-        serviceCollection.AddDbContext<MockEfContext>(ServiceLifetime.Transient);
+        serviceCollection.AddDbContext<MockEfContext>(x=>
+        {
+            x.UseNpgsql(_postgresFixture.DbConnectionString,x=>
+            {
+                x.MigrationsAssembly("NLightning.Models.Postgres");
+            })
+                .EnableSensitiveDataLogging()
+                .UseSnakeCaseNamingConvention();
+        },ServiceLifetime.Transient);
         _serviceProvider = serviceCollection.BuildServiceProvider();
-        var context = _serviceProvider.GetService<MockEfContext>();
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
+        var context = _serviceProvider.GetService<MockEfContext>() ;
+        context.Database.Migrate(); 
     }
 
     [Fact]
@@ -40,7 +50,7 @@ public class PostgresTests
     {
         Assert.True(_postgresFixture.IsRunning);
     }
-
+    
     [Fact]
     public async Task TestDb()
     {

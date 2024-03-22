@@ -40,6 +40,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\NLightning.Bolts\NLightning.Bolts.csproj" />
+    <ProjectReference Include="..\..\src\NLightning.Models\NLightning.Models.csproj" />
+    <ProjectReference Include="..\..\src\NLightning.Models.Postgres\NLightning.Models.Postgres.csproj" />
+    <ProjectReference Include="..\..\src\NLightning.Models.Sqlite\NLightning.Models.Sqlite.csproj" />
   </ItemGroup>
 
 </Project>
