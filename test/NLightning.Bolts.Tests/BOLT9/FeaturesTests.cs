@@ -93,35 +93,17 @@ public class FeaturesTests
         Assert.False(features.IsFeatureSet(dependent, isCompulsory));
     }
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void Given_FeaturesIsGlobal_When_SetFeature12or13_Then_FeatureIsSet(bool isCompulsory)
+    [Fact]
+    public void Given_Features_When_SetUnknownFeature_Then_UnknownFeatureIsSet()
     {
         // Arrange
-        var features = new Features(true);
+        var features = new Features();
 
         // Act
-        features.SetFeature(Feature.OptionStaticRemoteKey, isCompulsory);
+        features.SetFeature(42, true);
 
         // Assert
-        Assert.True(features.IsFeatureSet(Feature.OptionStaticRemoteKey, isCompulsory));
-        Assert.False(features.IsFeatureSet(Feature.OptionStaticRemoteKey, !isCompulsory));
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void Given_FeaturesIsGlobal_When_SetFeature14or15_Then_ExceptionIsThrown(bool isCompulsory)
-    {
-        // Arrange
-        var features = new Features(true);
-
-        // Act
-        var exception = Assert.Throws<ArgumentException>(() => features.SetFeature(Feature.PaymentSecret, isCompulsory));
-
-        // Assert
-        Assert.Equal("Global features cannot be set for features greater than 13.", exception.Message);
+        Assert.True(features.IsFeatureSet(42, false));
     }
     #endregion
 
@@ -166,43 +148,70 @@ public class FeaturesTests
         Assert.Equal(expected, result);
     }
 
-    [Theory]
-    [InlineData(false, true, false, true, true)]
-    [InlineData(false, false, false, true, true)]
-    [InlineData(false, true, false, false, true)]
-    [InlineData(false, false, false, false, true)]
-    [InlineData(true, false, false, true, false)]
-    [InlineData(true, true, false, false, false)]
-    [InlineData(false, true, true, false, false)]
-    [InlineData(false, false, true, false, false)]
-    public void Given_VarOnionOptin_When_IsCompatible_Then_ResultIsKnown(bool unsetLocal, bool isLocalCompulsorySet, bool unsetOther, bool isOtherCompulsorySet, bool expected)
+    [Fact]
+    public void Given_Features_When_OtherDontSupportVarOnionOptin_Then_ReturnFalse()
     {
         // Arrange
         var features = new Features();
         var other = new Features();
-        if (unsetLocal)
-        {
-            features.SetFeature(Feature.VarOnionOptin, isLocalCompulsorySet, false);
-            features.SetFeature(Feature.VarOnionOptin, !isLocalCompulsorySet, false);
-            other.SetFeature(Feature.VarOnionOptin, isOtherCompulsorySet);
-        }
-        else if (unsetOther)
-        {
-            other.SetFeature(Feature.VarOnionOptin, isOtherCompulsorySet, false);
-            other.SetFeature(Feature.VarOnionOptin, !isOtherCompulsorySet, false);
-            features.SetFeature(Feature.VarOnionOptin, isLocalCompulsorySet);
-        }
-        else
-        {
-            features.SetFeature(Feature.VarOnionOptin, isLocalCompulsorySet);
-            other.SetFeature(Feature.VarOnionOptin, isOtherCompulsorySet);
-        }
+
+        other.SetFeature(Feature.VarOnionOptin, true, false);
+        other.SetFeature(Feature.VarOnionOptin, false, false);
 
         // Act
         var result = features.IsCompatible(other);
 
         // Assert
-        Assert.Equal(expected, result);
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void Given_Features_When_OtherFeatureHasUnknownOptionalFeatureSet_Then_ReturnTrue()
+    {
+        // Arrange
+        var features = new Features();
+        var other = new Features();
+        features.SetFeature(Feature.OptionDataLossProtect, false);
+        other.SetFeature(41, true);
+
+        // Act
+        var result = features.IsCompatible(other);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void Given_Features_When_OtherFeatureHasUnknownCompulsoryFeatureSet_Then_ReturnFalse()
+    {
+        // Arrange
+        var features = new Features();
+        var other = new Features();
+        features.SetFeature(Feature.OptionDataLossProtect, false);
+        other.SetFeature(42, true);
+
+        // Act
+        var result = features.IsCompatible(other);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void Given_Features_When_OtherFeatureDontSetDependency_Then_ReturnFalse()
+    {
+        // Arrange
+        var features = new Features();
+        features.SetFeature(Feature.OptionZeroconf, false);
+        var other = new Features();
+        other.SetFeature(Feature.OptionZeroconf, false);
+        other.SetFeature((int)Feature.OptionScidAlias, false);
+
+        // Act
+        var result = features.IsCompatible(other);
+
+        // Assert
+        Assert.False(result);
     }
     #endregion
 
@@ -228,7 +237,6 @@ public class FeaturesTests
         var features = new Features();
         features.SetFeature(feature, isCompulsory);
         // Clean default features
-        features.SetFeature(Feature.InitialRoutingSync, true, false);
         features.SetFeature(Feature.VarOnionOptin, false, false);
 
         using var stream = new MemoryStream();
@@ -251,7 +259,6 @@ public class FeaturesTests
         // Sets bit 0
         features.SetFeature(Feature.OptionDataLossProtect, true);
         // Clean default features
-        features.SetFeature(Feature.InitialRoutingSync, true, false);
         features.SetFeature(Feature.VarOnionOptin, false, false);
 
         using var stream = new MemoryStream();
@@ -286,7 +293,6 @@ public class FeaturesTests
         var features = new Features();
         features.SetFeature(feature, isCompulsory);
         // Clean default features
-        features.SetFeature(Feature.InitialRoutingSync, true, false);
         features.SetFeature(Feature.VarOnionOptin, false, false);
 
         using var stream = new MemoryStream();
@@ -308,7 +314,6 @@ public class FeaturesTests
         // Sets bit 0
         features.SetFeature(Feature.OptionDataLossProtect, true);
         // Clean default features
-        features.SetFeature(Feature.InitialRoutingSync, true, false);
         features.SetFeature(Feature.VarOnionOptin, false, false);
 
         using var stream = new MemoryStream();
@@ -320,6 +325,27 @@ public class FeaturesTests
 
         // Assert
         Assert.Equal([0, 0, 0, 0, 0, 0, 0, 1], bytes);
+    }
+
+    [Fact]
+    public void Given_Features_When_SerializeAsGlobal_Then_NoFeaturesGreaterThan13ArePresent()
+    {
+        // Arrange
+        var features = new Features();
+        // Sets bit 0
+        features.SetFeature(Feature.OptionSupportLargeChannel, true);
+        // Clean default features
+        features.SetFeature(Feature.VarOnionOptin, false, false);
+
+        using var stream = new MemoryStream();
+        using var writer = new BinaryWriter(stream);
+
+        // Act
+        features.Serialize(writer, true);
+        var bytes = stream.ToArray();
+
+        // Assert
+        Assert.Equal(0, bytes[2]);
     }
     #endregion
 
@@ -396,6 +422,32 @@ public class FeaturesTests
         // Assert
         Assert.False(features.IsFeatureSet(Feature.OptionZeroconf, false));
         Assert.False(features.IsFeatureSet(Feature.OptionZeroconf, true));
+    }
+    #endregion
+
+    #region Combine
+    [Fact]
+    public void Given_Features_When_Combine_Then_FeaturesAreCombined()
+    {
+        // Arrange
+        var global = new Features();
+        global.SetFeature(Feature.OptionDataLossProtect, true);
+        global.SetFeature(Feature.OptionUpfrontShutdownScript, false);
+        global.SetFeature(Feature.GossipQueries, true);
+
+        var features = new Features();
+        features.SetFeature(Feature.OptionUpfrontShutdownScript, true);
+        features.SetFeature(Feature.GossipQueries, false);
+        features.SetFeature(Feature.OptionSupportLargeChannel, true);
+
+        // Act
+        var combined = Features.Combine(global, features);
+
+        // Assert
+        Assert.True(combined.IsFeatureSet(Feature.OptionDataLossProtect, true));
+        Assert.True(combined.IsFeatureSet(Feature.OptionUpfrontShutdownScript, true));
+        Assert.True(combined.IsFeatureSet(Feature.OptionSupportLargeChannel, true));
+        Assert.True(combined.IsFeatureSet(Feature.GossipQueries, true));
     }
     #endregion
 }
