@@ -34,6 +34,17 @@ public sealed class TLVStream
     }
 
     /// <summary>
+    /// Get a specific TLV from the stream
+    /// </summary>
+    /// <param name="type">The type of TLV to get</param>
+    /// <returns></returns>
+    public bool TryGetTlv(BigSize type, out TLV? tlv)
+    {
+        tlv = _tlvs.FirstOrDefault(tlv => tlv.Type == type);
+        return tlv != null;
+    }
+
+    /// <summary>
     /// Check if any TLVs are present
     /// </summary>
     public bool Any()

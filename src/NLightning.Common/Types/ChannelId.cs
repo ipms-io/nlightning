@@ -2,18 +2,29 @@ namespace NLightning.Common;
 
 public readonly struct ChannelId
 {
+    public const int LENGTH = 32;
+
     private readonly byte[] _value;
 
-    public static ChannelId Zero => new([32]);
+    public static ChannelId Zero => new([LENGTH]);
 
     public ChannelId(byte[] value)
     {
-        if (value.Length != 32)
+        if (value.Length != LENGTH)
         {
-            throw new ArgumentException("ChannelId must be 32 bytes", nameof(value));
+            throw new ArgumentException($"ChannelId must be {LENGTH} bytes", nameof(value));
         }
 
         _value = value;
+    }
+    public ChannelId(BinaryReader reader)
+    {
+        _value = reader.ReadBytes(LENGTH);
+    }
+
+    public void Serialize(BinaryWriter writer)
+    {
+        writer.Write(_value);
     }
 
     public readonly bool Equals(ChannelId other)

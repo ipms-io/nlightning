@@ -95,7 +95,7 @@ public sealed class TransportService : ITransportService
         _handshakeService = null;
     }
 
-    public void WriteMessage<PayloadType>(IMessage<PayloadType> message) where PayloadType : IMessagePayload
+    public void WriteMessage<PayloadType>(IMessage message) where PayloadType : IMessagePayload
     {
         ThrowIfDisposed(_disposed, nameof(TransportService));
         if (_transport == null)
@@ -110,7 +110,7 @@ public sealed class TransportService : ITransportService
 
         // Encrypt message
         var buffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        _transport.WriteMessage(message.Serialize(), buffer);
+        // _transport.WriteMessage(message.Serialize(), buffer);
 
         // Write message to stream
         using var stream = _tcpClient.GetStream();

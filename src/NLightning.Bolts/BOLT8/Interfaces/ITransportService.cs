@@ -5,5 +5,5 @@ using Bolts.Interfaces;
 public interface ITransportService : IDisposable
 {
     Task Initialize();
-    void WriteMessage<PayloadType>(IMessage<PayloadType> message) where PayloadType : IMessagePayload;
+    void WriteMessage<PayloadType>(IMessage message) where PayloadType : IMessagePayload;
 }

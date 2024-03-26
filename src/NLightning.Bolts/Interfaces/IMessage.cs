@@ -1,14 +1,7 @@
 namespace NLightning.Bolts.Interfaces;
-
-using BOLT1.Types;
-
-public interface IMessage<PayloadType> where PayloadType : IMessagePayload
+public interface IMessage
 {
-    ushort MessageType { get; }
-    PayloadType? Payload { get; }
-    TLVStream? Extension { get; set; }
-    Func<BinaryReader, PayloadType> PayloadFactory { get; }
-
-    void ToWriter(BinaryWriter writer);
-    byte[] Serialize();
+    ushort Type { get; }
+    IMessagePayload Payload { get; }
+    TLVStream? Extension { get; }
 }

@@ -1,6 +1,32 @@
-// public class ErrorData(ChannelId channelId, byte[] data)
-// {
-//     public ChannelId ChannelId { get; } = channelId;
-//     public U16 Len => (byte)data.Length;
-//     public byte[] Data { get; } = data;
-// }
+namespace NLightning.Bolts.BOLT1.Types;
+
+using System.IO;
+using Bolts.Interfaces;
+using NLightning.Common;
+
+public class ErrorPayload : IMessagePayload
+{
+    public ChannelId ChannelId { get; } = ChannelId.Zero;
+    public byte[] Data { get; }
+
+    public ErrorPayload(byte[] data)
+    {
+        Data = data;
+    }
+    public ErrorPayload(ChannelId channelId, byte[] data) : this(data)
+    {
+        ChannelId = channelId;
+    }
+    public ErrorPayload(BinaryReader reader)
+    {
+        ChannelId = new ChannelId(reader);
+        Data = reader.ReadBytes(EndianBitConverter.ToUInt16BE(reader.ReadBytes(2)));
+    }
+
+    public void Serialize(BinaryWriter writer)
+    {
+        ChannelId.Serialize(writer);
+        writer.Write(EndianBitConverter.GetBytesBE((ushort)Data.Length));
+        writer.Write(Data);
+    }
+}

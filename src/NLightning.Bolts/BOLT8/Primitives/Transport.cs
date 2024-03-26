@@ -3,6 +3,7 @@ using System.Diagnostics;
 namespace NLightning.Bolts.BOLT8.Primitives;
 
 using Ciphers;
+using Common.Utils;
 using Constants;
 using Interfaces;
 using States;
