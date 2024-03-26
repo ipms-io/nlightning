@@ -11,15 +11,15 @@ public class PostgresFixture : IDisposable
 {
     private const string ContainerName = "postgres";
     private readonly DockerClient _client = new DockerClientConfiguration().CreateClient();
-    private string _containerId;
-    private string _ip;
+    private string? _containerId;
+    private string? _ip;
 
     public PostgresFixture()
     {
         StartPostgres().Wait();
     }
 
-    public string DbConnectionString { get; private set; }
+    public string? DbConnectionString { get; private set; }
 
     public void Dispose()
     {
@@ -85,13 +85,15 @@ public class PostgresFixture : IDisposable
                     ReceiveTimeout = 1,
                     SendTimeout = 1
                 };
-                await c.ConnectAsync(new IPEndPoint(IPAddress.Parse(_ip), 5432));
+                if (_ip != null)
+                    await c.ConnectAsync(new IPEndPoint(IPAddress.Parse(_ip), 5432));
+
                 if (c.Connected)
                 {
                     tcpConnectable = true;
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 await Task.Delay(50);
             }

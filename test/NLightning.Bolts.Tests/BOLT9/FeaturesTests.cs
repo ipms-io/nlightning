@@ -265,7 +265,7 @@ public class FeaturesTests
         using var writer = new BinaryWriter(stream);
 
         // Act
-        features.Serialize(writer, false);
+        features.Serialize(writer, includeLength: false);
         var bytes = stream.ToArray();
 
         // Assert
@@ -320,7 +320,7 @@ public class FeaturesTests
         using var writer = new BinaryWriter(stream);
 
         // Act
-        features.Serialize(writer, false);
+        features.Serialize(writer, includeLength: false);
         var bytes = stream.ToArray();
 
         // Assert
