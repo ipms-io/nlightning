@@ -1,13 +1,20 @@
 using System.Runtime.Serialization;
 
-namespace NLightning.Bolts.BOLT1.Types;
+namespace NLightning.Common.Types;
 
 /// <summary>
 /// A series of (possibly zero) TLVs
 /// </summary>
-public sealed class TLVStream()
+public sealed class TLVStream
 {
     private HashSet<TLV> _tlvs = [];
+
+    public TLVStream()
+    { }
+    public TLVStream(BinaryReader reader)
+    {
+        Deserialize(reader);
+    }
 
     /// <summary>
     /// Add a TLV to the stream
@@ -46,17 +53,12 @@ public sealed class TLVStream()
     /// <summary>
     /// Serialize the TLV stream
     /// </summary>
-    public byte[] Serialize()
+    public void Serialize(BinaryWriter writer)
     {
-        using var stream = new MemoryStream();
-        using var writer = new BinaryWriter(stream);
-
         foreach (var tlv in _tlvs)
         {
             writer.Write(tlv.Serialize());
         }
-
-        return stream.ToArray();
     }
 
     /// <summary>
@@ -65,23 +67,14 @@ public sealed class TLVStream()
     /// <param name="reader">The reader to use</param>
     /// <returns>The TLV stream</returns>
     /// <exception cref="SerializationException">Error deserializing TLVStream or any of it's TLVs</exception>
-    public static TLVStream? Deserialize(BinaryReader reader)
+    public void Deserialize(BinaryReader reader)
     {
-        if (reader.BaseStream.Position == reader.BaseStream.Length)
-        {
-            return null;
-        }
-
         try
         {
-            var tlvStream = new TLVStream();
-
             while (reader.BaseStream.Position != reader.BaseStream.Length)
             {
-                tlvStream.Add(TLV.Deserialize(reader));
+                Add(TLV.Deserialize(reader));
             }
-
-            return tlvStream;
         }
         catch (Exception e)
         {
