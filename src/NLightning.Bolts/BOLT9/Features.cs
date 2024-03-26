@@ -4,19 +4,24 @@ public class Features
 {
     private static readonly Dictionary<Feature, Feature[]> s_featureDependencies = new()
     {
-        { Feature.GossipQueriesEx, new[] { Feature.GossipQueries } },
-        { Feature.PaymentSecret, new[] { Feature.VarOnionOptin } },
-        { Feature.BasicMpp, new[] { Feature.PaymentSecret } },
-        { Feature.OptionAnchorOutputs, new[] { Feature.OptionStaticRemoteKey } },
+        // This   \/                          Depends on this \/
+        { Feature.GossipQueriesEx,            new[] { Feature.GossipQueries } },
+        { Feature.PaymentSecret,              new[] { Feature.VarOnionOptin } },
+        { Feature.BasicMpp,                   new[] { Feature.PaymentSecret } },
+        { Feature.OptionAnchorOutputs,        new[] { Feature.OptionStaticRemoteKey } },
         { Feature.OptionAnchorsZeroFeeHtlcTx, new[] { Feature.OptionStaticRemoteKey } },
-        { Feature.OptionRouteBlinding, new[] { Feature.VarOnionOptin } },
-        { Feature.OptionZeroconf, new[] { Feature.OptionScidAlias } },
+        { Feature.OptionRouteBlinding,        new[] { Feature.VarOnionOptin } },
+        { Feature.OptionZeroconf,             new[] { Feature.OptionScidAlias } },
     };
+
+    private readonly bool _isGlobal;
 
     private ulong _featureFlags;
 
-    public Features()
+    public Features(bool isGlobal = false)
     {
+        _isGlobal = isGlobal;
+
         // Allways set the compulsory bit of initial_routing_sync
         SetFeature(Feature.InitialRoutingSync, true);
 
@@ -26,6 +31,12 @@ public class Features
 
     public void SetFeature(Feature feature, bool isCompulsory, bool isSet = true)
     {
+        // We cannot set features greater than 13 if they are global
+        if (_isGlobal && (int)feature > 13)
+        {
+            throw new ArgumentException("Global features cannot be set for features greater than 13.");
+        }
+
         // If we're setting the feature and it has dependencies, set them first
         if (isSet)
         {
@@ -65,6 +76,12 @@ public class Features
 
     public bool IsFeatureSet(Feature feature, bool isCompulsory)
     {
+        // If the feature is global the maximum bit position is 13
+        if (_isGlobal && (int)feature > 13)
+        {
+            return false;
+        }
+
         var bitPosition = (int)feature;
 
         // If the feature is compulsory, adjust the bit position to be even
@@ -117,6 +134,38 @@ public class Features
         }
 
         return true;
+    }
+
+    public void Serialize(BinaryWriter writer, bool includeLength = true)
+    {
+        // Convert ulong to byte array
+        var bytes = EndianBitConverter.GetBytesBE(_featureFlags, includeLength);
+
+        // Write the length of the byte array or 1 if all bytes are zero
+        if (includeLength)
+        {
+            writer.Write(EndianBitConverter.GetBytesBE((ushort)bytes.Length));
+        }
+
+        // Otherwise, return the array starting from the first non-zero byte
+        writer.Write(bytes);
+    }
+
+    public void Deserialize(BinaryReader reader, bool includeLength = true)
+    {
+        var length = 8;
+
+        if (includeLength)
+        {
+            // Read the length of the byte array
+            length = EndianBitConverter.ToUInt16BE(reader.ReadBytes(2));
+        }
+
+        // Read the byte array
+        var bytes = reader.ReadBytes(length);
+
+        // Convert the byte array to ulong
+        _featureFlags = EndianBitConverter.ToUInt64BE(bytes, length < 8);
     }
 
     private void SetFeature(int bitPosition, bool isSet)
