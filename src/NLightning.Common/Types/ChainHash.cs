@@ -1,7 +1,9 @@
-namespace NLightning.Common;
+namespace NLightning.Common.Types;
 
 public readonly struct ChainHash
 {
+    public const int LENGTH = 32;
+
     private readonly byte[] _value;
 
     public ChainHash(byte[] value)

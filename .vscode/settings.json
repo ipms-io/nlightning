@@ -1,6 +1,7 @@
 {
   "editor.formatOnSave": true,
+  "coverage-gutters.coverageBaseDir": "**/coverage/**",
   "coverage-gutters.showGutterCoverage": true,
-  "coverage-gutters.showLineCoverage": true,
+  "coverage-gutters.showLineCoverage": false,
   "coverage-gutters.showRulerCoverage": true
 }

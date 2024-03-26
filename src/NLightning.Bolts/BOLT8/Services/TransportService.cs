@@ -2,7 +2,7 @@ using System.Net.Sockets;
 
 namespace NLightning.Bolts.BOLT8.Services;
 
-using Common.Interfaces;
+using Bolts.Interfaces;
 using Constants;
 using Interfaces;
 using static Common.Utils.Exceptions;
@@ -95,7 +95,7 @@ public sealed class TransportService : ITransportService
         _handshakeService = null;
     }
 
-    public void WriteMessage(IMessage message)
+    public void WriteMessage<PayloadType>(IMessage message) where PayloadType : IMessagePayload
     {
         ThrowIfDisposed(_disposed, nameof(TransportService));
         if (_transport == null)
@@ -110,7 +110,7 @@ public sealed class TransportService : ITransportService
 
         // Encrypt message
         var buffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        _transport.WriteMessage(message.Serialize(), buffer);
+        // _transport.WriteMessage(message.Serialize(), buffer);
 
         // Write message to stream
         using var stream = _tcpClient.GetStream();

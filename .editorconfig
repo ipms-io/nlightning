@@ -75,6 +75,9 @@ dotnet_diagnostic.IDE0170.severity = error
 # dotnet_style_allow_multiple_blank_lines_experimental
 dotnet_diagnostic.IDE2000.severity = error
 
+# CS8618: Non-nullable field is uninitialized.
+dotnet_diagnostic.CS8618.severity = error
+
 # RS0016: Only enable if API files are present
 dotnet_public_api_analyzer.require_api_files = error
 

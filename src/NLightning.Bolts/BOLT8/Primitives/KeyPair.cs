@@ -1,7 +1,8 @@
 using NBitcoin;
-using NLightning.Common.Utils;
 
 namespace NLightning.Bolts.BOLT8.Primitives;
+
+using Common.Utils;
 
 /// <summary>
 /// A Diffie-Hellman private/public key pair.

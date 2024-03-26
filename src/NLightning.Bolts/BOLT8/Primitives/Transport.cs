@@ -1,9 +1,9 @@
 using System.Diagnostics;
-using NLightning.Common.Utils;
 
 namespace NLightning.Bolts.BOLT8.Primitives;
 
 using Ciphers;
+using Common.Utils;
 using Constants;
 using Interfaces;
 using States;
@@ -31,7 +31,12 @@ internal sealed class Transport : ITransport
     public int WriteMessage(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
         // Serialize length into 2 bytes encoded as a big-endian integer
-        var l = BitConverter.GetBytes((ushort)payload.Length).Reverse().ToArray();
+        var l = BitConverter.GetBytes((ushort)payload.Length);
+        if (BitConverter.IsLittleEndian)
+        {
+            Array.Reverse(l);
+        }
+
         // Encrypt the payload length into the message buffer
         var lcLen = WriteMessagePart(l, messageBuffer);
 
@@ -54,7 +59,11 @@ internal sealed class Transport : ITransport
         // Decrypt the payload length from the message buffer
         var l = new byte[2];
         var lcLen = ReadMessagePart(lc, l); // TODO: Check lcLen == 2
-        return BitConverter.ToUInt16(l.Reverse().ToArray(), 0) + ChaCha20Poly1305.TAG_SIZE;
+        if (BitConverter.IsLittleEndian)
+        {
+            Array.Reverse(l);
+        }
+        return BitConverter.ToUInt16(l, 0) + ChaCha20Poly1305.TAG_SIZE;
     }
 
     /// <inheritdoc/>
