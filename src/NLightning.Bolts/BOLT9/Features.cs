@@ -49,7 +49,7 @@ public class Features
         // If we're setting the feature and it has dependencies, set them first
         if (isSet)
         {
-            if (s_featureDependencies.TryGetValue((Feature)feature, out var dependencies))
+            if (s_featureDependencies.TryGetValue(feature, out var dependencies))
             {
                 foreach (var dependency in dependencies)
                 {
@@ -59,7 +59,7 @@ public class Features
         }
         else // If we're unsetting the feature and it has dependents, unset them first
         {
-            foreach (var dependent in s_featureDependencies.Where(x => x.Value.Contains((Feature)feature)).Select(x => x.Key))
+            foreach (var dependent in s_featureDependencies.Where(x => x.Value.Contains(feature)).Select(x => x.Key))
             {
                 SetFeature(dependent, isCompulsory, isSet);
             }
@@ -284,6 +284,20 @@ public class Features
         {
             _featureFlags = first._featureFlags | second._featureFlags
         };
+    }
+
+    /// <summary>
+    /// Checks if a feature is set.
+    /// </summary>
+    /// <param name="feature">The feature to check.</param>
+    /// <returns>true if the feature is set, false otherwise.</returns>
+    /// <remarks>
+    /// We don't care if the feature is compulsory or optional.
+    /// </remarks>
+    public bool HasFeature(Feature feature)
+    {
+        // Check if feature is either set as compulsory or optional
+        return IsFeatureSet(feature, false) || IsFeatureSet(feature, true);
     }
 
     /// <summary>
