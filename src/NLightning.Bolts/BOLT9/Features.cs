@@ -222,7 +222,7 @@ public class Features
     /// <remarks>
     /// If the length of the byte array is included, the first 2 bytes are written as the length of the byte array.
     /// </remarks>
-    public void Serialize(BinaryWriter writer, bool asGlobal = false, bool includeLength = true)
+    public async Task SerializeAsync(Stream stream, bool asGlobal = false, bool includeLength = true)
     {
         // If it's a global feature, cut out any bit greater than 13
         if (asGlobal)
@@ -236,11 +236,11 @@ public class Features
         // Write the length of the byte array or 1 if all bytes are zero
         if (includeLength)
         {
-            writer.Write(EndianBitConverter.GetBytesBE((ushort)bytes.Length));
+            await stream.WriteAsync(EndianBitConverter.GetBytesBE((ushort)bytes.Length));
         }
 
         // Otherwise, return the array starting from the first non-zero byte
-        writer.Write(bytes);
+        await stream.WriteAsync(bytes);
     }
 
     /// <summary>
@@ -251,21 +251,27 @@ public class Features
     /// <remarks>
     /// If the length of the byte array is included, the first 2 bytes are read as the length of the byte array.
     /// </remarks>
-    public void Deserialize(BinaryReader reader, bool includeLength = true)
+    public static async Task<Features> DeserializeAsync(Stream stream, bool includeLength = true)
     {
         var length = 8;
 
+        var bytes = new byte[2];
         if (includeLength)
         {
             // Read the length of the byte array
-            length = EndianBitConverter.ToUInt16BE(reader.ReadBytes(2));
+            await stream.ReadExactlyAsync(bytes);
+            length = EndianBitConverter.ToUInt16BE(bytes);
         }
 
         // Read the byte array
-        var bytes = reader.ReadBytes(length);
+        bytes = new byte[length];
+        await stream.ReadExactlyAsync(bytes);
 
         // Convert the byte array to ulong
-        _featureFlags = EndianBitConverter.ToUInt64BE(bytes, length < 8);
+        return new()
+        {
+            _featureFlags = EndianBitConverter.ToUInt64BE(bytes, length < 8)
+        };
     }
 
     /// <summary>

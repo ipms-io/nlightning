@@ -51,47 +51,54 @@ public readonly struct BigSize(ulong value)
     /// <param name="reader">The reader to deserialize from.</param>
     /// <returns>The deserialized big size.</returns>
     /// <exception cref="ArgumentException">Thrown when the stream is empty or insufficient data is available.</exception>
-    public static BigSize Deserialize(BinaryReader reader)
+    public static async Task<BigSize> DeserializeAsync(Stream stream)
     {
-        if (reader.BaseStream.Position == reader.BaseStream.Length)
+        if (stream.Position == stream.Length)
         {
             throw new ArgumentException("BigSize cannot be read from an empty stream.");
         }
 
-        var prefix = reader.ReadByte();
+        var prefix = new byte[1];
+        await stream.ReadExactlyAsync(prefix);
         ulong value;
 
-        if (prefix < 0xfd)
+        if (prefix[0] < 0xfd)
         {
-            value = prefix;
+            value = prefix[0];
         }
-        else if (prefix == 0xfd)
+        else if (prefix[0] == 0xfd)
         {
             // Check if there are enough bytes to read
-            if (reader.BaseStream.Position + 2 > reader.BaseStream.Length)
+            if (stream.Position + 2 > stream.Length)
             {
                 throw new ArgumentException("BigSize cannot be read from a stream with insufficient data.");
             }
 
-            value = EndianBitConverter.ToUInt16BE(reader.ReadBytes(2));
+            var bytes = new byte[2];
+            await stream.ReadExactlyAsync(bytes);
+            value = EndianBitConverter.ToUInt16BE(bytes);
         }
-        else if (prefix == 0xfe)
+        else if (prefix[0] == 0xfe)
         {
-            if (reader.BaseStream.Position + 4 > reader.BaseStream.Length)
+            if (stream.Position + 4 > stream.Length)
             {
                 throw new ArgumentException("BigSize cannot be read from a stream with insufficient data.");
             }
 
-            value = EndianBitConverter.ToUInt32BE(reader.ReadBytes(4));
+            var bytes = new byte[4];
+            await stream.ReadExactlyAsync(bytes);
+            value = EndianBitConverter.ToUInt32BE(bytes);
         }
         else
         {
-            if (reader.BaseStream.Position + 8 > reader.BaseStream.Length)
+            if (stream.Position + 8 > stream.Length)
             {
                 throw new ArgumentException("BigSize cannot be read from a stream with insufficient data.");
             }
 
-            value = EndianBitConverter.ToUInt64BE(reader.ReadBytes(8));
+            var bytes = new byte[8];
+            await stream.ReadExactlyAsync(bytes);
+            value = EndianBitConverter.ToUInt64BE(bytes);
         }
 
         return new BigSize(value);

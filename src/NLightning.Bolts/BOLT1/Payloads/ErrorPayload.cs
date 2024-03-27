@@ -1,6 +1,7 @@
-namespace NLightning.Bolts.BOLT1.Types;
+namespace NLightning.Bolts.BOLT1.Payloads;
 
 using System.IO;
+using System.Threading.Tasks;
 using Bolts.Interfaces;
 using NLightning.Common;
 
@@ -23,10 +24,10 @@ public class ErrorPayload : IMessagePayload
         Data = reader.ReadBytes(EndianBitConverter.ToUInt16BE(reader.ReadBytes(2)));
     }
 
-    public void Serialize(BinaryWriter writer)
+    public async Task SerializeAsync(Stream stream)
     {
-        ChannelId.Serialize(writer);
-        writer.Write(EndianBitConverter.GetBytesBE((ushort)Data.Length));
-        writer.Write(Data);
+        await ChannelId.SerializeAsync(stream);
+        await stream.WriteAsync(EndianBitConverter.GetBytesBE((ushort)Data.Length));
+        await stream.WriteAsync(Data);
     }
 }

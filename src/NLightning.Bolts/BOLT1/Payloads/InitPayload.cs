@@ -1,4 +1,4 @@
-namespace NLightning.Bolts.BOLT1.Types;
+namespace NLightning.Bolts.BOLT1.Payloads;
 
 using System.IO;
 using Bolts.BOLT9;
@@ -12,20 +12,19 @@ public class InitPayload : IMessagePayload
     {
         Features = features;
     }
-    public InitPayload(BinaryReader reader)
+
+    public async Task SerializeAsync(Stream stream)
     {
-        var globalFeatures = new Features();
-        globalFeatures.Deserialize(reader);
-
-        var features = new Features();
-        features.Deserialize(reader);
-
-        Features = Features.Combine(globalFeatures, features);
+        await Features.SerializeAsync(stream, true);
+        await Features.SerializeAsync(stream);
     }
 
-    public void Serialize(BinaryWriter writer)
+    public static async Task<InitPayload> DeserializeAsync(Stream stream)
     {
-        Features.Serialize(writer, true);
-        Features.Serialize(writer);
+        var globalFeatures = await Features.DeserializeAsync(stream, true);
+
+        var features = await Features.DeserializeAsync(stream);
+
+        return new InitPayload(Features.Combine(globalFeatures, features));
     }
 }

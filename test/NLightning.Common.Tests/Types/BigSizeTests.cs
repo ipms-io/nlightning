@@ -7,7 +7,7 @@ using static Utils.TestUtils;
 public partial class BigSizeTests
 {
     [Fact]
-    public void Given_VectorInputs_When_DeserializeBigSize_Then_ResultIsKnown()
+    public async Task Given_VectorInputs_When_DeserializeBigSize_Then_ResultIsKnown()
     {
         // Arrange
         var testVectors = ReadTestVectors("Vectors/BigSize.txt").Where(x => x.Error == null);
@@ -16,10 +16,9 @@ public partial class BigSizeTests
         {
             // Arrange
             using var memoryStream = new MemoryStream(testVector.Bytes);
-            using var reader = new BinaryReader(memoryStream);
 
             // Act
-            var bigSizeValue = BigSize.Deserialize(reader);
+            var bigSizeValue = await BigSize.DeserializeAsync(memoryStream);
 
             // Assert
             Assert.Equal(testVector.Value, bigSizeValue.Value);
@@ -27,7 +26,7 @@ public partial class BigSizeTests
     }
 
     [Fact]
-    public void Given_VectorInputs_When_DeserializeBigSize_Then_ErrorIsThrown()
+    public async Task Given_VectorInputs_When_DeserializeBigSize_Then_ErrorIsThrown()
     {
         // Arrange
         var testVectors = ReadTestVectors("Vectors/BigSize.txt").Where(x => x.Error != null);
@@ -36,13 +35,12 @@ public partial class BigSizeTests
         {
             // Arrange
             using var memoryStream = new MemoryStream(testVector.Bytes);
-            using var reader = new BinaryReader(memoryStream);
 
             // Act
-            void Deserialize() => BigSize.Deserialize(reader);
+            Task Deserialize() => BigSize.DeserializeAsync(memoryStream);
 
             // Assert
-            var exception = Assert.ThrowsAny<Exception>(Deserialize);
+            var exception = Assert.ThrowsAnyAsync<Exception>(Deserialize);
         }
     }
 

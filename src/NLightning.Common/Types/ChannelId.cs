@@ -22,9 +22,9 @@ public readonly struct ChannelId
         _value = reader.ReadBytes(LENGTH);
     }
 
-    public void Serialize(BinaryWriter writer)
+    public ValueTask SerializeAsync(Stream stream)
     {
-        writer.Write(_value);
+        return stream.WriteAsync(_value);
     }
 
     public readonly bool Equals(ChannelId other)

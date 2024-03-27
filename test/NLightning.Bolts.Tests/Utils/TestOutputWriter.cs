@@ -3,14 +3,9 @@ using Xunit.Abstractions;
 
 namespace NLightning.Bolts.Tests.Utils;
 
-public class TestOutputWriter : TextWriter
+public class TestOutputWriter(ITestOutputHelper output) : TextWriter
 {
-    private readonly ITestOutputHelper _output;
-
-    public TestOutputWriter(ITestOutputHelper output)
-    {
-        _output = output;
-    }
+    private readonly ITestOutputHelper _output = output;
 
     public override Encoding Encoding => Encoding.UTF8;
 

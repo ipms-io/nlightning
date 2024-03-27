@@ -231,7 +231,7 @@ public class FeaturesTests
     [InlineData(Feature.OptionStaticRemoteKey, true, 2)]
     [InlineData(Feature.GossipQueries, false, 1)]
     [InlineData(Feature.GossipQueries, true, 1)]
-    public void Given_Features_When_Serialize_Then_BytesAreTrimmed(Feature feature, bool isCompulsory, int expectedLength)
+    public async Task Given_Features_When_Serialize_Then_BytesAreTrimmed(Feature feature, bool isCompulsory, int expectedLength)
     {
         // Arrange
         var features = new Features();
@@ -240,10 +240,9 @@ public class FeaturesTests
         features.SetFeature(Feature.VarOnionOptin, false, false);
 
         using var stream = new MemoryStream();
-        using var writer = new BinaryWriter(stream);
 
         // Act
-        features.Serialize(writer);
+        await features.SerializeAsync(stream);
         var bytes = stream.ToArray();
         var length = EndianBitConverter.ToUInt16BE(bytes[..2]);
 
@@ -252,7 +251,7 @@ public class FeaturesTests
     }
 
     [Fact]
-    public void Given_Features_When_SerializeWithoutLength_Then_LengthIsAlways8()
+    public async Task Given_Features_When_SerializeWithoutLength_Then_LengthIsAlways8()
     {
         // Arrange
         var features = new Features();
@@ -262,10 +261,9 @@ public class FeaturesTests
         features.SetFeature(Feature.VarOnionOptin, false, false);
 
         using var stream = new MemoryStream();
-        using var writer = new BinaryWriter(stream);
 
         // Act
-        features.Serialize(writer, includeLength: false);
+        await features.SerializeAsync(stream, includeLength: false);
         var bytes = stream.ToArray();
 
         // Assert
@@ -287,7 +285,7 @@ public class FeaturesTests
     [InlineData(Feature.OptionStaticRemoteKey, true, new byte[2] { 16, 0 })]
     [InlineData(Feature.GossipQueries, false, new byte[1] { 128 })]
     [InlineData(Feature.GossipQueries, true, new byte[1] { 64 })]
-    public void Given_Features_When_Serialize_Then_BytesAreKnown(Feature feature, bool isCompulsory, byte[] expected)
+    public async Task Given_Features_When_Serialize_Then_BytesAreKnown(Feature feature, bool isCompulsory, byte[] expected)
     {
         // Arrange
         var features = new Features();
@@ -296,10 +294,9 @@ public class FeaturesTests
         features.SetFeature(Feature.VarOnionOptin, false, false);
 
         using var stream = new MemoryStream();
-        using var writer = new BinaryWriter(stream);
 
         // Act
-        features.Serialize(writer);
+        await features.SerializeAsync(stream);
         var bytes = stream.ToArray();
 
         // Assert
@@ -307,7 +304,7 @@ public class FeaturesTests
     }
 
     [Fact]
-    public void Given_Features_When_SerializeWithoutLength_Then_BytesAreKnown()
+    public async Task Given_Features_When_SerializeWithoutLength_Then_BytesAreKnown()
     {
         // Arrange
         var features = new Features();
@@ -317,10 +314,9 @@ public class FeaturesTests
         features.SetFeature(Feature.VarOnionOptin, false, false);
 
         using var stream = new MemoryStream();
-        using var writer = new BinaryWriter(stream);
 
         // Act
-        features.Serialize(writer, includeLength: false);
+        await features.SerializeAsync(stream, includeLength: false);
         var bytes = stream.ToArray();
 
         // Assert
@@ -328,7 +324,7 @@ public class FeaturesTests
     }
 
     [Fact]
-    public void Given_Features_When_SerializeAsGlobal_Then_NoFeaturesGreaterThan13ArePresent()
+    public async Task Given_Features_When_SerializeAsGlobal_Then_NoFeaturesGreaterThan13ArePresent()
     {
         // Arrange
         var features = new Features();
@@ -338,10 +334,9 @@ public class FeaturesTests
         features.SetFeature(Feature.VarOnionOptin, false, false);
 
         using var stream = new MemoryStream();
-        using var writer = new BinaryWriter(stream);
 
         // Act
-        features.Serialize(writer, true);
+        await features.SerializeAsync(stream, true);
         var bytes = stream.ToArray();
 
         // Assert
@@ -365,19 +360,13 @@ public class FeaturesTests
     [InlineData(new byte[4] { 0, 2, 16, 0 }, true, Feature.OptionStaticRemoteKey)]
     [InlineData(new byte[3] { 0, 1, 128 }, false, Feature.GossipQueries)]
     [InlineData(new byte[3] { 0, 1, 64 }, true, Feature.GossipQueries)]
-    public void Given_Buffer_When_Deserialize_Then_FeatureIsSet(byte[] buffer, bool isCompulsory, Feature expected)
+    public async Task Given_Buffer_When_Deserialize_Then_FeatureIsSet(byte[] buffer, bool isCompulsory, Feature expected)
     {
         // Arrange
-        var features = new Features();
-        // Clean default features
-        features.SetFeature(Feature.InitialRoutingSync, true, false);
-        features.SetFeature(Feature.VarOnionOptin, false, false);
-
         using var stream = new MemoryStream(buffer);
-        using var reader = new BinaryReader(stream);
 
         // Act
-        features.Deserialize(reader);
+        var features = await Features.DeserializeAsync(stream);
 
         // Assert
         Assert.True(features.IsFeatureSet(expected, isCompulsory));
@@ -385,19 +374,13 @@ public class FeaturesTests
     }
 
     [Fact]
-    public void Given_Buffer_When_DeserializeWithoutLength_Then_FeatureIsSet()
+    public async Task Given_Buffer_When_DeserializeWithoutLength_Then_FeatureIsSet()
     {
         // Arrange
-        var features = new Features();
-        // Clean default features
-        features.SetFeature(Feature.InitialRoutingSync, true, false);
-        features.SetFeature(Feature.VarOnionOptin, false, false);
-
         using var stream = new MemoryStream([0, 0, 0, 0, 0, 0, 0, 1]);
-        using var reader = new BinaryReader(stream);
 
         // Act
-        features.Deserialize(reader, false);
+        var features = await Features.DeserializeAsync(stream, false);
 
         // Assert
         Assert.True(features.IsFeatureSet(Feature.OptionDataLossProtect, true));
@@ -405,19 +388,13 @@ public class FeaturesTests
     }
 
     [Fact]
-    public void Given_WrongLengthBuffer_When_Deserialize_Then_FeatureIsNotSet()
+    public async Task Given_WrongLengthBuffer_When_Deserialize_Then_FeatureIsNotSet()
     {
         // Arrange
-        var features = new Features();
-        // Clean default features
-        features.SetFeature(Feature.InitialRoutingSync, true, false);
-        features.SetFeature(Feature.VarOnionOptin, false, false);
-
         using var stream = new MemoryStream([0, 6, 8, 128, 0, 0, 0, 0, 0]);
-        using var reader = new BinaryReader(stream);
 
         // Act
-        features.Deserialize(reader);
+        var features = await Features.DeserializeAsync(stream);
 
         // Assert
         Assert.False(features.IsFeatureSet(Feature.OptionZeroconf, false));

@@ -9,13 +9,6 @@ public sealed class TLVStream
 {
     private HashSet<TLV> _tlvs = [];
 
-    public TLVStream()
-    { }
-    public TLVStream(BinaryReader reader)
-    {
-        Deserialize(reader);
-    }
-
     /// <summary>
     /// Add a TLV to the stream
     /// </summary>
@@ -78,14 +71,23 @@ public sealed class TLVStream
     /// <param name="reader">The reader to use</param>
     /// <returns>The TLV stream</returns>
     /// <exception cref="SerializationException">Error deserializing TLVStream or any of it's TLVs</exception>
-    public void Deserialize(BinaryReader reader)
+    public static async Task<TLVStream?> DeserializeAsync(Stream stream)
     {
+        if (stream.Position == stream.Length)
+        {
+            return null;
+        }
+
         try
         {
-            while (reader.BaseStream.Position != reader.BaseStream.Length)
+            var tlvStream = new TLVStream();
+
+            while (stream.Position != stream.Length)
             {
-                Add(TLV.Deserialize(reader));
+                tlvStream.Add(await TLV.DeserializeAsync(stream));
             }
+
+            return tlvStream;
         }
         catch (Exception e)
         {

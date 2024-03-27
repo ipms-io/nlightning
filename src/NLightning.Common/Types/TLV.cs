@@ -42,13 +42,15 @@ public sealed class TLV(BigSize type, BigSize length, byte[] value) : IEquatable
     /// <param name="reader">The reader to use</param>
     /// <returns>The TLV</returns>
     /// <exception cref="SerializationException">Error deserializing TLV or any of it's parts</exception>
-    public static TLV Deserialize(BinaryReader reader)
+    public static async Task<TLV> DeserializeAsync(Stream stream)
     {
         try
         {
-            var type = BigSize.Deserialize(reader);
-            var length = BigSize.Deserialize(reader);
-            var value = reader.ReadBytes(length);
+            var type = await BigSize.DeserializeAsync(stream);
+            var length = await BigSize.DeserializeAsync(stream);
+            var value = new byte[length];
+            await stream.ReadExactlyAsync(value);
+
             return new TLV(type, length, value);
         }
         catch (Exception e)
