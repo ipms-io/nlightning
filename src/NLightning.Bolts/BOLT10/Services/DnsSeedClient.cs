@@ -1,9 +1,9 @@
 namespace NLightning.Bolts.BOLT10.Services;
 
 using System.Net;
-using NBitcoin.DataEncoders;
 using DnsClient;
 using DnsClient.Protocol;
+using NBitcoin.DataEncoders;
 
 public static class DnsSeedClient
 {
@@ -36,7 +36,7 @@ public static class DnsSeedClient
                         if (result.Answers.Count > 0)
                         {
                             var publicKey = GetPublicKey(srv);
-                            string ip = GetIp(result.Answers[0]);
+                            var ip = GetIp(result.Answers[0]);
 
                             if (ip != "0.0.0.0" && ip != "[::0]")
                             {
@@ -57,9 +57,9 @@ public static class DnsSeedClient
 
     private static string GetIp(DnsResourceRecord answer)
     {
-        if (answer is ARecord)
+        if (answer is ARecord record)
         {
-            return ((ARecord)answer).Address.ToString();
+            return record.Address.ToString();
         }
 
         return $"[{((AaaaRecord)answer).Address}]";
@@ -67,8 +67,8 @@ public static class DnsSeedClient
 
     private static byte[] GetPublicKey(SrvRecord srv)
     {
-        string bech32 = srv.Target.Value.Split('.').First();
-        Bech32Encoder bech32Encoder = Encoders.Bech32("ln");
+        var bech32 = srv.Target.Value.Split('.').First();
+        var bech32Encoder = Encoders.Bech32("ln");
         var bech32Data5Bits = bech32Encoder.DecodeDataRaw(bech32, out _);
         var bech32Data8Bits = ConvertBits(bech32Data5Bits, 5, 8, false);
         return bech32Data8Bits;
@@ -80,11 +80,11 @@ public static class DnsSeedClient
      */
     private static byte[] ConvertBits(IEnumerable<byte> data, int fromBits, int toBits, bool pad = true)
     {
-        int num1 = 0;
-        int num2 = 0;
-        int num3 = (1 << toBits) - 1;
-        List<byte> byteList = new List<byte>();
-        foreach (byte num4 in data)
+        var num1 = 0;
+        var num2 = 0;
+        var num3 = (1 << toBits) - 1;
+        var byteList = new List<byte>();
+        foreach (var num4 in data)
         {
             if ((int)num4 >> fromBits > 0)
                 throw new FormatException("Invalid Bech32 string");
