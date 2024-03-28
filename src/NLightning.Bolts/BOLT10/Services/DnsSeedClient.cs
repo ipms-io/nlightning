@@ -17,10 +17,12 @@ public static class DnsSeedClient
     /// <param name="ipV6">Return IPv6 endpoints</param>
     /// <param name="nameServers">Provide your own nameservers to override system</param>
     /// <returns></returns>
-    public static List<NodeRecord> FindNodes(int nodeCount, List<string> seeds, bool ipV6 = false, params IPAddress[] nameServers)
+    public static List<NodeRecord> FindNodes(int nodeCount, List<string> seeds, bool ipV6 = false, bool useTcp = false, params IPAddress[] nameServers)
     {
-        var client = nameServers.Any() ?
-            new LookupClient(nameServers) : new LookupClient();
+        var opts = nameServers.Any() ?
+            new LookupClientOptions(nameServers) : new LookupClientOptions();
+        opts.UseTcpOnly = true;
+        var client = new LookupClient(opts);
         var list = new List<NodeRecord>();
         foreach (var dnsSeed in seeds)
         {
