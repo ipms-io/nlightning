@@ -1,4 +1,3 @@
-
 using System.Net;
 using NLightning.Bolts.BOLT10.Services;
 using NLightning.Bolts.Tests.Utils;
@@ -21,10 +20,10 @@ public class DnsBootstrapTests
     [Theory]
     [InlineData(true)]
     [InlineData(false, Skip = "Github doesn't allow UDP")]
-    public void Get_Bootstrap_Nodes_From_DNS_Seeds_IPv4(bool useTcp)
+    public void Get_Bootstrap_Nodes_From_DNS_Seeds_IPv4(bool tcpOnly)
     {
         var results = DnsSeedClient.FindNodes(10, new List<string>() { "nodes.lightning.directory", "lseed.bitcoinstats.com" },
-            false, useTcp, IPAddress.Parse("8.8.8.8"));
+            false, useTcp: tcpOnly, new IPAddress[] { IPAddress.Parse("8.8.8.8") });
         Assert.True(results.Count > 0, "No seeds returned.");
         foreach (var r in results)
         {
@@ -35,10 +34,10 @@ public class DnsBootstrapTests
     [Theory]
     [InlineData(true)]
     [InlineData(false, Skip = "Github doesn't allow UDP")]
-    public void Get_Bootstrap_Nodes_From_DNS_Seeds_IPv6(bool useTcp)
+    public void Get_Bootstrap_Nodes_From_DNS_Seeds_IPv6(bool tcpOnly)
     {
         var results = DnsSeedClient.FindNodes(10, new List<string>() { "nodes.lightning.directory", "lseed.bitcoinstats.com" },
-            true, useTcp, IPAddress.Parse("8.8.8.8"));
+            true, useTcp: tcpOnly, new IPAddress[] { IPAddress.Parse("8.8.8.8") });
         //Don't asserts so few doesn't always return any.
         //Assert.True(results.Count > 0, "No seeds returned.");
         foreach (var r in results)
@@ -46,5 +45,4 @@ public class DnsBootstrapTests
             $"{Convert.ToHexString(r.Pubkey).ToLower()}@{r.Endpoint.ToString().Replace(" ", string.Empty)}".Print();
         }
     }
-
 }

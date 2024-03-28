@@ -15,13 +15,14 @@ public static class DnsSeedClient
     /// <param name="nodeCount">Records to return</param>
     /// <param name="seeds">List of seed domains</param>
     /// <param name="ipV6">Return IPv6 endpoints</param>
+    /// <param name="useTcp">Use TCP Only</param>
     /// <param name="nameServers">Provide your own nameservers to override system</param>
     /// <returns></returns>
     public static List<NodeRecord> FindNodes(int nodeCount, List<string> seeds, bool ipV6 = false, bool useTcp = false, params IPAddress[] nameServers)
     {
         var opts = nameServers.Any() ?
             new LookupClientOptions(nameServers) : new LookupClientOptions();
-        opts.UseTcpOnly = true;
+        opts.UseTcpOnly = useTcp;
         var client = new LookupClient(opts);
         var list = new List<NodeRecord>();
         foreach (var dnsSeed in seeds)
