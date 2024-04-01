@@ -3,18 +3,62 @@ namespace NLightning.Bolts.BOLT1.Services;
 using Bolts.Interfaces;
 using Factories;
 using Interfaces;
+using BOLT8.Interfaces;
 
-public sealed class MessageService() : IMessageService
+internal sealed class MessageService : IMessageService
 {
-    public Task<IMessage> ReceiveMessageAsync(Stream networkStream)
+    private readonly ITransportService _transportService;
+
+    private bool _disposed;
+
+    public event EventHandler<IMessage>? MessageReceived;
+    public bool IsConnected => _transportService.IsConnected;
+
+    public MessageService(ITransportService transportService)
     {
-        return MessageFactory.DeserializeMessageAsync(networkStream);
+        _transportService = transportService;
+
+        _transportService.MessageReceived += (sender, message) =>
+        {
+            _ = ReceiveMessageAsync(message);
+        };
     }
 
-    public async Task SendMessageAsync(IMessage message, Stream networkStream)
+    public async Task SendMessageAsync(IMessage message)
     {
-        await message.SerializeAsync(networkStream);
-
-        await networkStream.FlushAsync();
+        await _transportService.WriteMessageAsync(message);
     }
+
+    private async Task ReceiveMessageAsync(MemoryStream stream)
+    {
+        var message = await MessageFactory.DeserializeMessageAsync(stream);
+
+        MessageReceived?.Invoke(this, message);
+    }
+
+    #region Dispose Pattern
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    private void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                _transportService.Dispose();
+            }
+
+            _disposed = true;
+        }
+    }
+
+    ~MessageService()
+    {
+        Dispose(false);
+    }
+    #endregion
 }

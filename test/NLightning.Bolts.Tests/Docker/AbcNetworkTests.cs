@@ -1,17 +1,16 @@
 using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Net;
-using System.Net.Sockets;
 using Lnrpc;
-using ServiceStack;
 using ServiceStack.Text;
 using Xunit.Abstractions;
 
 namespace NLightning.Bolts.Tests.Docker;
 
-using Bolts.BOLT8.Dhs;
-using Bolts.BOLT8.Services;
+using System.Net;
 using Fixtures;
+using NBitcoin;
+using NLightning.Bolts.BOLT1.Primitives;
+using NLightning.Bolts.BOLT1.Services;
+using ServiceStack;
 using Utils;
 
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
@@ -33,21 +32,16 @@ public class AbcNetworkTests
         var alice = _lightningRegtestNetworkFixture.Builder?.LNDNodePool?.ReadyNodes.First(x => x.LocalAlias == "alice");
         Assert.NotNull(alice);
 
-        var tcpClient1 = new TcpClient();
-        await tcpClient1.ConnectAsync(new IPEndPoint((await Dns.GetHostAddressesAsync(alice.Host.SplitOnFirst("//")[1].SplitOnFirst(":")[0])).First(), 9735));
-
-        var localKeys = new Secp256k1().GenerateKeyPair();
-        var handshakeService = new HandshakeService(true, localKeys.PrivateKey.ToBytes(), alice.LocalNodePubKeyBytes);
-
-        var transportService = new TransportService(handshakeService, tcpClient1);
-        transportService.MessageReceived += (sender, bytes) =>
+        var nodeOptions = new NodeOptions
         {
-            Debug.Print(Convert.ToHexString(bytes));
+            EnableDataLossProtect = true,
+            EnableStaticRemoteKey = true,
+            EnablePaymentSecret = true,
         };
+        var peerService = new PeerService(nodeOptions);
 
-        // Act
-        await transportService.Initialize();
-        await Task.Delay(1000);
+        var aliceHost = new IPEndPoint((await Dns.GetHostAddressesAsync(alice.Host.SplitOnFirst("//")[1].SplitOnFirst(":")[0])).First(), 9735);
+        await peerService.ConnectToPeerAsync(new PeerAddress(new PubKey(alice.LocalNodePubKeyBytes), aliceHost.Address.ToString(), aliceHost.Port));
     }
 
     [Fact]

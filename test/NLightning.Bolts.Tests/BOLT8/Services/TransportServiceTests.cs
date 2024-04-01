@@ -63,7 +63,7 @@ public partial class TransportServiceTests
         var transportService = new TransportService(handshakeServiceMock.Object, tcpClient1);
 
         // Act
-        await transportService.Initialize();
+        await transportService.InitializeAsync();
 
         // Assert
         handshakeServiceMock.Verify(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny), Times.Exactly(2));
@@ -78,7 +78,7 @@ public partial class TransportServiceTests
         var transportService = new TransportService(handshakeServiceMock.Object, tcpClient1);
 
         // Act
-        var exception = await Assert.ThrowsAnyAsync<InvalidOperationException>(() => transportService.Initialize());
+        var exception = await Assert.ThrowsAnyAsync<InvalidOperationException>(() => transportService.InitializeAsync());
 
         // Assert
         Assert.Equal("TcpClient is not connected", exception.Message);

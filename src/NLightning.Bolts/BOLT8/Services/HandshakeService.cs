@@ -136,7 +136,6 @@ internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> loca
             if (disposing)
             {
                 _handshakeState.Dispose();
-                Transport?.Dispose();
             }
 
             _disposed = true;

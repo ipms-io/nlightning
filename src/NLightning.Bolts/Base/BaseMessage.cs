@@ -7,7 +7,7 @@ public abstract class BaseMessage : IMessage
 {
     public ushort Type { get; protected set; }
 
-    public IMessagePayload Payload { get; protected set; }
+    public virtual IMessagePayload Payload { get; protected set; }
 
     public TLVStream? Extension { get; protected set; }
 
@@ -25,12 +25,12 @@ public abstract class BaseMessage : IMessage
 
     public virtual async Task SerializeAsync(Stream stream)
     {
-        await stream.WriteAsync(EndianBitConverter.GetBytesBE(Type));
-
         if (Payload == null)
         {
             throw new NullReferenceException("Payload must not be null.");
         }
+
+        await stream.WriteAsync(EndianBitConverter.GetBytesBE(Type));
 
         await Payload.SerializeAsync(stream);
 

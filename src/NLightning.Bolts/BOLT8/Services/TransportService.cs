@@ -10,14 +10,16 @@ using static Common.Utils.Exceptions;
 public sealed class TransportService : ITransportService
 {
     private readonly TcpClient _tcpClient;
-    private readonly bool _isInitiator;
+    private readonly IHandshakeService? _handshakeService;
 
-    private IHandshakeService? _handshakeService;
     private ITransport? _transport;
     private bool _disposed;
 
     // event that will be called when a message is received
-    public event EventHandler<byte[]>? MessageReceived;
+    public event EventHandler<MemoryStream>? MessageReceived;
+
+    public bool IsInitiator { get; }
+    public bool IsConnected => _tcpClient.Connected;
 
     public TransportService(bool isInitiator, ReadOnlySpan<byte> s, ReadOnlySpan<byte> rs, TcpClient tcpClient) : this(new HandshakeService(isInitiator, s, rs), tcpClient)
     { }
@@ -26,10 +28,10 @@ public sealed class TransportService : ITransportService
     {
         _handshakeService = handshakeService;
         _tcpClient = tcpClient;
-        _isInitiator = handshakeService.IsInitiator;
+        IsInitiator = handshakeService.IsInitiator;
     }
 
-    public async Task Initialize()
+    public async Task InitializeAsync()
     {
         ThrowIfDisposed(_disposed, nameof(TransportService));
         if (_handshakeService == null)
@@ -42,14 +44,15 @@ public sealed class TransportService : ITransportService
             throw new InvalidOperationException("TcpClient is not connected");
         }
 
-        using var stream = _tcpClient.GetStream();
         var writeBuffer = new byte[50];
+        var stream = _tcpClient.GetStream();
 
         if (_handshakeService.IsInitiator)
         {
             // Write Act One
             var len = _handshakeService.PerformStep(ProtocolConstants.EMPTY_MESSAGE, writeBuffer);
             await stream.WriteAsync(writeBuffer.AsMemory()[..len]);
+            await stream.FlushAsync();
 
             // Read exactly 50 bytes
             var readBuffer = new byte[50];
@@ -59,6 +62,7 @@ public sealed class TransportService : ITransportService
             writeBuffer = new byte[66];
             len = _handshakeService.PerformStep(readBuffer, writeBuffer);
             await stream.WriteAsync(writeBuffer.AsMemory()[..len]);
+            await stream.FlushAsync();
         }
         else
         {
@@ -69,6 +73,7 @@ public sealed class TransportService : ITransportService
             // Read Act One and Write Act Two
             var len = _handshakeService.PerformStep(readBuffer, writeBuffer);
             await stream.WriteAsync(writeBuffer.AsMemory()[..len]);
+            await stream.FlushAsync();
 
             // Read exactly 66 bytes
             readBuffer = [66];
@@ -92,32 +97,53 @@ public sealed class TransportService : ITransportService
 
         // Dispose of the handshake service
         _handshakeService.Dispose();
-        _handshakeService = null;
     }
 
-    public void WriteMessage<PayloadType>(IMessage message) where PayloadType : IMessagePayload
+    public async Task WriteMessageAsync(IMessage message)
     {
         ThrowIfDisposed(_disposed, nameof(TransportService));
+
+        if (!_tcpClient.Connected)
+        {
+            throw new InvalidOperationException("TcpClient is not connected");
+        }
+
         if (_transport == null)
         {
             throw new InvalidOperationException("Handshake not completed");
         }
 
-        if (!_isInitiator)
+        if (!IsInitiator)
         {
             throw new InvalidOperationException("Responder cannot write messages");
         }
 
+        // Serialize message
+        using var messageStream = new MemoryStream();
+        await message.SerializeAsync(messageStream);
+
         // Encrypt message
         var buffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        // _transport.WriteMessage(message.Serialize(), buffer);
+        var size = _transport.WriteMessage(messageStream.ToArray(), buffer);
 
         // Write message to stream
         using var stream = _tcpClient.GetStream();
-        stream.Write(buffer);
+        await stream.WriteAsync(buffer.AsMemory()[..size]);
+        await stream.FlushAsync();
 
         // Read response
         ReadResponse(stream);
+    }
+
+    public async Task DisconnectAsync()
+    {
+        ThrowIfDisposed(_disposed, nameof(TransportService));
+        if (_tcpClient.Connected)
+        {
+            _handshakeService?.Dispose();
+            _transport?.Dispose();
+            _tcpClient.Dispose();
+        }
     }
 
     private void ReadResponse(NetworkStream stream)
@@ -137,7 +163,8 @@ public sealed class TransportService : ITransportService
         messageLen = _transport.ReadMessagePayload(buffer.AsSpan()[..messageLen], buffer);
 
         // Raise event
-        MessageReceived?.Invoke(this, buffer[..messageLen]);
+        var messageStream = new MemoryStream(buffer[..messageLen]);
+        MessageReceived?.Invoke(this, messageStream);
     }
     private void ReadResponse()
     {
@@ -158,7 +185,8 @@ public sealed class TransportService : ITransportService
         messageLen = _transport.ReadMessagePayload(buffer.AsSpan()[..messageLen], buffer);
 
         // Raise event
-        MessageReceived?.Invoke(this, buffer[..messageLen]);
+        var messageStream = new MemoryStream(buffer[..messageLen]);
+        MessageReceived?.Invoke(this, messageStream);
     }
 
     #region Dispose Pattern

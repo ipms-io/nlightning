@@ -4,6 +4,11 @@ using Bolts.Interfaces;
 
 public interface ITransportService : IDisposable
 {
-    Task Initialize();
-    void WriteMessage<PayloadType>(IMessage message) where PayloadType : IMessagePayload;
+    Task InitializeAsync();
+    Task WriteMessageAsync(IMessage message);
+    Task DisconnectAsync();
+
+    event EventHandler<MemoryStream>? MessageReceived;
+    bool IsInitiator { get; }
+    bool IsConnected { get; }
 }

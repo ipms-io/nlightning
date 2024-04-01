@@ -4,10 +4,9 @@ using Bolts.Base;
 using Constants;
 using Payloads;
 
-public sealed class InitMessage : BaseMessage
+public sealed class InitMessage(InitPayload payload, TLVStream? extension = null) : BaseMessage(MessageTypes.INIT, payload, extension)
 {
-    public InitMessage(InitPayload payload, TLVStream? extension = null) : base(MessageTypes.INIT, payload, extension)
-    { }
+    public new InitPayload Payload { get => (InitPayload)base.Payload; }
 
     public static async Task<InitMessage> DeserializeAsync(Stream stream)
     {

@@ -1,11 +1,17 @@
 using System.Net;
+using NLightning.Bolts.BOLT8.Dhs;
+using NLightning.Bolts.BOLT8.Primitives;
 using NLightning.Bolts.BOLT9;
 using NLightning.Common.Constants;
 
-namespace NLightning.Bolts.BOLT1;
+namespace NLightning.Bolts;
 
-public sealed class Bolt1Options
+public sealed class NodeOptions
 {
+    #region Crypto
+    internal KeyPair KeyPair;
+    #endregion
+
     #region Features
     public bool EnableDataLossProtect = false;
     public bool EnableInitialRoutingSync = false;
@@ -32,6 +38,15 @@ public sealed class Bolt1Options
     public IEnumerable<ChainHash> ChainHashes = [];
     public IPAddress? RemoteAddress = null;
     #endregion
+
+    public NodeOptions()
+    {
+        KeyPair = new Secp256k1().GenerateKeyPair();
+    }
+    public NodeOptions(NBitcoin.Key p)
+    {
+        KeyPair = new KeyPair(p);
+    }
 
     internal Features GetNodeFeatures()
     {
@@ -159,9 +174,9 @@ public sealed class Bolt1Options
         return extension;
     }
 
-    internal static Bolt1Options GetBolt1Options(Features features, TLVStream? extension)
+    internal static NodeOptions GetNodeOptions(Features features, TLVStream? extension)
     {
-        var options = new Bolt1Options
+        var options = new NodeOptions
         {
             EnableDataLossProtect = features.HasFeature(Feature.OptionDataLossProtect),
             EnableInitialRoutingSync = features.HasFeature(Feature.InitialRoutingSync),

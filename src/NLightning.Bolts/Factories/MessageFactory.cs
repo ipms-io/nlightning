@@ -1,6 +1,5 @@
 namespace NLightning.Bolts.Factories;
 
-using BOLT1;
 using BOLT1.Messages;
 using BOLT1.Payloads;
 using Bolts.Constants;
@@ -8,7 +7,7 @@ using Interfaces;
 
 public static class MessageFactory
 {
-    public static IMessage CreateInitMessage(Bolt1Options options)
+    public static IMessage CreateInitMessage(NodeOptions options)
     {
         // Get features from options
         var features = options.GetNodeFeatures();
@@ -20,7 +19,7 @@ public static class MessageFactory
         return new InitMessage(payload, extension);
     }
 
-    public static async Task<IMessage> DeserializeMessageAsync(Stream stream)
+    public static async Task<IMessage> DeserializeMessageAsync(MemoryStream stream)
     {
         // Get type of message
         var typeBytes = new byte[2];
