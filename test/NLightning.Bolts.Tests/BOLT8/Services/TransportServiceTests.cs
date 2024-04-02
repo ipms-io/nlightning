@@ -6,9 +6,12 @@ namespace NLightning.Bolts.Tests.BOLT8.Services;
 using Bolts.BOLT8.Services;
 using Mock;
 using NBitcoin;
+using NLightning.Bolts.Exceptions;
 
 public partial class TransportServiceTests
 {
+    private readonly Random _random = new();
+
     [Fact]
     public async void Given_TransportServiceAsInitiator_When_InitializeIsCalled_Then_HandshakeServicePerformStepIsCalledTwice()
     {
@@ -45,7 +48,7 @@ public partial class TransportServiceTests
         });
         handshakeServiceMock.Object.SetIsInitiator(true);
         var tcpClient1 = new TcpClient();
-        var tcpListener = new TcpListener(IPAddress.Loopback, 65535);
+        var tcpListener = new TcpListener(IPAddress.Loopback, _random.Next(1024, 65535));
         tcpListener.Start();
         _ = Task.Run(async () =>
         {
@@ -63,7 +66,7 @@ public partial class TransportServiceTests
         var transportService = new TransportService(handshakeServiceMock.Object, tcpClient1);
 
         // Act
-        await transportService.InitializeAsync();
+        await transportService.InitializeAsync(TimeSpan.FromSeconds(30));
 
         // Assert
         handshakeServiceMock.Verify(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny), Times.Exactly(2));
@@ -78,9 +81,53 @@ public partial class TransportServiceTests
         var transportService = new TransportService(handshakeServiceMock.Object, tcpClient1);
 
         // Act
-        var exception = await Assert.ThrowsAnyAsync<InvalidOperationException>(() => transportService.InitializeAsync());
+        var exception = await Assert.ThrowsAnyAsync<InvalidOperationException>(() => transportService.InitializeAsync(TimeSpan.FromSeconds(30)));
 
         // Assert
         Assert.Equal("TcpClient is not connected", exception.Message);
+    }
+
+    [Fact]
+    public async Task Given_TransportService_When_TimeoutOccurs_Then_ThrowsConnectionTimeoutException()
+    {
+        // Arrange
+        var handshakeServiceMock = new Mock<FakeHandshakeService>();
+        var steps = 2;
+        handshakeServiceMock.Setup(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny)).Returns((byte[] inMessage, out byte[] outMessage) =>
+        {
+            if (steps == 2)
+            {
+                steps--;
+                if (inMessage.Length != 50 && inMessage.Length != 0)
+                {
+                    throw new InvalidOperationException("Expected 50 bytes");
+                }
+                outMessage = new byte[50];
+                return 50;
+            }
+
+            throw new InvalidOperationException("There's no more steps to complete");
+        });
+        handshakeServiceMock.Object.SetIsInitiator(true);
+        var tcpClient1 = new TcpClient();
+        var tcpListener = new TcpListener(IPAddress.Loopback, _random.Next(1024, 65535));
+        tcpListener.Start();
+        _ = Task.Run(async () =>
+        {
+            var tcpClient2 = await tcpListener.AcceptTcpClientAsync();
+            var stream = tcpClient2.GetStream();
+            var buffer = new byte[50];
+            await stream.ReadExactlyAsync(buffer);
+
+            await stream.WriteAsync(buffer);
+        });
+        tcpClient1.Connect(IPEndPoint.Parse(tcpListener.LocalEndpoint.ToEndpointString()));
+        var transportService = new TransportService(handshakeServiceMock.Object, tcpClient1);
+
+        // Act
+        var exception = await Assert.ThrowsAnyAsync<ConnectionTimeoutException>(() => transportService.InitializeAsync(TimeSpan.Zero));
+
+        // Assert
+        Assert.Equal("Timeout while reading Handhsake's Act 2", exception.Message);
     }
 }

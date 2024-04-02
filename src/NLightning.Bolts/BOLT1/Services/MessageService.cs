@@ -18,18 +18,15 @@ internal sealed class MessageService : IMessageService
     {
         _transportService = transportService;
 
-        _transportService.MessageReceived += (sender, message) =>
-        {
-            _ = ReceiveMessageAsync(message);
-        };
+        _transportService.MessageReceived += ReceiveMessageAsync;
     }
 
-    public async Task SendMessageAsync(IMessage message)
+    public async Task SendMessageAsync(IMessage message, CancellationToken cancellationToken = default)
     {
-        await _transportService.WriteMessageAsync(message);
+        await _transportService.WriteMessageAsync(message, cancellationToken);
     }
 
-    private async Task ReceiveMessageAsync(MemoryStream stream)
+    private async void ReceiveMessageAsync(object? _, MemoryStream stream)
     {
         var message = await MessageFactory.DeserializeMessageAsync(stream);
 

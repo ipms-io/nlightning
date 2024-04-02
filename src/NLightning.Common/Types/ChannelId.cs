@@ -8,6 +8,8 @@ public readonly struct ChannelId
 
     public static ChannelId Zero => new([LENGTH]);
 
+    public readonly bool Equals(ChannelId other) => _value.SequenceEqual(other._value);
+
     public ChannelId(byte[] value)
     {
         if (value.Length != LENGTH)
@@ -17,21 +19,20 @@ public readonly struct ChannelId
 
         _value = value;
     }
-    public ChannelId(BinaryReader reader)
-    {
-        _value = reader.ReadBytes(LENGTH);
-    }
 
     public ValueTask SerializeAsync(Stream stream)
     {
         return stream.WriteAsync(_value);
     }
 
-    public readonly bool Equals(ChannelId other)
+    public static async Task<ChannelId> DeserializeAsync(Stream stream)
     {
-        return _value.SequenceEqual(other._value);
+        var buffer = new byte[LENGTH];
+        await stream.ReadAsync(buffer);
+        return new ChannelId(buffer);
     }
 
+    #region Overrides
     public override readonly bool Equals(object? obj)
     {
         if (obj is ChannelId other)
@@ -46,7 +47,9 @@ public readonly struct ChannelId
     {
         return BitConverter.ToInt32(_value, 0);
     }
+    #endregion
 
+    #region Operators
     public static implicit operator byte[](ChannelId c) => c._value;
     public static implicit operator ChannelId(byte[] value) => new(value);
 
@@ -59,4 +62,5 @@ public readonly struct ChannelId
     {
         return !(left == right);
     }
+    #endregion
 }

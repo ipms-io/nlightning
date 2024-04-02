@@ -8,7 +8,7 @@ namespace NLightning.Common.Types;
 /// <param name="type">A message-specific, 64-bit identifier for the TLV</param>
 /// <param name="length">The length of the value</param>
 /// <param name="value">The value</param>
-public sealed class TLV(BigSize type, BigSize length, byte[] value) : IEquatable<TLV>
+public class TLV(BigSize type, BigSize length, byte[] value) : IEquatable<TLV>
 {
     public BigSize Type { get; set; } = type;
     public BigSize Length { get; set; } = length;
@@ -16,19 +16,17 @@ public sealed class TLV(BigSize type, BigSize length, byte[] value) : IEquatable
 
     public TLV(BigSize type, byte[] value) : this(type, value.Length, value)
     { }
+    internal TLV(BigSize type) : this(type, 0, [])
+    { }
 
-    public byte[] Serialize()
+    public async Task SerializeAsync(Stream stream)
     {
         try
         {
-            using var stream = new MemoryStream();
-            using var writer = new BinaryWriter(stream);
+            await Type.SerializeAsync(stream);
+            await Length.SerializeAsync(stream);
 
-            Type.Serialize(writer);
-            Length.Serialize(writer);
-            writer.Write(Value);
-
-            return stream.ToArray();
+            await stream.WriteAsync(Value);
         }
         catch (Exception e)
         {

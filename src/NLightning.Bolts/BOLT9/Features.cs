@@ -244,6 +244,20 @@ public class Features
     }
 
     /// <summary>
+    /// Checks if a feature is set.
+    /// </summary>
+    /// <param name="feature">The feature to check.</param>
+    /// <returns>true if the feature is set, false otherwise.</returns>
+    /// <remarks>
+    /// We don't care if the feature is compulsory or optional.
+    /// </remarks>
+    public bool HasFeature(Feature feature)
+    {
+        // Check if feature is either set as compulsory or optional
+        return IsFeatureSet(feature, false) || IsFeatureSet(feature, true);
+    }
+
+    /// <summary>
     /// Deserializes the features from a binary reader.
     /// </summary>
     /// <param name="reader">The binary reader to read from.</param>
@@ -290,20 +304,6 @@ public class Features
         {
             _featureFlags = first._featureFlags | second._featureFlags
         };
-    }
-
-    /// <summary>
-    /// Checks if a feature is set.
-    /// </summary>
-    /// <param name="feature">The feature to check.</param>
-    /// <returns>true if the feature is set, false otherwise.</returns>
-    /// <remarks>
-    /// We don't care if the feature is compulsory or optional.
-    /// </remarks>
-    public bool HasFeature(Feature feature)
-    {
-        // Check if feature is either set as compulsory or optional
-        return IsFeatureSet(feature, false) || IsFeatureSet(feature, true);
     }
 
     /// <summary>

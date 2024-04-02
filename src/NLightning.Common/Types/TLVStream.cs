@@ -7,7 +7,7 @@ namespace NLightning.Common.Types;
 /// </summary>
 public sealed class TLVStream
 {
-    private HashSet<TLV> _tlvs = [];
+    private readonly SortedDictionary<BigSize, TLV> _tlvs = [];
 
     /// <summary>
     /// Add a TLV to the stream
@@ -15,7 +15,12 @@ public sealed class TLVStream
     /// <param name="tlv">The TLV to add</param>
     public void Add(TLV tlv)
     {
-        _tlvs.Add(tlv);
+        if (_tlvs.ContainsKey(tlv.Type))
+        {
+            throw new ArgumentException($"A TLV with type {tlv.Type} already exists.");
+        }
+
+        _tlvs[tlv.Type] = tlv;
     }
 
     /// <summary>
@@ -23,7 +28,7 @@ public sealed class TLVStream
     /// </summary>
     public IEnumerable<TLV> GetTlvs()
     {
-        return _tlvs;
+        return _tlvs.Values;
     }
 
     /// <summary>
@@ -33,8 +38,7 @@ public sealed class TLVStream
     /// <returns></returns>
     public bool TryGetTlv(BigSize type, out TLV? tlv)
     {
-        tlv = _tlvs.FirstOrDefault(tlv => tlv.Type == type);
-        return tlv != null;
+        return _tlvs.TryGetValue(type, out tlv);
     }
 
     /// <summary>
@@ -46,22 +50,13 @@ public sealed class TLVStream
     }
 
     /// <summary>
-    /// Order the TLVs by type
-    /// </summary>
-    public IEnumerable<TLV> Ordered()
-    {
-        _tlvs = [.. _tlvs.OrderBy(tlv => tlv.Type)];
-        return _tlvs;
-    }
-
-    /// <summary>
     /// Serialize the TLV stream
     /// </summary>
-    public void Serialize(BinaryWriter writer)
+    public async Task SerializeAsync(Stream stream)
     {
         foreach (var tlv in _tlvs)
         {
-            writer.Write(tlv.Serialize());
+            await tlv.Value.SerializeAsync(stream);
         }
     }
 

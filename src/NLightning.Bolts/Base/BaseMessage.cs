@@ -36,9 +36,9 @@ public abstract class BaseMessage : IMessage
 
         if (Extension?.Any() ?? false)
         {
-            foreach (var tlv in Extension.Ordered())
+            foreach (var tlv in Extension.GetTlvs())
             {
-                await stream.WriteAsync(tlv.Serialize());
+                await tlv.SerializeAsync(stream);
             }
         }
     }

@@ -12,6 +12,7 @@ namespace NLightning.Bolts.Tests.Docker;
 using BOLT1.Primitives;
 using BOLT1.Services;
 using Bolts.BOLT8.Dhs;
+using Common.Constants;
 using Fixtures;
 using Utils;
 
@@ -39,6 +40,7 @@ public class AbcNetworkTests
 
         var nodeOptions = new NodeOptions
         {
+            ChainHashes = [ChainConstants.Regtest],
             EnableDataLossProtect = true,
             EnableStaticRemoteKey = true,
             EnablePaymentSecret = true,
@@ -71,6 +73,7 @@ public class AbcNetworkTests
 
         var nodeOptions = new NodeOptions
         {
+            ChainHashes = [ChainConstants.Regtest],
             EnableDataLossProtect = true,
             EnableStaticRemoteKey = true,
             EnablePaymentSecret = true,

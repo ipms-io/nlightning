@@ -22,26 +22,26 @@ public readonly struct BigSize(ulong value)
     /// Serializes a big size to a BinaryWriter.
     /// </summary>
     /// <param name="writer">The writer to serialize to.</param>
-    public void Serialize(BinaryWriter writer)
+    public async Task SerializeAsync(Stream stream)
     {
         if (Value < 0xfd)
         {
-            writer.Write((byte)Value);
+            await stream.WriteAsync(new byte[1] { (byte)Value });
         }
         else if (Value < 0x10000)
         {
-            writer.Write((byte)0xfd);
-            writer.Write(EndianBitConverter.GetBytesBE((ushort)Value));
+            await stream.WriteAsync(new byte[1] { 0xfd });
+            await stream.WriteAsync(EndianBitConverter.GetBytesBE((ushort)Value));
         }
         else if (Value < 0x100000000)
         {
-            writer.Write((byte)0xfe);
-            writer.Write(EndianBitConverter.GetBytesBE((uint)Value));
+            await stream.WriteAsync(new byte[1] { 0xfe });
+            await stream.WriteAsync(EndianBitConverter.GetBytesBE((uint)Value));
         }
         else
         {
-            writer.Write((byte)0xff);
-            writer.Write(EndianBitConverter.GetBytesBE(Value));
+            await stream.WriteAsync(new byte[1] { 0xff });
+            await stream.WriteAsync(EndianBitConverter.GetBytesBE(Value));
         }
     }
 

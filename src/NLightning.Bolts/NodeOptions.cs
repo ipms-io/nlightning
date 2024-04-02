@@ -6,9 +6,14 @@ using BOLT8.Dhs;
 using BOLT8.Primitives;
 using BOLT9;
 using Common.Constants;
+using NLightning.Common.TLVs;
 
 public sealed class NodeOptions
 {
+    #region Network
+    public TimeSpan NetworkTimeout = TimeSpan.FromSeconds(15);
+    #endregion
+
     #region Crypto
     internal KeyPair KeyPair;
     #endregion
@@ -158,12 +163,11 @@ public sealed class NodeOptions
         // If there are no ChainHashes, use Mainnet as default
         if (!ChainHashes.Any())
         {
-            ChainHashes = [ChainConstants.Regtest];
+            ChainHashes = [ChainConstants.Main];
         }
 
-        // Concatenate all ChainHashes bytes and add it to the extension
-        var chainHashes = ChainHashes.SelectMany(x => (byte[])x).ToArray();
-        extension.Add(new(new BigSize(1), chainHashes));
+        var networks = new NetworksTLV(ChainHashes);
+        extension.Add(networks);
 
         // TODO: Review this when implementing BOLT7
         // // If RemoteAddress is set, add it to the extension

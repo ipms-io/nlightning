@@ -28,8 +28,7 @@ public class DnsBootstrapTests
             return; // Skip this test on GitHub Actions if using UDP
         }
 
-        var results = DnsSeedClient.FindNodes(10, new List<string>() { "nodes.lightning.directory", "lseed.bitcoinstats.com" },
-            false, useTcp: tcpOnly, new IPAddress[] { IPAddress.Parse("8.8.8.8") });
+        var results = DnsSeedClient.FindNodes(10, ["nodes.lightning.directory", "lseed.bitcoinstats.com"], false, useTcp: tcpOnly, [IPAddress.Parse("8.8.8.8")]);
         Assert.True(results.Count > 0, "No seeds returned.");
         foreach (var r in results)
         {
@@ -47,8 +46,7 @@ public class DnsBootstrapTests
             return; // Skip this test on GitHub Actions if using UDP
         }
 
-        var results = DnsSeedClient.FindNodes(10, new List<string>() { "nodes.lightning.directory", "lseed.bitcoinstats.com" },
-            true, useTcp: tcpOnly, new IPAddress[] { IPAddress.Parse("8.8.8.8") });
+        var results = DnsSeedClient.FindNodes(10, ["nodes.lightning.directory", "lseed.bitcoinstats.com"], true, useTcp: tcpOnly, [IPAddress.Parse("8.8.8.8")]);
         //Don't asserts so few doesn't always return any.
         //Assert.True(results.Count > 0, "No seeds returned.");
         foreach (var r in results)

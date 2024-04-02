@@ -34,13 +34,10 @@ public sealed class PeerService(NodeOptions nodeOptions)
 
         // Create and Initialize the transport service
         var transportService = new TransportService(true, _nodeOptions.KeyPair.PrivateKey.ToBytes(), peerAddress.PubKey.ToBytes(), tcpClient);
-        await transportService.InitializeAsync();
+        await transportService.InitializeAsync(_nodeOptions.NetworkTimeout);
 
-        // Create the message service
-        var messageService = new MessageService(transportService);
-
-        var peer = new Peer(_nodeOptions, messageService, peerAddress, false);
-        peer.Disconect += (sender, e) =>
+        var peer = new Peer(_nodeOptions, new MessageService(transportService), new PingPongService(_nodeOptions.NetworkTimeout), peerAddress, false);
+        peer.DisconnectEvent += (sender, e) =>
         {
             _peers.Remove(peerAddress.PubKey);
         };
@@ -57,7 +54,7 @@ public sealed class PeerService(NodeOptions nodeOptions)
 
         // Create and Initialize the transport service
         var transportService = new TransportService(false, _nodeOptions.KeyPair.PrivateKey.ToBytes(), _nodeOptions.KeyPair.PublicKey.ToBytes(), tcpClient);
-        await transportService.InitializeAsync();
+        await transportService.InitializeAsync(_nodeOptions.NetworkTimeout);
 
         // Create the message service
         var messageService = new MessageService(transportService);
@@ -65,9 +62,9 @@ public sealed class PeerService(NodeOptions nodeOptions)
         var peerAddress = new PeerAddress(transportService.RemoteStaticPublicKey, ipAddress, port);
 
         // Create the peer
-        var peer = new Peer(_nodeOptions, messageService, peerAddress, true);
+        var peer = new Peer(_nodeOptions, messageService, new PingPongService(_nodeOptions.NetworkTimeout), peerAddress, true);
 
-        peer.Disconect += (sender, e) =>
+        peer.DisconnectEvent += (sender, e) =>
         {
             _peers.Remove(peerAddress.PubKey);
         };

@@ -1,17 +1,11 @@
 namespace NLightning.Bolts.BOLT1.Payloads;
 
-using System.IO;
 using Bolts.BOLT9;
 using Bolts.Interfaces;
 
-public class InitPayload : IMessagePayload
+public class InitPayload(Features features) : IMessagePayload
 {
-    public Features Features { get; }
-
-    public InitPayload(Features features)
-    {
-        Features = features;
-    }
+    public Features Features { get; } = features;
 
     public async Task SerializeAsync(Stream stream)
     {

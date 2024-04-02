@@ -37,6 +37,7 @@ public readonly struct ChainHash
     }
 
     public static implicit operator byte[](ChainHash c) => c._value;
+    public static implicit operator ReadOnlyMemory<byte>(ChainHash c) => c._value;
     public static implicit operator ChainHash(byte[] value) => new(value);
 
     public static bool operator ==(ChainHash left, ChainHash right)

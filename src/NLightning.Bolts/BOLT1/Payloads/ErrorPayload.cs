@@ -1,32 +1,48 @@
+using System.Text;
+
 namespace NLightning.Bolts.BOLT1.Payloads;
 
-using System.IO;
-using System.Threading.Tasks;
 using Bolts.Interfaces;
 
-public class ErrorPayload : IMessagePayload
+public class ErrorPayload(byte[] data) : IMessagePayload
 {
     public ChannelId ChannelId { get; } = ChannelId.Zero;
-    public byte[] Data { get; }
+    public byte[]? Data { get; } = data;
 
-    public ErrorPayload(byte[] data)
-    {
-        Data = data;
-    }
     public ErrorPayload(ChannelId channelId, byte[] data) : this(data)
     {
         ChannelId = channelId;
     }
-    public ErrorPayload(BinaryReader reader)
-    {
-        ChannelId = new ChannelId(reader);
-        Data = reader.ReadBytes(EndianBitConverter.ToUInt16BE(reader.ReadBytes(2)));
-    }
+    public ErrorPayload(ChannelId channelId, string message) : this(channelId, Encoding.UTF8.GetBytes(message))
+    { }
+    public ErrorPayload(string message) : this(Encoding.UTF8.GetBytes(message))
+    { }
 
     public async Task SerializeAsync(Stream stream)
     {
         await ChannelId.SerializeAsync(stream);
-        await stream.WriteAsync(EndianBitConverter.GetBytesBE((ushort)Data.Length));
-        await stream.WriteAsync(Data);
+        if (Data == null)
+        {
+            await stream.WriteAsync(new byte[2] { 0, 0 });
+        }
+        else
+        {
+            await stream.WriteAsync(EndianBitConverter.GetBytesBE((ushort)Data.Length));
+            await stream.WriteAsync(Data);
+        }
+    }
+
+    public static async Task<ErrorPayload> DeserializeAsync(Stream stream)
+    {
+        var channelId = await ChannelId.DeserializeAsync(stream);
+
+        var buffer = new byte[2];
+        await stream.ReadExactlyAsync(buffer);
+        var dataLength = EndianBitConverter.ToUInt16BE(buffer);
+
+        var data = new byte[dataLength];
+        await stream.ReadExactlyAsync(data);
+
+        return new ErrorPayload(channelId, data);
     }
 }
