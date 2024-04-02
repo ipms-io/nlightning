@@ -60,6 +60,9 @@ public class AbcNetworkTests
     public async Task NLightning_BOLT8_Test_Alice_Connect()
     {
         // Arrange
+        // Get ip from host
+        var hostAddress = Environment.GetEnvironmentVariable("HOST_ADDRESS") ?? "host.docker.internal";
+
         var localKeys = new Secp256k1().GenerateKeyPair();
         var hex = BitConverter.ToString(localKeys.PublicKey.ToBytes()).Replace("-", "");
 
@@ -90,7 +93,7 @@ public class AbcNetworkTests
         {
             Addr = new LightningAddress
             {
-                Host = "host.docker.internal:9738",
+                Host = $"{hostAddress}:9738",
                 Pubkey = hex
             }
         });

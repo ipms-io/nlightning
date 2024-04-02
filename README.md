@@ -31,7 +31,7 @@ This project aims to provide a robust and efficient implementation of the Lightn
 - [ ] BOLT 7: P2P Node and Channel Discovery
 - [x] BOLT 8: Encrypted and Authenticated Transport
 - [x] BOLT 9: Assigned Feature Flags
-- [ ] BOLT 10: DNS Bootstrap and Assisted Node Location
+- [x] BOLT 10: DNS Bootstrap and Assisted Node Location
 - [ ] BOLT 11: Invoice Protocol for Lightning Payments
 
 ## Quick Start

@@ -17,5 +17,7 @@ for directory in "${directories[@]}"
 do
   echo "Running tests in $directory"
   cd $root_dir/$directory
-  dotnet test --settings coverlet.runsettings --collect:"XPlat Code Coverage" --no-build --verbosity normal --results-directory $root_dir/coverage -l "console;verbosity=detailed" --logger "trx;LogFileName=test-results.trx"
+  # Add this when running Docker tests
+  # export HOST_ADDRESS=$(ip route | awk 'NR==1 {print $3}')
+  dotnet test --filter 'FullyQualifiedName!~Docker' --settings coverlet.runsettings --no-build --verbosity normal -l "console;verbosity=detailed" --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx" --results-directory $root_dir/coverage
 done
