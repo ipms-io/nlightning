@@ -5,7 +5,6 @@ namespace NLightning.Bolts.BOLT1.Services;
 using System.Net;
 using BOLT1.Primitives;
 using BOLT8.Services;
-using Common;
 
 public sealed class PeerService(NodeOptions nodeOptions)
 {

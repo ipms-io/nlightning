@@ -1,10 +1,11 @@
 using System.Net;
-using NLightning.Bolts.BOLT10.Services;
-using NLightning.Bolts.Tests.Utils;
 using ServiceStack.Text;
 using Xunit.Abstractions;
 
 namespace NLightning.Bolts.Tests.BOLT10;
+
+using Bolts.BOLT10.Services;
+using Utils;
 
 /// <summary>
 /// This tests do not run on Github CI for some reason DNS will not resolve

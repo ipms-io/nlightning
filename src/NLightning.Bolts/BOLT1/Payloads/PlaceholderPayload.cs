@@ -1,6 +1,6 @@
-using NLightning.Bolts.Interfaces;
-
 namespace NLightning.Bolts.BOLT1.Payloads;
+
+using Bolts.Interfaces;
 
 /// <summary>
 /// Placeholder payload for messages that will be deserialized later.

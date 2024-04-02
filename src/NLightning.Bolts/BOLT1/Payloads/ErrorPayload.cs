@@ -3,7 +3,6 @@ namespace NLightning.Bolts.BOLT1.Payloads;
 using System.IO;
 using System.Threading.Tasks;
 using Bolts.Interfaces;
-using NLightning.Common;
 
 public class ErrorPayload : IMessagePayload
 {

@@ -1,7 +1,7 @@
 namespace NLightning.Bolts.Tests.BOLT9;
 
 using Bolts.BOLT9;
-using NLightning.Common.Utils;
+using Common.Utils;
 
 public class FeaturesTests
 {

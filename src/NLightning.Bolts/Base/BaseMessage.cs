@@ -1,7 +1,7 @@
 namespace NLightning.Bolts.Base;
 
+using BOLT1.Payloads;
 using Interfaces;
-using NLightning.Bolts.BOLT1.Payloads;
 
 public abstract class BaseMessage : IMessage
 {

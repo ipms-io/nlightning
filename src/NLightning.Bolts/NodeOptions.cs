@@ -1,10 +1,11 @@
 using System.Net;
-using NLightning.Bolts.BOLT8.Dhs;
-using NLightning.Bolts.BOLT8.Primitives;
-using NLightning.Bolts.BOLT9;
-using NLightning.Common.Constants;
 
 namespace NLightning.Bolts;
+
+using BOLT8.Dhs;
+using BOLT8.Primitives;
+using BOLT9;
+using Common.Constants;
 
 public sealed class NodeOptions
 {

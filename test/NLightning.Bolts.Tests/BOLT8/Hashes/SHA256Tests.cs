@@ -1,7 +1,6 @@
-using NLightning.Bolts.BOLT8.Hashes;
-
 namespace NLightning.Bolts.Tests.BOLT8.Hashes;
 
+using Bolts.BOLT8.Hashes;
 using static Utils.TestUtils;
 
 /// <summary>

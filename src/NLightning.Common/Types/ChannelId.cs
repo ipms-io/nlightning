@@ -1,4 +1,4 @@
-namespace NLightning.Common;
+namespace NLightning.Common.Types;
 
 public readonly struct ChannelId
 {

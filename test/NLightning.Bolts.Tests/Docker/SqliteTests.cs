@@ -1,10 +1,11 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using NLightning.Models;
 using ServiceStack.Text;
 using Xunit.Abstractions;
 
 namespace NLightning.Bolts.Tests.Docker;
+
+using Models;
 using Utils;
 
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture

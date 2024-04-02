@@ -1,18 +1,18 @@
 using System.Collections.Immutable;
+using System.Net;
+using System.Net.Sockets;
 using Lnrpc;
+using NBitcoin;
+using ServiceStack;
 using ServiceStack.Text;
 using Xunit.Abstractions;
 
 namespace NLightning.Bolts.Tests.Docker;
 
-using System.Net;
-using System.Net.Sockets;
+using BOLT1.Primitives;
+using BOLT1.Services;
+using Bolts.BOLT8.Dhs;
 using Fixtures;
-using NBitcoin;
-using NLightning.Bolts.BOLT1.Primitives;
-using NLightning.Bolts.BOLT1.Services;
-using NLightning.Bolts.BOLT8.Dhs;
-using ServiceStack;
 using Utils;
 
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture

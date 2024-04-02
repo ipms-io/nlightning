@@ -1,9 +1,9 @@
-using NLightning.Bolts.BOLT1.Interfaces;
-using NLightning.Bolts.BOLT1.Messages;
-using NLightning.Bolts.Factories;
-using NLightning.Bolts.Interfaces;
-
 namespace NLightning.Bolts.BOLT1.Primitives;
+
+using Bolts.Interfaces;
+using Factories;
+using Interfaces;
+using Messages;
 
 public sealed class Peer
 {
