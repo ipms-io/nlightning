@@ -15,6 +15,8 @@ internal interface IHandshakeService : IDisposable
     /// </summary>
     ITransport? Transport { get; }
 
+    NBitcoin.PubKey? RemoteStaticPublicKey { get; }
+
     /// <summary>
     /// Perform the next step in the handshake
     /// </summary>

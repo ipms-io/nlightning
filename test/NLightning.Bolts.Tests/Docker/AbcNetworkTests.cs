@@ -6,10 +6,12 @@ using Xunit.Abstractions;
 namespace NLightning.Bolts.Tests.Docker;
 
 using System.Net;
+using System.Net.Sockets;
 using Fixtures;
 using NBitcoin;
 using NLightning.Bolts.BOLT1.Primitives;
 using NLightning.Bolts.BOLT1.Services;
+using NLightning.Bolts.BOLT8.Dhs;
 using ServiceStack;
 using Utils;
 
@@ -29,6 +31,9 @@ public class AbcNetworkTests
     public async Task NLightning_BOLT8_Test_Connect_Alice()
     {
         // Arrange
+        var localKeys = new Secp256k1().GenerateKeyPair();
+        var hex = BitConverter.ToString(localKeys.PublicKey.ToBytes()).Replace("-", "");
+
         var alice = _lightningRegtestNetworkFixture.Builder?.LNDNodePool?.ReadyNodes.First(x => x.LocalAlias == "alice");
         Assert.NotNull(alice);
 
@@ -37,11 +42,62 @@ public class AbcNetworkTests
             EnableDataLossProtect = true,
             EnableStaticRemoteKey = true,
             EnablePaymentSecret = true,
+            KeyPair = localKeys
         };
         var peerService = new PeerService(nodeOptions);
 
         var aliceHost = new IPEndPoint((await Dns.GetHostAddressesAsync(alice.Host.SplitOnFirst("//")[1].SplitOnFirst(":")[0])).First(), 9735);
+
+        // Act
         await peerService.ConnectToPeerAsync(new PeerAddress(new PubKey(alice.LocalNodePubKeyBytes), aliceHost.Address.ToString(), aliceHost.Port));
+        var alicePeers = alice.LightningClient.ListPeers(new ListPeersRequest());
+
+        // Assert
+        Assert.NotNull(alicePeers.Peers.Where(x => x.PubKey.Equals(hex, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault());
+    }
+
+    [Fact]
+    public async Task NLightning_BOLT8_Test_Alice_Connect()
+    {
+        // Arrange
+        var localKeys = new Secp256k1().GenerateKeyPair();
+        var hex = BitConverter.ToString(localKeys.PublicKey.ToBytes()).Replace("-", "");
+
+        var alice = _lightningRegtestNetworkFixture.Builder?.LNDNodePool?.ReadyNodes.First(x => x.LocalAlias == "alice");
+        Assert.NotNull(alice);
+
+        var nodeOptions = new NodeOptions
+        {
+            EnableDataLossProtect = true,
+            EnableStaticRemoteKey = true,
+            EnablePaymentSecret = true,
+            KeyPair = localKeys
+        };
+        var peerService = new PeerService(nodeOptions);
+
+        _ = Task.Run(async () =>
+        {
+            var listener = new TcpListener(IPAddress.Any, 9738);
+            listener.Start();
+            var tcpClient = await listener.AcceptTcpClientAsync();
+
+            await peerService.AcceptPeerAsync(tcpClient);
+        });
+        await Task.Delay(1000);
+
+        // Act
+        await alice.LightningClient.ConnectPeerAsync(new ConnectPeerRequest
+        {
+            Addr = new LightningAddress
+            {
+                Host = "host.docker.internal:9738",
+                Pubkey = hex
+            }
+        });
+        var alicePeers = alice.LightningClient.ListPeers(new ListPeersRequest());
+
+        // Assert
+        Assert.NotNull(alicePeers.Peers.Where(x => x.PubKey.Equals(hex, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault());
     }
 
     [Fact]

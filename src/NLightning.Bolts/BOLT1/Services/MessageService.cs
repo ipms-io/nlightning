@@ -1,9 +1,9 @@
 namespace NLightning.Bolts.BOLT1.Services;
 
+using BOLT8.Interfaces;
 using Bolts.Interfaces;
 using Factories;
 using Interfaces;
-using BOLT8.Interfaces;
 
 internal sealed class MessageService : IMessageService
 {

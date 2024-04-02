@@ -6,9 +6,9 @@ public interface ITransportService : IDisposable
 {
     Task InitializeAsync();
     Task WriteMessageAsync(IMessage message);
-    Task DisconnectAsync();
 
     event EventHandler<MemoryStream>? MessageReceived;
     bool IsInitiator { get; }
     bool IsConnected { get; }
+    NBitcoin.PubKey? RemoteStaticPublicKey { get; }
 }

@@ -1,9 +1,11 @@
 using System.Net.Sockets;
-using NLightning.Bolts.BOLT1.Primitives;
-using NLightning.Bolts.BOLT8.Services;
-using NLightning.Common;
 
 namespace NLightning.Bolts.BOLT1.Services;
+
+using System.Net;
+using BOLT1.Primitives;
+using BOLT8.Services;
+using Common;
 
 public sealed class PeerService(NodeOptions nodeOptions)
 {
@@ -38,7 +40,7 @@ public sealed class PeerService(NodeOptions nodeOptions)
         // Create the message service
         var messageService = new MessageService(transportService);
 
-        var peer = new Peer(_nodeOptions, messageService, peerAddress);
+        var peer = new Peer(_nodeOptions, messageService, peerAddress, false);
         peer.Disconect += (sender, e) =>
         {
             _peers.Remove(peerAddress.PubKey);
@@ -47,13 +49,30 @@ public sealed class PeerService(NodeOptions nodeOptions)
         _peers.Add(peerAddress.PubKey, peer);
     }
 
-    public async Task<Peer> AcceptPeerAsync(TcpClient tcpClient)
+    public async Task AcceptPeerAsync(TcpClient tcpClient)
     {
+        // Get peer data
+        var remoteEndPoint = (IPEndPoint)(tcpClient.Client.RemoteEndPoint ?? throw new Exception("Failed to get remote endpoint"));
+        var ipAddress = remoteEndPoint.Address.ToString();
+        var port = remoteEndPoint.Port;
+
+        // Create and Initialize the transport service
         var transportService = new TransportService(false, _nodeOptions.KeyPair.PrivateKey.ToBytes(), _nodeOptions.KeyPair.PublicKey.ToBytes(), tcpClient);
         await transportService.InitializeAsync();
 
+        // Create the message service
         var messageService = new MessageService(transportService);
 
-        return new Peer(null, messageService, null);
+        var peerAddress = new PeerAddress(transportService.RemoteStaticPublicKey, ipAddress, port);
+
+        // Create the peer
+        var peer = new Peer(_nodeOptions, messageService, peerAddress, true);
+
+        peer.Disconect += (sender, e) =>
+        {
+            _peers.Remove(peerAddress.PubKey);
+        };
+
+        _peers.Add(peerAddress.PubKey, peer);
     }
 }

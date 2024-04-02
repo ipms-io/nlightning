@@ -31,6 +31,8 @@ internal sealed class HandshakeState : IHandshakeState
     private bool _turnToWrite;
     private bool _disposed;
 
+    public NBitcoin.PubKey? RemoteStaticPublicKey => _rs == null ? null : new NBitcoin.PubKey(_rs);
+
     /// <summary>
     /// Creates a new HandshakeState instance.
     /// </summary>

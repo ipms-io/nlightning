@@ -157,7 +157,7 @@ public sealed class NodeOptions
         // If there are no ChainHashes, use Mainnet as default
         if (!ChainHashes.Any())
         {
-            ChainHashes = [ChainConstants.Main];
+            ChainHashes = [ChainConstants.Regtest];
         }
 
         // Concatenate all ChainHashes bytes and add it to the extension

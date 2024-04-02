@@ -11,8 +11,10 @@ public sealed class TransportService : ITransportService
 {
     private readonly TcpClient _tcpClient;
     private readonly IHandshakeService? _handshakeService;
+    private readonly SemaphoreSlim _networkWriteSemaphore = new(1, 1);
 
     private ITransport? _transport;
+    private NBitcoin.PubKey? _remoteStaticPublicKey;
     private bool _disposed;
 
     // event that will be called when a message is received
@@ -20,6 +22,14 @@ public sealed class TransportService : ITransportService
 
     public bool IsInitiator { get; }
     public bool IsConnected => _tcpClient.Connected;
+    public NBitcoin.PubKey RemoteStaticPublicKey
+    {
+        get
+        {
+            ThrowIfDisposed(_disposed, nameof(TransportService));
+            return _handshakeService?.RemoteStaticPublicKey ?? throw new InvalidOperationException("Handshake not completed");
+        }
+    }
 
     public TransportService(bool isInitiator, ReadOnlySpan<byte> s, ReadOnlySpan<byte> rs, TcpClient tcpClient) : this(new HandshakeService(isInitiator, s, rs), tcpClient)
     { }
@@ -76,7 +86,7 @@ public sealed class TransportService : ITransportService
             await stream.FlushAsync();
 
             // Read exactly 66 bytes
-            readBuffer = [66];
+            readBuffer = new byte[66];
             await stream.ReadExactlyAsync(readBuffer);
 
             // Read Act Three
@@ -94,6 +104,7 @@ public sealed class TransportService : ITransportService
 
         // Handshake completed
         _transport = _handshakeService.Transport ?? throw new InvalidOperationException("Handshake not completed");
+        _remoteStaticPublicKey = _handshakeService.RemoteStaticPublicKey;
 
         // Dispose of the handshake service
         _handshakeService.Dispose();
@@ -127,46 +138,40 @@ public sealed class TransportService : ITransportService
         var size = _transport.WriteMessage(messageStream.ToArray(), buffer);
 
         // Write message to stream
-        using var stream = _tcpClient.GetStream();
-        await stream.WriteAsync(buffer.AsMemory()[..size]);
-        await stream.FlushAsync();
-
-        // Read response
-        ReadResponse(stream);
-    }
-
-    public async Task DisconnectAsync()
-    {
-        ThrowIfDisposed(_disposed, nameof(TransportService));
-        if (_tcpClient.Connected)
+        await _networkWriteSemaphore.WaitAsync();
+        try
         {
-            _handshakeService?.Dispose();
-            _transport?.Dispose();
-            _tcpClient.Dispose();
+            var stream = _tcpClient.GetStream();
+            await stream.WriteAsync(buffer.AsMemory()[..size]);
+            await stream.FlushAsync();
+        }
+        finally
+        {
+            _networkWriteSemaphore.Release();
         }
     }
 
-    private void ReadResponse(NetworkStream stream)
-    {
-        ThrowIfDisposed(_disposed, nameof(TransportService));
-        if (_transport == null)
-        {
-            throw new InvalidOperationException("Handshake not completed");
-        }
+    // private void ReadResponse(NetworkStream stream)
+    // {
+    //     ThrowIfDisposed(_disposed, nameof(TransportService));
+    //     if (_transport == null)
+    //     {
+    //         throw new InvalidOperationException("Handshake not completed");
+    //     }
 
-        var buffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+    //     var buffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
 
-        // Read response
-        stream.Read(buffer, 0, ProtocolConstants.MESSAGE_HEADER_SIZE);
-        var messageLen = _transport.ReadMessageLength(buffer.AsSpan()[..ProtocolConstants.MESSAGE_HEADER_SIZE]);
-        stream.Read(buffer, 0, messageLen);
-        messageLen = _transport.ReadMessagePayload(buffer.AsSpan()[..messageLen], buffer);
+    //     // Read response
+    //     stream.Read(buffer, 0, ProtocolConstants.MESSAGE_HEADER_SIZE);
+    //     var messageLen = _transport.ReadMessageLength(buffer.AsSpan()[..ProtocolConstants.MESSAGE_HEADER_SIZE]);
+    //     stream.Read(buffer, 0, messageLen);
+    //     messageLen = _transport.ReadMessagePayload(buffer.AsSpan()[..messageLen], buffer);
 
-        // Raise event
-        var messageStream = new MemoryStream(buffer[..messageLen]);
-        MessageReceived?.Invoke(this, messageStream);
-    }
-    private void ReadResponse()
+    //     // Raise event
+    //     var messageStream = new MemoryStream(buffer[..messageLen]);
+    //     MessageReceived?.Invoke(this, messageStream);
+    // }
+    private async void ReadResponse()
     {
         ThrowIfDisposed(_disposed, nameof(TransportService));
         if (_transport == null)
@@ -174,18 +179,21 @@ public sealed class TransportService : ITransportService
             throw new InvalidOperationException("Handshake not completed");
         }
 
-        using var stream = _tcpClient.GetStream();
-
-        var buffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        if (!_tcpClient.Connected)
+        {
+            throw new InvalidOperationException("TcpClient is not connected");
+        }
 
         // Read response
-        stream.Read(buffer, 0, ProtocolConstants.MESSAGE_HEADER_SIZE);
-        var messageLen = _transport.ReadMessageLength(buffer.AsSpan()[..ProtocolConstants.MESSAGE_HEADER_SIZE]);
-        stream.Read(buffer, 0, messageLen);
-        messageLen = _transport.ReadMessagePayload(buffer.AsSpan()[..messageLen], buffer);
+        var stream = _tcpClient.GetStream();
+        var memory = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH].AsMemory();
+        await stream.ReadAsync(memory[..ProtocolConstants.MESSAGE_HEADER_SIZE]);
+        var messageLen = _transport.ReadMessageLength(memory.Span[..ProtocolConstants.MESSAGE_HEADER_SIZE]);
+        await stream.ReadAsync(memory[..messageLen]);
+        messageLen = _transport.ReadMessagePayload(memory.Span[..messageLen], memory.Span);
 
         // Raise event
-        var messageStream = new MemoryStream(buffer[..messageLen]);
+        var messageStream = new MemoryStream(memory.Span[..messageLen].ToArray());
         MessageReceived?.Invoke(this, messageStream);
     }
 

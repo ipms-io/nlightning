@@ -10,24 +10,29 @@ public sealed class Peer
     private readonly IMessageService _messageService;
     private readonly PeerAddress _peerAddress;
     private readonly NodeOptions _nodeOptions;
+    private readonly bool _isInbound;
 
     private bool _isInitialized;
 
     public event EventHandler? Disconect;
 
-    internal Peer(NodeOptions nodeOptions, IMessageService messageService, PeerAddress peerAddress)
+    internal Peer(NodeOptions nodeOptions, IMessageService messageService, PeerAddress peerAddress, bool isInbound)
     {
         _messageService = messageService;
         _peerAddress = peerAddress;
         _nodeOptions = nodeOptions;
+        _isInbound = isInbound;
 
         _messageService.MessageReceived += HandleMessageAsync;
 
-        // Send the init message
-        var initMessage = MessageFactory.CreateInitMessage(_nodeOptions);
-        _messageService.SendMessageAsync(initMessage).Wait();
+        // Send the init message if we're the outbound peer
+        if (!_isInbound)
+        {
+            var initMessage = MessageFactory.CreateInitMessage(_nodeOptions);
+            _messageService.SendMessageAsync(initMessage).Wait();
+        }
 
-        if (_messageService.IsConnected == false)
+        if (!_messageService.IsConnected)
         {
             throw new Exception("Failed to connect to peer");
         }
@@ -38,6 +43,11 @@ public sealed class Peer
         if (!_isInitialized)
         {
             HandleInitializationAsync(message);
+            if (_isInbound)
+            {
+                var initMessage = MessageFactory.CreateInitMessage(_nodeOptions);
+                _messageService.SendMessageAsync(initMessage);
+            }
         }
     }
 
