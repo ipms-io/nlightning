@@ -1,31 +1,33 @@
+using System.Net;
 using System.Net.Sockets;
 
 namespace NLightning.Bolts.BOLT1.Services;
 
-using System.Net;
+using BOLT1.Interfaces;
 using BOLT1.Primitives;
-using BOLT8.Services;
 
-public sealed class PeerService(NodeOptions nodeOptions)
+public sealed class PeerService(NodeOptions nodeOptions, ITransportServiceFactory transportServiceFactory, IPingPongServiceFactory pingPongServiceFactory, IMessageServiceFactory messageServiceFactory) : IPeerService
 {
     private readonly NodeOptions _nodeOptions = nodeOptions;
+    private readonly ITransportServiceFactory _transportServiceFactory = transportServiceFactory;
+    private readonly IPingPongServiceFactory _pingPongServiceFactory = pingPongServiceFactory;
+    private readonly IMessageServiceFactory _messageServiceFactory = messageServiceFactory;
     private readonly Dictionary<NBitcoin.PubKey, Peer> _peers = [];
     private readonly Dictionary<ChannelId, NBitcoin.PubKey> _channels = [];
 
     public async Task ConnectToPeerAsync(PeerAddress peerAddress)
     {
-        // Create a cancelation token that expires in 30 seconds
-        var cancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token;
 
         // Connect to the peer
         var tcpClient = new TcpClient();
         try
         {
+            var cancellationToken = new CancellationTokenSource(_nodeOptions.NetworkTimeout).Token;
             await tcpClient.ConnectAsync(peerAddress.Host, peerAddress.Port, cancellationToken);
         }
         catch (OperationCanceledException)
         {
-            throw new Exception($"Failed to connect to peer {peerAddress.Host}:{peerAddress.Port} within 30 seconds");
+            throw new Exception($"Timeout connecting to peer {peerAddress.Host}:{peerAddress.Port}");
         }
         catch (Exception e)
         {
@@ -33,10 +35,10 @@ public sealed class PeerService(NodeOptions nodeOptions)
         }
 
         // Create and Initialize the transport service
-        var transportService = new TransportService(true, _nodeOptions.KeyPair.PrivateKey.ToBytes(), peerAddress.PubKey.ToBytes(), tcpClient);
+        var transportService = _transportServiceFactory.CreateTransportService(true, _nodeOptions.KeyPair.PrivateKey.ToBytes(), peerAddress.PubKey.ToBytes(), tcpClient);
         await transportService.InitializeAsync(_nodeOptions.NetworkTimeout);
 
-        var peer = new Peer(_nodeOptions, new MessageService(transportService), new PingPongService(_nodeOptions.NetworkTimeout), peerAddress, false);
+        var peer = new Peer(_nodeOptions, _messageServiceFactory.CreateMessageService(transportService), _pingPongServiceFactory.CreatePingPongService(_nodeOptions.NetworkTimeout), peerAddress, false);
         peer.DisconnectEvent += (sender, e) =>
         {
             _peers.Remove(peerAddress.PubKey);
@@ -53,16 +55,16 @@ public sealed class PeerService(NodeOptions nodeOptions)
         var port = remoteEndPoint.Port;
 
         // Create and Initialize the transport service
-        var transportService = new TransportService(false, _nodeOptions.KeyPair.PrivateKey.ToBytes(), _nodeOptions.KeyPair.PublicKey.ToBytes(), tcpClient);
+        var transportService = _transportServiceFactory.CreateTransportService(false, _nodeOptions.KeyPair.PrivateKey.ToBytes(), _nodeOptions.KeyPair.PublicKey.ToBytes(), tcpClient);
         await transportService.InitializeAsync(_nodeOptions.NetworkTimeout);
-
-        // Create the message service
-        var messageService = new MessageService(transportService);
-
+        if (transportService.RemoteStaticPublicKey == null)
+        {
+            throw new ErrorException("Failed to get remote static public key");
+        }
         var peerAddress = new PeerAddress(transportService.RemoteStaticPublicKey, ipAddress, port);
 
         // Create the peer
-        var peer = new Peer(_nodeOptions, messageService, new PingPongService(_nodeOptions.NetworkTimeout), peerAddress, true);
+        var peer = new Peer(_nodeOptions, _messageServiceFactory.CreateMessageService(transportService), _pingPongServiceFactory.CreatePingPongService(_nodeOptions.NetworkTimeout), peerAddress, true);
 
         peer.DisconnectEvent += (sender, e) =>
         {

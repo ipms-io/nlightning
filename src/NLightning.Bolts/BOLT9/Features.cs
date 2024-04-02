@@ -1,3 +1,6 @@
+using System.Runtime.Serialization;
+using System.Text;
+
 namespace NLightning.Bolts.BOLT9;
 
 /// <summary>
@@ -265,27 +268,36 @@ public class Features
     /// <remarks>
     /// If the length of the byte array is included, the first 2 bytes are read as the length of the byte array.
     /// </remarks>
+    /// <returns>The deserialized features.</returns>
+    /// <exception cref="SerializationException">Error deserializing Features</exception>
     public static async Task<Features> DeserializeAsync(Stream stream, bool includeLength = true)
     {
-        var length = 8;
-
-        var bytes = new byte[2];
-        if (includeLength)
+        try
         {
-            // Read the length of the byte array
+            var length = 8;
+
+            var bytes = new byte[2];
+            if (includeLength)
+            {
+                // Read the length of the byte array
+                await stream.ReadExactlyAsync(bytes);
+                length = EndianBitConverter.ToUInt16BE(bytes);
+            }
+
+            // Read the byte array
+            bytes = new byte[length];
             await stream.ReadExactlyAsync(bytes);
-            length = EndianBitConverter.ToUInt16BE(bytes);
+
+            // Convert the byte array to ulong
+            return new()
+            {
+                _featureFlags = EndianBitConverter.ToUInt64BE(bytes, length < 8)
+            };
         }
-
-        // Read the byte array
-        bytes = new byte[length];
-        await stream.ReadExactlyAsync(bytes);
-
-        // Convert the byte array to ulong
-        return new()
+        catch (Exception e)
         {
-            _featureFlags = EndianBitConverter.ToUInt64BE(bytes, length < 8)
-        };
+            throw new SerializationException("Error deserializing Features", e);
+        }
     }
 
     /// <summary>
@@ -304,6 +316,20 @@ public class Features
         {
             _featureFlags = first._featureFlags | second._featureFlags
         };
+    }
+
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+        for (var i = 0; i < sizeof(ulong) * 8; i++)
+        {
+            if (IsFeatureSet(i))
+            {
+                sb.Append($"{(Feature)i}, ");
+            }
+        }
+
+        return sb.ToString().TrimEnd(' ', ',');
     }
 
     /// <summary>

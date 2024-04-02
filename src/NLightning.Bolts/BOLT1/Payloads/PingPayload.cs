@@ -1,3 +1,5 @@
+using System.Runtime.Serialization;
+
 namespace NLightning.Bolts.BOLT1.Payloads;
 
 using Bolts.Interfaces;
@@ -25,23 +27,36 @@ public class PingPayload : IMessagePayload
         await stream.WriteAsync(Ignored);
     }
 
+    /// <summary>
+    /// Deserialize a PingPayload from a stream.
+    /// </summary>
+    /// <param name="stream">The stream to deserialize from.</param>
+    /// <returns>The deserialized PingPayload.</returns>
+    /// <exception cref="SerializationException">Error deserializing Payload</exception>
     public static async Task<PingPayload> DeserializeAsync(Stream stream)
     {
-        var buffer = new byte[2];
-        await stream.ReadExactlyAsync(buffer);
-        var numPongBytes = EndianBitConverter.ToUInt16BE(buffer);
-
-        await stream.ReadExactlyAsync(buffer);
-        var bytesLength = EndianBitConverter.ToUInt16BE(buffer);
-
-        var ignored = new byte[bytesLength];
-        await stream.ReadExactlyAsync(ignored);
-
-        return new PingPayload
+        try
         {
-            NumPongBytes = numPongBytes,
-            BytesLength = bytesLength,
-            Ignored = ignored
-        };
+            var buffer = new byte[2];
+            await stream.ReadExactlyAsync(buffer);
+            var numPongBytes = EndianBitConverter.ToUInt16BE(buffer);
+
+            await stream.ReadExactlyAsync(buffer);
+            var bytesLength = EndianBitConverter.ToUInt16BE(buffer);
+
+            var ignored = new byte[bytesLength];
+            await stream.ReadExactlyAsync(ignored);
+
+            return new PingPayload
+            {
+                NumPongBytes = numPongBytes,
+                BytesLength = bytesLength,
+                Ignored = ignored
+            };
+        }
+        catch (Exception e)
+        {
+            throw new SerializationException("Error deserializing PingPayload", e);
+        }
     }
 }

@@ -10,7 +10,7 @@ using Utils;
 /// Initializes a new instance of the <see cref="BigSize"/> struct.
 /// </remarks>
 /// <param name="value">The value of the big size.</param>
-public readonly struct BigSize(ulong value)
+public readonly struct BigSize(ulong value) : IComparable
 {
     /// <summary>
     /// The uint representation of the big size.
@@ -202,6 +202,16 @@ public readonly struct BigSize(ulong value)
     public override int GetHashCode()
     {
         return Value.GetHashCode();
+    }
+
+    public int CompareTo(object? obj)
+    {
+        if (obj is not BigSize bigSize)
+        {
+            throw new ArgumentException("Object is not a BigSize");
+        }
+
+        return Value.CompareTo(bigSize.Value);
     }
 
     public static bool operator ==(BigSize left, BigSize right)

@@ -9,11 +9,12 @@ using Xunit.Abstractions;
 
 namespace NLightning.Bolts.Tests.Docker;
 
-using BOLT1.Primitives;
-using BOLT1.Services;
+using Bolts.BOLT1.Primitives;
+using Bolts.BOLT1.Services;
 using Bolts.BOLT8.Dhs;
 using Common.Constants;
 using Fixtures;
+using NLightning.Bolts.BOLT1.Factories;
 using Utils;
 
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
@@ -46,7 +47,7 @@ public class AbcNetworkTests
             EnablePaymentSecret = true,
             KeyPair = localKeys
         };
-        var peerService = new PeerService(nodeOptions);
+        var peerService = new PeerService(nodeOptions, new TransportServiceFactory(), new PingPongServiceFactory(), new MessageServiceFactory());
 
         var aliceHost = new IPEndPoint((await Dns.GetHostAddressesAsync(alice.Host.SplitOnFirst("//")[1].SplitOnFirst(":")[0])).First(), 9735);
 
@@ -79,7 +80,7 @@ public class AbcNetworkTests
             EnablePaymentSecret = true,
             KeyPair = localKeys
         };
-        var peerService = new PeerService(nodeOptions);
+        var peerService = new PeerService(nodeOptions, new TransportServiceFactory(), new PingPongServiceFactory(), new MessageServiceFactory());
 
         _ = Task.Run(async () =>
         {

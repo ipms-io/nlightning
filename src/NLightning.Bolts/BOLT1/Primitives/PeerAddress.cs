@@ -36,9 +36,9 @@ public sealed partial class PeerAddress
         }
         else
         {
-            var parts = address.Split('@');
-            var hostPort = parts[1].Split(':');
+            var hostPort = address.Split(':');
             Host = IPAddress.Parse(hostPort[0]);
+            Port = int.Parse(hostPort[1]);
         }
     }
 

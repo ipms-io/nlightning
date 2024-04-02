@@ -1,10 +1,10 @@
 namespace NLightning.Bolts.BOLT1.Primitives;
 
+using Bolts.Factories;
 using Bolts.Interfaces;
 using Common.Constants;
 using Common.TLVs;
 using Constants;
-using Factories;
 using Interfaces;
 using Messages;
 
@@ -59,6 +59,8 @@ public sealed class Peer
     {
         _cancellationTokenSource.Cancel();
         _messageService.Dispose();
+
+        DisconnectEvent?.Invoke(this, EventArgs.Empty);
     }
 
     private void HandleMessageAsync(object? sender, IMessage message)
@@ -121,7 +123,7 @@ public sealed class Peer
                     {
                         Disconnect();
 
-                        throw new Exception("Peer is not compatible");
+                        throw new Exception("Peer chain is not compatible");
                     }
                 }
             }

@@ -1,3 +1,4 @@
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace NLightning.Bolts.BOLT1.Payloads;
@@ -32,17 +33,30 @@ public class ErrorPayload(byte[] data) : IMessagePayload
         }
     }
 
+    /// <summary>
+    /// Deserialize an ErrorPayload from a stream.
+    /// </summary>
+    /// <param name="stream">The stream to deserialize from.</param>
+    /// <returns>The deserialized ErrorPayload.</returns>
+    /// <exception cref="SerializationException">Error deserializing Payload</exception>
     public static async Task<ErrorPayload> DeserializeAsync(Stream stream)
     {
-        var channelId = await ChannelId.DeserializeAsync(stream);
+        try
+        {
+            var channelId = await ChannelId.DeserializeAsync(stream);
 
-        var buffer = new byte[2];
-        await stream.ReadExactlyAsync(buffer);
-        var dataLength = EndianBitConverter.ToUInt16BE(buffer);
+            var buffer = new byte[2];
+            await stream.ReadExactlyAsync(buffer);
+            var dataLength = EndianBitConverter.ToUInt16BE(buffer);
 
-        var data = new byte[dataLength];
-        await stream.ReadExactlyAsync(data);
+            var data = new byte[dataLength];
+            await stream.ReadExactlyAsync(data);
 
-        return new ErrorPayload(channelId, data);
+            return new ErrorPayload(channelId, data);
+        }
+        catch (Exception e)
+        {
+            throw new SerializationException("Error deserializing ErrorPayload", e);
+        }
     }
 }

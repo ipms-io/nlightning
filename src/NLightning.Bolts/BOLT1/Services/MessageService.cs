@@ -1,8 +1,8 @@
 namespace NLightning.Bolts.BOLT1.Services;
 
 using BOLT8.Interfaces;
+using Bolts.Factories;
 using Bolts.Interfaces;
-using Factories;
 using Interfaces;
 
 internal sealed class MessageService : IMessageService
@@ -23,6 +23,8 @@ internal sealed class MessageService : IMessageService
 
     public async Task SendMessageAsync(IMessage message, CancellationToken cancellationToken = default)
     {
+        Common.Utils.Exceptions.ThrowIfDisposed(_disposed, nameof(MessageService));
+
         await _transportService.WriteMessageAsync(message, cancellationToken);
     }
 

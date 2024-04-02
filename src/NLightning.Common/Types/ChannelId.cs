@@ -6,7 +6,7 @@ public readonly struct ChannelId
 
     private readonly byte[] _value;
 
-    public static ChannelId Zero => new([LENGTH]);
+    public static ChannelId Zero => new(new byte[LENGTH]);
 
     public readonly bool Equals(ChannelId other) => _value.SequenceEqual(other._value);
 
