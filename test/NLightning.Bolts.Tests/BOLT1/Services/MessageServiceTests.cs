@@ -1,6 +1,7 @@
 using System.Reflection;
 using NLightning.Bolts.BOLT1.Services;
 using NLightning.Bolts.BOLT8.Interfaces;
+using NLightning.Bolts.Factories;
 using NLightning.Bolts.Interfaces;
 
 namespace NLightning.Bolts.Tests.BOLT1.Services;
@@ -23,12 +24,16 @@ public class MessageServiceTests
     }
 
     [Fact]
-    public void Given_ReceivedMessage_When_ReceiveMessageAsync_IsInvoked_Then_MessageReceivedEventIsRaised()
+    public async Task Given_ReceivedMessage_When_ReceiveMessageAsync_IsInvoked_Then_MessageReceivedEventIsRaised()
     {
         // Arrange
         var transportServiceMock = new Mock<ITransportService>();
         var messageService = new MessageService(transportServiceMock.Object);
         var stream = new MemoryStream();
+        var pingMessage = MessageFactory.CreatePingMessage();
+        await pingMessage.SerializeAsync(stream);
+        stream.Position = 0;
+
         var eventRaised = false;
 
         messageService.MessageReceived += (sender, args) => eventRaised = true;

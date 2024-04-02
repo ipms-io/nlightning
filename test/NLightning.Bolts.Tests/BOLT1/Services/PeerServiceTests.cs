@@ -75,10 +75,12 @@ public class PeerServiceTests
 
         var peerService = new PeerService(nodeOptions, _mockTransportServiceFactory.Object, _mockPingPongServiceFactory.Object, _mockMessageServiceFactory.Object);
 
-        var tcpListener = new TcpListener(IPAddress.Loopback, _random.Next(1024, 65535));
-        // tcpListener.Start();
+        var tcpListener = new FakeTcpListener(IPAddress.Loopback, _random.Next(1024, 65535));
+        tcpListener.Start();
 
         var peerAddress = new PeerAddress(new PubKey("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7"), tcpListener.LocalEndpoint.ToEndpointString());
+
+        _ = Task.Run(() => tcpListener.AcceptTcpClientAsync(new CancellationTokenSource(TimeSpan.FromSeconds(1)).Token));
 
         // Act & Assert
         var exception = await Assert.ThrowsAnyAsync<Exception>(() => peerService.ConnectToPeerAsync(peerAddress));
