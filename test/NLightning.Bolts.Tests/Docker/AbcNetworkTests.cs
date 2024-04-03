@@ -57,7 +57,7 @@ public class AbcNetworkTests
         var alicePeers = alice.LightningClient.ListPeers(new ListPeersRequest());
 
         // Assert
-        Assert.NotNull(alicePeers.Peers.Where(x => x.PubKey.Equals(hex, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault());
+        Assert.NotNull(alicePeers.Peers.FirstOrDefault(x => x.PubKey.Equals(hex, StringComparison.CurrentCultureIgnoreCase)));
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public class AbcNetworkTests
             var alicePeers = alice.LightningClient.ListPeers(new ListPeersRequest());
 
             // Assert
-            Assert.NotNull(alicePeers.Peers.Where(x => x.PubKey.Equals(hex, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault());
+            Assert.NotNull(alicePeers.Peers.FirstOrDefault(x => x.PubKey.Equals(hex, StringComparison.CurrentCultureIgnoreCase)));
         }
         finally
         {
