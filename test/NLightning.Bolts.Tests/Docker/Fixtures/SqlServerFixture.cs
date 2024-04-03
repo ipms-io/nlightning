@@ -11,15 +11,15 @@ public class SqlServerFixture : IDisposable
 {
     private const string ContainerName = "sqlserver";
     private readonly DockerClient _client = new DockerClientConfiguration().CreateClient();
-    private string _containerId;
-    private string _ip;
+    private string? _containerId;
+    private string? _ip;
 
     public SqlServerFixture()
     {
         StartSqlServer().Wait();
     }
 
-    public string DbConnectionString { get; private set; }
+    public string? DbConnectionString { get; private set; }
 
     public void Dispose()
     {
@@ -87,14 +87,16 @@ public class SqlServerFixture : IDisposable
                     ReceiveTimeout = 1,
                     SendTimeout = 1
                 };
-                await c.ConnectAsync(new IPEndPoint(IPAddress.Parse(_ip), 1433));
+                if (_ip != null)
+                    await c.ConnectAsync(new IPEndPoint(IPAddress.Parse(_ip), 1433));
+
                 if (c.Connected)
                 {
                     tcpConnectable = true;
                 }
                 c.Dispose();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 await Task.Delay(50);
             }

@@ -1,9 +1,9 @@
 using System.Diagnostics;
-using NLightning.Common.Utils;
 
 namespace NLightning.Bolts.BOLT8.States;
 
 using Ciphers;
+using Common.Utils;
 using Constants;
 using Dhs;
 using Enums;
@@ -30,6 +30,8 @@ internal sealed class HandshakeState : IHandshakeState
     private byte[] _rs;
     private bool _turnToWrite;
     private bool _disposed;
+
+    public NBitcoin.PubKey? RemoteStaticPublicKey => _rs == null ? null : new NBitcoin.PubKey(_rs);
 
     /// <summary>
     /// Creates a new HandshakeState instance.

@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using NLightning.Models;
 using ServiceStack.Text;
+using Xunit.Abstractions;
 
 namespace NLightning.Bolts.Tests.Docker;
 
 using Fixtures;
+using Models;
 using Utils;
-using Xunit.Abstractions;
 
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
 [Collection("sqlserver")]
@@ -43,18 +43,18 @@ public class SqlServerTests
         _serviceProvider = serviceCollection.BuildServiceProvider();
         var context = _serviceProvider.GetService<NLightningContext>();
         //SqlServer takes longer to start from scratch, wait until ready.
-        while (!context.Database.CanConnect())
+        while (!context?.Database.CanConnect() ?? true)
         {
             Task.Delay(100).Wait();
         }
-        context.Database.Migrate();
+        context!.Database.Migrate();
     }
 
     [Fact()]
 
-    public async Task TestDb()
+    public Task TestDb()
     {
-        var context = _serviceProvider.GetService<NLightningContext>();
+        var context = _serviceProvider.GetService<NLightningContext>() ?? throw new Exception("Context is null");
         context.Nodes.Count().PrintDump();
 
         context.Nodes.AddRange(
@@ -68,7 +68,8 @@ public class SqlServerTests
         context.Nodes.Count().PrintDump();
         context.SaveChanges();
         context.Nodes.Count().PrintDump();
+
+        return Task.CompletedTask;
     }
-
 }
 #pragma warning restore xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture

@@ -1,9 +1,9 @@
-namespace NLightning.Bolts.BOLT10.Services;
-
 using System.Net;
 using DnsClient;
 using DnsClient.Protocol;
 using NBitcoin.DataEncoders;
+
+namespace NLightning.Bolts.BOLT10.Services;
 
 public static class DnsSeedClient
 {
@@ -20,8 +20,7 @@ public static class DnsSeedClient
     /// <returns></returns>
     public static List<NodeRecord> FindNodes(int nodeCount, List<string> seeds, bool ipV6 = false, bool useTcp = false, params IPAddress[] nameServers)
     {
-        var opts = nameServers.Any() ?
-            new LookupClientOptions(nameServers) : new LookupClientOptions();
+        var opts = nameServers.Length != 0 ? new LookupClientOptions(nameServers) : new LookupClientOptions();
         opts.UseTcpOnly = useTcp;
         var client = new LookupClient(opts);
         var list = new List<NodeRecord>();
@@ -91,9 +90,9 @@ public static class DnsSeedClient
         var byteList = new List<byte>();
         foreach (var num4 in data)
         {
-            if ((int)num4 >> fromBits > 0)
+            if (num4 >> fromBits > 0)
                 throw new FormatException("Invalid Bech32 string");
-            num1 = num1 << fromBits | (int)num4;
+            num1 = num1 << fromBits | num4;
             num2 += fromBits;
             while (num2 >= toBits)
             {
@@ -107,9 +106,9 @@ public static class DnsSeedClient
             if (num2 > 0)
                 byteList.Add((byte)(num1 << toBits - num2 & num3));
         }
-        else if (num2 >= fromBits || (byte)(num1 << toBits - num2 & num3) != (byte)0)
+        else if (num2 >= fromBits || (byte)(num1 << toBits - num2 & num3) != 0)
             throw new FormatException("Invalid Bech32 string");
 
-        return byteList.ToArray();
+        return [.. byteList];
     }
 }

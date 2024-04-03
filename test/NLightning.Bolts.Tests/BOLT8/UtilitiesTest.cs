@@ -1,6 +1,6 @@
-using NLightning.Bolts.BOLT8;
-
 namespace NLightning.Bolts.Tests.BOLT8;
+
+using Bolts.BOLT8;
 
 public class UtilitiesTest
 {

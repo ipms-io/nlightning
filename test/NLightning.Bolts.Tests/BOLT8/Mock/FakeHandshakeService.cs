@@ -1,6 +1,7 @@
 namespace NLightning.Bolts.Tests.BOLT8.Mock;
 
 using Bolts.BOLT8.Interfaces;
+using NBitcoin;
 
 internal class FakeHandshakeService : IHandshakeService, ITestHandshakeService
 {
@@ -11,6 +12,8 @@ internal class FakeHandshakeService : IHandshakeService, ITestHandshakeService
     public bool IsInitiator => _isInitiator;
 
     public ITransport? Transport => _transport;
+
+    public PubKey? RemoteStaticPublicKey => new Key().PubKey;
 
     public void SetIsInitiator(bool isInitiator)
     {

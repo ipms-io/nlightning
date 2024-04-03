@@ -1,6 +1,6 @@
-using NLightning.Bolts.BOLT8.Enums;
-
 namespace NLightning.Bolts.BOLT8.MessagePatterns;
+
+using Enums;
 
 /// <summary>
 /// A pre-message pattern is one of the following

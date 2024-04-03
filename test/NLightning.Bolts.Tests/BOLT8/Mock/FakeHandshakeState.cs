@@ -2,9 +2,12 @@ namespace NLightning.Bolts.Tests.BOLT8.Mock;
 
 using Bolts.BOLT8.Interfaces;
 using Bolts.BOLT8.Primitives;
+using NBitcoin;
 
 internal class FakeHandshakeState : IHandshakeState, ITestHandshakeState
 {
+    public PubKey? RemoteStaticPublicKey => new Key().PubKey;
+
     public virtual (int, byte[]?, Transport?) WriteMessageTest(byte[] span, byte[] buffer)
     {
         // Default implementation

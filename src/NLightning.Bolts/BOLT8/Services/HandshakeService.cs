@@ -25,6 +25,8 @@ internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> loca
     /// <inheritdoc/>
     public ITransport? Transport { get; private set; }
 
+    public NBitcoin.PubKey? RemoteStaticPublicKey => _handshakeState.RemoteStaticPublicKey;
+
     /// <inheritdoc/>
     /// <exception cref="InvalidOperationException">Thrown when there's no more steps to complete</exception>
     public int PerformStep(ReadOnlySpan<byte> inMessage, Span<byte> outMessage)
@@ -136,7 +138,6 @@ internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> loca
             if (disposing)
             {
                 _handshakeState.Dispose();
-                Transport?.Dispose();
             }
 
             _disposed = true;

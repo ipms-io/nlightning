@@ -7,6 +7,8 @@ using Primitives;
 /// </summary>
 internal interface IHandshakeState : IDisposable
 {
+    NBitcoin.PubKey? RemoteStaticPublicKey { get; }
+
     /// <summary>
     /// Performs the next step of the handshake, encrypts the <paramref name="payload"/>, and writes the result into <paramref name="messageBuffer"/>.
     /// The result is undefined if the <paramref name="payload"/> and <paramref name="messageBuffer"/> overlap.
