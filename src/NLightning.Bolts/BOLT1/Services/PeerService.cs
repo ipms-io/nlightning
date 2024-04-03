@@ -5,7 +5,19 @@ namespace NLightning.Bolts.BOLT1.Services;
 
 using BOLT1.Interfaces;
 using BOLT1.Primitives;
+using NLightning.Bolts.Exceptions;
 
+/// <summary>
+/// Service for managing peers.
+/// </summary>
+/// <remarks>
+/// This class is used to manage peers in the network.
+/// </remarks>
+/// <param name="nodeOptions">The node options.</param>
+/// <param name="transportServiceFactory">The transport service factory.</param>
+/// <param name="pingPongServiceFactory">The ping pong service factory.</param>
+/// <param name="messageServiceFactory">The message service factory.</param>
+/// <seealso cref="IPeerService" />
 public sealed class PeerService(NodeOptions nodeOptions, ITransportServiceFactory transportServiceFactory, IPingPongServiceFactory pingPongServiceFactory, IMessageServiceFactory messageServiceFactory) : IPeerService
 {
     private readonly NodeOptions _nodeOptions = nodeOptions;
@@ -15,23 +27,23 @@ public sealed class PeerService(NodeOptions nodeOptions, ITransportServiceFactor
     private readonly Dictionary<NBitcoin.PubKey, Peer> _peers = [];
     private readonly Dictionary<ChannelId, NBitcoin.PubKey> _channels = [];
 
+    /// <inheritdoc />
+    /// <exception cref="ConnectionException">Thrown when the connection to the peer fails.</exception>
     public async Task ConnectToPeerAsync(PeerAddress peerAddress)
     {
-
         // Connect to the peer
         var tcpClient = new TcpClient();
         try
         {
-            var cancellationToken = new CancellationTokenSource(_nodeOptions.NetworkTimeout).Token;
-            await tcpClient.ConnectAsync(peerAddress.Host, peerAddress.Port, cancellationToken);
+            await tcpClient.ConnectAsync(peerAddress.Host, peerAddress.Port, new CancellationTokenSource(_nodeOptions.NetworkTimeout).Token);
         }
         catch (OperationCanceledException)
         {
-            throw new Exception($"Timeout connecting to peer {peerAddress.Host}:{peerAddress.Port}");
+            throw new ConnectionException($"Timeout connecting to peer {peerAddress.Host}:{peerAddress.Port}");
         }
         catch (Exception e)
         {
-            throw new Exception($"Failed to connect to peer {peerAddress.Host}:{peerAddress.Port}", e);
+            throw new ConnectionException($"Failed to connect to peer {peerAddress.Host}:{peerAddress.Port}", e);
         }
 
         // Create and Initialize the transport service
@@ -47,6 +59,8 @@ public sealed class PeerService(NodeOptions nodeOptions, ITransportServiceFactor
         _peers.Add(peerAddress.PubKey, peer);
     }
 
+    /// <inheritdoc />
+    /// <exception cref="ErrorException">Thrown when the connection to the peer fails.</exception>
     public async Task AcceptPeerAsync(TcpClient tcpClient)
     {
         // Get peer data

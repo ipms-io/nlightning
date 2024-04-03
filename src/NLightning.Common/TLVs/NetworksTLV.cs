@@ -5,8 +5,20 @@ namespace NLightning.Common.TLVs;
 using Constants;
 using Types;
 
+/// <summary>
+/// Networks TLV.
+/// </summary>
+/// <remarks>
+/// The networks TLV is used in the InitMessage to communicate the networks that the node supports.
+/// </remarks>
 public class NetworksTLV : TLV
 {
+    /// <summary>
+    /// The chain hashes.
+    /// </summary>
+    /// <remarks>
+    /// The chain hashes are the hashes of the chains that the node supports.
+    /// </remarks>
     public IEnumerable<ChainHash>? ChainHashes { get; private set; }
 
     public NetworksTLV() : base(TLVConstants.NETWORKS)
@@ -16,6 +28,7 @@ public class NetworksTLV : TLV
         ChainHashes = chainHashes;
     }
 
+    /// <inheritdoc/>
     public new async Task SerializeAsync(Stream stream)
     {
         if (ChainHashes != null)
@@ -34,6 +47,12 @@ public class NetworksTLV : TLV
         await base.SerializeAsync(stream);
     }
 
+    /// <summary>
+    /// Deserialize a NetworksTLV from a stream.
+    /// </summary>
+    /// <param name="stream">The stream to deserialize from.</param>
+    /// <returns>The deserialized NetworksTLV.</returns>
+    /// <exception cref="SerializationException">Error deserializing NetworksTLV</exception>
     public static new async Task<NetworksTLV> DeserializeAsync(Stream stream)
     {
         var tlv = await TLV.DeserializeAsync(stream) as NetworksTLV ?? throw new SerializationException("Invalid TLV type");

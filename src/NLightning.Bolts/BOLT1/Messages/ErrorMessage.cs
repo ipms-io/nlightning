@@ -1,13 +1,23 @@
+using System.Runtime.Serialization;
+
 namespace NLightning.Bolts.BOLT1.Messages;
 
-using System.Runtime.Serialization;
 using Bolts.Base;
 using Constants;
 using Exceptions;
 using Payloads;
 
+/// <summary>
+/// Represents an error message.
+/// </summary>
+/// <remarks>
+/// An error message is used to communicate an error to the other party.
+/// The message type is 17.
+/// </remarks>
+/// <param name="payload">The error payload.</param>
 public sealed class ErrorMessage(ErrorPayload payload) : BaseMessage(MessageTypes.ERROR, payload)
 {
+    /// <inheritdoc/>
     public new ErrorPayload Payload { get => (ErrorPayload)base.Payload; }
 
     /// <summary>

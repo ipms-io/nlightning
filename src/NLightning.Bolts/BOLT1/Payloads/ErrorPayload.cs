@@ -5,9 +5,30 @@ namespace NLightning.Bolts.BOLT1.Payloads;
 
 using Bolts.Interfaces;
 
+/// <summary>
+/// Represents an error payload.
+/// </summary>
+/// <remarks>
+/// An error payload is used to communicate an error to the other party.
+/// </remarks>
+/// <param name="data">The error data.</param>
+/// <seealso cref="Messages.ErrorMessage"/>
 public class ErrorPayload(byte[] data) : IMessagePayload
 {
+    /// <summary>
+    /// The channel id.
+    /// </summary>
+    /// <remarks>
+    /// The channel id is used to identify the channel the error is related to.
+    /// </remarks>
     public ChannelId ChannelId { get; } = ChannelId.Zero;
+
+    /// <summary>
+    /// The error data.
+    /// </summary>
+    /// <remarks>
+    /// The error data is used to communicate the error.
+    /// </remarks>
     public byte[]? Data { get; } = data;
 
     public ErrorPayload(ChannelId channelId, byte[] data) : this(data)
@@ -19,6 +40,7 @@ public class ErrorPayload(byte[] data) : IMessagePayload
     public ErrorPayload(string message) : this(Encoding.UTF8.GetBytes(message))
     { }
 
+    /// <inheritdoc/>
     public async Task SerializeAsync(Stream stream)
     {
         await ChannelId.SerializeAsync(stream);

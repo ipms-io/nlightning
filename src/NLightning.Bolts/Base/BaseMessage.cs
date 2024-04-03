@@ -3,12 +3,18 @@ namespace NLightning.Bolts.Base;
 using BOLT1.Payloads;
 using Interfaces;
 
+/// <summary>
+/// Base class for a message.
+/// </summary>
 public abstract class BaseMessage : IMessage
 {
+    /// <inheritdoc />
     public ushort Type { get; protected set; }
 
+    /// <inheritdoc />
     public virtual IMessagePayload Payload { get; protected set; }
 
+    /// <inheritdoc />
     public TLVStream? Extension { get; protected set; }
 
     protected BaseMessage(ushort type, IMessagePayload payload, TLVStream? extension = null)
@@ -23,6 +29,8 @@ public abstract class BaseMessage : IMessage
         Payload = new PlaceholderPayload();
     }
 
+    /// <inheritdoc />
+    /// <exception cref="NullReferenceException">Payload must not be null.</exception>
     public virtual async Task SerializeAsync(Stream stream)
     {
         if (Payload == null)

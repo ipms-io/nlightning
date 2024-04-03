@@ -10,13 +10,13 @@ public class PeerAddressTests
     [Fact]
     public void Given_SingleStringAddress_When_ConstructingPeerAddress_Then_PropertiesAreCorrectlyInitialized()
     {
-        // Given
+        // Arrange
         var address = "028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7@127.0.0.1:8080";
 
-        // When
+        // Act
         var peerAddress = new PeerAddress(address);
 
-        // Then
+        // Assert
         Assert.Equal("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7", peerAddress.PubKey.ToString());
         Assert.Equal(IPAddress.Parse("127.0.0.1"), peerAddress.Host);
         Assert.Equal(8080, peerAddress.Port);
@@ -25,14 +25,14 @@ public class PeerAddressTests
     [Fact]
     public void Given_HttpAddress_When_ConstructingPeerAddress_Then_HostAndPortAreCorrectlyResolved()
     {
-        // Given
+        // Arrange
         var pubKey = new PubKey("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7");
         var address = "http://example.com:8080/";
 
-        // When
+        // Act
         var peerAddress = new PeerAddress(pubKey, address);
 
-        // Then
+        // Assert
         Assert.Equal(pubKey, peerAddress.PubKey);
         Assert.Equal(IPAddress.Parse("93.184.216.34"), peerAddress.Host);
         Assert.Equal(8080, peerAddress.Port);
@@ -41,15 +41,15 @@ public class PeerAddressTests
     [Fact]
     public void Given_PubKeyHostAndPort_When_ConstructingPeerAddress_Then_PropertiesAreCorrectlyInitialized()
     {
-        // Given
+        // Arrange
         var pubKey = new PubKey("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7");
         var host = "127.0.0.1";
         var port = 8080;
 
-        // When
+        // Act
         var peerAddress = new PeerAddress(pubKey, host, port);
 
-        // Then
+        // Assert
         Assert.Equal(pubKey, peerAddress.PubKey);
         Assert.Equal(IPAddress.Parse(host), peerAddress.Host);
         Assert.Equal(port, peerAddress.Port);
@@ -58,16 +58,16 @@ public class PeerAddressTests
     [Fact]
     public void Given_PeerAddressInstance_When_CallingToString_Then_ReturnsExpectedFormat()
     {
-        // Given
+        // Arrange
         var pubKey = new PubKey("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7");
         var host = "127.0.0.1";
         var port = 8080;
         var peerAddress = new PeerAddress(pubKey, host, port);
 
-        // When
+        // Act
         var result = peerAddress.ToString();
 
-        // Then
+        // Assert
         Assert.Equal("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7@127.0.0.1:8080", result);
     }
 }

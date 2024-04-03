@@ -4,12 +4,33 @@ namespace NLightning.Bolts.BOLT1.Payloads;
 
 using Bolts.Interfaces;
 
+/// <summary>
+/// The ping payload.
+/// </summary>
+/// <remarks>
+/// The ping payload is used to check if the other party is still alive.
+/// </remarks>
+/// <seealso cref="PingMessage"/>
 public class PingPayload : IMessagePayload
 {
+    /// <summary>
+    /// The maximum length of the ignored bytes.
+    /// </summary>
     public const ushort MAX_LENGTH = 65531;
 
+    /// <summary>
+    /// The number of bytes to send in the pong message.
+    /// </summary>
     public ushort NumPongBytes { get; private set; }
+
+    /// <summary>
+    /// The number of bytes to ignore.
+    /// </summary>
     public ushort BytesLength { get; private set; }
+
+    /// <summary>
+    /// The ignored bytes.
+    /// </summary>
     public byte[] Ignored { get; private set; }
 
     public PingPayload()
@@ -20,6 +41,7 @@ public class PingPayload : IMessagePayload
         Ignored = new byte[BytesLength];
     }
 
+    /// <inheritdoc/>
     public async Task SerializeAsync(Stream stream)
     {
         await stream.WriteAsync(EndianBitConverter.GetBytesBE(NumPongBytes));

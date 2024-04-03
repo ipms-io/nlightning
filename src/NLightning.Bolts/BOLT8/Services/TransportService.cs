@@ -4,8 +4,8 @@ namespace NLightning.Bolts.BOLT8.Services;
 
 using Bolts.Interfaces;
 using Constants;
+using Exceptions;
 using Interfaces;
-using NLightning.Bolts.Exceptions;
 using static Common.Utils.Exceptions;
 
 public sealed class TransportService : ITransportService

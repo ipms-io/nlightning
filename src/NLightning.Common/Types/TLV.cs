@@ -10,15 +10,48 @@ namespace NLightning.Common.Types;
 /// <param name="value">The value</param>
 public class TLV(BigSize type, BigSize length, byte[] value) : IEquatable<TLV>
 {
+    /// <summary>
+    /// The type of the TLV
+    /// </summary>
     public BigSize Type { get; set; } = type;
+
+    /// <summary>
+    /// The length of the value
+    /// </summary>
     public BigSize Length { get; set; } = length;
+
+    /// <summary>
+    /// The value
+    /// </summary>
     public byte[] Value { get; set; } = value;
 
+    /// <summary>
+    /// Create a new TLV
+    /// </summary>
+    /// <param name="type">The type of the TLV</param>
+    /// <param name="value">The value of the TLV</param>
+    /// <remarks>
+    /// The length of the value is automatically calculated
+    /// </remarks>
     public TLV(BigSize type, byte[] value) : this(type, value.Length, value)
     { }
+
+    /// <summary>
+    /// Create a new TLV
+    /// </summary>
+    /// <param name="type">The type of the TLV</param>
+    /// <remarks>
+    /// Used internally to create a TLV with a length of 0 and an empty value.
+    /// </remarks>
     internal TLV(BigSize type) : this(type, 0, [])
     { }
 
+    /// <summary>
+    /// Serialize the TLV to a stream
+    /// </summary>
+    /// <param name="stream">The stream to write to</param>
+    /// <returns>A task that represents the asynchronous operation</returns>
+    /// <exception cref="SerializationException">Error serializing TLV or any of it's parts</exception>
     public async Task SerializeAsync(Stream stream)
     {
         try

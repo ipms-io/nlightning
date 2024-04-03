@@ -15,17 +15,17 @@ public class InitMessageTests
     [Fact]
     public async Task Given_ValidStreamWithPayloadAndExtension_When_DeserializeAsync_IsCalled_Then_ReturnsInitMessageWithCorrectData()
     {
-        // Given
+        // Arrange
         var expectedPayload = new InitPayload(new Features());
         var expectedExtension = new TLVStream();
         var expectedTlv = new NetworksTLV([ChainConstants.Main]);
         expectedExtension.Add(expectedTlv);
         var stream = await CreateStreamFromPayloadAndExtensionAsync(expectedPayload, expectedExtension);
 
-        // When
+        // Act
         var initMessage = await InitMessage.DeserializeAsync(stream);
 
-        // Then
+        // Assert
         TLV? tlv = null;
         Assert.NotNull(initMessage);
         Assert.Equal(expectedPayload.Features.ToString(), initMessage.Payload.Features.ToString());
@@ -37,14 +37,14 @@ public class InitMessageTests
     [Fact]
     public async Task Given_ValidStreamWithOnlyPayload_When_DeserializeAsync_IsCalled_Then_ReturnsInitMessageWithNullExtension()
     {
-        // Given
+        // Arrange
         var expectedPayload = new InitPayload(new Features());
         var stream = await Helpers.CreateStreamFromPayloadAsync(expectedPayload);
 
-        // When
+        // Act
         var initMessage = await InitMessage.DeserializeAsync(stream);
 
-        // Then
+        // Assert
         Assert.NotNull(initMessage);
         Assert.Equal(expectedPayload.Features.ToString(), initMessage.Payload.Features.ToString());
         Assert.Null(initMessage.Extension);
@@ -53,10 +53,10 @@ public class InitMessageTests
     [Fact]
     public async Task Given_InvalidStreamContent_When_DeserializeAsync_IsCalled_Then_ThrowsMessageSerializationException()
     {
-        // Given
+        // Arrange
         var invalidStream = new MemoryStream(Encoding.UTF8.GetBytes("Invalid content"));
 
-        // When & Then
+        // Act & Assert
         await Assert.ThrowsAsync<MessageSerializationException>(() => InitMessage.DeserializeAsync(invalidStream));
     }
 

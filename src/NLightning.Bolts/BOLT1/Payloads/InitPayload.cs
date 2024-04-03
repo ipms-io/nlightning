@@ -5,10 +5,23 @@ namespace NLightning.Bolts.BOLT1.Payloads;
 using Bolts.BOLT9;
 using Bolts.Interfaces;
 
+/// <summary>
+/// The init payload.
+/// </summary>
+/// <remarks>
+/// The init payload is used to communicate the features supported by the node.
+/// </remarks>
+/// <param name="features">The features supported by the node.</param>
+/// <seealso cref="Messages.InitMessage"/>
+/// <seealso cref="BOLT9.Features"/>
 public class InitPayload(Features features) : IMessagePayload
 {
+    /// <summary>
+    /// The features supported by the node.
+    /// </summary>
     public Features Features { get; } = features;
 
+    /// <inheritdoc/>
     public async Task SerializeAsync(Stream stream)
     {
         await Features.SerializeAsync(stream, true);

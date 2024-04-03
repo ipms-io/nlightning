@@ -6,54 +6,235 @@ using BOLT8.Dhs;
 using BOLT8.Primitives;
 using BOLT9;
 using Common.Constants;
-using NLightning.Common.TLVs;
+using Common.TLVs;
 
+/// <summary>
+/// Represents the options for a node.
+/// </summary>
 public sealed class NodeOptions
 {
     #region Network
+    /// <summary>
+    /// Global network timeout.
+    /// </summary>
+    /// <remarks>
+    /// The global network timeout is used for all network operations.
+    /// </remarks>
     public TimeSpan NetworkTimeout = TimeSpan.FromSeconds(15);
     #endregion
 
     #region Crypto
+    /// <summary>
+    /// The key pair of the node.
+    /// </summary>
+    /// <remarks>
+    /// The key pair is used to sign messages and create the node id.
+    /// </remarks>
     internal KeyPair KeyPair;
     #endregion
 
     #region Features
+    /// <summary>
+    /// Enable data loss protection.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnableDataLossProtect = false;
+
+    /// <summary>
+    /// Enable initial routing sync.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnableInitialRoutingSync = false;
+
+    /// <summary>
+    /// Enable upfront shutdown script.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnableUpfrontShutdownScript = false;
+
+    /// <summary>
+    /// Enable gossip queries.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnableGossipQueries = false;
+
+    /// <summary>
+    /// Enable expanded gossip queries.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnableExpandedGossipQueries = false;
+
+    /// <summary>
+    /// Enable static remote key.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnableStaticRemoteKey = false;
+
+    /// <summary>
+    /// Enable payment secret.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnablePaymentSecret = false;
+
+    /// <summary>
+    /// Enable basic MPP.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnableBasicMPP = false;
+
+    /// <summary>
+    /// Enable large channels.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnableLargeChannels = false;
+
+    /// <summary>
+    /// Enable anchor outputs.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnableAnchorOutputs = false;
+
+    /// <summary>
+    /// Enable zero fee anchor tx.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnableZeroFeeAnchorTx = false;
+
+    /// <summary>
+    /// Enable route blinding.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnableRouteBlinding = false;
+
+    /// <summary>
+    /// Enable beyond segwit shutdown.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnableBeyondSegwitShutdown = false;
+
+    /// <summary>
+    /// Enable dual fund.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnableDualFund = false;
+
+    /// <summary>
+    /// Enable onion messages.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnableOnionMessages = false;
+
+    /// <summary>
+    /// Enable channel type.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnableChannelType = false;
+
+    /// <summary>
+    /// Enable scid alias.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnableScidAlias = false;
+
+    /// <summary>
+    /// Enable payment metadata.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnablePaymentMetadata = false;
+
+    /// <summary>
+    /// Enable zero conf.
+    /// </summary>
+    /// <remarks>
+    /// This will be added to the features of the node as OPTIONAL.
+    /// </remarks>
     public bool EnableZeroConf = false;
     #endregion
 
     #region InitExtension
+    /// <summary>
+    /// The chain hashes of the node.
+    /// </summary>
+    /// <remarks>
+    /// Initialized as Mainnet if not set.
+    /// </remarks>
     public IEnumerable<ChainHash> ChainHashes = [];
+
+    /// <summary>
+    /// The remote address of the node.
+    /// </summary>
+    /// <remarks>
+    /// This is used to connect to our node.
+    /// </remarks>
     public IPAddress? RemoteAddress = null;
     #endregion
 
+    /// <summary>
+    /// Initializes a new instance of the NodeOptions class.
+    /// </summary>
+    /// <remarks>
+    /// The key pair is generated automatically.
+    /// </remarks>
     public NodeOptions()
     {
         KeyPair = new Secp256k1().GenerateKeyPair();
     }
+
+    /// <summary>
+    /// Initializes a new instance of the NodeOptions class.
+    /// </summary>
+    /// <param name="p">The private key of the node.</param>
+    /// <remarks>
+    /// The key pair is generated from the private key.
+    /// </remarks>
     public NodeOptions(NBitcoin.Key p)
     {
         KeyPair = new KeyPair(p);
     }
 
+    /// <summary>
+    /// Get Features set for the node.
+    /// </summary>
+    /// <returns>The features set for the node.</returns>
+    /// <remarks>
+    /// All features set as OPTIONAL.
+    /// </remarks>
     internal Features GetNodeFeatures()
     {
         var features = new Features();
@@ -156,6 +337,13 @@ public sealed class NodeOptions
         return features;
     }
 
+    /// <summary>
+    /// Get the Init extension for the node.
+    /// </summary>
+    /// <returns>The Init extension for the node.</returns>
+    /// <remarks>
+    /// If there are no ChainHashes, Mainnet is used as default.
+    /// </remarks>
     internal TLVStream GetInitExtension()
     {
         var extension = new TLVStream();
@@ -179,6 +367,13 @@ public sealed class NodeOptions
         return extension;
     }
 
+    /// <summary>
+    /// Get the node options from the features and extension.
+    /// </summary>
+    /// <param name="features">The features of the node.</param>
+    /// <param name="extension">The extension of the node.</param>
+    /// <returns>The node options.</returns>
+    /// <remarks>
     internal static NodeOptions GetNodeOptions(Features features, TLVStream? extension)
     {
         var options = new NodeOptions

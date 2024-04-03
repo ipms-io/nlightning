@@ -2,17 +2,21 @@ using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
 using NBitcoin;
-using NLightning.Bolts.BOLT1.Interfaces;
-using NLightning.Bolts.BOLT1.Primitives;
-using NLightning.Bolts.BOLT1.Services;
-using NLightning.Bolts.BOLT8.Interfaces;
-using NLightning.Bolts.Tests.BOLT1.Mock;
 
 namespace NLightning.Bolts.Tests.BOLT1.Services;
 
-public class PeerServiceTests
+using BOLT1.Fixtures;
+using BOLT1.Mock;
+using Bolts.BOLT1.Interfaces;
+using Bolts.BOLT1.Primitives;
+using Bolts.BOLT1.Services;
+using Bolts.BOLT8.Interfaces;
+using Bolts.Exceptions;
+using Common.Exceptions;
+
+public partial class PeerServiceTests
 {
-    private readonly Random _random = new();
+    private readonly PubKey _pubKey = new("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7");
     private readonly NodeOptions _nodeOptions = new();
     private readonly Mock<ITransportService> _mockTransportService = new();
     private readonly Mock<IMessageService> _mockMessageService = new();
@@ -30,157 +34,168 @@ public class PeerServiceTests
     public async Task Given_ValidPeerAddress_When_ConnectToPeerAsync_IsCalled_Then_PeerIsAdded()
     {
         // Arrange
-        _mockTransportServiceFactory.Setup(f => f.CreateTransportService(It.IsAny<bool>(), It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<TcpClient>()))
-                                    .Returns(_mockTransportService.Object);
-        _mockMessageServiceFactory.Setup(f => f.CreateMessageService(It.IsAny<ITransportService>()))
-                                  .Returns(_mockMessageService.Object);
-        _mockPingPongServiceFactory.Setup(f => f.CreatePingPongService(It.IsAny<TimeSpan>()))
-                                   .Returns(_mockPingPongService.Object);
-
-        var peerService = new PeerService(_nodeOptions, _mockTransportServiceFactory.Object, _mockPingPongServiceFactory.Object, _mockMessageServiceFactory.Object);
-
-        var tcpListener = new TcpListener(IPAddress.Loopback, _random.Next(1024, 65535));
+        var availablePort = await PortPool.GetAvailablePortAsync();
+        var tcpListener = new TcpListener(IPAddress.Loopback, availablePort);
         tcpListener.Start();
 
-        var peerAddress = new PeerAddress(new PubKey("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7"), tcpListener.LocalEndpoint.ToEndpointString());
-
-        _ = Task.Run(async () =>
+        try
         {
-            await tcpListener.AcceptTcpClientAsync();
-        });
+            _mockTransportServiceFactory.Setup(f => f.CreateTransportService(It.IsAny<bool>(), It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<TcpClient>()))
+                                        .Returns(_mockTransportService.Object);
+            _mockMessageServiceFactory.Setup(f => f.CreateMessageService(It.IsAny<ITransportService>()))
+                                      .Returns(_mockMessageService.Object);
+            _mockPingPongServiceFactory.Setup(f => f.CreatePingPongService(It.IsAny<TimeSpan>()))
+                                       .Returns(_mockPingPongService.Object);
 
-        // Act
-        await peerService.ConnectToPeerAsync(peerAddress);
+            var peerService = new PeerService(_nodeOptions, _mockTransportServiceFactory.Object, _mockPingPongServiceFactory.Object, _mockMessageServiceFactory.Object);
 
-        // Assert
-        var field = peerService.GetType().GetField("_peers", BindingFlags.NonPublic | BindingFlags.Instance);
-        var peers = field?.GetValue(peerService);
-        Assert.NotNull(peers);
-        Assert.True(peers is Dictionary<PubKey, Peer>);
-        Assert.True(((Dictionary<PubKey, Peer>)peers).ContainsKey(peerAddress.PubKey));
-    }
+            var peerAddress = new PeerAddress(_pubKey, tcpListener.LocalEndpoint.ToEndpointString());
 
-    [Fact]
-    public async Task Given_ConnectionTimeout_When_ConnectToPeerAsync_IsCalled_Then_ThrowException()
-    {
-        // Arrange
-        _mockTransportServiceFactory.Setup(f => f.CreateTransportService(It.IsAny<bool>(), It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<TcpClient>()))
-                                    .Returns(_mockTransportService.Object);
-        _mockMessageServiceFactory.Setup(f => f.CreateMessageService(It.IsAny<ITransportService>()))
-                                  .Returns(_mockMessageService.Object);
-        _mockPingPongServiceFactory.Setup(f => f.CreatePingPongService(It.IsAny<TimeSpan>()))
-                                   .Returns(_mockPingPongService.Object);
+            _ = Task.Run(async () =>
+            {
+                await tcpListener.AcceptTcpClientAsync();
+            });
 
-        var nodeOptions = new NodeOptions { NetworkTimeout = TimeSpan.FromMicroseconds(1) };
+            // Act
+            await peerService.ConnectToPeerAsync(peerAddress);
 
-        var peerService = new PeerService(nodeOptions, _mockTransportServiceFactory.Object, _mockPingPongServiceFactory.Object, _mockMessageServiceFactory.Object);
-
-        var tcpListener = new FakeTcpListener(IPAddress.Loopback, _random.Next(1024, 65535));
-        tcpListener.Start();
-
-        var peerAddress = new PeerAddress(new PubKey("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7"), tcpListener.LocalEndpoint.ToEndpointString());
-
-        _ = Task.Run(() => tcpListener.AcceptTcpClientAsync(new CancellationTokenSource(TimeSpan.FromSeconds(1)).Token));
-
-        // Act & Assert
-        var exception = await Assert.ThrowsAnyAsync<Exception>(() => peerService.ConnectToPeerAsync(peerAddress));
-        Assert.Equal($"Timeout connecting to peer {peerAddress.Host}:{peerAddress.Port}", exception.Message);
+            // Assert
+            var field = peerService.GetType().GetField("_peers", BindingFlags.NonPublic | BindingFlags.Instance);
+            var peers = field?.GetValue(peerService);
+            Assert.NotNull(peers);
+            Assert.True(peers is Dictionary<PubKey, Peer>);
+            Assert.True(((Dictionary<PubKey, Peer>)peers).ContainsKey(peerAddress.PubKey));
+        }
+        finally
+        {
+            tcpListener.Dispose();
+            PortPool.ReleasePort(availablePort);
+        }
     }
 
     [Fact]
     public async Task Given_ConnectionError_When_ConnectToPeerAsync_IsCalled_Then_ThrowException()
     {
         // Arrange
-        _mockTransportServiceFactory.Setup(f => f.CreateTransportService(It.IsAny<bool>(), It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<TcpClient>()))
-                                    .Returns(_mockTransportService.Object);
-        _mockMessageServiceFactory.Setup(f => f.CreateMessageService(It.IsAny<ITransportService>()))
-                                  .Returns(_mockMessageService.Object);
-        _mockPingPongServiceFactory.Setup(f => f.CreatePingPongService(It.IsAny<TimeSpan>()))
-                                   .Returns(_mockPingPongService.Object);
+        var availablePort = await PortPool.GetAvailablePortAsync();
 
-        var nodeOptions = new NodeOptions { NetworkTimeout = TimeSpan.FromSeconds(1) };
+        try
+        {
+            _mockTransportServiceFactory.Setup(f => f.CreateTransportService(It.IsAny<bool>(), It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<TcpClient>()))
+                                        .Returns(_mockTransportService.Object);
+            _mockMessageServiceFactory.Setup(f => f.CreateMessageService(It.IsAny<ITransportService>()))
+                                      .Returns(_mockMessageService.Object);
+            _mockPingPongServiceFactory.Setup(f => f.CreatePingPongService(It.IsAny<TimeSpan>()))
+                                       .Returns(_mockPingPongService.Object);
 
-        var peerService = new PeerService(_nodeOptions, _mockTransportServiceFactory.Object, _mockPingPongServiceFactory.Object, _mockMessageServiceFactory.Object);
+            var nodeOptions = new NodeOptions { NetworkTimeout = TimeSpan.FromSeconds(1) };
 
-        var tcpListener = new TcpListener(IPAddress.Loopback, _random.Next(1024, 65535));
+            var peerService = new PeerService(_nodeOptions, _mockTransportServiceFactory.Object, _mockPingPongServiceFactory.Object, _mockMessageServiceFactory.Object);
 
-        var peerAddress = new PeerAddress(new PubKey("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7"), tcpListener.LocalEndpoint.ToEndpointString());
+            var peerAddress = new PeerAddress(_pubKey, IPAddress.Loopback.ToString(), availablePort);
 
-        // Act & Assert
-        var exception = await Assert.ThrowsAnyAsync<Exception>(() => peerService.ConnectToPeerAsync(peerAddress));
-        Assert.Equal($"Failed to connect to peer {peerAddress.Host}:{peerAddress.Port}", exception.Message);
+            // Act & Assert
+            var exception = await Assert.ThrowsAnyAsync<ConnectionException>(() => peerService.ConnectToPeerAsync(peerAddress));
+            Assert.Equal($"Failed to connect to peer {peerAddress.Host}:{peerAddress.Port}", exception.Message);
+        }
+        finally
+        {
+            PortPool.ReleasePort(availablePort);
+        }
     }
 
     [Fact]
     public async Task Given_ValidTcpClient_When_AcceptPeerAsync_IsCalled_Then_PeerIsAdded()
     {
         // Arrange
-        var tsc = new TaskCompletionSource<bool>();
-        var pubkey = new Key().PubKey;
-        var tcpListener = new TcpListener(IPAddress.Loopback, _random.Next(1024, 65535));
+        var availablePort = await PortPool.GetAvailablePortAsync();
+        var tcpListener = new TcpListener(IPAddress.Loopback, availablePort);
         tcpListener.Start();
 
-        _mockTransportServiceFactory.Setup(f => f.CreateTransportService(It.IsAny<bool>(), It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<TcpClient>()))
-                                    .Returns(_mockTransportService.Object);
-        _mockMessageServiceFactory.Setup(f => f.CreateMessageService(It.IsAny<ITransportService>()))
-                                  .Returns(_mockMessageService.Object);
-        _mockPingPongServiceFactory.Setup(f => f.CreatePingPongService(It.IsAny<TimeSpan>()))
-                                   .Returns(_mockPingPongService.Object);
-        _mockTransportService.SetupGet(t => t.RemoteStaticPublicKey).Returns(pubkey);
-
-        var peerService = new PeerService(_nodeOptions, _mockTransportServiceFactory.Object, _mockPingPongServiceFactory.Object, _mockMessageServiceFactory.Object);
-        TcpClient? tcpClient = null;
-        _ = Task.Run(async () =>
+        try
         {
-            tcpClient = await tcpListener.AcceptTcpClientAsync();
-            tsc.SetResult(true);
-        });
-        var tcpClient2 = new TcpClient();
-        tcpClient2.Connect(IPEndPoint.Parse(tcpListener.LocalEndpoint.ToString()!));
+            var tsc = new TaskCompletionSource<bool>();
+            var pubkey = new Key().PubKey;
 
-        await tsc.Task;
+            _mockTransportServiceFactory.Setup(f => f.CreateTransportService(It.IsAny<bool>(), It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<TcpClient>()))
+                                        .Returns(_mockTransportService.Object);
+            _mockMessageServiceFactory.Setup(f => f.CreateMessageService(It.IsAny<ITransportService>()))
+                                      .Returns(_mockMessageService.Object);
+            _mockPingPongServiceFactory.Setup(f => f.CreatePingPongService(It.IsAny<TimeSpan>()))
+                                       .Returns(_mockPingPongService.Object);
+            _mockTransportService.SetupGet(t => t.RemoteStaticPublicKey).Returns(pubkey);
 
-        // Act
-        await peerService.AcceptPeerAsync(tcpClient!);
+            var peerService = new PeerService(_nodeOptions, _mockTransportServiceFactory.Object, _mockPingPongServiceFactory.Object, _mockMessageServiceFactory.Object);
 
-        // Assert
-        var field = peerService.GetType().GetField("_peers", BindingFlags.NonPublic | BindingFlags.Instance);
-        var peers = field?.GetValue(peerService);
-        Assert.NotNull(peers);
-        Assert.True(peers is Dictionary<PubKey, Peer>);
-        Assert.True(((Dictionary<PubKey, Peer>)peers).ContainsKey(pubkey));
+            TcpClient? tcpClient = null;
+            _ = Task.Run(async () =>
+                {
+                    tcpClient = await tcpListener.AcceptTcpClientAsync();
+                    tsc.SetResult(true);
+                });
+            var tcpClient2 = new TcpClient();
+            tcpClient2.Connect(IPEndPoint.Parse(tcpListener.LocalEndpoint.ToString()!));
+
+            await tsc.Task;
+
+            // Act
+            await peerService.AcceptPeerAsync(tcpClient!);
+
+            // Assert
+            var field = peerService.GetType().GetField("_peers", BindingFlags.NonPublic | BindingFlags.Instance);
+            var peers = field?.GetValue(peerService);
+            Assert.NotNull(peers);
+            Assert.True(peers is Dictionary<PubKey, Peer>);
+            Assert.True(((Dictionary<PubKey, Peer>)peers).ContainsKey(pubkey));
+        }
+        finally
+        {
+            tcpListener.Dispose();
+            PortPool.ReleasePort(availablePort);
+        }
     }
 
     [Fact]
     public async Task Given_InvalidRemotePublicKey_When_AcceptPeerAsync_IsCalled_Then_ThrowException()
     {
         // Arrange
-        var tsc = new TaskCompletionSource<bool>();
-        var pubkey = new Key().PubKey;
-        var tcpListener = new TcpListener(IPAddress.Loopback, _random.Next(1024, 65535));
+        var availablePort = await PortPool.GetAvailablePortAsync();
+        var tcpListener = new TcpListener(IPAddress.Loopback, availablePort);
         tcpListener.Start();
 
-        _mockTransportServiceFactory.Setup(f => f.CreateTransportService(It.IsAny<bool>(), It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<TcpClient>()))
-                                    .Returns(_mockTransportService.Object);
-        _mockMessageServiceFactory.Setup(f => f.CreateMessageService(It.IsAny<ITransportService>()))
-                                  .Returns(_mockMessageService.Object);
-        _mockPingPongServiceFactory.Setup(f => f.CreatePingPongService(It.IsAny<TimeSpan>()))
-                                   .Returns(_mockPingPongService.Object);
-
-        var peerService = new PeerService(_nodeOptions, _mockTransportServiceFactory.Object, _mockPingPongServiceFactory.Object, _mockMessageServiceFactory.Object);
-        TcpClient? tcpClient = null;
-        _ = Task.Run(async () =>
+        try
         {
-            tcpClient = await tcpListener.AcceptTcpClientAsync();
-            tsc.SetResult(true);
-        });
-        var tcpClient2 = new TcpClient();
-        tcpClient2.Connect(IPEndPoint.Parse(tcpListener.LocalEndpoint.ToString()!));
+            var tsc = new TaskCompletionSource<bool>();
+            var pubkey = new Key().PubKey;
 
-        await tsc.Task;
+            _mockTransportServiceFactory.Setup(f => f.CreateTransportService(It.IsAny<bool>(), It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<TcpClient>()))
+                                        .Returns(_mockTransportService.Object);
+            _mockMessageServiceFactory.Setup(f => f.CreateMessageService(It.IsAny<ITransportService>()))
+                                      .Returns(_mockMessageService.Object);
+            _mockPingPongServiceFactory.Setup(f => f.CreatePingPongService(It.IsAny<TimeSpan>()))
+                                       .Returns(_mockPingPongService.Object);
 
-        // Act & Assert
-        var exception = await Assert.ThrowsAnyAsync<Exception>(() => peerService.AcceptPeerAsync(tcpClient!));
-        Assert.Equal("Failed to get remote static public key", exception.Message);
+            var peerService = new PeerService(_nodeOptions, _mockTransportServiceFactory.Object, _mockPingPongServiceFactory.Object, _mockMessageServiceFactory.Object);
+
+            TcpClient? tcpClient = null;
+            _ = Task.Run(async () =>
+            {
+                tcpClient = await tcpListener.AcceptTcpClientAsync();
+                tsc.SetResult(true);
+            });
+            var tcpClient2 = new TcpClient();
+            tcpClient2.Connect(IPEndPoint.Parse(tcpListener.LocalEndpoint.ToString()!));
+
+            await tsc.Task;
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAnyAsync<ErrorException>(() => peerService.AcceptPeerAsync(tcpClient!));
+            Assert.Equal("Failed to get remote static public key", exception.Message);
+        }
+        finally
+        {
+            tcpListener.Dispose();
+            PortPool.ReleasePort(availablePort);
+        }
     }
 }

@@ -5,15 +5,29 @@ using Bolts.Factories;
 using Bolts.Interfaces;
 using Interfaces;
 
+/// <summary>
+/// Service for sending and receiving messages.
+/// </summary>
+/// <remarks>
+/// This class is used to send and receive messages over a transport service.
+/// </remarks>
+/// <seealso cref="IMessageService" />
 internal sealed class MessageService : IMessageService
 {
     private readonly ITransportService _transportService;
 
     private bool _disposed;
 
+    /// <inheritdoc />
     public event EventHandler<IMessage>? MessageReceived;
+
+    /// <inheritdoc />
     public bool IsConnected => _transportService.IsConnected;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MessageService"/> class.
+    /// </summary>
+    /// <param name="transportService">The transport service.</param>
     public MessageService(ITransportService transportService)
     {
         _transportService = transportService;
@@ -21,6 +35,8 @@ internal sealed class MessageService : IMessageService
         _transportService.MessageReceived += ReceiveMessageAsync;
     }
 
+    /// <inheritdoc />
+    /// <exception cref="ObjectDisposedException">Thrown when the object is disposed.</exception>
     public async Task SendMessageAsync(IMessage message, CancellationToken cancellationToken = default)
     {
         Common.Utils.Exceptions.ThrowIfDisposed(_disposed, nameof(MessageService));
@@ -36,6 +52,10 @@ internal sealed class MessageService : IMessageService
     }
 
     #region Dispose Pattern
+    /// <inheritdoc />
+    /// <remarks>
+    /// Disposes the TransportService.
+    /// </remarks>
     public void Dispose()
     {
         Dispose(true);

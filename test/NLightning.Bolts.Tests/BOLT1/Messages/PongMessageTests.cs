@@ -11,14 +11,14 @@ public class PongMessageTests
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_IsCalled_Then_ReturnsPongMessageWithCorrectPayload()
     {
-        // Given
+        // Arrange
         var expectedPayload = new PongPayload(10);
         var stream = await Helpers.CreateStreamFromPayloadAsync(expectedPayload);
 
-        // When
+        // Act
         var pingMessage = await PongMessage.DeserializeAsync(stream);
 
-        // Then
+        // Assert
         Assert.NotNull(pingMessage);
         Assert.Equal(expectedPayload.BytesLength, pingMessage.Payload.BytesLength);
     }
@@ -26,10 +26,10 @@ public class PongMessageTests
     [Fact]
     public async Task Given_InvalidStream_When_DeserializeAsync_IsCalled_Then_ThrowsMessageSerializationException()
     {
-        // Given
+        // Arrange
         var invalidStream = new MemoryStream(Encoding.UTF8.GetBytes("Invalid content"));
 
-        // When & Then
+        // Act & Assert
         await Assert.ThrowsAsync<MessageSerializationException>(() => PongMessage.DeserializeAsync(invalidStream));
     }
 }

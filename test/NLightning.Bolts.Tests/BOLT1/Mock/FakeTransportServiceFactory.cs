@@ -2,8 +2,8 @@ using System.Net.Sockets;
 
 namespace NLightning.Bolts.Tests.BOLT1.Mock;
 
-using NLightning.Bolts.BOLT1.Interfaces;
-using NLightning.Bolts.BOLT8.Interfaces;
+using Bolts.BOLT1.Interfaces;
+using Bolts.BOLT8.Interfaces;
 
 internal class FakeTransportServiceFactory : ITransportServiceFactory, ITestTransportServiceFactory
 {

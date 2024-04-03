@@ -11,6 +11,13 @@ public class TestOutputWriter(ITestOutputHelper output) : TextWriter
 
     public override void Write(char[] buffer, int index, int count)
     {
-        _output.WriteLine(new string(buffer, index, count));
+        try
+        {
+            _output.WriteLine(new string(buffer, index, count));
+        }
+        catch
+        {
+            // Do nothing
+        }
     }
 }

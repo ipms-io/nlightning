@@ -1,5 +1,11 @@
 namespace NLightning.Common.Types;
 
+/// <summary>
+/// Represents a channel id.
+/// </summary>
+/// <remarks>
+/// The channel id is a unique identifier for a channel.
+/// </remarks>
 public readonly struct ChannelId
 {
     public const int LENGTH = 32;

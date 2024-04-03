@@ -1,10 +1,11 @@
 using System.Reflection;
-using NLightning.Bolts.BOLT1.Services;
-using NLightning.Bolts.BOLT8.Interfaces;
-using NLightning.Bolts.Factories;
-using NLightning.Bolts.Interfaces;
 
 namespace NLightning.Bolts.Tests.BOLT1.Services;
+
+using Bolts.BOLT1.Services;
+using Bolts.BOLT8.Interfaces;
+using Bolts.Factories;
+using Bolts.Interfaces;
 
 public class MessageServiceTests
 {
@@ -38,6 +39,7 @@ public class MessageServiceTests
 
         messageService.MessageReceived += (sender, args) => eventRaised = true;
 
+        // Act
         var method = messageService.GetType().GetMethod("ReceiveMessageAsync", BindingFlags.NonPublic | BindingFlags.Instance);
         method?.Invoke(messageService, [messageService, stream]);
 

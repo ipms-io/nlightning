@@ -5,10 +5,17 @@ using Bolts.Interfaces;
 using Common.Constants;
 using Common.TLVs;
 using Constants;
+using Exceptions;
 using Interfaces;
 using Messages;
 
-public sealed class Peer
+/// <summary>
+/// Represents a peer in the network.
+/// </summary>
+/// <remarks>
+/// This class is used to communicate with a peer in the network.
+/// </remarks>
+internal sealed class Peer
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly IMessageService _messageService;
@@ -19,8 +26,20 @@ public sealed class Peer
 
     private bool _isInitialized;
 
+    /// <summary>
+    /// Event raised when the peer is disconnected.
+    /// </summary>
     public event EventHandler? DisconnectEvent;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Peer"/> class.
+    /// </summary>
+    /// <param name="nodeOptions">The node options.</param>
+    /// <param name="messageService">The message service.</param>
+    /// <param name="pingPongService">The ping pong service.</param>
+    /// <param name="peerAddress">The peer address.</param>
+    /// <param name="isInbound">A value indicating whether the peer is inbound.</param>
+    /// <exception cref="ConnectionException">Thrown when the connection to the peer fails.</exception>
     internal Peer(NodeOptions nodeOptions, IMessageService messageService, IPingPongService pingPongService, PeerAddress peerAddress, bool isInbound)
     {
         _messageService = messageService;
@@ -51,7 +70,7 @@ public sealed class Peer
 
         if (!_messageService.IsConnected)
         {
-            throw new Exception("Failed to connect to peer");
+            throw new ConnectionException("Failed to connect to peer");
         }
     }
 
@@ -98,7 +117,7 @@ public sealed class Peer
         {
             Disconnect();
 
-            throw new Exception("Failed to receive init message");
+            throw new ConnectionException("Failed to receive init message");
         }
 
         // Check if Features are compatible
@@ -107,7 +126,7 @@ public sealed class Peer
         {
             Disconnect();
 
-            throw new Exception("Peer is not compatible");
+            throw new ConnectionException("Peer is not compatible");
         }
 
         // Check if Chains are compatible
@@ -123,7 +142,7 @@ public sealed class Peer
                     {
                         Disconnect();
 
-                        throw new Exception("Peer chain is not compatible");
+                        throw new ConnectionException("Peer chain is not compatible");
                     }
                 }
             }

@@ -7,12 +7,21 @@ using Bolts.Exceptions;
 using Constants;
 using Payloads;
 
+/// <summary>
+/// Represents a ping message.
+/// </summary>
+/// <remarks>
+/// The ping message is used to check if the other party is still alive.
+/// The message type is 18.
+/// </remarks>
 public sealed class PingMessage() : BaseMessage(MessageTypes.PING, new PingPayload())
 {
-    public new PingPayload Payload
+    /// <inheritdoc/>
+    public new PingPayload Payload => (PingPayload)base.Payload;
+
+    private PingMessage(PingPayload payload) : this()
     {
-        get => (PingPayload)base.Payload;
-        private set => base.Payload = value;
+        base.Payload = payload;
     }
 
     /// <summary>
@@ -27,10 +36,7 @@ public sealed class PingMessage() : BaseMessage(MessageTypes.PING, new PingPaylo
         {
             var payload = await PingPayload.DeserializeAsync(stream);
 
-            return new PingMessage
-            {
-                Payload = payload
-            };
+            return new PingMessage(payload);
         }
         catch (SerializationException e)
         {

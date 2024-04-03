@@ -7,12 +7,22 @@ using Bolts.Exceptions;
 using Constants;
 using Payloads;
 
+/// <summary>
+/// Represents a pong message.
+/// </summary>
+/// <remarks>
+/// The pong message is used to respond to a ping message.
+/// The message type is 19.
+/// </remarks>
+/// <param name="bytesLen">The number of bytes in the pong message.</param>
 public sealed class PongMessage(ushort bytesLen) : BaseMessage(MessageTypes.PONG, new PongPayload(bytesLen))
 {
-    public new PongPayload Payload
+    /// <inheritdoc/>
+    public new PongPayload Payload => (PongPayload)base.Payload;
+
+    private PongMessage(PongPayload payload) : this(payload.BytesLength)
     {
-        get => (PongPayload)base.Payload;
-        private set => base.Payload = value;
+        base.Payload = payload;
     }
 
     /// <summary>
@@ -27,10 +37,7 @@ public sealed class PongMessage(ushort bytesLen) : BaseMessage(MessageTypes.PONG
         {
             var payload = await PongPayload.DeserializeAsync(stream);
 
-            return new PongMessage(payload.BytesLength)
-            {
-                Payload = payload
-            };
+            return new PongMessage(payload);
         }
         catch (SerializationException e)
         {

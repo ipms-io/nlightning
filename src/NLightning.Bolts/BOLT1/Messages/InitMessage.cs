@@ -1,13 +1,24 @@
+using System.Runtime.Serialization;
+
 namespace NLightning.Bolts.BOLT1.Messages;
 
-using System.Runtime.Serialization;
 using Bolts.Base;
 using Bolts.Exceptions;
 using Constants;
 using Payloads;
 
+/// <summary>
+/// Represents an init message.
+/// </summary>
+/// <remarks>
+/// The init message is used to communicate the features of the node.
+/// The message type is 16.
+/// </remarks>
+/// <param name="payload">The init payload.</param>
+/// <param name="extension">The TLV extension.</param>
 public sealed class InitMessage(InitPayload payload, TLVStream? extension = null) : BaseMessage(MessageTypes.INIT, payload, extension)
 {
+    /// <inheritdoc/>
     public new InitPayload Payload { get => (InitPayload)base.Payload; }
 
     /// <summary>

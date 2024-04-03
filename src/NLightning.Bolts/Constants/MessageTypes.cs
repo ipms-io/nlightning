@@ -1,5 +1,8 @@
 namespace NLightning.Bolts.Constants;
 
+/// <summary>
+/// Represents the message types used in the Lightning Network.
+/// </summary>
 public static class MessageTypes
 {
     #region Setup & Control
