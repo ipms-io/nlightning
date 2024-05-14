@@ -23,6 +23,10 @@ public static class MessageTypes
                         CLOSING_SIGNED = 39;
     #endregion
 
+    #region Interactive Transaction Construction
+    public const ushort TX_ADD_INPUT = 66;
+    #endregion
+
     #region Commitment
     public const ushort UPDATE_ADD_HTLC = 128,
                         UPDATE_FULFILL_HTLC = 130,
