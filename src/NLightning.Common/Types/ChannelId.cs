@@ -8,7 +8,7 @@ namespace NLightning.Common.Types;
 /// </remarks>
 public readonly struct ChannelId
 {
-    public const int LENGTH = 32;
+    private const int LENGTH = 32;
 
     private readonly byte[] _value;
 
@@ -22,6 +22,15 @@ public readonly struct ChannelId
         }
 
         _value = value;
+    }
+    public ChannelId(Span<byte> value)
+    {
+        if (value.Length != LENGTH)
+        {
+            throw new ArgumentException($"ChannelId must be {LENGTH} bytes", nameof(value));
+        }
+
+        _value = value.ToArray();
     }
 
     public ValueTask SerializeAsync(Stream stream)
@@ -37,7 +46,7 @@ public readonly struct ChannelId
     }
 
     #region Overrides
-    public override readonly bool Equals(object? obj)
+    public override bool Equals(object? obj)
     {
         if (obj is ChannelId other)
         {
@@ -47,9 +56,9 @@ public readonly struct ChannelId
         return false;
     }
 
-    public readonly bool Equals(ChannelId other) => _value.SequenceEqual(other._value);
+    private bool Equals(ChannelId other) => _value.SequenceEqual(other._value);
 
-    public override readonly int GetHashCode()
+    public override int GetHashCode()
     {
         return BitConverter.ToInt32(_value, 0);
     }
@@ -58,6 +67,7 @@ public readonly struct ChannelId
     #region Operators
     public static implicit operator byte[](ChannelId c) => c._value;
     public static implicit operator ChannelId(byte[] value) => new(value);
+    public static implicit operator ChannelId(Span<byte> value) => new(value);
 
     public static bool operator ==(ChannelId left, ChannelId right)
     {

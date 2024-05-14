@@ -2,8 +2,9 @@ using System.Runtime.Serialization;
 
 namespace NLightning.Bolts.BOLT2.Payloads;
 
+using Common.BitUtils;
+using Constants;
 using Interfaces;
-using NLightning.Bolts.BOLT2.Constants;
 
 public class TxAddInputPayload : IMessagePayload
 {
@@ -30,11 +31,11 @@ public class TxAddInputPayload : IMessagePayload
     public async Task SerializeAsync(Stream stream)
     {
         await ChannelId.SerializeAsync(stream);
-        await stream.WriteAsync(EndianBitConverter.GetBytesBE(SerialId));
-        await stream.WriteAsync(EndianBitConverter.GetBytesBE((ushort)PrevTx.Length));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(SerialId));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian((ushort)PrevTx.Length));
         await stream.WriteAsync(PrevTx);
-        await stream.WriteAsync(EndianBitConverter.GetBytesBE(PrevTxVout));
-        await stream.WriteAsync(EndianBitConverter.GetBytesBE(Sequence));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(PrevTxVout));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(Sequence));
     }
 
     public static async Task<TxAddInputPayload> DeserializeAsync(Stream stream)
@@ -45,24 +46,24 @@ public class TxAddInputPayload : IMessagePayload
 
             var bytes = new byte[8];
             await stream.ReadExactlyAsync(bytes);
-            var serialId = EndianBitConverter.ToUInt64BE(bytes);
+            var serialId = EndianBitConverter.ToUInt64BigEndian(bytes);
 
             bytes = new byte[2];
             await stream.ReadExactlyAsync(bytes);
-            var prevTxLength = EndianBitConverter.ToUInt16BE(bytes);
+            var prevTxLength = EndianBitConverter.ToUInt16BigEndian(bytes);
 
             var prevTx = new byte[prevTxLength];
             await stream.ReadExactlyAsync(prevTx);
 
             bytes = new byte[4];
             await stream.ReadExactlyAsync(bytes);
-            var prevTxVout = EndianBitConverter.ToUInt32BE(bytes);
+            var prevTxVout = EndianBitConverter.ToUInt32BigEndian(bytes);
 
             bytes = new byte[4];
             await stream.ReadExactlyAsync(bytes);
-            var sequence = EndianBitConverter.ToUInt32BE(bytes);
+            var sequence = EndianBitConverter.ToUInt32BigEndian(bytes);
 
-            return new TxAddInputPayload(channelId, serialId, bytes, prevTxVout, sequence);
+            return new TxAddInputPayload(channelId, serialId, prevTx, prevTxVout, sequence);
         }
         catch (Exception e)
         {

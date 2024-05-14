@@ -22,17 +22,17 @@ public class PingPayload : IMessagePayload
     /// <summary>
     /// The number of bytes to send in the pong message.
     /// </summary>
-    public ushort NumPongBytes { get; private set; }
+    public ushort NumPongBytes { get; private init; }
 
     /// <summary>
     /// The number of bytes to ignore.
     /// </summary>
-    public ushort BytesLength { get; private set; }
+    public ushort BytesLength { get; private init; }
 
     /// <summary>
     /// The ignored bytes.
     /// </summary>
-    public byte[] Ignored { get; private set; }
+    public byte[] Ignored { get; protected init; }
 
     public PingPayload()
     {

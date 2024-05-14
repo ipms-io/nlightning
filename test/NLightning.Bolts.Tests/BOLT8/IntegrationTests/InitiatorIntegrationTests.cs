@@ -8,9 +8,8 @@ using Bolts.BOLT8.Primitives;
 using Bolts.BOLT8.States;
 using Common.Interfaces.Crypto;
 using Mock;
+using Tests.Utils;
 using Utils;
-
-using static Utils.TestUtils;
 
 public class InitiatorIntegrationTests
 {
@@ -22,14 +21,10 @@ public class InitiatorIntegrationTests
         // Arrange
         var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey, s_dhFake);
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        Transport? transport;
-        byte[]? handshakeHash;
-        Span<byte> message;
-        int messageSize;
 
-        // Act
-        (messageSize, handshakeHash, transport) = initiator.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), messageBuffer);
-        message = messageBuffer.AsSpan(0, messageSize);
+            // Act
+        var (messageSize, handshakeHash, transport) = initiator.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), messageBuffer);
+        var message = messageBuffer.AsSpan(0, messageSize);
 
         // compare bytes actOneOutput to initMessage
         Assert.Equal(InitiatorValidKeysUtil.ActOneOutput, message.ToArray());
@@ -43,17 +38,13 @@ public class InitiatorIntegrationTests
         // Arrange
         var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey, s_dhFake);
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        Transport? transport;
-        byte[]? handshakeHash;
-        Span<byte> message;
-        int messageSize;
 
         // - Play ActOne
         _ = initiator.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), messageBuffer);
 
         // Act
-        (messageSize, handshakeHash, transport) = initiator.ReadMessage(InitiatorValidKeysUtil.ActTwoInput, messageBuffer);
-        message = messageBuffer.AsSpan(0, messageSize);
+        var (messageSize, handshakeHash, transport) = initiator.ReadMessage(InitiatorValidKeysUtil.ActTwoInput, messageBuffer);
+        var message = messageBuffer.AsSpan(0, messageSize);
 
         // make sure reply is empty
         Assert.Equal([], message.ToArray());
@@ -67,10 +58,6 @@ public class InitiatorIntegrationTests
         // Arrange
         var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey, s_dhFake);
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        Transport? transport;
-        byte[]? handshakeHash;
-        Span<byte> message;
-        int messageSize;
 
         // - Play ActOne
         _ = initiator.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), messageBuffer);
@@ -78,8 +65,8 @@ public class InitiatorIntegrationTests
         _ = initiator.ReadMessage(InitiatorValidKeysUtil.ActTwoInput, messageBuffer);
 
         // Act
-        (messageSize, handshakeHash, transport) = initiator.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), messageBuffer);
-        message = messageBuffer.AsSpan(0, messageSize);
+        var (messageSize, handshakeHash, transport) = initiator.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), messageBuffer);
+        var message = messageBuffer.AsSpan(0, messageSize);
 
         // compare bytes actThreeOutput to initMessage
         Assert.Equal(InitiatorValidKeysUtil.ActThreeOutput, message.ToArray());
@@ -93,24 +80,23 @@ public class InitiatorIntegrationTests
         // Arrange
         var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey, s_dhFake);
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        Transport? transport;
-        var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        const BindingFlags FLAGS = BindingFlags.Instance | BindingFlags.NonPublic;
 
         // - Play ActOne
         _ = initiator.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), messageBuffer);
         // - Play ActTwo
         _ = initiator.ReadMessage(InitiatorValidKeysUtil.ActTwoInput, messageBuffer);
         // - Play ActThree
-        (_, _, transport) = initiator.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), messageBuffer);
+        var (_, _, transport) = initiator.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), messageBuffer);
         Assert.NotNull(transport);
 
         // Act
         // Get sk
-        var c1 = ((CipherState?)transport.GetType().GetField("_sendingKey", flags)?.GetValue(transport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new NullReferenceException("_sendingKey");
-        var sk = ((byte[]?)c1.GetType().GetField("_k", flags)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new NullReferenceException("_sendingKey._k");
+        var c1 = ((CipherState?)transport.GetType().GetField("_sendingKey", FLAGS)?.GetValue(transport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new NullReferenceException("_sendingKey");
+        var sk = ((byte[]?)c1.GetType().GetField("_k", FLAGS)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new NullReferenceException("_sendingKey._k");
         // Get rk
-        var c2 = ((CipherState?)transport.GetType().GetField("_receivingKey", flags)?.GetValue(transport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new NullReferenceException("_receivingKey");
-        var rk = ((byte[]?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new NullReferenceException("_receivingKey._k");
+        var c2 = ((CipherState?)transport.GetType().GetField("_receivingKey", FLAGS)?.GetValue(transport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new NullReferenceException("_receivingKey");
+        var rk = ((byte[]?)c2.GetType().GetField("_k", FLAGS)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new NullReferenceException("_receivingKey._k");
 
         Assert.Equal(InitiatorValidKeysUtil.OutputSk, sk);
         Assert.Equal(InitiatorValidKeysUtil.OutputRk, rk);
@@ -126,7 +112,7 @@ public class InitiatorIntegrationTests
         // Arrange
         var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey, s_dhFake);
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        var inputBytes = GetBytes(actTwoInput);
+        var inputBytes = actTwoInput.ToByteArray();
 
         // - Play ActOne
         _ = initiator.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), messageBuffer);

@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace NLightning.Bolts.Tests.BOLT1.Messages;
 
 using Bolts.BOLT1.Messages;
@@ -9,7 +7,7 @@ using Exceptions;
 public class PongMessageTests
 {
     [Fact]
-    public async Task Given_ValidStream_When_DeserializeAsync_IsCalled_Then_ReturnsPongMessageWithCorrectPayload()
+    public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsPongMessageWithCorrectPayload()
     {
         // Arrange
         var expectedPayload = new PongPayload(10);
@@ -24,10 +22,10 @@ public class PongMessageTests
     }
 
     [Fact]
-    public async Task Given_InvalidStream_When_DeserializeAsync_IsCalled_Then_ThrowsMessageSerializationException()
+    public async Task Given_InvalidStream_When_DeserializeAsync_Then_ThrowsMessageSerializationException()
     {
         // Arrange
-        var invalidStream = new MemoryStream(Encoding.UTF8.GetBytes("Invalid content"));
+        var invalidStream = new MemoryStream("Invalid content"u8.ToArray());
 
         // Act & Assert
         await Assert.ThrowsAsync<MessageSerializationException>(() => PongMessage.DeserializeAsync(invalidStream));

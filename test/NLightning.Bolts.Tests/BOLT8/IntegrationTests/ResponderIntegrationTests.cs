@@ -4,13 +4,12 @@ using System.Text;
 namespace NLightning.Bolts.Tests.BOLT8.IntegrationTests;
 
 using Bolts.BOLT8.Constants;
-using Bolts.BOLT8.Primitives;
 using Bolts.BOLT8.States;
 using Common.Interfaces.Crypto;
 using Mock;
+using Tests.Utils;
 using Utils;
 
-using static Utils.TestUtils;
 
 public class ResponderIntegrationTests
 {
@@ -23,14 +22,10 @@ public class ResponderIntegrationTests
         var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, s_dhFake);
 
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        Transport? transport;
-        byte[]? handshakeHash;
-        Span<byte> message;
-        int messageSize;
 
         // Act
-        (messageSize, handshakeHash, transport) = responder.ReadMessage(ResponderValidKeysUtil.ActOneInput, messageBuffer);
-        message = messageBuffer.AsSpan(0, messageSize);
+        var (messageSize, handshakeHash, transport) = responder.ReadMessage(ResponderValidKeysUtil.ActOneInput, messageBuffer);
+        var message = messageBuffer.AsSpan(0, messageSize);
 
         // compare bytes actOneOutput to initMessage
         Assert.Equal([], message.ToArray());
@@ -45,17 +40,13 @@ public class ResponderIntegrationTests
         var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, s_dhFake);
 
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        Transport? transport;
-        byte[]? handshakeHash;
-        Span<byte> message;
-        int messageSize;
 
         // - Play ActOne
         _ = responder.ReadMessage(ResponderValidKeysUtil.ActOneInput, messageBuffer);
 
         // Act
-        (messageSize, handshakeHash, transport) = responder.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), messageBuffer);
-        message = messageBuffer.AsSpan(0, messageSize);
+        var (messageSize, handshakeHash, transport) = responder.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), messageBuffer);
+        var message = messageBuffer.AsSpan(0, messageSize);
 
         // make sure reply is empty
         Assert.Equal(ResponderValidKeysUtil.ActTwoOutput, message.ToArray());
@@ -70,10 +61,6 @@ public class ResponderIntegrationTests
         var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, s_dhFake);
 
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        Transport? transport;
-        byte[]? handshakeHash;
-        Span<byte> message;
-        int messageSize;
 
         // - Play ActOne
         _ = responder.ReadMessage(ResponderValidKeysUtil.ActOneInput, messageBuffer);
@@ -81,8 +68,8 @@ public class ResponderIntegrationTests
         _ = responder.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), messageBuffer);
 
         // Act
-        (messageSize, handshakeHash, transport) = responder.ReadMessage(ResponderValidKeysUtil.ActThreeInput, messageBuffer);
-        message = messageBuffer.AsSpan(0, messageSize);
+        var (messageSize, handshakeHash, transport) = responder.ReadMessage(ResponderValidKeysUtil.ActThreeInput, messageBuffer);
+        var message = messageBuffer.AsSpan(0, messageSize);
 
         // compare bytes actThreeOutput to initMessage
         Assert.Equal([], message.ToArray());
@@ -96,24 +83,23 @@ public class ResponderIntegrationTests
         // Arrange
         var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, s_dhFake);
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        Transport? transport;
-        var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        const BindingFlags FLAGS = BindingFlags.Instance | BindingFlags.NonPublic;
 
         // - Play ActOne
         _ = responder.ReadMessage(ResponderValidKeysUtil.ActOneInput, messageBuffer);
         // - Play ActTwo
         _ = responder.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), messageBuffer);
         // - Play ActThree
-        (_, _, transport) = responder.ReadMessage(ResponderValidKeysUtil.ActThreeInput, messageBuffer);
+        var (_, _, transport) = responder.ReadMessage(ResponderValidKeysUtil.ActThreeInput, messageBuffer);
         Assert.NotNull(transport);
 
         // Act
         // Get rk
-        var c1 = ((CipherState?)transport.GetType().GetField("_sendingKey", flags)?.GetValue(transport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new NullReferenceException("_sendingKey");
-        var rk = ((byte[]?)c1.GetType().GetField("_k", flags)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new NullReferenceException("_sendingKey._k");
+        var c1 = ((CipherState?)transport.GetType().GetField("_sendingKey", FLAGS)?.GetValue(transport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new NullReferenceException("_sendingKey");
+        var rk = ((byte[]?)c1.GetType().GetField("_k", FLAGS)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new NullReferenceException("_sendingKey._k");
         // Get sk
-        var c2 = ((CipherState?)transport.GetType().GetField("_receivingKey", flags)?.GetValue(transport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new NullReferenceException("_receivingKey");
-        var sk = ((byte[]?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new NullReferenceException("_receivingKey._k");
+        var c2 = ((CipherState?)transport.GetType().GetField("_receivingKey", FLAGS)?.GetValue(transport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new NullReferenceException("_receivingKey");
+        var sk = ((byte[]?)c2.GetType().GetField("_k", FLAGS)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new NullReferenceException("_receivingKey._k");
 
         Assert.Equal(ResponderValidKeysUtil.OutputRk, rk);
         Assert.Equal(ResponderValidKeysUtil.OutputSk, sk);
@@ -130,7 +116,7 @@ public class ResponderIntegrationTests
         var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, s_dhFake);
 
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        var inputBytes = GetBytes(actOneInput);
+        var inputBytes = actOneInput.ToByteArray();
 
         // Act
         var exception = Assert.ThrowsAny<Exception>(() => responder.ReadMessage(inputBytes, messageBuffer));
@@ -147,7 +133,7 @@ public class ResponderIntegrationTests
         // Arrange
         var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, s_dhFake);
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        var inputBytes = GetBytes(actOneInput);
+        var inputBytes = actOneInput.ToByteArray();
 
         // - Play ActOne
         _ = responder.ReadMessage(ResponderValidKeysUtil.ActOneInput, messageBuffer);

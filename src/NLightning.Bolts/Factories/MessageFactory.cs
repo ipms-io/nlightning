@@ -2,6 +2,8 @@ namespace NLightning.Bolts.Factories;
 
 using BOLT1.Messages;
 using BOLT1.Payloads;
+using BOLT2.Messages;
+using BOLT2.Payloads;
 using Common.BitUtils;
 using Constants;
 using Exceptions;
@@ -59,6 +61,27 @@ public static class MessageFactory
     }
     #endregion
 
+    #region Interactive Transaction Construction
+    /// <summary>
+    /// Create a TxAddInput message.
+    /// </summary>
+    /// <param name="channelId">The channel id.</param>
+    /// <param name="serialId">The serial id.</param>
+    /// <param name="prevTx">The previous transaction.</param>
+    /// <param name="prevTxVout">The previous transaction vout.</param>
+    /// <param name="sequence">The sequence number.</param>
+    /// <returns>The TxAddInput message.</returns>
+    /// <seealso cref="TxAddInputMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="TxAddInputPayload"/>
+    public static IMessage CreateTxAddInputMessage(ChannelId channelId, ulong serialId, byte[] prevTx, uint prevTxVout, uint sequence)
+    {
+        var payload = new TxAddInputPayload(channelId, serialId, prevTx, prevTxVout, sequence);
+
+        return new TxAddInputMessage(payload);
+    }
+    #endregion
+
     /// <summary>
     /// Deserialize a message from a stream.
     /// </summary>
@@ -75,11 +98,12 @@ public static class MessageFactory
         // Deserialize message based on type
         return type switch
         {
-            MessageTypes.WARNING => await WarningMessage.DeserializeAsync(stream),
-            MessageTypes.INIT => await InitMessage.DeserializeAsync(stream),
-            MessageTypes.ERROR => await ErrorMessage.DeserializeAsync(stream),
-            MessageTypes.PING => await PingMessage.DeserializeAsync(stream),
-            MessageTypes.PONG => await PongMessage.DeserializeAsync(stream),
+            MessageTypes.WARNING => await WarningMessage.DeserializeAsync(stream),          // 01 -> 0x01
+            MessageTypes.INIT => await InitMessage.DeserializeAsync(stream),                // 16 -> 0x10
+            MessageTypes.ERROR => await ErrorMessage.DeserializeAsync(stream),              // 17 -> 0x11
+            MessageTypes.PING => await PingMessage.DeserializeAsync(stream),                // 18 -> 0x12
+            MessageTypes.PONG => await PongMessage.DeserializeAsync(stream),                // 19 -> 0x13
+            MessageTypes.TX_ADD_INPUT => await TxAddInputMessage.DeserializeAsync(stream),  // 66 -> 0x42
 
             _ => throw new InvalidMessageException("Unknown message type"),
         };
