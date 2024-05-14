@@ -35,6 +35,10 @@ public sealed class PongMessage(ushort bytesLen) : BaseMessage(MessageTypes.PONG
     {
         try
         {
+            // Check message type
+            await CheckMessageTypeAsync(stream, MessageTypes.PONG);
+
+            // Deserialize payload
             var payload = await PongPayload.DeserializeAsync(stream);
 
             return new PongMessage(payload);

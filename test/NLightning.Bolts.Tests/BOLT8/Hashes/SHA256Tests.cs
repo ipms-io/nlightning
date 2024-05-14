@@ -1,7 +1,7 @@
 namespace NLightning.Bolts.Tests.BOLT8.Hashes;
 
 using Bolts.BOLT8.Hashes;
-using static Utils.TestUtils;
+using Tests.Utils;
 
 /// <summary>
 /// Test our SHA256 implementation against the test vector available at
@@ -53,7 +53,7 @@ public partial class SHA256Tests
                     throw new InvalidOperationException("Msg line without Len line");
                 }
 
-                currentVector.Msg = GetBytes(line[6..]);
+                currentVector.Msg = TestHexConverter.ToByteArray(line[6..]);
 
                 if (currentVector.Msg.Length != currentVector.Len / 8)
                 {
@@ -72,7 +72,7 @@ public partial class SHA256Tests
                     throw new InvalidOperationException("MD line without Msg line");
                 }
 
-                currentVector.MD = GetBytes(line[5..]);
+                currentVector.MD = TestHexConverter.ToByteArray(line[5..]);
                 testVectors.Add(currentVector);
             }
         }

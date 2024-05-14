@@ -28,13 +28,14 @@ public static class ChannelIdFactory
             throw new ArgumentException("Revocation basepoints must be 33 bytes each");
         }
 
-        var combined = new byte[66];
+        Span<byte> combined = stackalloc byte[66];
         lesserRevocationBasepoint.CopyTo(combined);
-        greaterRevocationBasepoint.CopyTo(combined);
+        greaterRevocationBasepoint.CopyTo(combined[33..]);
 
         using var hasher = new SHA256();
         hasher.AppendData(combined);
-        var hash = new byte[32];
+
+        Span<byte> hash = stackalloc byte[32];
         hasher.GetHashAndReset(hash);
         return new ChannelId(hash);
     }

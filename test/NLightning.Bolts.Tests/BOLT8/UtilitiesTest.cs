@@ -6,8 +6,8 @@ public class UtilitiesTest
 {
     private const int Alignment = 64;
 
-    private static readonly Dictionary<IntPtr, IntPtr> s_tests = new Dictionary<IntPtr, IntPtr>
-        {
+    private static readonly Dictionary<IntPtr, IntPtr> s_tests = new()
+    {
             {IntPtr.Zero, IntPtr.Zero},
             {1, 64},
             {1023, 1024},

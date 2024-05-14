@@ -25,6 +25,15 @@ public readonly struct ChannelId
 
         _value = value;
     }
+    public ChannelId(Span<byte> value)
+    {
+        if (value.Length != LENGTH)
+        {
+            throw new ArgumentException($"ChannelId must be {LENGTH} bytes", nameof(value));
+        }
+
+        _value = value.ToArray();
+    }
 
     public ValueTask SerializeAsync(Stream stream)
     {
@@ -58,6 +67,7 @@ public readonly struct ChannelId
     #region Operators
     public static implicit operator byte[](ChannelId c) => c._value;
     public static implicit operator ChannelId(byte[] value) => new(value);
+    public static implicit operator ChannelId(Span<byte> value) => new(value);
 
     public static bool operator ==(ChannelId left, ChannelId right)
     {

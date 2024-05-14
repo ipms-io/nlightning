@@ -8,9 +8,8 @@ using Bolts.BOLT8.Interfaces;
 using Bolts.BOLT8.Primitives;
 using Bolts.BOLT8.States;
 using Mock;
+using Tests.Utils;
 using Utils;
-
-using static Utils.TestUtils;
 
 public partial class ResponderIntegrationTests
 {
@@ -130,7 +129,7 @@ public partial class ResponderIntegrationTests
         var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, s_dhFake);
 
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        var inputBytes = GetBytes(actOneInput);
+        var inputBytes = TestHexConverter.ToByteArray(actOneInput);
 
         // Act
         var exception = Assert.ThrowsAny<Exception>(() => responder.ReadMessage(inputBytes, messageBuffer));
@@ -147,7 +146,7 @@ public partial class ResponderIntegrationTests
         // Arrange
         var responder = new HandshakeState(false, ResponderValidKeysUtil.LocalStaticPrivateKey, ResponderValidKeysUtil.LocalStaticPublicKey, s_dhFake);
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        var inputBytes = GetBytes(actOneInput);
+        var inputBytes = TestHexConverter.ToByteArray(actOneInput);
 
         // - Play ActOne
         _ = responder.ReadMessage(ResponderValidKeysUtil.ActOneInput, messageBuffer);

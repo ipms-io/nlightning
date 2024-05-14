@@ -9,49 +9,50 @@ using Bolts.Exceptions;
 using Common.Constants;
 using Common.TLVs;
 using Common.Types;
+using Tests.Utils;
 
 public class InitMessageTests
 {
     [Fact]
-    public async Task Given_ValidStreamWithPayloadAndExtension_When_DeserializeAsync_IsCalled_Then_ReturnsInitMessageWithCorrectData()
+    public async Task Given_ValidStreamWithPayloadAndExtension_When_DeserializeAsync_Then_ReturnsInitMessageWithCorrectData()
     {
         // Arrange
-        var expectedPayload = new InitPayload(new Features());
+        var expectedFeatures = new Features().ToString();
         var expectedExtension = new TLVStream();
         var expectedTlv = new NetworksTLV([ChainConstants.Main]);
         expectedExtension.Add(expectedTlv);
-        var stream = await CreateStreamFromPayloadAndExtensionAsync(expectedPayload, expectedExtension);
+        var stream = new MemoryStream(TestHexConverter.ToByteArray("0x001000020200000202000100"));
 
         // Act
-        var initMessage = await InitMessage.DeserializeAsync(stream);
+        var message = await InitMessage.DeserializeAsync(stream);
 
         // Assert
         TLV? tlv = null;
-        Assert.NotNull(initMessage);
-        Assert.Equal(expectedPayload.Features.ToString(), initMessage.Payload.Features.ToString());
-        var hasTlv = initMessage.Extension?.TryGetTlv(TLVConstants.NETWORKS, out tlv);
+        Assert.NotNull(message);
+        Assert.Equal(expectedFeatures, message.Payload.Features.ToString());
+        var hasTlv = message.Extension?.TryGetTlv(TLVConstants.NETWORKS, out tlv);
         Assert.True(hasTlv);
         Assert.Equal(expectedTlv.Value, tlv!.Value);
     }
 
     [Fact]
-    public async Task Given_ValidStreamWithOnlyPayload_When_DeserializeAsync_IsCalled_Then_ReturnsInitMessageWithNullExtension()
+    public async Task Given_ValidStreamWithOnlyPayload_When_DeserializeAsync_Then_ReturnsInitMessageWithNullExtension()
     {
         // Arrange
-        var expectedPayload = new InitPayload(new Features());
-        var stream = await Helpers.CreateStreamFromPayloadAsync(expectedPayload);
+        var expectedFeatures = new Features().ToString();
+        var stream = new MemoryStream(TestHexConverter.ToByteArray("0x00100002020000020200"));
 
         // Act
-        var initMessage = await InitMessage.DeserializeAsync(stream);
+        var message = await InitMessage.DeserializeAsync(stream);
 
         // Assert
-        Assert.NotNull(initMessage);
-        Assert.Equal(expectedPayload.Features.ToString(), initMessage.Payload.Features.ToString());
-        Assert.Null(initMessage.Extension);
+        Assert.NotNull(message);
+        Assert.Equal(expectedFeatures, message.Payload.Features.ToString());
+        Assert.Null(message.Extension);
     }
 
     [Fact]
-    public async Task Given_InvalidStreamContent_When_DeserializeAsync_IsCalled_Then_ThrowsMessageSerializationException()
+    public async Task Given_InvalidStreamContent_When_DeserializeAsync_Then_ThrowsMessageSerializationException()
     {
         // Arrange
         var invalidStream = new MemoryStream(Encoding.UTF8.GetBytes("Invalid content"));
@@ -60,12 +61,41 @@ public class InitMessageTests
         await Assert.ThrowsAsync<MessageSerializationException>(() => InitMessage.DeserializeAsync(invalidStream));
     }
 
-    private static async Task<Stream> CreateStreamFromPayloadAndExtensionAsync(InitPayload payload, TLVStream extension)
+    [Fact]
+    public async Task Given_ValidPayloadAndExtension_When_SerializeAsync_Then_WritesCorrectDataToStream()
     {
+        // Arrange
+        var expectedExtension = new TLVStream();
+        expectedExtension.Add(new NetworksTLV([ChainConstants.Main]));
+        var message = new InitMessage(new InitPayload(new Features()), expectedExtension);
         var stream = new MemoryStream();
-        await payload.SerializeAsync(stream);
-        await extension.SerializeAsync(stream);
+        var expectedBytes = TestHexConverter.ToByteArray("0x001000020200000202000100");
+
+        // Act
+        await message.SerializeAsync(stream);
         stream.Position = 0;
-        return stream;
+        var result = new byte[stream.Length];
+        await stream.ReadAsync(result);
+
+        // Assert
+        Assert.Equal(expectedBytes, result);
+    }
+
+    [Fact]
+    public async Task Given_ValidPayloadOnly_When_SerializeAsync_Then_WritesCorrectDataToStream()
+    {
+        // Arrange
+        var message = new InitMessage(new InitPayload(new Features()));
+        var stream = new MemoryStream();
+        var expectedBytes = TestHexConverter.ToByteArray("0x00100002020000020200");
+
+        // Act
+        await message.SerializeAsync(stream);
+        stream.Position = 0;
+        var result = new byte[stream.Length];
+        await stream.ReadAsync(result);
+
+        // Assert
+        Assert.Equal(expectedBytes, result);
     }
 }

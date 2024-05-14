@@ -31,6 +31,9 @@ public sealed class InitMessage(InitPayload payload, TLVStream? extension = null
     {
         try
         {
+            // Check message type
+            await CheckMessageTypeAsync(stream, MessageTypes.INIT);
+
             // Deserialize payload
             var payload = await InitPayload.DeserializeAsync(stream);
 

@@ -62,7 +62,7 @@ public class TxAddInputPayload : IMessagePayload
             await stream.ReadExactlyAsync(bytes);
             var sequence = EndianBitConverter.ToUInt32BE(bytes);
 
-            return new TxAddInputPayload(channelId, serialId, bytes, prevTxVout, sequence);
+            return new TxAddInputPayload(channelId, serialId, prevTx, prevTxVout, sequence);
         }
         catch (Exception e)
         {

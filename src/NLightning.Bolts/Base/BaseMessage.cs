@@ -1,3 +1,5 @@
+using System.Runtime.Serialization;
+
 namespace NLightning.Bolts.Base;
 
 using BOLT1.Payloads;
@@ -48,6 +50,29 @@ public abstract class BaseMessage : IMessage
             {
                 await tlv.SerializeAsync(stream);
             }
+        }
+    }
+
+    public static async Task CheckMessageTypeAsync(Stream stream, ushort type)
+    {
+        try
+        {
+            var typeBytes = new byte[2];
+            await stream.ReadExactlyAsync(typeBytes);
+            var receivedType = EndianBitConverter.ToUInt16BE(typeBytes);
+
+            if (receivedType != type)
+            {
+                throw new SerializationException($"Invalid message type. Expected {type}, got {receivedType}");
+            }
+        }
+        catch (SerializationException)
+        {
+            throw;
+        }
+        catch (Exception e)
+        {
+            throw new SerializationException("Error checking message type", e);
         }
     }
 }

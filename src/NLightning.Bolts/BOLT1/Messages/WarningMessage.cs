@@ -30,6 +30,9 @@ public sealed class WarningMessage(ErrorPayload payload) : BaseMessage(MessageTy
     {
         try
         {
+            // Check message type
+            await CheckMessageTypeAsync(stream, MessageTypes.WARNING);
+
             // Deserialize payload
             var payload = await ErrorPayload.DeserializeAsync(stream);
 
