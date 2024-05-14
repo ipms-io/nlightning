@@ -25,7 +25,9 @@ public static class MessageTypes
 
     #region Interactive Transaction Construction
     public const ushort TX_ADD_INPUT = 66,
-                        TX_ADD_OUTPUT = 67;
+                        TX_ADD_OUTPUT = 67,
+                        TX_REMOVE_INPUT = 68,
+                        TX_REMOVE_OUTPUT = 69;
     #endregion
 
     #region Commitment

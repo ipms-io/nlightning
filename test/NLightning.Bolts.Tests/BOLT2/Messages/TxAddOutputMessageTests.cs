@@ -2,9 +2,9 @@ namespace NLightning.Bolts.Tests.BOLT2.Messages;
 
 using Bolts.BOLT2.Messages;
 using Bolts.BOLT2.Payloads;
-using Bolts.Exceptions;
 using Common.Types;
-using NLightning.Bolts.Tests.Utils;
+using Exceptions;
+using Utils;
 
 public class TxAddOutputMessageTests
 {
@@ -13,11 +13,11 @@ public class TxAddOutputMessageTests
     {
         // Arrange
         var channelId = ChannelId.Zero;
-        ulong serialId = 1;
-        ulong sats = 1000;
+        const ulong SERIAL_ID = 1;
+        const ulong SATS = 1000;
         byte[] script = [0x00, 0x01, 0x02, 0x03];
 
-        var stream = new MemoryStream(TestHexConverter.ToByteArray("0x00430000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000003E8000400010203"));
+        var stream = new MemoryStream("0x0000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000003E8000400010203".ToByteArray());
 
         // Act
         var message = await TxAddOutputMessage.DeserializeAsync(stream);
@@ -25,8 +25,8 @@ public class TxAddOutputMessageTests
         // Assert
         Assert.NotNull(message);
         Assert.Equal(channelId, message.Payload.ChannelId);
-        Assert.Equal(serialId, message.Payload.SerialId);
-        Assert.Equal(sats, message.Payload.Sats);
+        Assert.Equal(SERIAL_ID, message.Payload.SerialId);
+        Assert.Equal(SATS, message.Payload.Sats);
         Assert.Equal(script, message.Payload.Script);
     }
 
@@ -45,18 +45,18 @@ public class TxAddOutputMessageTests
     {
         // Arrange
         var channelId = ChannelId.Zero;
-        ulong serialId = 1;
-        ulong sats = 1000;
+        const ulong SERIAL_ID = 1;
+        const ulong SATS = 1000;
         byte[] script = [0x00, 0x01, 0x02, 0x03];
-        var message = new TxAddOutputMessage(new TxAddOutputPayload(channelId, serialId, sats, script));
+        var message = new TxAddOutputMessage(new TxAddOutputPayload(channelId, SERIAL_ID, SATS, script));
         var stream = new MemoryStream();
-        var expectedBytes = TestHexConverter.ToByteArray("0x00430000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000003E8000400010203");
+        var expectedBytes = "0x00430000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000003E8000400010203".ToByteArray();
 
         // Act
         await message.SerializeAsync(stream);
         stream.Position = 0;
         var result = new byte[stream.Length];
-        await stream.ReadAsync(result);
+        _ = await stream.ReadAsync(result);
 
         // Assert
         Assert.Equal(expectedBytes, result);

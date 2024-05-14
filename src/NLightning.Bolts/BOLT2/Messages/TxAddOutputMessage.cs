@@ -30,9 +30,6 @@ public sealed class TxAddOutputMessage(TxAddOutputPayload payload) : BaseMessage
     {
         try
         {
-            // Check message type
-            await CheckMessageTypeAsync(stream, MessageTypes.TX_ADD_OUTPUT);
-
             // Deserialize payload
             var payload = await TxAddOutputPayload.DeserializeAsync(stream);
             return new TxAddOutputMessage(payload);

@@ -2,9 +2,9 @@ namespace NLightning.Bolts.Tests.BOLT2.Messages;
 
 using Bolts.BOLT2.Messages;
 using Bolts.BOLT2.Payloads;
-using Bolts.Exceptions;
 using Common.Types;
-using NLightning.Bolts.Tests.Utils;
+using Exceptions;
+using Utils;
 
 public class TxAddInputMessageTests
 {
@@ -13,12 +13,12 @@ public class TxAddInputMessageTests
     {
         // Arrange
         var channelId = ChannelId.Zero;
-        ulong serialId = 1;
+        const ulong SERIAL_ID = 1;
         byte[] prevTx = [0x00, 0x01, 0x02, 0x03];
-        uint prevTxVout = 0;
-        var sequence = 0xFFFFFFFD;
+        const uint PREV_TX_VOUT = 0;
+        const uint SEQUENCE = 0xFFFFFFFD;
 
-        var stream = new MemoryStream(TestHexConverter.ToByteArray("0x0000000000000000000000000000000000000000000000000000000000000000000000000000000100040001020300000000FFFFFFFD"));
+        var stream = new MemoryStream("0x0000000000000000000000000000000000000000000000000000000000000000000000000000000100040001020300000000FFFFFFFD".ToByteArray());
 
         // Act
         var message = await TxAddInputMessage.DeserializeAsync(stream);
@@ -26,10 +26,10 @@ public class TxAddInputMessageTests
         // Assert
         Assert.NotNull(message);
         Assert.Equal(channelId, message.Payload.ChannelId);
-        Assert.Equal(serialId, message.Payload.SerialId);
+        Assert.Equal(SERIAL_ID, message.Payload.SerialId);
         Assert.Equal(prevTx, message.Payload.PrevTx);
-        Assert.Equal(prevTxVout, message.Payload.PrevTxVout);
-        Assert.Equal(sequence, message.Payload.Sequence);
+        Assert.Equal(PREV_TX_VOUT, message.Payload.PrevTxVout);
+        Assert.Equal(SEQUENCE, message.Payload.Sequence);
     }
 
     [Fact]
@@ -47,19 +47,19 @@ public class TxAddInputMessageTests
     {
         // Arrange
         var channelId = ChannelId.Zero;
-        ulong serialId = 1;
+        const ulong SERIAL_ID = 1;
         byte[] prevTx = [0x00, 0x01, 0x02, 0x03];
-        uint prevTxVout = 0;
-        var sequence = 0xFFFFFFFD;
-        var message = new TxAddInputMessage(new TxAddInputPayload(channelId, serialId, prevTx, prevTxVout, sequence));
+        const uint PREV_TX_VOUT = 0;
+        const uint SEQUENCE = 0xFFFFFFFD;
+        var message = new TxAddInputMessage(new TxAddInputPayload(channelId, SERIAL_ID, prevTx, PREV_TX_VOUT, SEQUENCE));
         var stream = new MemoryStream();
-        var expectedBytes = TestHexConverter.ToByteArray("0x00420000000000000000000000000000000000000000000000000000000000000000000000000000000100040001020300000000FFFFFFFD");
+        var expectedBytes = "0x00420000000000000000000000000000000000000000000000000000000000000000000000000000000100040001020300000000FFFFFFFD".ToByteArray();
 
         // Act
         await message.SerializeAsync(stream);
         stream.Position = 0;
         var result = new byte[stream.Length];
-        await stream.ReadAsync(result);
+        _ = await stream.ReadAsync(result);
 
         // Assert
         Assert.Equal(expectedBytes, result);

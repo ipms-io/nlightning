@@ -98,6 +98,38 @@ public static class MessageFactory
 
         return new TxAddOutputMessage(payload);
     }
+
+    /// <summary>
+    /// Create a TxRemoveInput message.
+    /// </summary>
+    /// <param name="channelId">The channel id.</param>
+    /// <param name="serialId">The serial id.</param>
+    /// <returns>The TxRemoveInput message.</returns>
+    /// <seealso cref="TxRemoveInputMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="TxRemoveInputPayload"/>
+    public static IMessage CreateTxRemoveInputMessage(ChannelId channelId, ulong serialId)
+    {
+        var payload = new TxRemoveInputPayload(channelId, serialId);
+
+        return new TxRemoveInputMessage(payload);
+    }
+
+    /// <summary>
+    /// Create a TxRemoveOutput message.
+    /// </summary>
+    /// <param name="channelId">The channel id.</param>
+    /// <param name="serialId">The serial id.</param>
+    /// <returns>The TxRemoveOutput message.</returns>
+    /// <seealso cref="TxRemoveOutputMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="TxRemoveOutputPayload"/>
+    public static IMessage CreateTxRemoveOutputMessage(ChannelId channelId, ulong serialId)
+    {
+        var payload = new TxRemoveOutputPayload(channelId, serialId);
+
+        return new TxRemoveOutputMessage(payload);
+    }
     #endregion
 
     /// <summary>
@@ -116,13 +148,15 @@ public static class MessageFactory
         // Deserialize message based on type
         return type switch
         {
-            MessageTypes.WARNING => await WarningMessage.DeserializeAsync(stream),              // 01 -> 0x01
-            MessageTypes.INIT => await InitMessage.DeserializeAsync(stream),                    // 16 -> 0x10
-            MessageTypes.ERROR => await ErrorMessage.DeserializeAsync(stream),                  // 17 -> 0x11
-            MessageTypes.PING => await PingMessage.DeserializeAsync(stream),                    // 18 -> 0x12
-            MessageTypes.PONG => await PongMessage.DeserializeAsync(stream),                    // 19 -> 0x13
-            MessageTypes.TX_ADD_INPUT => await TxAddInputMessage.DeserializeAsync(stream),      // 66 -> 0x42
-            MessageTypes.TX_ADD_OUTPUT => await TxAddOutputMessage.DeserializeAsync(stream),    // 67 -> 0x43
+            MessageTypes.WARNING => await WarningMessage.DeserializeAsync(stream),                  // 01 -> 0x01
+            MessageTypes.INIT => await InitMessage.DeserializeAsync(stream),                        // 16 -> 0x10
+            MessageTypes.ERROR => await ErrorMessage.DeserializeAsync(stream),                      // 17 -> 0x11
+            MessageTypes.PING => await PingMessage.DeserializeAsync(stream),                        // 18 -> 0x12
+            MessageTypes.PONG => await PongMessage.DeserializeAsync(stream),                        // 19 -> 0x13
+            MessageTypes.TX_ADD_INPUT => await TxAddInputMessage.DeserializeAsync(stream),          // 66 -> 0x42
+            MessageTypes.TX_ADD_OUTPUT => await TxAddOutputMessage.DeserializeAsync(stream),        // 67 -> 0x43
+            MessageTypes.TX_REMOVE_INPUT => await TxRemoveInputMessage.DeserializeAsync(stream),    // 68 -> 0x44
+            MessageTypes.TX_REMOVE_OUTPUT => await TxRemoveOutputMessage.DeserializeAsync(stream),  // 69 -> 0x45
 
             _ => throw new InvalidMessageException("Unknown message type"),
         };

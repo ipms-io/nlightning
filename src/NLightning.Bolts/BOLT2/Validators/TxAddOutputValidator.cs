@@ -7,14 +7,14 @@ public static class TxAddOutputValidator
 {
     public static void Validate(bool isInitiator, TxAddOutputPayload output, int currentOutputCount, Func<ulong, bool> isSerialIdUnique, Func<byte[], bool> isStandardScript, ulong dustLimit)
     {
-        if (!isSerialIdUnique(output.SerialId))
-        {
-            throw new InvalidOperationException("SerialId is already included in the transaction.");
-        }
-
         if (isInitiator && (output.SerialId & 1) != 0) // Ensure even serial_id for initiator
         {
             throw new InvalidOperationException("SerialId has the wrong parity.");
+        }
+
+        if (!isSerialIdUnique(output.SerialId))
+        {
+            throw new InvalidOperationException("SerialId is already included in the transaction.");
         }
 
         if (currentOutputCount >= InteractiveTransactionContants.MAX_OUTPUTS_ALLOWED)
