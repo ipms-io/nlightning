@@ -5,8 +5,18 @@ using Payloads;
 
 public static class TxAddInputValidator
 {
-    public static async void Validate(TxAddInputPayload input, int currentInputCount, Func<byte[], Task<bool>> isValidPrevTx, Func<byte[], uint, bool> isUniqueInput, Func<ulong, bool> isSerialIdUnique)
+    public static async void Validate(bool isInitiator, TxAddInputPayload input, int currentInputCount, Func<byte[], Task<bool>> isValidPrevTx, Func<byte[], uint, bool> isUniqueInput, Func<ulong, bool> isSerialIdUnique)
     {
+        if (!isSerialIdUnique(input.SerialId))
+        {
+            throw new InvalidOperationException("SerialId is already included in the transaction.");
+        }
+
+        if (isInitiator && (input.SerialId & 1) != 0) // Ensure even serial_id for initiator
+        {
+            throw new InvalidOperationException("SerialId has the wrong parity.");
+        }
+
         if (!await isValidPrevTx(input.PrevTx))
         {
             throw new InvalidOperationException("PrevTx is not a valid transaction.");
@@ -22,19 +32,14 @@ public static class TxAddInputValidator
             throw new InvalidOperationException("ScriptPubKey of the PrevTxVout output is not valid.");
         }
 
-        if (!isSerialIdUnique(input.SerialId))
-        {
-            throw new InvalidOperationException("SerialId is already included in the transaction.");
-        }
-
         if (!isUniqueInput(input.PrevTx, input.PrevTxVout))
         {
             throw new InvalidOperationException("The PrevTx and PrevTxVout are identical to a previously added input.");
         }
 
-        if (currentInputCount >= InputContants.MAX_INPUTS_ALLOWED)
+        if (currentInputCount >= InteractiveTransactionContants.MAX_INPUTS_ALLOWED)
         {
-            throw new InvalidOperationException($"Cannot receive more than {InputContants.MAX_INPUTS_ALLOWED} tx_add_input messages during this negotiation.");
+            throw new InvalidOperationException($"Cannot receive more than {InteractiveTransactionContants.MAX_INPUTS_ALLOWED} tx_add_input messages during this negotiation.");
         }
     }
 
