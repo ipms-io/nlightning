@@ -16,9 +16,9 @@ public class TxAddInputPayload : IMessagePayload
 
     public TxAddInputPayload(ChannelId channelId, ulong serialId, byte[] prevTx, uint prevTxVout, uint sequence)
     {
-        if (sequence > InputContants.MAX_SEQUENCE)
+        if (sequence > InteractiveTransactionContants.MAX_SEQUENCE)
         {
-            throw new ArgumentException($"Sequence must be less than or equal to {InputContants.MAX_SEQUENCE}", nameof(sequence));
+            throw new ArgumentException($"Sequence must be less than or equal to {InteractiveTransactionContants.MAX_SEQUENCE}", nameof(sequence));
         }
 
         ChannelId = channelId;
