@@ -4,7 +4,7 @@ using Bolts.BOLT2.Messages;
 using Bolts.BOLT2.Payloads;
 using Bolts.Exceptions;
 using Common.Types;
-using NLightning.Bolts.Tests.Utils;
+using Tests.Utils;
 
 public class TxAddInputMessageTests
 {

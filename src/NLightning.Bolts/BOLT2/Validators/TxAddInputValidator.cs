@@ -7,14 +7,14 @@ public static class TxAddInputValidator
 {
     public static async void Validate(bool isInitiator, TxAddInputPayload input, int currentInputCount, Func<byte[], Task<bool>> isValidPrevTx, Func<byte[], uint, bool> isUniqueInput, Func<ulong, bool> isSerialIdUnique)
     {
-        if (!isSerialIdUnique(input.SerialId))
-        {
-            throw new InvalidOperationException("SerialId is already included in the transaction.");
-        }
-
         if (isInitiator && (input.SerialId & 1) != 0) // Ensure even serial_id for initiator
         {
             throw new InvalidOperationException("SerialId has the wrong parity.");
+        }
+
+        if (!isSerialIdUnique(input.SerialId))
+        {
+            throw new InvalidOperationException("SerialId is already included in the transaction.");
         }
 
         if (!await isValidPrevTx(input.PrevTx))

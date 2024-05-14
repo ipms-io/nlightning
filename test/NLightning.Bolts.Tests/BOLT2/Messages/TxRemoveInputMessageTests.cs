@@ -6,28 +6,24 @@ using Bolts.Exceptions;
 using Common.Types;
 using Tests.Utils;
 
-public class TxAddOutputMessageTests
+public class TxRemoveInputMessageTests
 {
     [Fact]
-    public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsTxAddOutputMessage()
+    public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsTxRemoveInputMessage()
     {
         // Arrange
         var channelId = ChannelId.Zero;
         ulong serialId = 1;
-        ulong sats = 1000;
-        byte[] script = [0x00, 0x01, 0x02, 0x03];
 
-        var stream = new MemoryStream(TestHexConverter.ToByteArray("0x00430000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000003E8000400010203"));
+        var stream = new MemoryStream(TestHexConverter.ToByteArray("0x004400000000000000000000000000000000000000000000000000000000000000000000000000000001"));
 
         // Act
-        var message = await TxAddOutputMessage.DeserializeAsync(stream);
+        var message = await TxRemoveInputMessage.DeserializeAsync(stream);
 
         // Assert
         Assert.NotNull(message);
         Assert.Equal(channelId, message.Payload.ChannelId);
         Assert.Equal(serialId, message.Payload.SerialId);
-        Assert.Equal(sats, message.Payload.Sats);
-        Assert.Equal(script, message.Payload.Script);
     }
 
     [Fact]
@@ -37,7 +33,7 @@ public class TxAddOutputMessageTests
         var invalidStream = new MemoryStream([0x00, 0x01, 0x02]);
 
         // Act & Assert
-        await Assert.ThrowsAsync<MessageSerializationException>(() => TxAddOutputMessage.DeserializeAsync(invalidStream));
+        await Assert.ThrowsAsync<MessageSerializationException>(() => TxRemoveInputMessage.DeserializeAsync(invalidStream));
     }
 
     [Fact]
@@ -46,11 +42,9 @@ public class TxAddOutputMessageTests
         // Arrange
         var channelId = ChannelId.Zero;
         ulong serialId = 1;
-        ulong sats = 1000;
-        byte[] script = [0x00, 0x01, 0x02, 0x03];
-        var message = new TxAddOutputMessage(new TxAddOutputPayload(channelId, serialId, sats, script));
+        var message = new TxRemoveInputMessage(new TxRemoveInputPayload(channelId, serialId));
         var stream = new MemoryStream();
-        var expectedBytes = TestHexConverter.ToByteArray("0x00430000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000003E8000400010203");
+        var expectedBytes = TestHexConverter.ToByteArray("0x004400000000000000000000000000000000000000000000000000000000000000000000000000000001");
 
         // Act
         await message.SerializeAsync(stream);
