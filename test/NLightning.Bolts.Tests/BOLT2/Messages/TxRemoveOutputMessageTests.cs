@@ -12,9 +12,8 @@ public class TxRemoveOutputMessageTests
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsTxRemoveOutputMessage()
     {
         // Arrange
-        var channelId = ChannelId.Zero;
-        ulong serialId = 1;
-
+        var expectedChannelId = ChannelId.Zero;
+        ulong expectedSerialId = 1;
         var stream = new MemoryStream(TestHexConverter.ToByteArray("0x004500000000000000000000000000000000000000000000000000000000000000000000000000000001"));
 
         // Act
@@ -22,8 +21,8 @@ public class TxRemoveOutputMessageTests
 
         // Assert
         Assert.NotNull(message);
-        Assert.Equal(channelId, message.Payload.ChannelId);
-        Assert.Equal(serialId, message.Payload.SerialId);
+        Assert.Equal(expectedChannelId, message.Payload.ChannelId);
+        Assert.Equal(expectedSerialId, message.Payload.SerialId);
     }
 
     [Fact]

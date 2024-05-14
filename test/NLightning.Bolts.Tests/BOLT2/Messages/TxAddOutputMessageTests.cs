@@ -12,11 +12,10 @@ public class TxAddOutputMessageTests
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsTxAddOutputMessage()
     {
         // Arrange
-        var channelId = ChannelId.Zero;
-        ulong serialId = 1;
-        ulong sats = 1000;
-        byte[] script = [0x00, 0x01, 0x02, 0x03];
-
+        var expectedChannelId = ChannelId.Zero;
+        ulong expectedSerialId = 1;
+        ulong expectedSats = 1000;
+        byte[] expectedScript = [0x00, 0x01, 0x02, 0x03];
         var stream = new MemoryStream(TestHexConverter.ToByteArray("0x00430000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000003E8000400010203"));
 
         // Act
@@ -24,10 +23,10 @@ public class TxAddOutputMessageTests
 
         // Assert
         Assert.NotNull(message);
-        Assert.Equal(channelId, message.Payload.ChannelId);
-        Assert.Equal(serialId, message.Payload.SerialId);
-        Assert.Equal(sats, message.Payload.Sats);
-        Assert.Equal(script, message.Payload.Script);
+        Assert.Equal(expectedChannelId, message.Payload.ChannelId);
+        Assert.Equal(expectedSerialId, message.Payload.SerialId);
+        Assert.Equal(expectedSats, message.Payload.Sats);
+        Assert.Equal(expectedScript, message.Payload.Script);
     }
 
     [Fact]

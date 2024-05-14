@@ -2,7 +2,6 @@ using System.Runtime.Serialization;
 
 namespace NLightning.Bolts.BOLT2.Payloads;
 
-using Common.Types;
 using Common.Utils;
 using Interfaces;
 

@@ -27,7 +27,8 @@ public static class MessageTypes
     public const ushort TX_ADD_INPUT = 66,
                         TX_ADD_OUTPUT = 67,
                         TX_REMOVE_INPUT = 68,
-                        TX_REMOVE_OUTPUT = 69;
+                        TX_REMOVE_OUTPUT = 69,
+                        TX_COMPLETE = 70;
     #endregion
 
     #region Commitment

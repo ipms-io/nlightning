@@ -12,12 +12,11 @@ public class TxAddInputMessageTests
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsTxAddInputMessage()
     {
         // Arrange
-        var channelId = ChannelId.Zero;
-        ulong serialId = 1;
-        byte[] prevTx = [0x00, 0x01, 0x02, 0x03];
-        uint prevTxVout = 0;
-        var sequence = 0xFFFFFFFD;
-
+        var expectedChannelId = ChannelId.Zero;
+        ulong expectedSerialId = 1;
+        byte[] expectedPrevTx = [0x00, 0x01, 0x02, 0x03];
+        uint expectedPrevTxVout = 0;
+        var expectedSequence = 0xFFFFFFFD;
         var stream = new MemoryStream(TestHexConverter.ToByteArray("0x00420000000000000000000000000000000000000000000000000000000000000000000000000000000100040001020300000000FFFFFFFD"));
 
         // Act
@@ -25,11 +24,11 @@ public class TxAddInputMessageTests
 
         // Assert
         Assert.NotNull(message);
-        Assert.Equal(channelId, message.Payload.ChannelId);
-        Assert.Equal(serialId, message.Payload.SerialId);
-        Assert.Equal(prevTx, message.Payload.PrevTx);
-        Assert.Equal(prevTxVout, message.Payload.PrevTxVout);
-        Assert.Equal(sequence, message.Payload.Sequence);
+        Assert.Equal(expectedChannelId, message.Payload.ChannelId);
+        Assert.Equal(expectedSerialId, message.Payload.SerialId);
+        Assert.Equal(expectedPrevTx, message.Payload.PrevTx);
+        Assert.Equal(expectedPrevTxVout, message.Payload.PrevTxVout);
+        Assert.Equal(expectedSequence, message.Payload.Sequence);
     }
 
     [Fact]
