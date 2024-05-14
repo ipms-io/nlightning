@@ -124,9 +124,12 @@ By donating, you become an integral part of the NLightning project, helping to e
 
 ### How to Support Us
 
-To make a donation, please send Bitcoin to the following address:
+If you find this project useful, consider supporting us:
 
-**bc1pgtdj7qtdfrate2hhnt5lecayvgafhmpu6t250dg7d0sdrwtwcnkq8usux8**
+- **LNBits Store** (set amounts): [Donate Here](https://t.ly/3E_Nd)
+- **LNURL** (donate any amount): [Donate Here](https://t.ly/WHHC_)
+- **LNAddress**: `nlightning@lnbits.casa21.space`
+- **Bitcoin on-chain address**: `bc1pgtdj7qtdfrate2hhnt5lecayvgafhmpu6t250dg7d0sdrwtwcnkq8usux8`
 
 Every donation, no matter the size, makes a difference and is deeply appreciated. Together, we can make NLightning a cornerstone of the Lightning Network ecosystem.
 
