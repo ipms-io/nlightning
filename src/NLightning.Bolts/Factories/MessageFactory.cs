@@ -157,6 +157,7 @@ public static class MessageFactory
             MessageTypes.TX_ADD_OUTPUT => await TxAddOutputMessage.DeserializeAsync(stream),        // 67 -> 0x43
             MessageTypes.TX_REMOVE_INPUT => await TxRemoveInputMessage.DeserializeAsync(stream),    // 68 -> 0x44
             MessageTypes.TX_REMOVE_OUTPUT => await TxRemoveOutputMessage.DeserializeAsync(stream),  // 69 -> 0x45
+            MessageTypes.TX_COMPLETE => await TxCompleteMessage.DeserializeAsync(stream),           // 70 -> 0x46
 
             _ => throw new InvalidMessageException("Unknown message type"),
         };

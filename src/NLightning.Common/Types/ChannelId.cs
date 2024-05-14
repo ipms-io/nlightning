@@ -41,7 +41,7 @@ public readonly struct ChannelId
     public static async Task<ChannelId> DeserializeAsync(Stream stream)
     {
         var buffer = new byte[LENGTH];
-        _ = await stream.ReadAsync(buffer);
+        await stream.ReadExactlyAsync(buffer);
         return new ChannelId(buffer);
     }
 
