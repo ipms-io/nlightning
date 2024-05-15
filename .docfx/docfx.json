@@ -10,8 +10,7 @@
         }
       ],
       "dest": "api",
-      "namespaceLayout": "nested",
-      "noRestore": true
+      "namespaceLayout": "nested"
     }
   ],
   "build": {
