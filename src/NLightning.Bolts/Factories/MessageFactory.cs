@@ -20,7 +20,6 @@ public static class MessageFactory
     /// <seealso cref="InitMessage"/>
     /// <seealso cref="NodeOptions"/>
     /// <seealso cref="InitPayload"/>
-    /// <seealso cref="InitExtension"/>
     public static IMessage CreateInitMessage(NodeOptions options)
     {
         // Get features from options

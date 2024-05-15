@@ -6,9 +6,9 @@ namespace NLightning.Bolts.Interfaces;
 public interface IMessagePayload
 {
     /// <summary>
-    /// Deserializes the message payload.
+    /// Serializes the message payload to a stream.
     /// </summary>
-    /// <param name="stream">The stream to deserialize from.</param>
+    /// <param name="stream">The stream to serialize to.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task SerializeAsync(Stream stream);
 }

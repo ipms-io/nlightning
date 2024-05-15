@@ -10,7 +10,7 @@ using Bolts.Interfaces;
 /// <remarks>
 /// The ping payload is used to check if the other party is still alive.
 /// </remarks>
-/// <seealso cref="PingMessage"/>
+/// <seealso cref="Messages.PingMessage"/>
 public class PingPayload : IMessagePayload
 {
     /// <summary>
