@@ -42,7 +42,7 @@ public class TxAddInputPayload : IMessagePayload
     public uint Sequence { get; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="TxAddInputPayload"/> class.
+    /// Initializes a new instance of the TxAddInputPayload class.
     /// </summary>
     /// <param name="channelId">The channel id.</param>
     /// <param name="serialId">The serial id.</param>
