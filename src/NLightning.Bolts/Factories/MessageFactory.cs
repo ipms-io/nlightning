@@ -130,6 +130,38 @@ public static class MessageFactory
 
         return new TxRemoveOutputMessage(payload);
     }
+
+    /// <summary>
+    /// Create a TxComplete message.
+    /// </summary>
+    /// <param name="channelId">The channel id.</param>
+    /// <returns>The TxComplete message.</returns>
+    /// <seealso cref="TxCompleteMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="TxCompletePayload"/>
+    public static IMessage CreateTxCompleteMessage(ChannelId channelId)
+    {
+        var payload = new TxCompletePayload(channelId);
+
+        return new TxCompleteMessage(payload);
+    }
+
+    /// <summary>
+    /// Create a TxSignatures message.
+    /// </summary>
+    /// <param name="channelId">The channel id.</param>
+    /// <param name="txId">The transaction id.</param>
+    /// <param name="witnesses">The witnesses.</param>
+    /// <returns>The TxSignatures message.</returns>
+    /// <seealso cref="TxSignaturesMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="TxSignaturesPayload"/>
+    public static IMessage CreateTxSignaturesMessage(ChannelId channelId, byte[] txId, List<Witness> witnesses)
+    {
+        var payload = new TxSignaturesPayload(channelId, txId, witnesses);
+
+        return new TxSignaturesMessage(payload);
+    }
     #endregion
 
     /// <summary>
@@ -158,6 +190,7 @@ public static class MessageFactory
             MessageTypes.TX_REMOVE_INPUT => await TxRemoveInputMessage.DeserializeAsync(stream),    // 68 -> 0x44
             MessageTypes.TX_REMOVE_OUTPUT => await TxRemoveOutputMessage.DeserializeAsync(stream),  // 69 -> 0x45
             MessageTypes.TX_COMPLETE => await TxCompleteMessage.DeserializeAsync(stream),           // 70 -> 0x46
+            MessageTypes.TX_SIGNATURES => await TxSignaturesMessage.DeserializeAsync(stream),       // 71 -> 0x47
 
             _ => throw new InvalidMessageException("Unknown message type"),
         };
