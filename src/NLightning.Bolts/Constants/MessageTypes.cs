@@ -29,7 +29,8 @@ public static class MessageTypes
                         TX_REMOVE_INPUT = 68,
                         TX_REMOVE_OUTPUT = 69,
                         TX_COMPLETE = 70,
-                        TX_SIGNATURES = 71;
+                        TX_SIGNATURES = 71,
+                        TX_INIT_RBF = 72;
     #endregion
 
     #region Commitment
