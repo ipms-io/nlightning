@@ -30,7 +30,8 @@ public static class MessageTypes
                         TX_REMOVE_OUTPUT = 69,
                         TX_COMPLETE = 70,
                         TX_SIGNATURES = 71,
-                        TX_INIT_RBF = 72;
+                        TX_INIT_RBF = 72,
+                        TX_ACK_RBF = 73;
     #endregion
 
     #region Commitment
