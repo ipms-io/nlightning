@@ -191,6 +191,8 @@ public static class MessageFactory
             MessageTypes.TX_REMOVE_OUTPUT => await TxRemoveOutputMessage.DeserializeAsync(stream),  // 69 -> 0x45
             MessageTypes.TX_COMPLETE => await TxCompleteMessage.DeserializeAsync(stream),           // 70 -> 0x46
             MessageTypes.TX_SIGNATURES => await TxSignaturesMessage.DeserializeAsync(stream),       // 71 -> 0x47
+            MessageTypes.TX_INIT_RBF => await TxInitRbfMessage.DeserializeAsync(stream),            // 72 -> 0x48
+            MessageTypes.TX_ACK_RBF => await TxAckRbfMessage.DeserializeAsync(stream),              // 73 -> 0x49
 
             _ => throw new InvalidMessageException("Unknown message type"),
         };
