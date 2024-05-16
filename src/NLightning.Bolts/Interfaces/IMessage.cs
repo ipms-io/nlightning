@@ -23,5 +23,7 @@ public interface IMessage
     /// <summary>
     /// Serialize the message to a stream.
     /// </summary>
+    /// <param name="stream">The stream to serialize to.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     Task SerializeAsync(Stream stream);
 }

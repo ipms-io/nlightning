@@ -9,7 +9,6 @@ using Utils;
 /// <remarks>
 /// Initializes a new instance of the <see cref="BigSize"/> struct.
 /// </remarks>
-/// <param name="value">The value of the big size.</param>
 public readonly struct BigSize(ulong value) : IComparable
 {
     /// <summary>

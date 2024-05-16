@@ -155,6 +155,7 @@ coverage*.xml
 coverage*.info
 
 # Visual Studio code coverage results
+coverage/
 *.coverage
 *.coveragexml
 
@@ -486,3 +487,15 @@ $RECYCLE.BIN/
 
 # MyNet folder
 mynet/
+
+# DocFX output directories
+_site/
+api/
+
+# DocFX temporary files
+*.tmp
+*.lock
+*.log
+.log/
+tmp/
+log/

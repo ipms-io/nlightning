@@ -12,7 +12,11 @@ Welcome to the C# implementation of the Lightning Network!
 
 This project aims to provide a robust and efficient implementation of the Lightning Network protocol in C#. We adhere to the Basis of Lightning Technology (BOLT) specifications to ensure compatibility with other Lightning Network implementations.
 
-<img src="logo.png"> 
+<img src="images/logo.png"> 
+
+## Documentation
+
+You can check our documentation page [here](https://nlightning.ipms.io/)
 
 ## Features
 
@@ -96,10 +100,6 @@ $ brew install chipmk/tap/docker-mac-net-connect
 # Run the service and register it to launch at boot
 $ sudo brew services start chipmk/tap/docker-mac-net-connect
 ```
-
-## Contributing
-
-We welcome contributions! Please see our [Contribution Guidelines](CONTRIBUTING.md) for more details.
 
 ## License
 

@@ -1,7 +1,7 @@
 namespace NLightning.Bolts.BOLT9;
 
 /// <summary>
-/// The features that can be set on a node as defined on <href="https://github.com/lightning/bolts/blob/master/09-features.md">BOLT9</href>
+/// The features that can be set on a node as defined on https://github.com/lightning/bolts/blob/master/09-features.md
 /// </summary>
 /// <remarks>
 /// The values here represents the ODD (OPTIONAL) bit position in the feature flags.
