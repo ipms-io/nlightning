@@ -9,8 +9,4 @@ using Types;
 /// <remarks>
 /// The required confirmed inputs TLV is used in the TxInitRbfMessage to communicate the if confirmed inputs are required.
 /// </remarks>
-public class RequiredConfirmedInputsTLV : TLV
-{
-    public RequiredConfirmedInputsTLV() : base(TLVConstants.REQUIRE_CONFIRMED_INPUTS)
-    { }
-}
+public class RequiredConfirmedInputsTlv() : Tlv(TlvConstants.REQUIRE_CONFIRMED_INPUTS);

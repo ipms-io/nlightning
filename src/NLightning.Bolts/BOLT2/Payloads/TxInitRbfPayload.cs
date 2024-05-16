@@ -2,7 +2,7 @@ using System.Runtime.Serialization;
 
 namespace NLightning.Bolts.BOLT2.Payloads;
 
-using Common.Utils;
+using Common.BitUtils;
 using Interfaces;
 
 /// <summary>
@@ -18,7 +18,6 @@ using Interfaces;
 /// <param name="channelId">The channel ID.</param>
 /// <param name="locktime">The locktime.</param>
 /// <param name="feerate">The feerate.</param>
-/// <param name="tlvStream">The TLV stream.</param>
 /// <seealso cref="Messages.TxInitRbfMessage"/>
 /// <seealso cref="Common.Types.ChannelId"/>
 /// <seealso cref="Common.Types.TLVStream"/>
@@ -43,8 +42,8 @@ public class TxInitRbfPayload(ChannelId channelId, uint locktime, uint feerate) 
     public async Task SerializeAsync(Stream stream)
     {
         await ChannelId.SerializeAsync(stream);
-        await stream.WriteAsync(EndianBitConverter.GetBytesBE(Locktime));
-        await stream.WriteAsync(EndianBitConverter.GetBytesBE(Feerate));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(Locktime));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(Feerate));
     }
 
     /// <summary>
@@ -61,11 +60,11 @@ public class TxInitRbfPayload(ChannelId channelId, uint locktime, uint feerate) 
 
             var bytes = new byte[4];
             await stream.ReadExactlyAsync(bytes);
-            var locktime = EndianBitConverter.ToUInt32BE(bytes);
+            var locktime = EndianBitConverter.ToUInt32BigEndian(bytes);
 
             bytes = new byte[4];
             await stream.ReadExactlyAsync(bytes);
-            var feerate = EndianBitConverter.ToUInt32BE(bytes);
+            var feerate = EndianBitConverter.ToUInt32BigEndian(bytes);
 
             return new TxInitRbfPayload(channelId, locktime, feerate);
         }

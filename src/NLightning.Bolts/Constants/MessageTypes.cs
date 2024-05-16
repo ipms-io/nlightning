@@ -31,7 +31,8 @@ public static class MessageTypes
                         TX_COMPLETE = 70,
                         TX_SIGNATURES = 71,
                         TX_INIT_RBF = 72,
-                        TX_ACK_RBF = 73;
+                        TX_ACK_RBF = 73,
+                        TX_ABORT = 74;
     #endregion
 
     #region Commitment

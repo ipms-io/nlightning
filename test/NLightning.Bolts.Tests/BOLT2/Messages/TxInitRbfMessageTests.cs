@@ -2,10 +2,10 @@ namespace NLightning.Bolts.Tests.BOLT2.Messages;
 
 using Bolts.BOLT2.Messages;
 using Bolts.BOLT2.Payloads;
-using Bolts.Exceptions;
 using Common.TLVs;
 using Common.Types;
-using Tests.Utils;
+using Exceptions;
+using Utils;
 
 public class TxInitRbfMessageTests
 {
@@ -14,14 +14,14 @@ public class TxInitRbfMessageTests
     {
         // Arrange
         var expectedChannelId = ChannelId.Zero;
-        uint expectedLocktime = 1;
-        uint expectedFeerate = 1;
-        var extension = new TLVStream();
-        var expectedTlv = new FundingOutputContrubutionTLV(10);
+        const uint EXPECTED_LOCKTIME = 1;
+        const uint EXPECTED_FEERATE = 1;
+        var extension = new TlvStream();
+        var expectedTlv = new FundingOutputContributionTlv(10);
         extension.Add(expectedTlv);
-        var expectedTlv2 = new RequiredConfirmedInputsTLV();
+        var expectedTlv2 = new RequiredConfirmedInputsTlv();
         extension.Add(expectedTlv2);
-        var stream = new MemoryStream(TestHexConverter.ToByteArray("0x00480000000000000000000000000000000000000000000000000000000000000000000000010000000100000200"));
+        var stream = new MemoryStream("0x0000000000000000000000000000000000000000000000000000000000000000000000010000000100000200".ToByteArray());
 
         // Act
         var message = await TxInitRbfMessage.DeserializeAsync(stream);
@@ -29,8 +29,8 @@ public class TxInitRbfMessageTests
         // Assert
         Assert.NotNull(message);
         Assert.Equal(expectedChannelId, message.Payload.ChannelId);
-        Assert.Equal(expectedLocktime, message.Payload.Locktime);
-        Assert.Equal(expectedFeerate, message.Payload.Feerate);
+        Assert.Equal(EXPECTED_LOCKTIME, message.Payload.Locktime);
+        Assert.Equal(EXPECTED_FEERATE, message.Payload.Feerate);
         Assert.NotNull(message.Extension);
         var tlvs = message.Extension.GetTlvs().ToList();
         Assert.Equal(2, tlvs.Count);
@@ -53,22 +53,22 @@ public class TxInitRbfMessageTests
     {
         // Arrange
         var channelId = ChannelId.Zero;
-        uint locktime = 1;
-        uint feerate = 1;
-        var extension = new TLVStream();
-        var tlv = new FundingOutputContrubutionTLV(10);
+        const uint LOCKTIME = 1;
+        const uint FEERATE = 1;
+        var extension = new TlvStream();
+        var tlv = new FundingOutputContributionTlv(10);
         extension.Add(tlv);
-        var tlv2 = new RequiredConfirmedInputsTLV();
+        var tlv2 = new RequiredConfirmedInputsTlv();
         extension.Add(tlv2);
-        var message = new TxInitRbfMessage(new TxInitRbfPayload(channelId, locktime, feerate), extension);
+        var message = new TxInitRbfMessage(new TxInitRbfPayload(channelId, LOCKTIME, FEERATE), extension);
         var stream = new MemoryStream();
-        var expectedBytes = TestHexConverter.ToByteArray("0x00480000000000000000000000000000000000000000000000000000000000000000000000010000000100000200");
+        var expectedBytes = "0x00480000000000000000000000000000000000000000000000000000000000000000000000010000000100000200".ToByteArray();
 
         // Act
         await message.SerializeAsync(stream);
         stream.Position = 0;
         var result = new byte[stream.Length];
-        await stream.ReadAsync(result);
+        _ = await stream.ReadAsync(result);
 
         // Assert
         Assert.Equal(expectedBytes, result);

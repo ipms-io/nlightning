@@ -2,10 +2,10 @@ namespace NLightning.Bolts.Tests.BOLT2.Messages;
 
 using Bolts.BOLT2.Messages;
 using Bolts.BOLT2.Payloads;
-using Bolts.Exceptions;
 using Common.TLVs;
 using Common.Types;
-using Tests.Utils;
+using Exceptions;
+using Utils;
 
 public class TxAckRbfMessageTests
 {
@@ -14,12 +14,12 @@ public class TxAckRbfMessageTests
     {
         // Arrange
         var expectedChannelId = ChannelId.Zero;
-        var extension = new TLVStream();
-        var expectedTlv = new FundingOutputContrubutionTLV(10);
+        var extension = new TlvStream();
+        var expectedTlv = new FundingOutputContributionTlv(10);
         extension.Add(expectedTlv);
-        var expectedTlv2 = new RequiredConfirmedInputsTLV();
+        var expectedTlv2 = new RequiredConfirmedInputsTlv();
         extension.Add(expectedTlv2);
-        var stream = new MemoryStream(TestHexConverter.ToByteArray("0x0049000000000000000000000000000000000000000000000000000000000000000000000200"));
+        var stream = new MemoryStream("0x000000000000000000000000000000000000000000000000000000000000000000000200".ToByteArray());
 
         // Act
         var message = await TxAckRbfMessage.DeserializeAsync(stream);
@@ -49,20 +49,20 @@ public class TxAckRbfMessageTests
     {
         // Arrange
         var channelId = ChannelId.Zero;
-        var extension = new TLVStream();
-        var tlv = new FundingOutputContrubutionTLV(10);
+        var extension = new TlvStream();
+        var tlv = new FundingOutputContributionTlv(10);
         extension.Add(tlv);
-        var tlv2 = new RequiredConfirmedInputsTLV();
+        var tlv2 = new RequiredConfirmedInputsTlv();
         extension.Add(tlv2);
         var message = new TxAckRbfMessage(new TxAckRbfPayload(channelId), extension);
         var stream = new MemoryStream();
-        var expectedBytes = TestHexConverter.ToByteArray("0x0049000000000000000000000000000000000000000000000000000000000000000000000200");
+        var expectedBytes = "0x0049000000000000000000000000000000000000000000000000000000000000000000000200".ToByteArray();
 
         // Act
         await message.SerializeAsync(stream);
         stream.Position = 0;
         var result = new byte[stream.Length];
-        await stream.ReadAsync(result);
+        _ = await stream.ReadAsync(result);
 
         // Assert
         Assert.Equal(expectedBytes, result);

@@ -2,26 +2,26 @@ using System.Runtime.Serialization;
 
 namespace NLightning.Common.TLVs;
 
+using BitUtils;
 using Constants;
 using Types;
-using Utils;
 
 /// <summary>
-/// Funding Output Contrubution TLV.
+/// Funding Output Contribution TLV.
 /// </summary>
 /// <remarks>
 /// The funding output contribution TLV is used in the TxInitRbfMessage to communicate the funding output contribution in satoshis.
 /// </remarks>
-public class FundingOutputContrubutionTLV : TLV
+public class FundingOutputContributionTlv : Tlv
 {
     /// <summary>
     /// The amount being contributed in satoshis
     /// </summary>
     public long Satoshis { get; private set; }
 
-    public FundingOutputContrubutionTLV() : base(TLVConstants.FUNDING_OUTPUT_CONTRIBUTION)
+    public FundingOutputContributionTlv() : base(TlvConstants.FUNDING_OUTPUT_CONTRIBUTION)
     { }
-    public FundingOutputContrubutionTLV(long satoshis) : base(TLVConstants.FUNDING_OUTPUT_CONTRIBUTION)
+    public FundingOutputContributionTlv(long satoshis) : base(TlvConstants.FUNDING_OUTPUT_CONTRIBUTION)
     {
         Satoshis = satoshis;
     }
@@ -29,7 +29,7 @@ public class FundingOutputContrubutionTLV : TLV
     /// <inheritdoc/>
     public new async Task SerializeAsync(Stream stream)
     {
-        var satoshiBytes = EndianBitConverter.GetBytesBE(Satoshis);
+        var satoshiBytes = EndianBitConverter.GetBytesBigEndian(Satoshis);
 
         Length = satoshiBytes.Length;
         Value = satoshiBytes;
@@ -43,11 +43,11 @@ public class FundingOutputContrubutionTLV : TLV
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized NetworksTLV.</returns>
     /// <exception cref="SerializationException">Error deserializing NetworksTLV</exception>
-    public static new async Task<FundingOutputContrubutionTLV> DeserializeAsync(Stream stream)
+    public new static async Task<FundingOutputContributionTlv> DeserializeAsync(Stream stream)
     {
-        var tlv = await TLV.DeserializeAsync(stream) as FundingOutputContrubutionTLV ?? throw new SerializationException("Invalid TLV type");
+        var tlv = await Tlv.DeserializeAsync(stream) as FundingOutputContributionTlv ?? throw new SerializationException("Invalid TLV type");
 
-        if (tlv.Type != TLVConstants.FUNDING_OUTPUT_CONTRIBUTION)
+        if (tlv.Type != TlvConstants.FUNDING_OUTPUT_CONTRIBUTION)
         {
             throw new SerializationException("Invalid TLV type");
         }
@@ -57,7 +57,7 @@ public class FundingOutputContrubutionTLV : TLV
             throw new SerializationException("Invalid length");
         }
 
-        tlv.Satoshis = EndianBitConverter.ToInt64BE(tlv.Value);
+        tlv.Satoshis = EndianBitConverter.ToInt64BigEndian(tlv.Value);
 
         return tlv;
     }

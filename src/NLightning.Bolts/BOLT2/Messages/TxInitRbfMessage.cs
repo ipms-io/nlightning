@@ -16,7 +16,7 @@ using Payloads;
 /// </remarks>
 /// <param name="payload">The tx_init_rbf payload.</param>
 /// <param name="extension">The TLV extension.</param>
-public sealed class TxInitRbfMessage(TxInitRbfPayload payload, TLVStream extension) : BaseMessage(MessageTypes.TX_INIT_RBF, payload, extension)
+public sealed class TxInitRbfMessage(TxInitRbfPayload payload, TlvStream extension) : BaseMessage(MessageTypes.TX_INIT_RBF, payload, extension)
 {
     /// <inheritdoc/>
     public new TxInitRbfPayload Payload { get => (TxInitRbfPayload)base.Payload; }
@@ -31,14 +31,11 @@ public sealed class TxInitRbfMessage(TxInitRbfPayload payload, TLVStream extensi
     {
         try
         {
-            // Check message type
-            await CheckMessageTypeAsync(stream, MessageTypes.TX_INIT_RBF);
-
             // Deserialize payload
             var payload = await TxInitRbfPayload.DeserializeAsync(stream);
 
             // Deserialize extension
-            var extension = await TLVStream.DeserializeAsync(stream) ?? throw new SerializationException("Required extension is missing");
+            var extension = await TlvStream.DeserializeAsync(stream) ?? throw new SerializationException("Required extension is missing");
 
             return new TxInitRbfMessage(payload, extension);
         }

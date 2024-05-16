@@ -5,6 +5,7 @@ using BOLT1.Payloads;
 using BOLT2.Messages;
 using BOLT2.Payloads;
 using Common.BitUtils;
+using Common.TLVs;
 using Constants;
 using Exceptions;
 using Interfaces;
@@ -162,6 +163,73 @@ public static class MessageFactory
 
         return new TxSignaturesMessage(payload);
     }
+
+    /// <summary>
+    /// Create a TxInitRbf message.
+    /// </summary>
+    /// <param name="channelId">The channel id.</param>
+    /// <param name="txId">The transaction id.</param>
+    /// <returns>The TxInitRbf message.</returns>
+    /// <seealso cref="TxInitRbfMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="TxInitRbfPayload"/>
+    /// <seealso cref="TLVStream"/>
+    /// <seealso cref="FundingOutputContrubutionTLV"/>
+    /// <seealso cref="RequiredConfirmedInputsTLV"/>
+    public static IMessage CreateTxInitRbfMessage(ChannelId channelId, uint locktime, uint feerate, long fundingOutputContrubution, bool requireConfirmedInputs)
+    {
+        var extension = new TlvStream();
+        extension.Add(new FundingOutputContributionTlv(fundingOutputContrubution));
+        if (requireConfirmedInputs)
+        {
+            extension.Add(new RequiredConfirmedInputsTlv());
+        }
+
+        var payload = new TxInitRbfPayload(channelId, locktime, feerate);
+
+        return new TxInitRbfMessage(payload, extension);
+    }
+
+    /// <summary>
+    /// Create a TxAckRbf message.
+    /// </summary>
+    /// <param name="channelId">The channel id.</param>
+    /// <returns>The TxAckRbf message.</returns>
+    /// <seealso cref="TxAckRbfMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="TxAckRbfPayload"/>
+    /// <seealso cref="TLVStream"/>
+    /// <seealso cref="FundingOutputContrubutionTLV"/>
+    /// <seealso cref="RequiredConfirmedInputsTLV"/>
+    public static IMessage CreateTxAckRbfMessage(ChannelId channelId, long fundingOutputContrubution, bool requireConfirmedInputs)
+    {
+        var extension = new TlvStream();
+        extension.Add(new FundingOutputContributionTlv(fundingOutputContrubution));
+        if (requireConfirmedInputs)
+        {
+            extension.Add(new RequiredConfirmedInputsTlv());
+        }
+
+        var payload = new TxAckRbfPayload(channelId);
+
+        return new TxAckRbfMessage(payload, extension);
+    }
+
+    /// <summary>
+    /// Create a TxAbort message.
+    /// </summary>
+    /// <param name="channelId">The channel id.</param>
+    /// <param name="data">The data.</param>
+    /// <returns>The TxAbort message.</returns>
+    /// <seealso cref="TxAbortMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="TxAbortPayload"/>
+    public static IMessage CreateTxAbortMessage(ChannelId channelId, byte[] data)
+    {
+        var payload = new TxAbortPayload(channelId, data);
+
+        return new TxAbortMessage(payload);
+    }
     #endregion
 
     /// <summary>
@@ -193,6 +261,7 @@ public static class MessageFactory
             MessageTypes.TX_SIGNATURES => await TxSignaturesMessage.DeserializeAsync(stream),       // 71 -> 0x47
             MessageTypes.TX_INIT_RBF => await TxInitRbfMessage.DeserializeAsync(stream),            // 72 -> 0x48
             MessageTypes.TX_ACK_RBF => await TxAckRbfMessage.DeserializeAsync(stream),              // 73 -> 0x49
+            MessageTypes.TX_ABORT => await TxAbortMessage.DeserializeAsync(stream),                 // 74 -> 0x4A
 
             _ => throw new InvalidMessageException("Unknown message type"),
         };
