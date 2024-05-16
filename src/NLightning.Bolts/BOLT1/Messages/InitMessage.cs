@@ -31,6 +31,9 @@ public sealed class InitMessage(InitPayload payload, TLVStream? extension = null
     {
         try
         {
+            // Check message type
+            await CheckMessageTypeAsync(stream, MessageTypes.INIT);
+
             // Deserialize payload
             var payload = await InitPayload.DeserializeAsync(stream);
 
@@ -41,7 +44,7 @@ public sealed class InitMessage(InitPayload payload, TLVStream? extension = null
         }
         catch (SerializationException e)
         {
-            throw new MessageSerializationException("Error deserializing ErrorMessage", e);
+            throw new MessageSerializationException("Error deserializing InitMessage", e);
         }
     }
 }

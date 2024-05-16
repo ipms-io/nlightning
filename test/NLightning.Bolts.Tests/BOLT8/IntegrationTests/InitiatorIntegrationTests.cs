@@ -8,9 +8,8 @@ using Bolts.BOLT8.Interfaces;
 using Bolts.BOLT8.Primitives;
 using Bolts.BOLT8.States;
 using Mock;
+using Tests.Utils;
 using Utils;
-
-using static Utils.TestUtils;
 
 public partial class InitiatorIntegrationTests
 {
@@ -126,7 +125,7 @@ public partial class InitiatorIntegrationTests
         // Arrange
         var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey, s_dhFake);
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        var inputBytes = GetBytes(actTwoInput);
+        var inputBytes = TestHexConverter.ToByteArray(actTwoInput);
 
         // - Play ActOne
         _ = initiator.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), messageBuffer);

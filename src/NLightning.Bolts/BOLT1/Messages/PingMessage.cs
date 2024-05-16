@@ -17,7 +17,13 @@ using Payloads;
 public sealed class PingMessage() : BaseMessage(MessageTypes.PING, new PingPayload())
 {
     /// <inheritdoc/>
-    public new PingPayload Payload => (PingPayload)base.Payload;
+    public new PingPayload Payload
+    {
+        get => (PingPayload)base.Payload;
+
+        // This is internal so that it can be used in tests
+        internal set => base.Payload = value;
+    }
 
     private PingMessage(PingPayload payload) : this()
     {
@@ -34,6 +40,10 @@ public sealed class PingMessage() : BaseMessage(MessageTypes.PING, new PingPaylo
     {
         try
         {
+            // Check message type
+            await CheckMessageTypeAsync(stream, MessageTypes.PING);
+
+            // Deserialize payload
             var payload = await PingPayload.DeserializeAsync(stream);
 
             return new PingMessage(payload);

@@ -36,7 +36,7 @@ public class PeerAddressTests
         Assert.Equal(pubKey, peerAddress.PubKey);
         Assert.Equal(
             peerAddress.Host.IsIPv4()
-                ? IPAddress.Parse("93.184.216.34")
+                ? IPAddress.Parse("93.184.215.14")
                 : IPAddress.Parse("2606:2800:220:1:248:1893:25c8:1946"), peerAddress.Host);
         Assert.Equal(8080, peerAddress.Port);
     }

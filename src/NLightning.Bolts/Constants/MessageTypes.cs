@@ -23,6 +23,18 @@ public static class MessageTypes
                         CLOSING_SIGNED = 39;
     #endregion
 
+    #region Interactive Transaction Construction
+    public const ushort TX_ADD_INPUT = 66,
+                        TX_ADD_OUTPUT = 67,
+                        TX_REMOVE_INPUT = 68,
+                        TX_REMOVE_OUTPUT = 69,
+                        TX_COMPLETE = 70,
+                        TX_SIGNATURES = 71,
+                        TX_INIT_RBF = 72,
+                        TX_ACK_RBF = 73,
+                        TX_ABORT = 74;
+    #endregion
+
     #region Commitment
     public const ushort UPDATE_ADD_HTLC = 128,
                         UPDATE_FULFILL_HTLC = 130,
