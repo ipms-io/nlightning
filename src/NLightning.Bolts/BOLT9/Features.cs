@@ -300,6 +300,21 @@ public class Features
         }
     }
 
+    public static Features DeserializeFromBits(byte[] data)
+    {
+        try
+        {
+            return new()
+            {
+                _featureFlags = EndianBitConverter.ToUInt64BE(data, data.Length < 8)
+            };
+        }
+        catch (Exception e)
+        {
+            throw new SerializationException("Error deserializing Features", e);
+        }
+    }
+
     /// <summary>
     /// Combines two feature sets.
     /// </summary>
