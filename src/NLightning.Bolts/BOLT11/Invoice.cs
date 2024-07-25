@@ -1,4 +1,3 @@
-using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
 using NBitcoin.DataEncoders;
@@ -268,21 +267,30 @@ public class Invoice
         {
             var type = (TaggedFieldTypes)buffer.ReadByteFromBits(5);
             var length = buffer.ReadInt32FromBits(10);
-            if (length == 0)
+            if (length == 0 || !buffer.HasMoreBits(length * 5))
             {
                 continue;
             }
-            else if (!buffer.HasMoreBits(length * 5))
-            {
-                throw new SerializationException("Invalid tagged field length");
-            }
 
-            var taggedField = TaggedFieldFactory.CreateTaggedField(type, buffer, length);
-            if (!taggedField.IsValid())
+            if (!Enum.IsDefined(typeof(TaggedFieldTypes), type))
             {
-                throw new SerializationException($"Type {type} of length {length} is invalid");
+                buffer.SkipBits(length * 5);
             }
-            taggedFields.Add(type, taggedField);
+            else
+            {
+                try
+                {
+                    var taggedField = TaggedFieldFactory.CreateTaggedField(type, buffer, length);
+                    if (taggedField.IsValid())
+                    {
+                        taggedFields.Add(type, taggedField);
+                    }
+                }
+                catch
+                {
+                    // Skip for now, log latter
+                }
+            }
         }
 
         return taggedFields;

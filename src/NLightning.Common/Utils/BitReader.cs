@@ -130,4 +130,9 @@ public unsafe class BitReader
     {
         return BitOffset + requiredBits <= TotalBits;
     }
+
+    public void SkipBits(int v)
+    {
+        BitOffset += v;
+    }
 }
