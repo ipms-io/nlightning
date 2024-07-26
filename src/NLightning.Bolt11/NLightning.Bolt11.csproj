@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Common\**\*.cs" />
+    <Compile Include="Exceptions\**\*.cs" />
+    <Compile Include="BOLT8\Dhs\*.cs" />
+    <Compile Include="BOLT8\Constants\*.cs" />
+    <Compile Include="BOLT8\Hashes\*.cs" />
+    <Compile Include="BOLT11\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup> 
+    <PackageReference Include="DnsClient" Version="1.7.0" /> 
+    <PackageReference Include="libsodium" Version="1.0.19" />
+    <PackageReference Include="NBitcoin" Version="7.0.36" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NLightning.Common\NLightning.Common.csproj" />
+  </ItemGroup>
+
+</Project>
