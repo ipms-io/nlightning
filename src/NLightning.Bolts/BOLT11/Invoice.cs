@@ -8,6 +8,8 @@ using BOLT11.Constants;
 using BOLT11.Enums;
 using BOLT11.Factories;
 using BOLT11.Interfaces;
+using Bolts.BOLT8.Constants;
+using Bolts.BOLT8.Hashes;
 using Bolts.Exceptions;
 using Common;
 using Common.Constants;
@@ -240,12 +242,51 @@ public class Invoice
 
             var taggedFields = TaggedFieldsFromBytes(buffer);
 
+            // TODO: Check feature bits
+            // Get pubkey from tagged fields
+            taggedFields.TryGetValue(TaggedFieldTypes.PayeePubKey, out var pubkey);
+            // Check Signature
+            CheckSignature(signature, hrp, data, (NBitcoin.PubKey?)pubkey?.GetValue());
+
             return new Invoice(hrp, network, amount, timestamp, taggedFields);
         }
         catch (Exception e)
         {
             throw new InvoiceSerializationException("Error parsing invoice", e);
         }
+    }
+
+    private static void CheckSignature(byte[] signature, string hrp, byte[] data, NBitcoin.PubKey? pubkey)
+    {
+        // Assemble the message (hrp + data)
+        var message = new byte[hrp.Length + data.Length];
+        Encoding.UTF8.GetBytes(hrp).CopyTo(message, 0);
+        data.CopyTo(message, hrp.Length);
+
+        // Get sha256 hash of the message
+        var sha256 = new SHA256();
+        sha256.AppendData(message);
+        var hash = new byte[HashConstants.HASH_LEN];
+        sha256.GetHashAndReset(hash);
+        var nbitcoinHash = new NBitcoin.uint256(hash);
+
+        var recoveryId = (int)signature[^1];
+        signature = signature[..^1];
+        var compactSignature = new NBitcoin.CompactSignature(recoveryId, signature);
+
+        // Check if recovery is necessary
+        if (pubkey == null)
+        {
+            pubkey = NBitcoin.PubKey.RecoverCompact(nbitcoinHash, compactSignature);
+            return;
+        }
+        else if (NBitcoin.Crypto.ECDSASignature.TryParseFromCompact(compactSignature.Signature, out var ecdsa)
+                && pubkey.Verify(nbitcoinHash, ecdsa))
+        {
+            return;
+        }
+
+        throw new ArgumentException("Invalid signature in invoice");
     }
 
     private static Network GetNetwork(string invoiceString)
