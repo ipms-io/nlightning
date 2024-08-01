@@ -4,15 +4,18 @@ using NBitcoin.DataEncoders;
 
 namespace NLightning.Bolts.BOLT11;
 
-using BOLT11.Constants;
-using BOLT11.Enums;
-using BOLT11.Factories;
-using BOLT11.Interfaces;
-using Bolts.BOLT8.Constants;
-using Bolts.BOLT8.Hashes;
+using BOLT8.Constants;
+using BOLT8.Hashes;
+using BOLT9;
 using Bolts.Exceptions;
 using Common;
 using Common.Constants;
+using Constants;
+using Enums;
+using Factories;
+using Interfaces;
+using Types;
+using Types.TaggedFields;
 
 /// <summary>
 /// Represents a BOLT11 Invoice
@@ -45,6 +48,9 @@ public class Invoice
     /// <summary>
     /// The timestamp of the invoice
     /// </summary>
+    /// <remarks>
+    /// The timestamp is the time the invoice was created in seconds since the Unix epoch.
+    /// </remarks>
     public long Timestamp { get; private set; }
 
     /// <summary>
@@ -53,11 +59,12 @@ public class Invoice
     /// <remarks>
     /// The tagged fields are used to add additional information to the invoice.
     /// </remarks>
+    /// <seealso cref="TaggedFieldList"/>
     /// <seealso cref="ITaggedField"/>
     /// <seealso cref="TaggedFieldTypes"/>
     /// <seealso cref="TaggedFieldFactory"/>
-    /// <seealso cref="Types.TaggedFields.BaseTaggedField{T}"/>
-    public Dictionary<TaggedFieldTypes, ITaggedField> TaggedFields { get; private set; } = [];
+    /// <seealso cref="BaseTaggedField{T}"/>
+    public TaggedFieldList TaggedFields { get; private set; } = [];
 
     /// <summary>
     /// The signature of the invoice
@@ -74,10 +81,293 @@ public class Invoice
     /// </summary>
     public ulong AmountSats => AmountMsats * 1_000;
 
+    #region Public Properties from Tagged Fields
+    /// <summary>
+    /// The payment hash of the invoice
+    /// </summary>
+    /// <remarks>
+    /// The payment hash is a 32 byte hash that is used to identify a payment
+    /// </remarks>
+    /// <seealso cref="NBitcoin.uint256"/>
+    public NBitcoin.uint256 PaymentHash
+    {
+        get
+        {
+            if (TaggedFields.TryGet(TaggedFieldTypes.PaymentHash, out PaymentHashTaggedField paymentHash))
+            {
+                return paymentHash.Value;
+            }
+            return new NBitcoin.uint256();
+        }
+        set
+        {
+            TaggedFields.Add(new PaymentHashTaggedField(value));
+        }
+    }
+
+    /// <summary>
+    /// The Routing Information of the invoice
+    /// </summary>
+    /// <remarks>
+    /// The routing information is used to hint about the route the payment could take
+    /// </remarks>
+    /// <seealso cref="RoutingInfoCollection"/>
+    /// <seealso cref="RoutingInfo"/>
+    public RoutingInfoCollection? RoutingInfos
+    {
+        get
+        {
+            if (TaggedFields.TryGet(TaggedFieldTypes.RoutingInfo, out RoutingInfoTaggedField routingInfo))
+            {
+                return routingInfo.Value;
+            }
+            return null;
+        }
+        set
+        {
+            if (value != null)
+            {
+                TaggedFields.Add(new RoutingInfoTaggedField(value));
+            }
+        }
+    }
+
+    /// <summary>
+    /// The features of the invoice
+    /// </summary>
+    /// <remarks>
+    /// The features are used to specify the features the payer should support
+    /// </remarks>
+    /// <seealso cref="BOLT9.Features"/>
+    public Features? Features
+    {
+        get
+        {
+            if (TaggedFields.TryGet(TaggedFieldTypes.Features, out FeaturesTaggedField features))
+            {
+                return features.Value;
+            }
+            return null;
+        }
+        set
+        {
+            if (value != null)
+            {
+                TaggedFields.Add(new FeaturesTaggedField(value));
+            }
+        }
+    }
+
     /// <summary>
     /// The expiry date of the invoice
     /// </summary>
-    public DateTimeOffset? ExpiryDate { get; private set; }
+    /// <remarks>
+    /// The expiry date is the date the invoice expires
+    /// </remarks>
+    /// <seealso cref="DateTimeOffset"/>
+    public DateTimeOffset? ExpiryDate
+    {
+        get
+        {
+            if (TaggedFields.TryGet(TaggedFieldTypes.ExpiryTime, out ExpiryTimeTaggedField expireIn))
+            {
+                return DateTimeOffset.FromUnixTimeSeconds(Timestamp + (int)expireIn.GetValue());
+            }
+            return DateTimeOffset.FromUnixTimeSeconds(Timestamp + InvoiceConstants.DEFAULT_EXPIRATION_SECONDS);
+        }
+        set
+        {
+            var expireIn = value?.ToUnixTimeSeconds() - Timestamp;
+            if (expireIn.HasValue)
+            {
+                TaggedFields.Add(new ExpiryTimeTaggedField((int)expireIn.Value));
+            }
+            else
+            {
+                throw new ArgumentException("Invalid expiry date", nameof(value));
+            }
+        }
+    }
+
+    /// <summary>
+    /// The fallback addresses of the invoice
+    /// </summary>
+    /// <remarks>
+    /// The fallback addresses are used to specify the fallback addresses the payer can use
+    /// </remarks>
+    /// <seealso cref="NBitcoin.BitcoinAddress"/>
+    public List<NBitcoin.BitcoinAddress>? FallbackAddresses
+    {
+        get
+        {
+            if (TaggedFields.TryGetAll(TaggedFieldTypes.FallbackAddress, out List<FallbackAddressTaggedField> fallbackAddress))
+            {
+                return fallbackAddress.Select(x => (NBitcoin.BitcoinAddress)x.GetValue()).ToList();
+            }
+            return null;
+        }
+        set
+        {
+            if (value != null)
+            {
+                TaggedFields.AddRange(value.Select(x => new FallbackAddressTaggedField(x)));
+            }
+        }
+    }
+
+    /// <summary>
+    /// The description of the invoice
+    /// </summary>
+    /// <remarks>
+    /// The description is a UTF-8 encoded string that describes, in short, the purpose of payment
+    /// </remarks>
+    public string? Description
+    {
+        get
+        {
+            if (TaggedFields.TryGet(TaggedFieldTypes.Description, out DescriptionTaggedField description))
+            {
+                return description.Value;
+            }
+            return null;
+        }
+        set
+        {
+            if (value != null)
+            {
+                TaggedFields.Add(new DescriptionTaggedField(value));
+            }
+        }
+    }
+
+    /// <summary>
+    /// The payment secret of the invoice
+    /// </summary>
+    /// <remarks>
+    /// The payment secret is a 32 byte secret that is used to identify a payment
+    /// </remarks>
+    /// <seealso cref="NBitcoin.uint256"/>
+    public NBitcoin.uint256? PaymentSecret
+    {
+        get
+        {
+            if (TaggedFields.TryGet(TaggedFieldTypes.PaymentSecret, out PaymentSecretTaggedField paymentSecret))
+            {
+                return paymentSecret.Value;
+            }
+            return null;
+        }
+        set
+        {
+            if (value != null)
+            {
+                TaggedFields.Add(new PaymentSecretTaggedField(value));
+            }
+        }
+    }
+
+    /// <summary>
+    /// The payee pubkey of the invoice
+    /// </summary>
+    /// <remarks>
+    /// The payee pubkey is the pubkey of the payee
+    /// </remarks>
+    /// <seealso cref="NBitcoin.PubKey"/>
+    public NBitcoin.PubKey? PayeePubKey
+    {
+        get
+        {
+            if (TaggedFields.TryGet(TaggedFieldTypes.PayeePubKey, out PayeePubKeyTaggedField payeePubKey))
+            {
+                return payeePubKey.Value;
+            }
+            return null;
+        }
+        set
+        {
+            if (value != null)
+            {
+                TaggedFields.Add(new PayeePubKeyTaggedField(value));
+            }
+        }
+    }
+
+    /// <summary>
+    /// The description hash of the invoice
+    /// </summary>
+    /// <remarks>
+    /// The description hash is a 32 byte hash of the description
+    /// </remarks>
+    /// <seealso cref="NBitcoin.uint256"/>
+    public NBitcoin.uint256? DescriptionHash
+    {
+        get
+        {
+            if (TaggedFields.TryGet(TaggedFieldTypes.DescriptionHash, out DescriptionHashTaggedField descriptionHash))
+            {
+                return descriptionHash.Value;
+            }
+            return null;
+        }
+        set
+        {
+            if (value != null)
+            {
+                TaggedFields.Add(new DescriptionHashTaggedField(value));
+            }
+        }
+    }
+
+    /// <summary>
+    /// The min final cltv expiry of the invoice
+    /// </summary>
+    /// <remarks>
+    /// The min final cltv expiry is the minimum final cltv expiry the payer should use
+    /// </remarks>
+    public ushort? MinFinalCltvExpiry
+    {
+        get
+        {
+            if (TaggedFields.TryGet(TaggedFieldTypes.MinFinalCltvExpiry, out MinFinalCltvExpiryTaggedField minFinalCltvExpiry))
+            {
+                return minFinalCltvExpiry.Value;
+            }
+            return null;
+        }
+        set
+        {
+            if (value.HasValue)
+            {
+                TaggedFields.Add(new MinFinalCltvExpiryTaggedField(value.Value));
+            }
+        }
+    }
+
+    /// <summary>
+    /// The metadata of the invoice
+    /// </summary>
+    /// <remarks>
+    /// The metadata is used to add additional information to the invoice
+    /// </remarks>
+    public byte[]? Metadata
+    {
+        get
+        {
+            if (TaggedFields.TryGet(TaggedFieldTypes.Metadata, out MetadataTaggedField metadata))
+            {
+                return metadata.Value;
+            }
+            return null;
+        }
+        set
+        {
+            if (value != null)
+            {
+                TaggedFields.Add(new MetadataTaggedField(value));
+            }
+        }
+    }
+    #endregion
 
     /// <summary>
     /// The base constructor for the invoice
@@ -111,7 +401,7 @@ public class Invoice
     /// The invoice is created with the given human readable part, network, amount of millisatoshis, timestamp and tagged fields.
     /// </remarks>
     /// <seealso cref="Network"/>
-    public Invoice(string humanReadablePart, Network network, ulong amountMsats, long timestamp, Dictionary<TaggedFieldTypes, ITaggedField> taggedFields)
+    public Invoice(string humanReadablePart, Network network, ulong amountMsats, long timestamp, TaggedFieldList taggedFields)
     {
         Network = network;
         HumanReadablePart = humanReadablePart;
@@ -222,6 +512,9 @@ public class Invoice
     {
         try
         {
+            // convert to lowercase
+            invoiceString = invoiceString.ToLowerInvariant();
+
             // Validate the prefix
             if (!invoiceString.StartsWith(InvoiceConstants.PREFIX))
             {
@@ -236,17 +529,17 @@ public class Invoice
             var amount = ConvertHumanReadableToMilliSatoshis(hrp);
 
             // Initialize the BitReader buffer
-            var buffer = new BitReader(data);
+            var bitReader = new BitReader(data);
 
-            var timestamp = buffer.ReadInt64FromBits(35);
+            var timestamp = bitReader.ReadInt64FromBits(35);
 
-            var taggedFields = TaggedFieldsFromBytes(buffer);
+            var taggedFields = TaggedFieldList.FromBitReader(bitReader);
 
             // TODO: Check feature bits
             // Get pubkey from tagged fields
-            taggedFields.TryGetValue(TaggedFieldTypes.PayeePubKey, out var pubkey);
+            taggedFields.TryGet(TaggedFieldTypes.PayeePubKey, out PayeePubKeyTaggedField pubkey);
             // Check Signature
-            CheckSignature(signature, hrp, data, (NBitcoin.PubKey?)pubkey?.GetValue());
+            CheckSignature(signature, hrp, data, pubkey?.Value);
 
             return new Invoice(hrp, network, amount, timestamp, taggedFields);
         }
@@ -301,42 +594,6 @@ public class Invoice
         return network;
     }
 
-    private static Dictionary<TaggedFieldTypes, ITaggedField> TaggedFieldsFromBytes(BitReader buffer)
-    {
-        var taggedFields = new Dictionary<TaggedFieldTypes, ITaggedField>();
-        while (buffer.HasMoreBits(15))
-        {
-            var type = (TaggedFieldTypes)buffer.ReadByteFromBits(5);
-            var length = buffer.ReadInt32FromBits(10);
-            if (length == 0 || !buffer.HasMoreBits(length * 5))
-            {
-                continue;
-            }
-
-            if (!Enum.IsDefined(typeof(TaggedFieldTypes), type))
-            {
-                buffer.SkipBits(length * 5);
-            }
-            else
-            {
-                try
-                {
-                    var taggedField = TaggedFieldFactory.CreateTaggedField(type, buffer, length);
-                    if (taggedField.IsValid())
-                    {
-                        taggedFields.Add(type, taggedField);
-                    }
-                }
-                catch
-                {
-                    // Skip for now, log latter
-                }
-            }
-        }
-
-        return taggedFields;
-    }
-
     private static (int, byte[], byte[]) GetInvoiceParts(string invoiceString)
     {
         invoiceString = invoiceString.ToLowerInvariant();
@@ -351,7 +608,7 @@ public class Invoice
         {
             throw new ArgumentException("Missing human readable part in invoice", nameof(invoiceString));
         }
-        else if (separatorIndex > 10)
+        else if (separatorIndex > 21)
         {
             throw new ArgumentException("Human readable part too long in invoice", nameof(invoiceString));
         }
@@ -363,8 +620,8 @@ public class Invoice
         var data = bech32.DecodeDataRaw(invoiceString, out _);
 
         // Convert from 5 bit to 8 bit per byte
-        var signature = BitUtils.ConvertBits(data[(data.Length - 104)..], 5, 8);
-        data = BitUtils.ConvertBits(data[..(data.Length - 104)], 5, 8);
+        var signature = BitUtils.ConvertBits(data.AsSpan()[(data.Length - 104)..], 5, 8);
+        data = BitUtils.ConvertBits(data.AsSpan()[..(data.Length - 104)], 5, 8);
 
         return (separatorIndex, data, signature);
     }

@@ -1,69 +1,109 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 using NBitcoin;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
 using BOLT11.Enums;
 
-public sealed class RoutingInfoTaggedField : BaseTaggedField<List<RoutingInfo>>
+/// <summary>
+/// Tagged field for routing information
+/// </summary>
+/// <remarks>
+/// The routing information is a collecion of routing information entries.
+/// Each entry contains the public key of the node, the short channel id, the base fee in msat, the fee proportional millionths and the cltv expiry delta.
+/// </remarks>
+/// <seealso cref="RoutingInfo"/>
+/// <seealso cref="RoutingInfoCollection"/>
+/// <seealso cref="BaseTaggedField{T}"/>
+public sealed class RoutingInfoTaggedField : BaseTaggedField<RoutingInfoCollection>
 {
-    private const int ROUTING_INFO_LENGTH = 408; // 264 + 64 + 32 + 32 + 16 = 408
+    /// <summary>
+    /// The length of a single routing information entry in bits
+    /// </summary>
+    /// <remarks>
+    /// The routing information entry is 264 + 64 + 32 + 32 + 16 = 408 bits long
+    /// </remarks>
+    private const int ROUTING_INFO_LENGTH = 408;
 
+    /// <summary>
+    /// Constructor for RoutingInfoTaggedField from a BitReader and a length
+    /// </summary>
+    /// <param name="bitReader">The BitReader to read the data from</param>
+    /// <param name="length">The length of the tagged field</param>
+    /// <remarks>
+    /// This constructor is used to create a RoutingInfoTaggedField from a BitReader and a length.
+    /// The Value property is set to the decoded value.
+    /// </remarks>
+    /// <seealso cref="BitReader"/>
+    /// <seealso cref="BaseTaggedField{T}"/>
+    /// <seealso cref="TaggedFieldTypes"/>
     [SetsRequiredMembers]
-    public RoutingInfoTaggedField(BitReader buffer, int length) : base(TaggedFieldTypes.RoutingInfo, length)
+    public RoutingInfoTaggedField(BitReader bitReader, short length) : base(TaggedFieldTypes.RoutingInfo)
     {
         var lengthBits = length * 5;
-        var routingInfos = new List<RoutingInfo>();
         var bitsReadAcc = 0;
+        var dataBytes = new List<byte>();
 
         for (var i = 0; i < lengthBits && lengthBits - bitsReadAcc >= ROUTING_INFO_LENGTH; i += ROUTING_INFO_LENGTH)
         {
-            var pubkey = new byte[33];
-            bitsReadAcc += buffer.ReadBits(pubkey, 264);
+            var buffer = new byte[33];
+            bitsReadAcc += bitReader.ReadBits(buffer, 264);
+            dataBytes.AddRange(buffer);
 
-            var shortChannelId = new byte[8];
-            bitsReadAcc += buffer.ReadBits(shortChannelId, 64);
+            buffer = new byte[8];
+            bitsReadAcc += bitReader.ReadBits(buffer, 64);
+            dataBytes.AddRange(buffer);
 
-            routingInfos.Add(new RoutingInfo(new PubKey(pubkey),
-                                             Encoding.UTF8.GetString(shortChannelId),
-                                             buffer.ReadInt32FromBits(32),
-                                             buffer.ReadInt32FromBits(32),
-                                             buffer.ReadInt16FromBits(16)));
+            var feeBaseMsat = bitReader.ReadInt32FromBits(32);
+            bitsReadAcc += 32;
+            dataBytes.AddRange(EndianBitConverter.GetBytesBE(feeBaseMsat));
 
-            // Add the 80 bits read
-            bitsReadAcc += 80;
+            var feeProportionalMillionths = bitReader.ReadInt32FromBits(32);
+            bitsReadAcc += 32;
+            dataBytes.AddRange(EndianBitConverter.GetBytesBE(feeProportionalMillionths));
+
+            var minFinalCltvExpiry = bitReader.ReadInt16FromBits(16);
+            bitsReadAcc += 16;
+            dataBytes.AddRange(EndianBitConverter.GetBytesBE(minFinalCltvExpiry));
         }
-
-        Value = routingInfos;
 
         // Skip any extra bits since padding is expected
         var extraBitsToSkip = lengthBits - bitsReadAcc;
         if (extraBitsToSkip > 0)
         {
-            buffer.SkipBits(extraBitsToSkip);
+            bitReader.SkipBits(extraBitsToSkip);
         }
+
+        Data = [.. dataBytes];
+        Value = Decode(Data);
+
+        // Subscribe to collection changes
+        Value.CollectionChanged += (sender, args) => Data = Encode(Value);
     }
 
-    protected override List<RoutingInfo> Decode(byte[] data)
+    /// <summary>
+    /// Constructor for RoutingInfoTaggedField from a value
+    /// </summary>
+    /// <param name="value">A RoutingInfoList containing routing information</param>
+    /// <remarks>
+    /// This constructor is used to create a RoutingInfoTaggedField from a value.
+    /// The Data property is set to the encoded value.
+    /// </remarks>
+    /// <seealso cref="RoutingInfoCollection"/>
+    /// <seealso cref="RoutingInfo"/>
+    /// <seealso cref="BaseTaggedField{T}"/>
+    /// <seealso cref="TaggedFieldTypes"/>
+    [SetsRequiredMembers]
+    public RoutingInfoTaggedField(RoutingInfoCollection value) : base(TaggedFieldTypes.RoutingInfo, value)
     {
-        throw new NotImplementedException();
+        Value.CollectionChanged += (sender, args) => Data = Encode(Value);
     }
 
+    /// <inheritdoc/>
     public override bool IsValid()
     {
         foreach (var routingInfo in Value)
         {
-            if (routingInfo.PubKey == null)
-            {
-                return false;
-            }
-
-            if (routingInfo.ShortChannelId.Length != 8)
-            {
-                return false;
-            }
-
             if (routingInfo.FeeBaseMsat < 0)
             {
                 return false;
@@ -81,5 +121,45 @@ public sealed class RoutingInfoTaggedField : BaseTaggedField<List<RoutingInfo>>
         }
 
         return true;
+    }
+
+    /// <inheritdoc/>
+    /// <returns>RoutingInfoList</returns>
+    /// <seealso cref="RoutingInfoCollection"/>
+    /// <seealso cref="RoutingInfo"/>
+    protected override RoutingInfoCollection Decode(byte[] data)
+    {
+        var routingInfos = new RoutingInfoCollection();
+        using var stream = new MemoryStream(data);
+        using var reader = new BinaryReader(stream);
+
+        while (reader.BaseStream.Position < reader.BaseStream.Length)
+        {
+            routingInfos.Add(new RoutingInfo(new PubKey(reader.ReadBytes(33)),
+                                      new ShortChannelId(reader.ReadBytes(8)),
+                                      EndianBitConverter.ToInt32BE(reader.ReadBytes(4)),
+                                      EndianBitConverter.ToInt32BE(reader.ReadBytes(4)),
+                                      EndianBitConverter.ToInt16BE(reader.ReadBytes(2))));
+        }
+
+        return routingInfos;
+    }
+
+    /// <inheritdoc/>
+    /// <returns>byte[] representation of the Value</returns>
+    /// <seealso cref="RoutingInfoCollection"/>
+    protected override byte[] Encode(RoutingInfoCollection value)
+    {
+        var dataBytes = new List<byte>();
+        foreach (var routingInfo in value)
+        {
+            dataBytes.AddRange(routingInfo.PubKey.ToBytes());
+            dataBytes.AddRange(routingInfo.ShortChannelId.ToByteArray());
+            dataBytes.AddRange(EndianBitConverter.GetBytesBE(routingInfo.FeeBaseMsat));
+            dataBytes.AddRange(EndianBitConverter.GetBytesBE(routingInfo.FeeProportionalMillionths));
+            dataBytes.AddRange(EndianBitConverter.GetBytesBE(routingInfo.CltvExpiryDelta));
+        }
+
+        return [.. dataBytes];
     }
 }

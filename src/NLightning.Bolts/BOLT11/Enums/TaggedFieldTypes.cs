@@ -22,7 +22,7 @@ public enum TaggedFieldTypes : byte
     /// The Features
     /// </summary>
     /// <remarks>
-    /// represented by the letter f
+    /// represented by the letter 9
     /// </remarks>
     Features = 5,
 

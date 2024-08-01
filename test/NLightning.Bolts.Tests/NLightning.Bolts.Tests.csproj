@@ -42,6 +42,7 @@
 
   <ItemGroup>
     <None Update="BOLT8/Vectors/SHA256LongMsg.rsp" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="BOLT11/Invoices/ValidInvoices.txt" CopyToOutputDirectory="PreserveNewest" />
     <None Remove="TestResults\**" />
   </ItemGroup>
   

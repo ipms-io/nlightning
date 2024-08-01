@@ -14,4 +14,5 @@ public static class InvoiceConstants
     public const char MULTIPLIER_PICO = 'p';
     public const decimal BTC_IN_SATOSHIS = 100_000_000m;
     public const decimal BTC_IN_MILLISATOSHIS = 100_000_000_000m;
+    public const int DEFAULT_EXPIRATION_SECONDS = 3600;
 }

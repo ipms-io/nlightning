@@ -6,7 +6,7 @@ using Types.TaggedFields;
 
 public static class TaggedFieldFactory
 {
-    public static ITaggedField CreateTaggedField(TaggedFieldTypes type, BitReader buffer, int length)
+    public static ITaggedField CreateTaggedFieldFromBitReader(TaggedFieldTypes type, BitReader buffer, short length)
     {
         return type switch
         {
