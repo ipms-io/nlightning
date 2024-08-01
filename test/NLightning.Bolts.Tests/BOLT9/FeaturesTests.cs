@@ -250,13 +250,26 @@ public class FeaturesTests
         Assert.Equal(expectedLength, length);
     }
 
-    [Fact]
-    public async Task Given_Features_When_SerializeWithoutLength_Then_LengthIsAlways8()
+    [Theory]
+    [InlineData(Feature.OptionZeroconf, false, 7)]
+    [InlineData(Feature.OptionZeroconf, true, 7)]
+    [InlineData(Feature.OptionScidAlias, false, 6)]
+    [InlineData(Feature.OptionScidAlias, true, 6)]
+    [InlineData(Feature.OptionOnionMessages, false, 5)]
+    [InlineData(Feature.OptionOnionMessages, true, 5)]
+    [InlineData(Feature.OptionDualFund, false, 4)]
+    [InlineData(Feature.OptionDualFund, true, 4)]
+    [InlineData(Feature.OptionAnchorsZeroFeeHtlcTx, false, 3)]
+    [InlineData(Feature.OptionAnchorsZeroFeeHtlcTx, true, 3)]
+    [InlineData(Feature.OptionStaticRemoteKey, false, 2)]
+    [InlineData(Feature.OptionStaticRemoteKey, true, 2)]
+    [InlineData(Feature.GossipQueries, false, 1)]
+    [InlineData(Feature.GossipQueries, true, 1)]
+    public async Task Given_Features_When_SerializeWithoutLength_Then_LengthIsKnown(Feature feature, bool isCompulsory, int expectedLength)
     {
         // Arrange
         var features = new Features();
-        // Sets bit 0
-        features.SetFeature(Feature.OptionDataLossProtect, true);
+        features.SetFeature(feature, isCompulsory);
         // Clean default features
         features.SetFeature(Feature.VarOnionOptin, false, false);
 
@@ -267,7 +280,7 @@ public class FeaturesTests
         var bytes = stream.ToArray();
 
         // Assert
-        Assert.Equal(8, bytes.Length);
+        Assert.Equal(expectedLength, bytes.Length);
     }
 
     [Theory]
@@ -320,7 +333,7 @@ public class FeaturesTests
         var bytes = stream.ToArray();
 
         // Assert
-        Assert.Equal([0, 0, 0, 0, 0, 0, 0, 1], bytes);
+        Assert.Equal([1], bytes);
     }
 
     [Fact]
@@ -340,7 +353,7 @@ public class FeaturesTests
         var bytes = stream.ToArray();
 
         // Assert
-        Assert.Equal(0, bytes[2]);
+        Assert.Equal(2, bytes.Length);
     }
     #endregion
 

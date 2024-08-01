@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Runtime.Serialization;
 using System.Text;
 
@@ -23,7 +24,7 @@ public class Features
         { Feature.OptionZeroconf,             new[] { Feature.OptionScidAlias } },
     };
 
-    private ulong _featureFlags;
+    private BitArray _featureFlags;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Features"/> class.
@@ -33,6 +34,7 @@ public class Features
     /// </remarks>
     public Features()
     {
+        _featureFlags = new BitArray(128);
         // Allways set the compulsory bit of var_onion_optin
         SetFeature(Feature.VarOnionOptin, false);
     }
@@ -92,14 +94,12 @@ public class Features
     /// <param name="isSet">true to set the feature, false to unset it</param>
     public void SetFeature(int bitPosition, bool isSet)
     {
-        if (isSet)
+        if (bitPosition >= _featureFlags.Length)
         {
-            _featureFlags |= (ulong)1 << bitPosition;
+            _featureFlags.Length = bitPosition + 1;
         }
-        else
-        {
-            _featureFlags &= ~((ulong)1 << bitPosition);
-        }
+
+        _featureFlags.Set(bitPosition, isSet);
     }
 
     /// <summary>
@@ -134,7 +134,7 @@ public class Features
             bitPosition--;
         }
 
-        return (_featureFlags & ((ulong)1 << bitPosition)) != 0;
+        return IsFeatureSet(bitPosition);
     }
     /// <summary>
     /// Checks if a feature is set.
@@ -143,7 +143,12 @@ public class Features
     /// <returns>true if the feature is set, false otherwise.</returns>
     public bool IsFeatureSet(int bitPosition)
     {
-        return (_featureFlags & ((ulong)1 << bitPosition)) != 0;
+        if (bitPosition >= _featureFlags.Length)
+        {
+            return false;
+        }
+
+        return _featureFlags.Get(bitPosition);
     }
 
     /// <summary>
@@ -172,7 +177,7 @@ public class Features
             return false;
         }
 
-        for (var i = 1; i < sizeof(ulong) * 8; i += 2)
+        for (var i = 1; i < _featureFlags.Length; i += 2)
         {
             var isLocalOptionalSet = IsFeatureSet(i, false);
             var isLocalCompulsorySet = IsFeatureSet(i, true);
@@ -230,20 +235,59 @@ public class Features
         // If it's a global feature, cut out any bit greater than 13
         if (asGlobal)
         {
-            _featureFlags &= 0x1FFF;
+            _featureFlags.Length = 13;
         }
 
-        // Convert ulong to byte array
-        var bytes = EndianBitConverter.GetBytesBE(_featureFlags, includeLength);
+        // Convert BitArray to byte array
+        var bytes = new byte[(_featureFlags.Length + 7) / 8];
+        _featureFlags.CopyTo(bytes, 0);
+
+        // Set bytes as big endian
+        if (BitConverter.IsLittleEndian)
+        {
+            Array.Reverse(bytes);
+        }
+
+        // Trim leading zero bytes
+        var leadingZeroBytes = 0;
+        for (var i = 0; i < bytes.Length; i++)
+        {
+            if (bytes[i] == 0)
+            {
+                leadingZeroBytes++;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        var trimmedBytes = bytes[leadingZeroBytes..];
 
         // Write the length of the byte array or 1 if all bytes are zero
         if (includeLength)
         {
-            await stream.WriteAsync(EndianBitConverter.GetBytesBE((ushort)bytes.Length));
+            await stream.WriteAsync(EndianBitConverter.GetBytesBE((ushort)trimmedBytes.Length));
         }
 
         // Otherwise, return the array starting from the first non-zero byte
-        await stream.WriteAsync(bytes);
+        await stream.WriteAsync(trimmedBytes);
+    }
+
+    /// <summary>
+    /// Serializes the features to a byte array.
+    /// </summary>
+    public byte[] SerializeToBits()
+    {
+        var bytes = new byte[(_featureFlags.Length + 7) / 8];
+        _featureFlags.CopyTo(bytes, 0);
+
+        if (BitConverter.IsLittleEndian)
+        {
+            Array.Reverse(bytes);
+        }
+
+        return bytes;
     }
 
     /// <summary>
@@ -288,11 +332,13 @@ public class Features
             bytes = new byte[length];
             await stream.ReadExactlyAsync(bytes);
 
-            // Convert the byte array to ulong
-            return new()
+            if (BitConverter.IsLittleEndian)
             {
-                _featureFlags = EndianBitConverter.ToUInt64BE(bytes, length < 8)
-            };
+                Array.Reverse(bytes);
+            }
+
+            // Convert the byte array to BitArray
+            return new Features { _featureFlags = new BitArray(bytes) };
         }
         catch (Exception e)
         {
@@ -300,14 +346,58 @@ public class Features
         }
     }
 
-    public static Features DeserializeFromBits(byte[] data)
+    /// <summary>
+    /// Deserializes the features from a byte array.
+    /// </summary>
+    /// <param name="data">The byte array to deserialize from.</param>
+    /// <remarks>
+    /// The byte array can have a length less than or equal to 8 bytes.
+    /// </remarks>
+    /// <returns>The deserialized features.</returns>
+    /// <exception cref="SerializationException">Error deserializing Features</exception>
+    public static Features DeserializeFromBytes(byte[] data)
     {
         try
         {
-            return new()
+            if (BitConverter.IsLittleEndian)
             {
-                _featureFlags = EndianBitConverter.ToUInt64BE(data, data.Length < 8)
-            };
+                Array.Reverse(data);
+            }
+
+            var bitArray = new BitArray(data);
+            return new Features { _featureFlags = bitArray };
+        }
+        catch (Exception e)
+        {
+            throw new SerializationException("Error deserializing Features", e);
+        }
+    }
+
+    /// <summary>
+    /// Deserializes the features from a BitReader.
+    /// </summary>
+    /// <param name="bitReader">The bit reader to read from.</param>
+    /// <param name="length">The number of bits to read.</param>
+    /// <returns>The deserialized features.</returns>
+    /// <exception cref="SerializationException">Error deserializing Features</exception>
+    public static Features DeserializeFromBitReader(BitReader bitReader, short length)
+    {
+        try
+        {
+            // Create a new bit array
+            var bitArray = new BitArray(length);
+            for (var i = 0; i < length; i++)
+            {
+                bitArray.Set(i, bitReader.ReadBit());
+            }
+
+            var reversedArray = new BitArray(length);
+            for (var i = 0; i < length; i++)
+            {
+                reversedArray[length - i - 1] = bitArray[i];
+            }
+
+            return new Features { _featureFlags = reversedArray }; ;
         }
         catch (Exception e)
         {
@@ -326,17 +416,21 @@ public class Features
     /// </remarks>
     public static Features Combine(Features first, Features second)
     {
-        // Combine (logical OR) the two feature bitmaps into one logical features map
-        return new Features
+        var combinedLength = Math.Max(first._featureFlags.Length, second._featureFlags.Length);
+        var combinedFlags = new BitArray(combinedLength);
+
+        for (var i = 0; i < combinedLength; i++)
         {
-            _featureFlags = first._featureFlags | second._featureFlags
-        };
+            combinedFlags.Set(i, first.IsFeatureSet(i) || second.IsFeatureSet(i));
+        }
+
+        return new Features { _featureFlags = combinedFlags };
     }
 
     public override string ToString()
     {
         var sb = new StringBuilder();
-        for (var i = 0; i < sizeof(ulong) * 8; i++)
+        for (var i = 0; i < _featureFlags.Length; i++)
         {
             if (IsFeatureSet(i))
             {

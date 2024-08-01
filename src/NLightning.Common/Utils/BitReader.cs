@@ -48,8 +48,7 @@ public unsafe class BitReader
         if (shift == 0)
         {
             // copy bytes to value 
-            Unsafe.CopyBlock(value + valueOffset, Buffer + byteOffset,
-                (uint)(bitLength / 8 + (bitLength % 8 == 0 ? 0 : 1)));
+            Unsafe.CopyBlock(value + valueOffset, Buffer + byteOffset, (uint)(bitLength / 8 + (bitLength % 8 == 0 ? 0 : 1)));
 
             // mask extra bits 
             if (bitLength % 8 != 0)
@@ -66,15 +65,32 @@ public unsafe class BitReader
         for (var i = 0; i < bytesToRead; i++)
         {
             var left = (byte)(Buffer[byteOffset + i] << shift);
-            var right =
-                (byte)((Buffer[byteOffset + i + 1] & (i == bytesToRead - 1 ? 0xFF << (8 - bitLength % 8) : 0xFF)) >>
-                       (8 - shift));
+            var right = (byte)((Buffer[byteOffset + i + 1] & (i == bytesToRead - 1 ? 0xFF << (8 - bitLength % 8) : 0xFF)) >> (8 - shift));
 
             value[valueOffset + i] = (byte)(left | right);
         }
 
         BitOffset += bitLength;
         return bitLength;
+    }
+
+    public bool ReadBit()
+    {
+        if (BitOffset >= TotalBits)
+        {
+            throw new InvalidOperationException("No more bits to read.");
+        }
+
+        var byteIndex = BitOffset / 8;
+        var bitIndex = BitOffset % 8;
+
+        // Extract the bit at the current BitOffset
+        var bit = (Buffer[byteIndex] >> (7 - bitIndex)) & 1;
+
+        // Increment the BitOffset
+        BitOffset++;
+
+        return bit == 1;
     }
 
     public byte ReadByteFromBits(int bits)
