@@ -2,46 +2,42 @@ namespace NLightning.Common.Utils;
 
 public static class BitUtils
 {
-    public static byte[] ConvertBits(byte[] input, int fromBits, int toBits, bool pad = true)
+    public static byte[] ConvertBits(ReadOnlySpan<byte> data, int fromBits, int toBits, bool pad = true)
     {
-        var acc = 0;
-        var bits = 0;
-        var ret = new List<byte>();
-        var maxV = (1 << toBits) - 1;
-        var maxAcc = (1 << (fromBits + toBits - 1)) - 1;
-
-        foreach (var value in input)
+        var num = 0;
+        var num2 = 0;
+        var num3 = (1 << toBits) - 1;
+        var list = new List<byte>(64);
+        var readOnlySpan = data;
+        for (var i = 0; i < readOnlySpan.Length; i++)
         {
-            if (value < 0 || value >> fromBits != 0)
+            var b = readOnlySpan[i];
+            if (b >> fromBits > 0)
             {
-                throw new ArgumentException("Invalid data value for given bit width.");
+                throw new FormatException("Invalid Bech32 string");
             }
 
-            acc = ((acc << fromBits) | value) & maxAcc;
-            bits += fromBits;
-
-            while (bits >= toBits)
+            num = (num << fromBits) | b;
+            num2 += fromBits;
+            while (num2 >= toBits)
             {
-                bits -= toBits;
-                ret.Add((byte)((acc >> bits) & maxV));
+                num2 -= toBits;
+                list.Add((byte)((num >> num2) & num3));
             }
         }
 
-        if (pad && bits > 0)
+        if (pad)
         {
-            ret.Add((byte)((acc << (toBits - bits)) & maxV));
+            if (num2 > 0)
+            {
+                list.Add((byte)((num << toBits - num2) & num3));
+            }
         }
-        else if (!pad && (bits >= fromBits || ((acc << (toBits - bits)) & maxV) != 0))
+        else if (num2 >= fromBits || (byte)((num << toBits - num2) & num3) != 0)
         {
-            throw new ArgumentException("Cannot convert bits without padding and with remaining bits.");
+            throw new FormatException("Invalid Bech32 string");
         }
 
-        return [.. ret];
-    }
-
-    public static byte[] ReadBytesFromBits(byte[] data)//, int offset, int count)
-    {
-        var bits = ConvertBits(data, 5, 8, false);
-        return bits;
+        return [.. list];
     }
 }
