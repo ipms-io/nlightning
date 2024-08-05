@@ -83,7 +83,7 @@ internal sealed class HandshakeState : IHandshakeState
     /// <exception cref="ArgumentException">Thrown if the output was greater than <see cref="ProtocolConstants.MAX_MESSAGE_LENGTH"/> bytes in length, or if the output buffer did not have enough space to hold the ciphertext.</exception>
     public (int, byte[]?, Transport?) WriteMessage(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
-        Exceptions.ThrowIfDisposed(_disposed, nameof(HandshakeState));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(HandshakeState));
 
         if (_messagePatterns.Count == 0)
         {
@@ -151,7 +151,7 @@ internal sealed class HandshakeState : IHandshakeState
     /// <exception cref="System.Security.Cryptography.CryptographicException">Thrown if the decryption of the message has failed.</exception>
     public (int, byte[]?, Transport?) ReadMessage(ReadOnlySpan<byte> message, Span<byte> payloadBuffer)
     {
-        Exceptions.ThrowIfDisposed(_disposed, nameof(HandshakeState));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(HandshakeState));
 
         if (_messagePatterns.Count == 0)
         {

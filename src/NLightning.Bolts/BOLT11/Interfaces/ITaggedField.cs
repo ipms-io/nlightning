@@ -26,6 +26,8 @@ public interface ITaggedField
     /// </remarks>
     short Length { get; }
 
+    short LengthInBits { get; }
+
     /// <summary>
     /// The data of the tagged field
     /// </summary>

@@ -4,6 +4,7 @@ using System.Text;
 namespace NLightning.Bolts.BOLT1.Payloads;
 
 using Bolts.Interfaces;
+using Common.BitUtils;
 
 /// <summary>
 /// Represents an error payload.

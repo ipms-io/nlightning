@@ -1,9 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
+using NBitcoin;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
-using BOLT11.Enums;
-using NBitcoin;
+using Common.BitUtils;
+using Enums;
 
 /// <summary>
 /// Tagged field for the description hash
@@ -50,7 +51,7 @@ public sealed class DescriptionHashTaggedField : BaseTaggedField<uint256>
     /// <inheritdoc/>
     public override bool IsValid()
     {
-        return Value != null;
+        return Value != uint256.Zero;
     }
 
     /// <inheritdoc/>
@@ -66,6 +67,6 @@ public sealed class DescriptionHashTaggedField : BaseTaggedField<uint256>
     /// <seealso cref="uint256"/>
     protected override byte[] Encode(uint256 value)
     {
-        return value.ToBytes();
+        return AccountForPaddingWhenEncoding(value.ToBytes());
     }
 }

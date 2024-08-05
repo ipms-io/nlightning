@@ -91,7 +91,7 @@ public class InvoiceTests
     [InlineData(NetworkConstants.MAINNET, 100_000_000, "lnbc1")]
     [InlineData(NetworkConstants.MAINNET, 1_000_000_000, "lnbc10")]
     [InlineData(NetworkConstants.MAINNET, 10_000_000_000, "lnbc100")]
-    public void Given_Amount_When_InvoiceIsCreatedWithInSatoshis_Then_AmountIsCorrect(string network, ulong amountSats, string expectedHumanReadablePart)
+    public void Given_Amount_When_InvoiceIsCreatedWithInSatoshis_Then_AmountIsCorrect(string network, long amountSats, string expectedHumanReadablePart)
     {
         // Act
         var invoice = Invoice.InSatoshis(network, amountSats);
@@ -111,7 +111,7 @@ public class InvoiceTests
         // Act
         foreach (var testInvoice in testInvoices)
         {
-            var invoice = Invoice.Parse(testInvoice.InvoiceString);
+            var invoice = Invoice.Decode(testInvoice.InvoiceString);
 
             // Assert
             Assert.Equal(testInvoice.ExpectedNetwork, invoice.Network);

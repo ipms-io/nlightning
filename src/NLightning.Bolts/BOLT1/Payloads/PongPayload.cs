@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 namespace NLightning.Bolts.BOLT1.Payloads;
 
 using Bolts.Interfaces;
+using Common.BitUtils;
 
 /// <summary>
 /// Represents a Pong payload.

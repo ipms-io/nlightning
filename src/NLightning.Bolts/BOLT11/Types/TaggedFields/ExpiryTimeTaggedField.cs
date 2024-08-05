@@ -2,7 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
-using BOLT11.Enums;
+using Common.BitUtils;
+using Enums;
 
 /// <summary>
 /// Tagged field for the expiry time
@@ -29,6 +30,7 @@ public sealed class ExpiryTimeTaggedField : BaseTaggedField<int>
     [SetsRequiredMembers]
     public ExpiryTimeTaggedField(BitReader bitReader, short length) : base(TaggedFieldTypes.ExpiryTime)
     {
+        LengthInBits = length;
         Value = bitReader.ReadInt32FromBits(length * 5);
         Data = Encode(Value);
     }
@@ -57,13 +59,13 @@ public sealed class ExpiryTimeTaggedField : BaseTaggedField<int>
     /// <returns>The expiry time in seconds</returns>
     protected override int Decode(byte[] data)
     {
-        return EndianBitConverter.ToInt32BE(data, true);
+        throw new NotImplementedException();
     }
 
     /// <inheritdoc/>
     /// <returns>The expiry time as a byte array</returns>
     protected override byte[] Encode(int value)
     {
-        return EndianBitConverter.GetBytesBE(value, true);
+        return AccountForPaddingWhenEncoding(EndianBitConverter.GetBytesBE(value, true));
     }
 }

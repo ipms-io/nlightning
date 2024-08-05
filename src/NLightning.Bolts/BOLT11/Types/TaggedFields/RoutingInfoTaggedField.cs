@@ -3,7 +3,8 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
-using BOLT11.Enums;
+using Common.BitUtils;
+using Enums;
 
 /// <summary>
 /// Tagged field for routing information
@@ -40,11 +41,12 @@ public sealed class RoutingInfoTaggedField : BaseTaggedField<RoutingInfoCollecti
     [SetsRequiredMembers]
     public RoutingInfoTaggedField(BitReader bitReader, short length) : base(TaggedFieldTypes.RoutingInfo)
     {
-        var lengthBits = length * 5;
+        LengthInBits = length;
+        var l = length * 5;
         var bitsReadAcc = 0;
         var dataBytes = new List<byte>();
 
-        for (var i = 0; i < lengthBits && lengthBits - bitsReadAcc >= ROUTING_INFO_LENGTH; i += ROUTING_INFO_LENGTH)
+        for (var i = 0; i < l && l - bitsReadAcc >= ROUTING_INFO_LENGTH; i += ROUTING_INFO_LENGTH)
         {
             var buffer = new byte[33];
             bitsReadAcc += bitReader.ReadBits(buffer, 264);
@@ -68,7 +70,7 @@ public sealed class RoutingInfoTaggedField : BaseTaggedField<RoutingInfoCollecti
         }
 
         // Skip any extra bits since padding is expected
-        var extraBitsToSkip = lengthBits - bitsReadAcc;
+        var extraBitsToSkip = l - bitsReadAcc;
         if (extraBitsToSkip > 0)
         {
             bitReader.SkipBits(extraBitsToSkip);
@@ -160,6 +162,6 @@ public sealed class RoutingInfoTaggedField : BaseTaggedField<RoutingInfoCollecti
             dataBytes.AddRange(EndianBitConverter.GetBytesBE(routingInfo.CltvExpiryDelta));
         }
 
-        return [.. dataBytes];
+        return AccountForPaddingWhenEncoding([.. dataBytes]);
     }
 }

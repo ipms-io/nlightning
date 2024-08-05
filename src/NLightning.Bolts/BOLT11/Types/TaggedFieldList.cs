@@ -1,8 +1,11 @@
-using NLightning.Bolts.BOLT11.Enums;
-using NLightning.Bolts.BOLT11.Factories;
-using NLightning.Bolts.BOLT11.Interfaces;
+using System.Diagnostics;
 
 namespace NLightning.Bolts.BOLT11.Types;
+
+using Common.BitUtils;
+using Enums;
+using Factories;
+using Interfaces;
 
 public class TaggedFieldList : List<ITaggedField>
 {
@@ -81,7 +84,7 @@ public class TaggedFieldList : List<ITaggedField>
         return false;
     }
 
-    public static TaggedFieldList FromBitReader(BitReader bitReader)
+    internal static TaggedFieldList FromBitReader(BitReader bitReader)
     {
         var taggedFields = new TaggedFieldList();
         while (bitReader.HasMoreBits(15))
@@ -114,13 +117,35 @@ public class TaggedFieldList : List<ITaggedField>
                         }
                     }
                 }
-                catch
+                catch (Exception e)
                 {
+                    Debug.WriteLine(e.Message);
                     // Skip for now, log latter
                 }
             }
         }
 
         return taggedFields;
+    }
+
+    internal void WriteToBitWriter(BitWriter bitWriter)
+    {
+        foreach (var taggedField in this)
+        {
+            // Write type
+            bitWriter.WriteByteAsBits((byte)taggedField.Type, 5);
+
+            // Write length
+            var length = taggedField.LengthInBits;
+            bitWriter.WriteInt16AsBits(length, 10);
+
+            // Write data
+            bitWriter.WriteBits(taggedField.Data, length);
+        }
+    }
+
+    internal int CalculateSizeInBits()
+    {
+        return this.Sum(x => x.LengthInBits);
     }
 }

@@ -3,6 +3,7 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
+using Common.BitUtils;
 using Enums;
 
 /// <summary>
@@ -64,6 +65,6 @@ public sealed class PayeePubKeyTaggedField : BaseTaggedField<PubKey>
     /// <returns>The payee public key as a PubKey</returns>
     protected override byte[] Encode(PubKey value)
     {
-        return value.ToBytes();
+        return AccountForPaddingWhenEncoding(value.ToBytes());
     }
 }

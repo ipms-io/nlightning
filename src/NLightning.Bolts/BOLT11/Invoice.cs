@@ -1,17 +1,18 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using NBitcoin.DataEncoders;
 
 namespace NLightning.Bolts.BOLT11;
 
 using BOLT8.Constants;
 using BOLT8.Hashes;
 using BOLT9;
-using Bolts.Exceptions;
 using Common;
+using Common.BitUtils;
 using Common.Constants;
 using Constants;
+using Encoders;
 using Enums;
+using Exceptions;
 using Factories;
 using Interfaces;
 using Types;
@@ -25,16 +26,21 @@ using Types.TaggedFields;
 /// </remarks>
 public class Invoice
 {
+    #region Private Fields
     private static readonly Dictionary<string, Network> s_supportedNetworks = new()
     {
         { InvoiceConstants.PREFIX_MAINET, Network.MainNet },
         { InvoiceConstants.PREFIX_TESTNET, Network.TestNet },
         { InvoiceConstants.PREFIX_SIGNET, Network.SigNet },
-        { InvoiceConstants.PREFIX_REGTEST, Network.RegTest }
+        { InvoiceConstants.PREFIX_REGTEST, Network.RegTest },
+        { InvoiceConstants.PREFIX_MAINET.ToUpperInvariant(), Network.MainNet },
+        { InvoiceConstants.PREFIX_TESTNET.ToUpperInvariant(), Network.TestNet },
+        { InvoiceConstants.PREFIX_SIGNET.ToUpperInvariant(), Network.SigNet },
+        { InvoiceConstants.PREFIX_REGTEST.ToUpperInvariant(), Network.RegTest }
     };
+    #endregion
 
-    private readonly StringBuilder _sb = new(InvoiceConstants.PREFIX);
-
+    #region Public Properties
     /// <summary>
     /// The network the invoice is created for
     /// </summary>
@@ -80,6 +86,7 @@ public class Invoice
     /// The amount of satoshis the invoice is for
     /// </summary>
     public ulong AmountSats => AmountMsats * 1_000;
+    #endregion
 
     #region Public Properties from Tagged Fields
     /// <summary>
@@ -369,6 +376,7 @@ public class Invoice
     }
     #endregion
 
+    #region Constructors
     /// <summary>
     /// The base constructor for the invoice
     /// </summary>
@@ -384,7 +392,6 @@ public class Invoice
         AmountMsats = amountMsats ?? 0;
         Network = network;
         HumanReadablePart = BuildHumanReadablePart();
-        _sb = new StringBuilder();
         Timestamp = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Signature = string.Empty;
     }
@@ -410,20 +417,83 @@ public class Invoice
         TaggedFields = taggedFields;
         Signature = string.Empty;
     }
+    #endregion
 
-    public override string ToString()
+    #region Static Constructors
+    public static Invoice InSatoshis(Network network, long amountSats, long? timestamp = null)
     {
-        return _sb.ToString();
+        return new Invoice(network, (ulong)amountSats * 1_000, timestamp);
     }
 
+    public static Invoice Decode(string invoiceString)
+    {
+        try
+        {
+            Bech32Encoder.DecodeLightningInvoice(invoiceString, out var data, out var signature, out var hrp);
+
+            var network = GetNetwork(invoiceString);
+            var amount = ConvertHumanReadableToMilliSatoshis(hrp);
+
+            // Initialize the BitReader buffer
+            var bitReader = new BitReader(data);
+
+            var timestamp = bitReader.ReadInt64FromBits(35);
+
+            var taggedFields = TaggedFieldList.FromBitReader(bitReader);
+
+            // TODO: Check feature bits
+            // Get pubkey from tagged fields
+            taggedFields.TryGet(TaggedFieldTypes.PayeePubKey, out PayeePubKeyTaggedField pubkey);
+            // Check Signature
+            CheckSignature(signature, hrp, data, pubkey?.Value);
+
+            return new Invoice(hrp, network, amount, timestamp, taggedFields);
+        }
+        catch (Exception e)
+        {
+            throw new InvoiceSerializationException("Error parsing invoice", e);
+        }
+    }
+    #endregion
+
+    public string Encode()
+    {
+        // Calculate the size needed for the buffer
+        var sizeInBits = 35 + TaggedFields.CalculateSizeInBits();
+
+        // Initialize the BitWriter buffer
+        var bitWriter = new BitWriter(sizeInBits);
+
+        // Write the timestamp
+        bitWriter.WriteInt64AsBits(Timestamp, 35);
+
+        // Write the tagged fields
+        TaggedFields.WriteToBitWriter(bitWriter);
+
+        // Sign the invoice
+        var signature = SignInvoice(HumanReadablePart, bitWriter.ToArray(), new NBitcoin.Key());
+
+        var bech32 = new Bech32Encoder(HumanReadablePart);
+        return bech32.EncodeLightningInvoice(bitWriter.ToArray(), signature);
+    }
+
+    #region Overrides
+    public override string ToString()
+    {
+        return Encode();
+    }
+    #endregion
+
+    #region Private Methods
     private string BuildHumanReadablePart()
     {
-        _sb.Append(GetPrefix(Network));
+        StringBuilder sb = new(InvoiceConstants.PREFIX);
+        sb.Append(GetPrefix(Network));
         if (AmountMsats > 0)
         {
-            ConvertMilliSatoshisToHumanReadable(AmountMsats);
+            ConvertMilliSatoshisToHumanReadable(AmountMsats, sb);
         }
-        return _sb.ToString();
+        return sb.ToString();
     }
 
     private static string GetPrefix(Network network)
@@ -438,35 +508,35 @@ public class Invoice
         };
     }
 
-    private void ConvertMilliSatoshisToHumanReadable(ulong millisatoshis)
+    private void ConvertMilliSatoshisToHumanReadable(ulong millisatoshis, StringBuilder sb)
     {
         var btcAmount = millisatoshis / InvoiceConstants.BTC_IN_MILLISATOSHIS;
 
         if (btcAmount >= 1)
         {
-            _sb.Append(btcAmount.ToString("F0").TrimEnd('.'));
+            sb.Append(btcAmount.ToString("F0").TrimEnd('.'));
         }
         else if (btcAmount >= 0.001m)
         {
-            _sb.Append((btcAmount * 1_000).ToString("F0").TrimEnd('.'));
-            _sb.Append(InvoiceConstants.MULTIPLIER_MILLI);
+            sb.Append((btcAmount * 1_000).ToString("F0").TrimEnd('.'));
+            sb.Append(InvoiceConstants.MULTIPLIER_MILLI);
         }
         else if (btcAmount >= 0.000001m)
         {
-            _sb.Append((btcAmount * 1_000_000).ToString("F0").TrimEnd('.'));
-            _sb.Append(InvoiceConstants.MULTIPLIER_MICRO);
+            sb.Append((btcAmount * 1_000_000).ToString("F0").TrimEnd('.'));
+            sb.Append(InvoiceConstants.MULTIPLIER_MICRO);
         }
         else if (btcAmount >= 0.000000001m)
         {
-            _sb.Append((btcAmount * 1_000_000_000).ToString("F0").TrimEnd('.'));
-            _sb.Append(InvoiceConstants.MULTIPLIER_NANO);
+            sb.Append((btcAmount * 1_000_000_000).ToString("F0").TrimEnd('.'));
+            sb.Append(InvoiceConstants.MULTIPLIER_NANO);
         }
         else
         {
             // Ensure the last decimal of amount is 0 when using 'p' multiplier
             var picoAmount = millisatoshis * 10;
-            _sb.Append(picoAmount.ToString().TrimEnd('.'));
-            _sb.Append(InvoiceConstants.MULTIPLIER_PICO);
+            sb.Append(picoAmount.ToString().TrimEnd('.'));
+            sb.Append(InvoiceConstants.MULTIPLIER_PICO);
         }
     }
 
@@ -503,52 +573,6 @@ public class Invoice
         return millisatoshis;
     }
 
-    public static Invoice InSatoshis(Network network, ulong amountSats)
-    {
-        return new Invoice(network, amountSats * 1_000);
-    }
-
-    public static Invoice Parse(string invoiceString)
-    {
-        try
-        {
-            // convert to lowercase
-            invoiceString = invoiceString.ToLowerInvariant();
-
-            // Validate the prefix
-            if (!invoiceString.StartsWith(InvoiceConstants.PREFIX))
-            {
-                throw new ArgumentException("Missing prefix in invoice", nameof(invoiceString));
-            }
-
-            var (separatorIndex, data, signature) = GetInvoiceParts(invoiceString);
-            var hrp = invoiceString[..separatorIndex];
-
-            var network = GetNetwork(invoiceString);
-
-            var amount = ConvertHumanReadableToMilliSatoshis(hrp);
-
-            // Initialize the BitReader buffer
-            var bitReader = new BitReader(data);
-
-            var timestamp = bitReader.ReadInt64FromBits(35);
-
-            var taggedFields = TaggedFieldList.FromBitReader(bitReader);
-
-            // TODO: Check feature bits
-            // Get pubkey from tagged fields
-            taggedFields.TryGet(TaggedFieldTypes.PayeePubKey, out PayeePubKeyTaggedField pubkey);
-            // Check Signature
-            CheckSignature(signature, hrp, data, pubkey?.Value);
-
-            return new Invoice(hrp, network, amount, timestamp, taggedFields);
-        }
-        catch (Exception e)
-        {
-            throw new InvoiceSerializationException("Error parsing invoice", e);
-        }
-    }
-
     private static void CheckSignature(byte[] signature, string hrp, byte[] data, NBitcoin.PubKey? pubkey)
     {
         // Assemble the message (hrp + data)
@@ -557,7 +581,7 @@ public class Invoice
         data.CopyTo(message, hrp.Length);
 
         // Get sha256 hash of the message
-        var sha256 = new SHA256();
+        using var sha256 = new SHA256();
         sha256.AppendData(message);
         var hash = new byte[HashConstants.HASH_LEN];
         sha256.GetHashAndReset(hash);
@@ -582,6 +606,25 @@ public class Invoice
         throw new ArgumentException("Invalid signature in invoice");
     }
 
+    private static byte[] SignInvoice(string hrp, byte[] data, NBitcoin.Key key)
+    {
+        // Assemble the message (hrp + data)
+        var message = new byte[hrp.Length + data.Length];
+        Encoding.UTF8.GetBytes(hrp).CopyTo(message, 0);
+        data.CopyTo(message, hrp.Length);
+
+        // Get sha256 hash of the message
+        using var sha256 = new SHA256();
+        sha256.AppendData(message);
+        var hash = new byte[HashConstants.HASH_LEN];
+        sha256.GetHashAndReset(hash);
+        var nbitcoinHash = new NBitcoin.uint256(hash);
+
+        // Sign the hash
+        var ecdsa = key.Sign(nbitcoinHash);
+        return ecdsa.ToCompact();
+    }
+
     private static Network GetNetwork(string invoiceString)
     {
         if (!s_supportedNetworks.TryGetValue(invoiceString.Substring(2, 4), out var network)
@@ -593,36 +636,5 @@ public class Invoice
 
         return network;
     }
-
-    private static (int, byte[], byte[]) GetInvoiceParts(string invoiceString)
-    {
-        invoiceString = invoiceString.ToLowerInvariant();
-
-        // Extract human readable part
-        var separatorIndex = invoiceString.LastIndexOf(InvoiceConstants.SEPARATOR);
-        if (separatorIndex == -1)
-        {
-            throw new ArgumentException("Invalid invoice format", nameof(invoiceString));
-        }
-        else if (separatorIndex == 0)
-        {
-            throw new ArgumentException("Missing human readable part in invoice", nameof(invoiceString));
-        }
-        else if (separatorIndex > 21)
-        {
-            throw new ArgumentException("Human readable part too long in invoice", nameof(invoiceString));
-        }
-
-        var bech32 = new Bech32Encoder(Encoding.UTF8.GetBytes(invoiceString[..separatorIndex]))
-        {
-            StrictLength = false
-        };
-        var data = bech32.DecodeDataRaw(invoiceString, out _);
-
-        // Convert from 5 bit to 8 bit per byte
-        var signature = BitUtils.ConvertBits(data.AsSpan()[(data.Length - 104)..], 5, 8);
-        data = BitUtils.ConvertBits(data.AsSpan()[..(data.Length - 104)], 5, 8);
-
-        return (separatorIndex, data, signature);
-    }
+    #endregion
 }

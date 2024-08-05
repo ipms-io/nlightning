@@ -6,7 +6,7 @@ using Bolts.Interfaces;
 using Constants;
 using Exceptions;
 using Interfaces;
-using static Common.Utils.Exceptions;
+using static Common.Utils.ExceptionUtils;
 
 public sealed class TransportService : ITransportService
 {

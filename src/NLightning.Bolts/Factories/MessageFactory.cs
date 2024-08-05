@@ -2,7 +2,8 @@ namespace NLightning.Bolts.Factories;
 
 using BOLT1.Messages;
 using BOLT1.Payloads;
-using Bolts.Constants;
+using Common.BitUtils;
+using Constants;
 using Exceptions;
 using Interfaces;
 

@@ -1,7 +1,7 @@
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 
-namespace NLightning.Common.Utils;
+namespace NLightning.Common.BitUtils;
 
 public unsafe class BitReader
 {
@@ -106,7 +106,7 @@ public unsafe class BitReader
         var bytes = new byte[sizeof(short)];
         ReadBits(bytes, bits);
 
-        if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
+        if ((bigEndian && System.BitConverter.IsLittleEndian) || (!bigEndian && !System.BitConverter.IsLittleEndian))
         {
             Array.Reverse(bytes);
         }
@@ -120,7 +120,7 @@ public unsafe class BitReader
         var bytes = new byte[sizeof(int)];
         ReadBits(bytes, bits);
 
-        if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
+        if ((bigEndian && System.BitConverter.IsLittleEndian) || (!bigEndian && !System.BitConverter.IsLittleEndian))
         {
             Array.Reverse(bytes);
         }
@@ -134,7 +134,7 @@ public unsafe class BitReader
         var bytes = new byte[sizeof(long)];
         ReadBits(bytes, bits);
 
-        if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
+        if ((bigEndian && System.BitConverter.IsLittleEndian) || (!bigEndian && !System.BitConverter.IsLittleEndian))
         {
             Array.Reverse(bytes);
         }

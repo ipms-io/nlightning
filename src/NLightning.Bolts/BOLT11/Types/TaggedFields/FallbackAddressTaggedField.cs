@@ -3,7 +3,8 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
-using BOLT11.Enums;
+using Common.BitUtils;
+using Enums;
 
 /// <summary>
 /// Tagged field for the fallback address
@@ -31,6 +32,7 @@ public sealed class FallbackAddressTaggedField : BaseTaggedField<BitcoinAddress>
     [SetsRequiredMembers]
     public FallbackAddressTaggedField(BitReader bitReader, short length) : base(TaggedFieldTypes.FallbackAddress, length)
     {
+        LengthInBits = length;
         Data[0] = bitReader.ReadByteFromBits(5);
         bitReader.ReadBits(Data.AsSpan()[1..], (length - 1) * 5);
 
@@ -110,6 +112,6 @@ public sealed class FallbackAddressTaggedField : BaseTaggedField<BitcoinAddress>
             scriptAddress.ScriptPubKey.ToBytes().CopyTo(data, 1);
         }
 
-        return data;
+        return AccountForPaddingWhenEncoding(data);
     }
 }

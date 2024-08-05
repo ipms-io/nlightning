@@ -1,6 +1,7 @@
 namespace NLightning.Bolts.Base;
 
 using BOLT1.Payloads;
+using Common.BitUtils;
 using Interfaces;
 
 /// <summary>

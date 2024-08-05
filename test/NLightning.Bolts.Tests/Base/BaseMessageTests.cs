@@ -6,7 +6,7 @@ using Bolts.Constants;
 using Bolts.Interfaces;
 using Bolts.Tests.Base.Mock;
 using Common.Types;
-using Common.Utils;
+using Common.BitUtils;
 
 public class BaseMessageTests
 {

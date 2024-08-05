@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
-using System.Diagnostics.CodeAnalysis;
-using BOLT11.Enums;
+using Common.BitUtils;
+using Enums;
 
 /// <summary>
 /// Tagged field for the minimum final cltv expiry
@@ -60,6 +62,6 @@ public sealed class MinFinalCltvExpiryTaggedField : BaseTaggedField<ushort>
     /// <returns>The minimum final cltv expiry as a byte array</returns>
     protected override byte[] Encode(ushort value)
     {
-        return EndianBitConverter.GetBytesBE(value, true);
+        return AccountForPaddingWhenEncoding(EndianBitConverter.GetBytesBE(value, true));
     }
 }

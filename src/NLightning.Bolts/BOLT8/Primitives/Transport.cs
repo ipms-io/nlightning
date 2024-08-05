@@ -19,8 +19,8 @@ internal sealed class Transport : ITransport
 
     public Transport(bool initiator, CipherState c1, CipherState c2)
     {
-        Exceptions.ThrowIfNull(c1, nameof(c1));
-        Exceptions.ThrowIfNull(c2, nameof(c2));
+        ExceptionUtils.ThrowIfNull(c1, nameof(c1));
+        ExceptionUtils.ThrowIfNull(c2, nameof(c2));
 
         _initiator = initiator;
         _sendingKey = c1;
@@ -49,7 +49,7 @@ internal sealed class Transport : ITransport
     /// <inheritdoc/>
     public int ReadMessageLength(ReadOnlySpan<byte> lc)
     {
-        Exceptions.ThrowIfDisposed(_disposed, nameof(Transport));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Transport));
 
         if (lc.Length != ProtocolConstants.MESSAGE_HEADER_SIZE)
         {
@@ -91,7 +91,7 @@ internal sealed class Transport : ITransport
     /// </exception>
     private int WriteMessagePart(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
-        Exceptions.ThrowIfDisposed(_disposed, nameof(Transport));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Transport));
 
         if (payload.Length + ChaCha20Poly1305.TAG_SIZE > ProtocolConstants.MAX_MESSAGE_LENGTH)
         {
@@ -130,7 +130,7 @@ internal sealed class Transport : ITransport
     /// </exception>
     private int ReadMessagePart(ReadOnlySpan<byte> message, Span<byte> payloadBuffer)
     {
-        Exceptions.ThrowIfDisposed(_disposed, nameof(Transport));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Transport));
 
         if (message.Length > ProtocolConstants.MAX_MESSAGE_LENGTH)
         {

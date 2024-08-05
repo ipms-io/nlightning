@@ -4,7 +4,7 @@ namespace NLightning.Bolts.Tests.BOLT1.Payloads;
 
 using Bolts.BOLT1.Payloads;
 using Common.Types;
-using Common.Utils;
+using Common.BitUtils;
 
 public class ErrorPayloadTests
 {

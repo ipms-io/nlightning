@@ -1,4 +1,4 @@
-namespace NLightning.Common.Utils;
+namespace NLightning.Common.BitUtils;
 
 public static class EndianBitConverter
 {
@@ -12,8 +12,8 @@ public static class EndianBitConverter
     /// <remarks>Trimming to minimum length is useful when the byte array is used in a context where the length is known.</remarks>
     public static byte[] GetBytesBE(ulong value, bool trimToMinimumLenght = false)
     {
-        var bytes = BitConverter.GetBytes(value);
-        if (BitConverter.IsLittleEndian)
+        var bytes = System.BitConverter.GetBytes(value);
+        if (System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
@@ -40,8 +40,8 @@ public static class EndianBitConverter
     /// <remarks>Trimming to minimum length is useful when the byte array is used in a context where the length is known.</remarks>
     public static byte[] GetBytesBE(long value, bool trimToMinimumLenght = false)
     {
-        var bytes = BitConverter.GetBytes(value);
-        if (BitConverter.IsLittleEndian)
+        var bytes = System.BitConverter.GetBytes(value);
+        if (System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
@@ -68,8 +68,8 @@ public static class EndianBitConverter
     /// <remarks>Trimming to minimum length is useful when the byte array is used in a context where the length is known.</remarks>
     public static byte[] GetBytesBE(uint value, bool trimToMinimumLenght = false)
     {
-        var bytes = BitConverter.GetBytes(value);
-        if (BitConverter.IsLittleEndian)
+        var bytes = System.BitConverter.GetBytes(value);
+        if (System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
@@ -96,8 +96,8 @@ public static class EndianBitConverter
     /// <remarks>Trimming to minimum length is useful when the byte array is used in a context where the length is known.</remarks>
     public static byte[] GetBytesBE(int value, bool trimToMinimumLenght = false)
     {
-        var bytes = BitConverter.GetBytes(value);
-        if (BitConverter.IsLittleEndian)
+        var bytes = System.BitConverter.GetBytes(value);
+        if (System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
@@ -124,8 +124,8 @@ public static class EndianBitConverter
     /// <remarks>Trimming to minimum length is useful when the byte array is used in a context where the length is known.</remarks>
     public static byte[] GetBytesBE(ushort value, bool trimToMinimumLenght = false)
     {
-        var bytes = BitConverter.GetBytes(value);
-        if (BitConverter.IsLittleEndian)
+        var bytes = System.BitConverter.GetBytes(value);
+        if (System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
@@ -152,8 +152,8 @@ public static class EndianBitConverter
     /// <remarks>Trimming to minimum length is useful when the byte array is used in a context where the length is known.</remarks>
     public static byte[] GetBytesBE(short value, bool trimToMinimumLenght = false)
     {
-        var bytes = BitConverter.GetBytes(value);
-        if (BitConverter.IsLittleEndian)
+        var bytes = System.BitConverter.GetBytes(value);
+        if (System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
@@ -182,8 +182,8 @@ public static class EndianBitConverter
     /// <remarks>Trimming to minimum length is useful when the byte array is used in a context where the length is known.</remarks>
     public static byte[] GetBytesLE(ulong value, bool trimToMinimumLenght = false)
     {
-        var bytes = BitConverter.GetBytes(value);
-        if (!BitConverter.IsLittleEndian)
+        var bytes = System.BitConverter.GetBytes(value);
+        if (!System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
@@ -210,8 +210,8 @@ public static class EndianBitConverter
     /// <remarks>Trimming to minimum length is useful when the byte array is used in a context where the length is known.</remarks>
     public static byte[] GetBytesLE(uint value, bool trimToMinimumLenght = false)
     {
-        var bytes = BitConverter.GetBytes(value);
-        if (!BitConverter.IsLittleEndian)
+        var bytes = System.BitConverter.GetBytes(value);
+        if (!System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
@@ -238,8 +238,8 @@ public static class EndianBitConverter
     /// <remarks>Trimming to minimum length is useful when the byte array is used in a context where the length is known.</remarks>
     public static byte[] GetBytesLE(ushort value, bool trimToMinimumLenght = false)
     {
-        var bytes = BitConverter.GetBytes(value);
-        if (!BitConverter.IsLittleEndian)
+        var bytes = System.BitConverter.GetBytes(value);
+        if (!System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
@@ -276,11 +276,11 @@ public static class EndianBitConverter
             bytes = paddedBytes;
         }
 
-        if (!BitConverter.IsLittleEndian)
+        if (!System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
-        return BitConverter.ToUInt64(bytes, 0);
+        return System.BitConverter.ToUInt64(bytes, 0);
     }
 
     /// <summary>
@@ -300,11 +300,11 @@ public static class EndianBitConverter
             bytes = paddedBytes;
         }
 
-        if (!BitConverter.IsLittleEndian)
+        if (!System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
-        return BitConverter.ToInt64(bytes, 0);
+        return System.BitConverter.ToInt64(bytes, 0);
     }
 
     /// <summary>
@@ -324,11 +324,11 @@ public static class EndianBitConverter
             bytes = paddedBytes;
         }
 
-        if (!BitConverter.IsLittleEndian)
+        if (!System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
-        return BitConverter.ToUInt32(bytes, 0);
+        return System.BitConverter.ToUInt32(bytes, 0);
     }
 
     /// <summary>
@@ -348,11 +348,11 @@ public static class EndianBitConverter
             bytes = paddedBytes;
         }
 
-        if (!BitConverter.IsLittleEndian)
+        if (!System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
-        return BitConverter.ToInt32(bytes, 0);
+        return System.BitConverter.ToInt32(bytes, 0);
     }
 
     /// <summary>
@@ -372,11 +372,11 @@ public static class EndianBitConverter
             bytes = paddedBytes;
         }
 
-        if (!BitConverter.IsLittleEndian)
+        if (!System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
-        return BitConverter.ToUInt16(bytes, 0);
+        return System.BitConverter.ToUInt16(bytes, 0);
     }
 
     /// <summary>
@@ -396,11 +396,11 @@ public static class EndianBitConverter
             bytes = paddedBytes;
         }
 
-        if (!BitConverter.IsLittleEndian)
+        if (!System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
-        return BitConverter.ToInt16(bytes, 0);
+        return System.BitConverter.ToInt16(bytes, 0);
     }
     #endregion
 
@@ -422,11 +422,11 @@ public static class EndianBitConverter
             bytes = paddedBytes;
         }
 
-        if (BitConverter.IsLittleEndian)
+        if (System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
-        return BitConverter.ToUInt64(bytes, 0);
+        return System.BitConverter.ToUInt64(bytes, 0);
     }
 
     /// <summary>
@@ -446,11 +446,11 @@ public static class EndianBitConverter
             bytes = paddedBytes;
         }
 
-        if (BitConverter.IsLittleEndian)
+        if (System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
-        return BitConverter.ToInt64(bytes, 0);
+        return System.BitConverter.ToInt64(bytes, 0);
     }
 
     /// <summary>
@@ -470,11 +470,11 @@ public static class EndianBitConverter
             bytes = paddedBytes;
         }
 
-        if (BitConverter.IsLittleEndian)
+        if (System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
-        return BitConverter.ToUInt32(bytes, 0);
+        return System.BitConverter.ToUInt32(bytes, 0);
     }
 
     /// <summary>
@@ -494,11 +494,11 @@ public static class EndianBitConverter
             bytes = paddedBytes;
         }
 
-        if (BitConverter.IsLittleEndian)
+        if (System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
-        return BitConverter.ToInt32(bytes, 0);
+        return System.BitConverter.ToInt32(bytes, 0);
     }
 
     /// <summary>
@@ -518,11 +518,11 @@ public static class EndianBitConverter
             bytes = paddedBytes;
         }
 
-        if (BitConverter.IsLittleEndian)
+        if (System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
-        return BitConverter.ToUInt16(bytes, 0);
+        return System.BitConverter.ToUInt16(bytes, 0);
     }
 
     /// <summary>
@@ -542,11 +542,11 @@ public static class EndianBitConverter
             bytes = paddedBytes;
         }
 
-        if (BitConverter.IsLittleEndian)
+        if (System.BitConverter.IsLittleEndian)
         {
             Array.Reverse(bytes);
         }
-        return BitConverter.ToInt16(bytes, 0);
+        return System.BitConverter.ToInt16(bytes, 0);
     }
     #endregion
 }

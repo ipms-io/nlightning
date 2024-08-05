@@ -1,9 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
+using NBitcoin;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
-using BOLT11.Enums;
-using NBitcoin;
+using Common.BitUtils;
+using Enums;
 
 /// <summary>
 /// Tagged field for the payment secret
@@ -50,7 +51,7 @@ public sealed class PaymentSecretTaggedField : BaseTaggedField<uint256>
     /// <inheritdoc/>
     public override bool IsValid()
     {
-        return Data.Length == 32;
+        return Value != uint256.Zero;
     }
 
     /// <inheritdoc/>
@@ -64,6 +65,6 @@ public sealed class PaymentSecretTaggedField : BaseTaggedField<uint256>
     /// <returns>The payment secret as a byte array</returns>
     protected override byte[] Encode(uint256 value)
     {
-        return value.ToBytes();
+        return AccountForPaddingWhenEncoding(value.ToBytes());
     }
 }

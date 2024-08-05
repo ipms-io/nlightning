@@ -2,7 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
-using BOLT11.Enums;
+using Common.BitUtils;
+using Enums;
 
 /// <summary>
 /// Tagged field for the metadata
@@ -61,7 +62,7 @@ public sealed class MetadataTaggedField : BaseTaggedField<byte[]>
     /// <returns>The metadata as a byte array</returns>
     protected override byte[] Encode(byte[] value)
     {
-        return value;
+        return AccountForPaddingWhenEncoding(value);
     }
 
 }

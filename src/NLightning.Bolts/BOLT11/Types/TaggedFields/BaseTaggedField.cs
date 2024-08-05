@@ -2,8 +2,10 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
-using BOLT11.Enums;
-using BOLT11.Interfaces;
+using Common.BitUtils;
+using Encoders;
+using Enums;
+using Interfaces;
 
 /// <summary>
 /// Base class for tagged fields
@@ -28,6 +30,8 @@ public abstract class BaseTaggedField<T>(TaggedFieldTypes type) : ITaggedField
 
     /// <inheritdoc/>
     public required byte[] Data { get; set; } = [];
+
+    public required short LengthInBits { get; set; }
 
     /// <summary>
     /// The value of the tagged field in a readable format
@@ -61,17 +65,14 @@ public abstract class BaseTaggedField<T>(TaggedFieldTypes type) : ITaggedField
     /// The data is read from the BitReader and the Value property is set by calling the Decode method.
     /// </remarks>
     [SetsRequiredMembers]
-    protected BaseTaggedField(TaggedFieldTypes type, BitReader bitReader, short length, bool exactBits = false) : this(type, length)
+    protected BaseTaggedField(TaggedFieldTypes type, BitReader bitReader, short length) : this(type, length)
     {
         bitReader.ReadBits(Data, length * 5);
 
         // Account for padding
-        if (!exactBits && length * 5 % 8 != 0)
-        {
-            Data = Data[..^1];
-        }
+        var hasPadding = length * 5 % 8 != 0;
 
-        Value = Decode(Data);
+        Value = Decode(hasPadding ? Data[..^1] : Data);
     }
 
     /// <summary>
@@ -86,6 +87,7 @@ public abstract class BaseTaggedField<T>(TaggedFieldTypes type) : ITaggedField
     [SetsRequiredMembers]
     protected BaseTaggedField(TaggedFieldTypes type, short length) : this(type)
     {
+        LengthInBits = length;
         Data = new byte[(length * 5 + 7) / 8];
     }
 
@@ -108,6 +110,20 @@ public abstract class BaseTaggedField<T>(TaggedFieldTypes type) : ITaggedField
     /// This method should be implemented by the derived class
     /// </remarks>
     protected abstract byte[] Encode(T value);
+
+    protected byte[] AccountForPaddingWhenEncoding(byte[] value)
+    {
+        // Convert bytes from 8 bits to 5 bits
+        Bech32Encoder.ConvertBits(value, 8, 5, out var data);
+
+        // Save the length in bits
+        LengthInBits = (short)(data.Length * 5);
+
+        // Convert back to 8 bits to account for padding
+        Bech32Encoder.ConvertBits(data, 5, 8, out data);
+
+        return data;
+    }
 
     /// <inheritdoc/>
     public abstract bool IsValid();

@@ -3,7 +3,8 @@ using System.Text;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
-using BOLT11.Enums;
+using Common.BitUtils;
+using Enums;
 
 /// <summary>
 /// Tagged field for the description
@@ -55,7 +56,7 @@ public sealed class DescriptionTaggedField : BaseTaggedField<string>
     /// <inheritdoc/>
     public override bool IsValid()
     {
-        return Value != null;
+        return !string.IsNullOrWhiteSpace(Value);
     }
 
     /// <inheritdoc/>
@@ -69,6 +70,11 @@ public sealed class DescriptionTaggedField : BaseTaggedField<string>
     /// <returns>The description as a byte array</returns>
     protected override byte[] Encode(string value)
     {
-        return Encoding.UTF8.GetBytes(value)[..^1];
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException("Description cannot be null or empty", nameof(value));
+        }
+
+        return AccountForPaddingWhenEncoding(Encoding.UTF8.GetBytes(value));
     }
 }

@@ -2,8 +2,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
-using BOLT11.Enums;
 using BOLT9;
+using Common.BitUtils;
+using Enums;
 
 /// <summary>
 /// Tagged field for features
@@ -30,6 +31,7 @@ public sealed class FeaturesTaggedField : BaseTaggedField<Features>
     [SetsRequiredMembers]
     public FeaturesTaggedField(BitReader bitReader, short length) : base(TaggedFieldTypes.Features)
     {
+        LengthInBits = length;
         Value = Features.DeserializeFromBitReader(bitReader, (short)(length * 5));
         Data = Encode(Value);
     }
@@ -71,6 +73,6 @@ public sealed class FeaturesTaggedField : BaseTaggedField<Features>
     /// <seealso cref="Feature"/>
     protected override byte[] Encode(Features value)
     {
-        return value.SerializeToBits();
+        return AccountForPaddingWhenEncoding(value.SerializeToBits());
     }
 }

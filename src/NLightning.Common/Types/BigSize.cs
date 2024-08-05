@@ -1,6 +1,6 @@
 namespace NLightning.Common.Types;
 
-using Utils;
+using BitUtils;
 
 /// <summary>
 /// Represents a variable length integer.

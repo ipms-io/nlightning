@@ -4,6 +4,8 @@ using System.Text;
 
 namespace NLightning.Bolts.BOLT9;
 
+using Common.BitUtils;
+
 /// <summary>
 /// Represents the features supported by a node. <see href="https://github.com/lightning/bolts/blob/master/09-features.md">BOLT-9</see>
 /// </summary>
