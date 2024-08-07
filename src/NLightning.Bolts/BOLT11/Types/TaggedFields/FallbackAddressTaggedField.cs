@@ -60,12 +60,6 @@ public sealed class FallbackAddressTaggedField : ITaggedField
 
     public void WriteToBitWriter(BitWriter bitWriter)
     {
-        // Write type
-        bitWriter.WriteByteAsBits((byte)Type, 5);
-
-        // Write length
-        bitWriter.WriteInt16AsBits(Length, 10);
-
         // Write Address Type
         bitWriter.WriteByteAsBits(_data[0], 5);
 

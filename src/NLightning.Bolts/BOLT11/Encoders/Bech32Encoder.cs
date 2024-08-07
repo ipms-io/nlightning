@@ -1,4 +1,5 @@
 using System.Text;
+using NLightning.Common.BitUtils;
 
 namespace NLightning.Bolts.BOLT11.Encoders;
 
@@ -7,14 +8,22 @@ using NBitcoin.DataEncoders;
 
 public sealed class Bech32Encoder(string? hrp = null) : NBitcoin.DataEncoders.Bech32Encoder(hrp is null ? Encoding.UTF8.GetBytes(InvoiceConstants.PREFIX) : Encoding.UTF8.GetBytes(hrp))
 {
-    public string EncodeLightningInvoice(byte[] data)
+    public string EncodeLightningInvoice(BitWriter bitWriter, byte[] signature)
     {
         // Convert to 5 bits per byte
-        var invoiceData = ConvertBits(data.AsReadOnly(), 8, 5);
+        var convertedSignature = ConvertBits(signature.AsReadOnly(), 8, 5);
+        var convertedData = ConvertBits(bitWriter.ToArray().AsReadOnly(), 8, 5);
 
-        // 293 total
-        // 65 sig
-        // 119 data
+        // Check for padding
+        var expectedLength = bitWriter.TotalBits / 5;
+        if (convertedData.Length != expectedLength)
+        {
+            convertedData = convertedData[..expectedLength];
+        }
+
+        var invoiceData = new byte[104 + convertedData.Length];
+        convertedData.CopyTo(invoiceData, 0);
+        convertedSignature.CopyTo(invoiceData, convertedData.Length);
 
         return EncodeData(invoiceData, Bech32EncodingType.BECH32M);
     }

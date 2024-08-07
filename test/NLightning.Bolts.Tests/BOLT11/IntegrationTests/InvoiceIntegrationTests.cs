@@ -129,6 +129,8 @@ public class InvoiceIntegrationTests
 
             var invoiceString = invoice.Encode();
 
+            //357wnc5r2ueh7ck6q93dj32dlqnls087fxdwk8qakdyafkq3yap9us6v52vjjsrvywa6rt52cm9r9zqt8r2t7mlcwspyetp5h2tztugp9lfyql
+            //zv9pyhclz5mcmzlmlpvlk3huk5lnfxsjzamr8xy744tha7fvvrzpyg0x44z4wpf73y7qygaamrwvwlaxy5prpd4nqytj53u267j64acqqqs7qvgn
             // Assert
             Assert.Equal(testInvoice.INVOICE_STRING, invoiceString);
         }

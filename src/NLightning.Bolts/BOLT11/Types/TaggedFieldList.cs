@@ -133,6 +133,12 @@ public class TaggedFieldList : List<ITaggedField>
     {
         foreach (var taggedField in this)
         {
+            // Write type
+            bitWriter.WriteByteAsBits((byte)taggedField.Type, 5);
+
+            // Write length
+            bitWriter.WriteInt16AsBits(taggedField.Length, 10);
+
             taggedField.WriteToBitWriter(bitWriter);
         }
     }

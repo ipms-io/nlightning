@@ -11,7 +11,8 @@ public unsafe class BitWriter : IDisposable
     private byte* _buffer;
     private GCHandle _handle;
     private byte[] _managedBuffer;
-    private int _totalBits;
+
+    public int TotalBits { get; private set; }
 
     public BitWriter(int totalBits)
     {
@@ -19,7 +20,7 @@ public unsafe class BitWriter : IDisposable
         _managedBuffer = new byte[totalBytes];
         _handle = GCHandle.Alloc(_managedBuffer, GCHandleType.Pinned);
         _buffer = (byte*)_handle.AddrOfPinnedObject();
-        _totalBits = totalBits;
+        TotalBits = totalBits;
     }
 
     public void GrowByBits(int additionalBits)
@@ -36,7 +37,7 @@ public unsafe class BitWriter : IDisposable
         _handle.Free();
         _handle = GCHandle.Alloc(_managedBuffer, GCHandleType.Pinned);
         _buffer = (byte*)_handle.AddrOfPinnedObject();
-        _totalBits = requiredBits;
+        TotalBits = requiredBits;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -90,7 +91,7 @@ public unsafe class BitWriter : IDisposable
 
     public void WriteBit(bool bit)
     {
-        if (_bitOffset >= _totalBits)
+        if (_bitOffset >= TotalBits)
         {
             throw new InvalidOperationException("No more bits to write.");
         }
@@ -174,7 +175,7 @@ public unsafe class BitWriter : IDisposable
 
     public bool HasMoreBits(int requiredBits)
     {
-        return _bitOffset + requiredBits <= _totalBits;
+        return _bitOffset + requiredBits <= TotalBits;
     }
 
     public void SkipBits(int v)
@@ -184,7 +185,7 @@ public unsafe class BitWriter : IDisposable
 
     public byte[] ToArray()
     {
-        var bytes = new byte[(_totalBits + 7) / 8];
+        var bytes = new byte[(TotalBits + 7) / 8];
         for (var i = 0; i < bytes.Length; i++)
         {
             bytes[i] = _buffer[i];

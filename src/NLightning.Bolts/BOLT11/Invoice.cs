@@ -429,12 +429,15 @@ public class Invoice
             var taggedFields = TaggedFieldList.FromBitReader(bitReader);
 
             // TODO: Check feature bits
+
+            var invoice = new Invoice(hrp, network, amount, timestamp, taggedFields);
+
             // Get pubkey from tagged fields
             taggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField pubkey);
             // Check Signature
-            CheckSignature(signature, hrp, data, pubkey?.Value);
+            invoice.CheckSignature(signature, hrp, data, pubkey?.Value);
 
-            return new Invoice(hrp, network, amount, timestamp, taggedFields);
+            return invoice;
         }
         catch (Exception e)
         {
@@ -456,17 +459,15 @@ public class Invoice
 
         // Write the tagged fields
         TaggedFields.WriteToBitWriter(bitWriter);
-        var data = bitWriter.ToArray();
 
         // Sign the invoice
-        var signature = SignInvoice(HumanReadablePart, data, _key);
-
-        // Add the signature to the data
-        bitWriter.GrowByBits(520);
-        bitWriter.WriteBits(signature, 520);
+        var compactSignature = SignInvoice(HumanReadablePart, bitWriter, _key);
+        var signature = new byte[compactSignature.Signature.Length + 1];
+        compactSignature.Signature.CopyTo(signature, 0);
+        signature[^1] = (byte)compactSignature.RecoveryId;
 
         var bech32Encoder = new Bech32Encoder(HumanReadablePart);
-        return bech32Encoder.EncodeLightningInvoice(bitWriter.ToArray());
+        return bech32Encoder.EncodeLightningInvoice(bitWriter, signature);
     }
 
     #region Overrides
@@ -565,7 +566,7 @@ public class Invoice
         return millisatoshis;
     }
 
-    private static void CheckSignature(byte[] signature, string hrp, byte[] data, NBitcoin.PubKey? pubkey)
+    private void CheckSignature(byte[] signature, string hrp, byte[] data, PubKey? pubkey)
     {
         // Assemble the message (hrp + data)
         var message = new byte[hrp.Length + data.Length];
@@ -577,20 +578,20 @@ public class Invoice
         sha256.AppendData(message);
         var hash = new byte[HashConstants.HASH_LEN];
         sha256.GetHashAndReset(hash);
-        var nbitcoinHash = new NBitcoin.uint256(hash);
+        var nBitcoinHash = new uint256(hash);
 
         var recoveryId = (int)signature[^1];
         signature = signature[..^1];
-        var compactSignature = new NBitcoin.CompactSignature(recoveryId, signature);
+        var compactSignature = new CompactSignature(recoveryId, signature);
 
         // Check if recovery is necessary
         if (pubkey == null)
         {
-            pubkey = NBitcoin.PubKey.RecoverCompact(nbitcoinHash, compactSignature);
+            PayeePubKey = PubKey.RecoverCompact(nBitcoinHash, compactSignature);
             return;
         }
         else if (NBitcoin.Crypto.ECDSASignature.TryParseFromCompact(compactSignature.Signature, out var ecdsa)
-                && pubkey.Verify(nbitcoinHash, ecdsa))
+                && pubkey.Verify(nBitcoinHash, ecdsa))
         {
             return;
         }
@@ -598,10 +599,10 @@ public class Invoice
         throw new ArgumentException("Invalid signature in invoice");
     }
 
-    private static byte[] SignInvoice(string hrp, byte[] data, NBitcoin.Key key)
+    private static CompactSignature SignInvoice(string hrp, BitWriter bitWriter, Key key)
     {
-        // 6c6e62630b25fe64500d04444444444444444444444444444444444444444444444444444444444444444021a00008101820283038404800081018202830384048000810182028303840480810343f506c6561736520636f6e736964657220737570706f7274696e6720746869732070726f6a6563740500e08000
         // Assemble the message (hrp + data)
+        var data = bitWriter.ToArray();
         var message = new byte[hrp.Length + data.Length];
         Encoding.UTF8.GetBytes(hrp).CopyTo(message, 0);
         data.CopyTo(message, hrp.Length);
@@ -617,11 +618,10 @@ public class Invoice
             Array.Reverse(hash);
         }
 
-        var nbitcoinHash = new uint256(hash);
+        var nBitcoinHash = new uint256(hash);
 
         // Sign the hash
-        var ecdsa = key.Sign(nbitcoinHash);
-        return ecdsa.ToCompact();
+        return key.SignCompact(nBitcoinHash);
     }
 
     private static Network GetNetwork(string invoiceString)

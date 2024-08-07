@@ -31,12 +31,6 @@ public sealed class PayeePubKeyTaggedField : ITaggedField
 
     public void WriteToBitWriter(BitWriter bitWriter)
     {
-        // Write type
-        bitWriter.WriteByteAsBits((byte)Type, 5);
-
-        // Write length
-        bitWriter.WriteInt16AsBits(Length, 10);
-
         // Write data
         bitWriter.WriteBits(Value.ToBytes(), Length * 5);
     }
