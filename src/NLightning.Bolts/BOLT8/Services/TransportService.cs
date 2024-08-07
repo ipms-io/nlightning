@@ -59,7 +59,7 @@ public sealed class TransportService : ITransportService
         var writeBuffer = new byte[50];
         var stream = _tcpClient.GetStream();
 
-        CancellationTokenSource networkTimeoutCancelationTokenSource = new();
+        CancellationTokenSource networkTimeoutCancellationTokenSource = new();
 
         if (_handshakeService.IsInitiator)
         {
@@ -67,20 +67,20 @@ public sealed class TransportService : ITransportService
             {
                 // Write Act One
                 var len = _handshakeService.PerformStep(ProtocolConstants.EMPTY_MESSAGE, writeBuffer);
-                await stream.WriteAsync(writeBuffer.AsMemory()[..len], networkTimeoutCancelationTokenSource.Token);
-                await stream.FlushAsync(networkTimeoutCancelationTokenSource.Token);
+                await stream.WriteAsync(writeBuffer.AsMemory()[..len], networkTimeoutCancellationTokenSource.Token);
+                await stream.FlushAsync(networkTimeoutCancellationTokenSource.Token);
 
                 // Read exactly 50 bytes
-                networkTimeoutCancelationTokenSource = new CancellationTokenSource(networkTimeout);
+                networkTimeoutCancellationTokenSource = new CancellationTokenSource(networkTimeout);
                 var readBuffer = new byte[50];
-                await stream.ReadExactlyAsync(readBuffer, networkTimeoutCancelationTokenSource.Token);
-                networkTimeoutCancelationTokenSource.Dispose();
+                await stream.ReadExactlyAsync(readBuffer, networkTimeoutCancellationTokenSource.Token);
+                networkTimeoutCancellationTokenSource.Dispose();
 
                 // Read Act Two and Write Act Three
                 writeBuffer = new byte[66];
                 len = _handshakeService.PerformStep(readBuffer, writeBuffer);
-                await stream.WriteAsync(writeBuffer.AsMemory()[..len], networkTimeoutCancelationTokenSource.Token);
-                await stream.FlushAsync(networkTimeoutCancelationTokenSource.Token);
+                await stream.WriteAsync(writeBuffer.AsMemory()[..len]);
+                await stream.FlushAsync();
             }
             catch (Exception e)
             {
@@ -94,9 +94,9 @@ public sealed class TransportService : ITransportService
             try
             {
                 // Read exactly 50 bytes
-                networkTimeoutCancelationTokenSource = new CancellationTokenSource(networkTimeout);
+                networkTimeoutCancellationTokenSource = new CancellationTokenSource(networkTimeout);
                 var readBuffer = new byte[50];
-                await stream.ReadExactlyAsync(readBuffer, networkTimeoutCancelationTokenSource.Token);
+                await stream.ReadExactlyAsync(readBuffer, networkTimeoutCancellationTokenSource.Token);
 
                 // Read Act One and Write Act Two
                 var len = _handshakeService.PerformStep(readBuffer, writeBuffer);
@@ -105,10 +105,10 @@ public sealed class TransportService : ITransportService
 
                 // Read exactly 66 bytes
                 act = 3;
-                networkTimeoutCancelationTokenSource = new CancellationTokenSource(networkTimeout);
+                networkTimeoutCancellationTokenSource = new CancellationTokenSource(networkTimeout);
                 readBuffer = new byte[66];
-                await stream.ReadExactlyAsync(readBuffer, networkTimeoutCancelationTokenSource.Token);
-                networkTimeoutCancelationTokenSource.Dispose();
+                await stream.ReadExactlyAsync(readBuffer, networkTimeoutCancellationTokenSource.Token);
+                networkTimeoutCancellationTokenSource.Dispose();
 
                 // Read Act Three
                 _ = _handshakeService.PerformStep(readBuffer, writeBuffer);
