@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+using NLightning.Bolts.BOLT11.Interfaces;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
@@ -11,58 +11,57 @@ using Enums;
 /// <remarks>
 /// The metadata is a variable length field that can be used to store additional information
 /// </remarks>
-/// <seealso cref="BaseTaggedField{T}"/>
-/// <seealso cref="TaggedFieldTypes"/>
-public sealed class MetadataTaggedField : BaseTaggedField<byte[]>
+/// <seealso cref="ITaggedField"/>
+public sealed class MetadataTaggedField : ITaggedField
 {
-    /// <summary>
-    /// Constructor for MetadataTaggedField from a BitReader and a length
-    /// </summary>
-    /// <param name="bitReader">The BitReader to read the data from</param>
-    /// <param name="length">The length of the tagged field</param>
-    /// <remarks>
-    /// This constructor is used to create a MetadataTaggedField from a BitReader and a length.
-    /// The Value property is set to the decoded value.
-    /// </remarks>
-    /// <seealso cref="BitReader"/>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public MetadataTaggedField(BitReader bitReader, short length) : base(TaggedFieldTypes.Metadata, bitReader, length)
-    { }
+    public TaggedFieldTypes Type => TaggedFieldTypes.METADATA;
+    public byte[] Value { get; }
+    public short Length { get; }
 
     /// <summary>
-    /// Constructor for MetadataTaggedField from a value
+    /// Initializes a new instance of the <see cref="MetadataTaggedField"/> class.
     /// </summary>
-    /// <param name="value">The value of the tagged field</param>
-    /// <remarks>
-    /// This constructor is used to create a MetadataTaggedField from a value.
-    /// The Data property is set to the encoded value.
-    /// </remarks>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public MetadataTaggedField(byte[] value) : base(TaggedFieldTypes.Metadata, value)
-    { }
-
-    /// <inheritdoc/>
-    public override bool IsValid()
+    /// <param name="value">The metadata bytes</param>
+    public MetadataTaggedField(byte[] value)
     {
-        return Value != null;
+        Value = value;
+        Length = (short)((value.Length * 8 - 7) / 5);
+    }
+
+    public void WriteToBitWriter(BitWriter bitWriter)
+    {
+        // Write type
+        bitWriter.WriteByteAsBits((byte)Type, 5);
+
+        // Write length
+        bitWriter.WriteInt16AsBits(Length, 10);
+
+        // Write data
+        bitWriter.WriteBits(Value, Length * 5);
     }
 
     /// <inheritdoc/>
-    /// <returns>The metadata as a byte array</returns>
-    protected override byte[] Decode(byte[] data)
+    public bool IsValid()
     {
-        return data;
+        return true;
     }
 
-    /// <inheritdoc/>
-    /// <returns>The metadata as a byte array</returns>
-    protected override byte[] Encode(byte[] value)
+    public object GetValue()
     {
-        return AccountForPaddingWhenEncoding(value);
+        return Value;
     }
 
+    public static MetadataTaggedField FromBitReader(BitReader bitReader, short length)
+    {
+        if (length <= 0)
+        {
+            throw new ArgumentException("Invalid length for MetadataTaggedField. Length must be greater than 0", nameof(length));
+        }
+
+        // Read the data from the BitReader
+        var data = new byte[(length * 5 + 7) / 8];
+        bitReader.ReadBits(data, length * 5);
+
+        return new MetadataTaggedField(length * 5 % 8 > 0 ? data[..^1] : data);
+    }
 }

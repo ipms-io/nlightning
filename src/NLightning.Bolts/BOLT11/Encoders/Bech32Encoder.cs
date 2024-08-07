@@ -2,26 +2,26 @@ using System.Text;
 
 namespace NLightning.Bolts.BOLT11.Encoders;
 
-using BOLT11.Constants;
+using Constants;
 using NBitcoin.DataEncoders;
 
 public sealed class Bech32Encoder(string? hrp = null) : NBitcoin.DataEncoders.Bech32Encoder(hrp is null ? Encoding.UTF8.GetBytes(InvoiceConstants.PREFIX) : Encoding.UTF8.GetBytes(hrp))
 {
-    public string EncodeLightningInvoice(byte[] data, byte[] signature)
+    public string EncodeLightningInvoice(byte[] data)
     {
-        var invoiceData = new byte[data.Length + signature.Length];
-        data.CopyTo(invoiceData, 0);
-        signature.CopyTo(invoiceData, data.Length);
-
         // Convert to 5 bits per byte
-        var convertedData = ConvertBits(invoiceData.AsReadOnly(), 8, 5);
+        var invoiceData = ConvertBits(data.AsReadOnly(), 8, 5);
 
-        return EncodeData(convertedData, Bech32EncodingType.BECH32M);
+        // 293 total
+        // 65 sig
+        // 119 data
+
+        return EncodeData(invoiceData, Bech32EncodingType.BECH32M);
     }
 
     public static void DecodeLightningInvoice(string invoiceString, out byte[] data, out byte[] signature, out string hrp)
     {
-        // Be lenient and coverti it all to lower case
+        // Be lenient and covert it all to lower case
         invoiceString = invoiceString.ToLowerInvariant();
 
         // Validate the prefix
@@ -32,17 +32,14 @@ public sealed class Bech32Encoder(string? hrp = null) : NBitcoin.DataEncoders.Be
 
         // Extract human readable part
         var separatorIndex = invoiceString.LastIndexOf(InvoiceConstants.SEPARATOR);
-        if (separatorIndex == -1)
+        switch (separatorIndex)
         {
-            throw new ArgumentException("Invalid invoice format", nameof(invoiceString));
-        }
-        else if (separatorIndex == 0)
-        {
-            throw new ArgumentException("Missing human readable part in invoice", nameof(invoiceString));
-        }
-        else if (separatorIndex > 21)
-        {
-            throw new ArgumentException("Human readable part too long in invoice", nameof(invoiceString));
+            case -1:
+                throw new ArgumentException("Invalid invoice format", nameof(invoiceString));
+            case 0:
+                throw new ArgumentException("Missing human readable part in invoice", nameof(invoiceString));
+            case > 21:
+                throw new ArgumentException("Human readable part too long in invoice", nameof(invoiceString));
         }
 
         hrp = invoiceString[..separatorIndex];

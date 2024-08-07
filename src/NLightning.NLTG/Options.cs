@@ -64,7 +64,7 @@ public class Options
     public Options()
     {
         Peers = [];
-        Network = Network.MainNet;
+        Network = Network.MAIN_NET;
         LogFile = string.Format(LOG_FILE, Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), Network);
         LogLevel = Serilog.Events.LogEventLevel.Warning;
         ConfigFile = string.Format(CONFIG_FILE, Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), Network);
@@ -133,15 +133,12 @@ public class Options
         {
             LogFile = !string.IsNullOrWhiteSpace(LogFile) ? LogFile : other.LogFile,
             LogLevel = LogLevel != Serilog.Events.LogEventLevel.Warning ? LogLevel : other.LogLevel,
-            Network = Network != Network.MainNet ? Network : other.Network,
+            Network = Network != Network.MAIN_NET ? Network : other.Network,
             Peers = Peers
         };
 
         // Merge Peers and filter by unique
-        if (other.Peers != null)
-        {
-            merged.Peers.AddRange(other.Peers.Where(p => !Peers.Contains(p)));
-        }
+        merged.Peers.AddRange(other.Peers.Where(p => !Peers.Contains(p)));
 
         return merged;
     }
@@ -170,7 +167,7 @@ public class Options
         }
 
         /// <inheritdoc/>
-        public object? ReadYaml(IParser parser, Type type)
+        public object ReadYaml(IParser parser, Type type)
         {
             var value = parser.Consume<Scalar>().Value;
             parser.MoveNext();

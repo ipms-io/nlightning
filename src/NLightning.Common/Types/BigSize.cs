@@ -20,34 +20,34 @@ public readonly struct BigSize(ulong value) : IComparable
     /// <summary>
     /// Serializes a big size to a BinaryWriter.
     /// </summary>
-    /// <param name="writer">The writer to serialize to.</param>
+    /// <param name="stream">The stream to serialize to.</param>
     public async Task SerializeAsync(Stream stream)
     {
         if (Value < 0xfd)
         {
-            await stream.WriteAsync(new byte[1] { (byte)Value });
+            await stream.WriteAsync(new[] { (byte)Value });
         }
         else if (Value < 0x10000)
         {
-            await stream.WriteAsync(new byte[1] { 0xfd });
-            await stream.WriteAsync(EndianBitConverter.GetBytesBE((ushort)Value));
+            await stream.WriteAsync(new byte[] { 0xfd });
+            await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian((ushort)Value));
         }
         else if (Value < 0x100000000)
         {
-            await stream.WriteAsync(new byte[1] { 0xfe });
-            await stream.WriteAsync(EndianBitConverter.GetBytesBE((uint)Value));
+            await stream.WriteAsync(new byte[] { 0xfe });
+            await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian((uint)Value));
         }
         else
         {
-            await stream.WriteAsync(new byte[1] { 0xff });
-            await stream.WriteAsync(EndianBitConverter.GetBytesBE(Value));
+            await stream.WriteAsync(new byte[] { 0xff });
+            await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(Value));
         }
     }
 
     /// <summary>
     /// Deserializes a big size from a BinaryReader.
     /// </summary>
-    /// <param name="reader">The reader to deserialize from.</param>
+    /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized big size.</returns>
     /// <exception cref="ArgumentException">Thrown when the stream is empty or insufficient data is available.</exception>
     public static async Task<BigSize> DeserializeAsync(Stream stream)
@@ -75,7 +75,7 @@ public readonly struct BigSize(ulong value) : IComparable
 
             var bytes = new byte[2];
             await stream.ReadExactlyAsync(bytes);
-            value = EndianBitConverter.ToUInt16BE(bytes);
+            value = EndianBitConverter.ToUInt16BigEndian(bytes);
         }
         else if (prefix[0] == 0xfe)
         {
@@ -86,7 +86,7 @@ public readonly struct BigSize(ulong value) : IComparable
 
             var bytes = new byte[4];
             await stream.ReadExactlyAsync(bytes);
-            value = EndianBitConverter.ToUInt32BE(bytes);
+            value = EndianBitConverter.ToUInt32BigEndian(bytes);
         }
         else
         {
@@ -97,7 +97,7 @@ public readonly struct BigSize(ulong value) : IComparable
 
             var bytes = new byte[8];
             await stream.ReadExactlyAsync(bytes);
-            value = EndianBitConverter.ToUInt64BE(bytes);
+            value = EndianBitConverter.ToUInt64BigEndian(bytes);
         }
 
         return new BigSize(value);

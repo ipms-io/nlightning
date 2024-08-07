@@ -3,9 +3,9 @@ using System.Net.Sockets;
 
 namespace NLightning.Bolts.BOLT1.Services;
 
-using BOLT1.Interfaces;
-using BOLT1.Primitives;
-using NLightning.Bolts.Exceptions;
+using Exceptions;
+using Interfaces;
+using Primitives;
 
 /// <summary>
 /// Service for managing peers.
@@ -50,8 +50,8 @@ public sealed class PeerService(NodeOptions nodeOptions, ITransportServiceFactor
         var transportService = _transportServiceFactory.CreateTransportService(true, _nodeOptions.KeyPair.PrivateKey.ToBytes(), peerAddress.PubKey.ToBytes(), tcpClient);
         await transportService.InitializeAsync(_nodeOptions.NetworkTimeout);
 
-        var peer = new Peer(_nodeOptions, _messageServiceFactory.CreateMessageService(transportService), _pingPongServiceFactory.CreatePingPongService(_nodeOptions.NetworkTimeout), peerAddress, false);
-        peer.DisconnectEvent += (sender, e) =>
+        var peer = new Peer(_nodeOptions, _messageServiceFactory.CreateMessageService(transportService), _pingPongServiceFactory.CreatePingPongService(_nodeOptions.NetworkTimeout), false);
+        peer.DisconnectEvent += (_, _) =>
         {
             _peers.Remove(peerAddress.PubKey);
         };
@@ -78,9 +78,9 @@ public sealed class PeerService(NodeOptions nodeOptions, ITransportServiceFactor
         var peerAddress = new PeerAddress(transportService.RemoteStaticPublicKey, ipAddress, port);
 
         // Create the peer
-        var peer = new Peer(_nodeOptions, _messageServiceFactory.CreateMessageService(transportService), _pingPongServiceFactory.CreatePingPongService(_nodeOptions.NetworkTimeout), peerAddress, true);
+        var peer = new Peer(_nodeOptions, _messageServiceFactory.CreateMessageService(transportService), _pingPongServiceFactory.CreatePingPongService(_nodeOptions.NetworkTimeout), true);
 
-        peer.DisconnectEvent += (sender, e) =>
+        peer.DisconnectEvent += (_, _) =>
         {
             _peers.Remove(peerAddress.PubKey);
         };

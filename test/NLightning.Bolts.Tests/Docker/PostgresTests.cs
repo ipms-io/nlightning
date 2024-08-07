@@ -13,19 +13,18 @@ using Utils;
 [Collection("postgres")]
 public class PostgresTests
 {
-    private readonly PostgresFixture _postgresFixture;
     private readonly ServiceProvider _serviceProvider;
 
     public PostgresTests(PostgresFixture fixture, ITestOutputHelper output)
     {
-        _postgresFixture = fixture;
+        var postgresFixture = fixture;
 
         Console.SetOut(new TestOutputWriter(output));
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddDbContextFactory<NLightningContext>(
             options =>
-                options.UseNpgsql(_postgresFixture.DbConnectionString, x =>
+                options.UseNpgsql(postgresFixture.DbConnectionString, x =>
                     {
                         x.MigrationsAssembly("NLightning.Models.Postgres");
                     })
@@ -33,9 +32,9 @@ public class PostgresTests
                     .UseSnakeCaseNamingConvention());
         serviceCollection.AddDbContext<NLightningContext>(x =>
         {
-            x.UseNpgsql(_postgresFixture.DbConnectionString, x =>
+            x.UseNpgsql(postgresFixture.DbConnectionString, y =>
             {
-                x.MigrationsAssembly("NLightning.Models.Postgres");
+                y.MigrationsAssembly("NLightning.Models.Postgres");
             })
                 .EnableSensitiveDataLogging()
                 .UseSnakeCaseNamingConvention();
@@ -47,7 +46,7 @@ public class PostgresTests
         {
             Task.Delay(100).Wait();
         }
-        context!.Database.Migrate();
+        context.Database.Migrate();
     }
 
     [Fact]

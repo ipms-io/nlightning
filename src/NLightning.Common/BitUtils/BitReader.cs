@@ -1,22 +1,22 @@
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace NLightning.Common.BitUtils;
 
-public unsafe class BitReader
+public unsafe class BitReader : IDisposable
 {
-    public int BitOffset { get; private set; } = 0;
+    private int _bitOffset;
+    private byte* _buffer;
+    private GCHandle _handle;
 
-    public readonly byte* Buffer;
-    public readonly int TotalBits;
+    private readonly int _totalBits;
 
     public BitReader(byte[] buffer)
     {
-        fixed (byte* p = buffer)
-        {
-            Buffer = p;
-            TotalBits = buffer.Length * 8;
-        }
+        _handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+        _buffer = (byte*)_handle.AddrOfPinnedObject();
+        _totalBits = buffer.Length * 8;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -40,15 +40,15 @@ public unsafe class BitReader
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int ReadBits(byte* value, int valueOffset, int bitLength)
+    private int ReadBits(byte* value, int valueOffset, int bitLength)
     {
-        var byteOffset = BitOffset / 8;
-        var shift = (int)((uint)BitOffset % 8);
+        var byteOffset = _bitOffset / 8;
+        var shift = (int)((uint)_bitOffset % 8);
 
         if (shift == 0)
         {
             // copy bytes to value 
-            Unsafe.CopyBlock(value + valueOffset, Buffer + byteOffset, (uint)(bitLength / 8 + (bitLength % 8 == 0 ? 0 : 1)));
+            Unsafe.CopyBlock(value + valueOffset, _buffer + byteOffset, (uint)(bitLength / 8 + (bitLength % 8 == 0 ? 0 : 1)));
 
             // mask extra bits 
             if (bitLength % 8 != 0)
@@ -56,7 +56,7 @@ public unsafe class BitReader
                 value[valueOffset + bitLength / 8] &= (byte)(0xFF << (8 - bitLength % 8));
             }
 
-            BitOffset += bitLength;
+            _bitOffset += bitLength;
 
             return bitLength;
         }
@@ -64,31 +64,31 @@ public unsafe class BitReader
         var bytesToRead = bitLength / 8 + (shift > 0 ? 1 : 0);
         for (var i = 0; i < bytesToRead; i++)
         {
-            var left = (byte)(Buffer[byteOffset + i] << shift);
-            var right = (byte)((Buffer[byteOffset + i + 1] & (i == bytesToRead - 1 ? 0xFF << (8 - bitLength % 8) : 0xFF)) >> (8 - shift));
+            var left = (byte)(_buffer[byteOffset + i] << shift);
+            var right = (byte)((_buffer[byteOffset + i + 1] & (i == bytesToRead - 1 ? 0xFF << (8 - bitLength % 8) : 0xFF)) >> (8 - shift));
 
             value[valueOffset + i] = (byte)(left | right);
         }
 
-        BitOffset += bitLength;
+        _bitOffset += bitLength;
         return bitLength;
     }
 
     public bool ReadBit()
     {
-        if (BitOffset >= TotalBits)
+        if (_bitOffset >= _totalBits)
         {
             throw new InvalidOperationException("No more bits to read.");
         }
 
-        var byteIndex = BitOffset / 8;
-        var bitIndex = BitOffset % 8;
+        var byteIndex = _bitOffset / 8;
+        var bitIndex = _bitOffset % 8;
 
         // Extract the bit at the current BitOffset
-        var bit = (Buffer[byteIndex] >> (7 - bitIndex)) & 1;
+        var bit = (_buffer[byteIndex] >> (7 - bitIndex)) & 1;
 
         // Increment the BitOffset
-        BitOffset++;
+        _bitOffset++;
 
         return bit == 1;
     }
@@ -106,7 +106,7 @@ public unsafe class BitReader
         var bytes = new byte[sizeof(short)];
         ReadBits(bytes, bits);
 
-        if ((bigEndian && System.BitConverter.IsLittleEndian) || (!bigEndian && !System.BitConverter.IsLittleEndian))
+        if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
         {
             Array.Reverse(bytes);
         }
@@ -115,12 +115,26 @@ public unsafe class BitReader
         return (short)((BinaryPrimitives.ReadInt16LittleEndian(bytes) >> (sizeof(short) * 8 - bits)) & mask);
     }
 
+    public ushort ReadUInt16FromBits(int bits, bool bigEndian = true)
+    {
+        var bytes = new byte[sizeof(ushort)];
+        ReadBits(bytes, bits);
+
+        if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
+        {
+            Array.Reverse(bytes);
+        }
+
+        var mask = (1 << bits) - 1;
+        return (ushort)((BinaryPrimitives.ReadUInt16LittleEndian(bytes) >> (sizeof(ushort) * 8 - bits)) & mask);
+    }
+
     public int ReadInt32FromBits(int bits, bool bigEndian = true)
     {
         var bytes = new byte[sizeof(int)];
         ReadBits(bytes, bits);
 
-        if ((bigEndian && System.BitConverter.IsLittleEndian) || (!bigEndian && !System.BitConverter.IsLittleEndian))
+        if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
         {
             Array.Reverse(bytes);
         }
@@ -134,7 +148,7 @@ public unsafe class BitReader
         var bytes = new byte[sizeof(long)];
         ReadBits(bytes, bits);
 
-        if ((bigEndian && System.BitConverter.IsLittleEndian) || (!bigEndian && !System.BitConverter.IsLittleEndian))
+        if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
         {
             Array.Reverse(bytes);
         }
@@ -144,11 +158,32 @@ public unsafe class BitReader
 
     public bool HasMoreBits(int requiredBits)
     {
-        return BitOffset + requiredBits <= TotalBits;
+        return _bitOffset + requiredBits <= _totalBits;
     }
 
     public void SkipBits(int v)
     {
-        BitOffset += v;
+        _bitOffset += v;
+    }
+
+    private void ReleaseUnmanagedResources()
+    {
+        if (_handle.IsAllocated)
+        {
+            _handle.Free();
+        }
+
+        _buffer = null;
+    }
+
+    public void Dispose()
+    {
+        ReleaseUnmanagedResources();
+        GC.SuppressFinalize(this);
+    }
+
+    ~BitReader()
+    {
+        ReleaseUnmanagedResources();
     }
 }

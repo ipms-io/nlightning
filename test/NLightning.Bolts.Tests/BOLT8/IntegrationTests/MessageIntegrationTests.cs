@@ -5,7 +5,7 @@ namespace NLightning.Bolts.Tests.BOLT8.IntegrationTests;
 using Bolts.BOLT8.Constants;
 using Utils;
 
-public partial class MessageIntegrationTests
+public class MessageIntegrationTests
 {
     [Fact]
     public void Given_TwoParties_When_MessageIsSent_Then_MessageIsReceived()

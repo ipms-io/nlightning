@@ -2,9 +2,9 @@ using System.Runtime.Serialization;
 
 namespace NLightning.Bolts.BOLT1.Messages;
 
-using Bolts.Base;
-using Bolts.Exceptions;
+using Base;
 using Constants;
+using Exceptions;
 using Payloads;
 
 /// <summary>
@@ -16,9 +16,11 @@ using Payloads;
 /// </remarks>
 /// <param name="payload">The init payload.</param>
 /// <param name="extension">The TLV extension.</param>
-public sealed class InitMessage(InitPayload payload, TLVStream? extension = null) : BaseMessage(MessageTypes.INIT, payload, extension)
+public sealed class InitMessage(InitPayload payload, TlvStream? extension = null) : BaseMessage(MessageTypes.INIT, payload, extension)
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// The payload of the message.
+    /// </summary>
     public new InitPayload Payload { get => (InitPayload)base.Payload; }
 
     /// <summary>
@@ -35,7 +37,7 @@ public sealed class InitMessage(InitPayload payload, TLVStream? extension = null
             var payload = await InitPayload.DeserializeAsync(stream);
 
             // Deserialize extension if available
-            var extension = await TLVStream.DeserializeAsync(stream);
+            var extension = await TlvStream.DeserializeAsync(stream);
 
             return new InitMessage(payload, extension);
         }

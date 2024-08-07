@@ -2,10 +2,10 @@ using System.Text;
 
 namespace NLightning.Bolts.Tests.BOLT1.Messages;
 
-using BOLT1.Mock;
 using Bolts.BOLT1.Messages;
 using Bolts.BOLT1.Payloads;
-using Bolts.Exceptions;
+using Exceptions;
+using Mock;
 
 public class WarningMessageTests
 {

@@ -1,10 +1,11 @@
-using System.Diagnostics.CodeAnalysis;
 using NBitcoin;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
 using Common.BitUtils;
+using Constants;
 using Enums;
+using Interfaces;
 
 /// <summary>
 /// Tagged field for the payee public key
@@ -12,59 +13,56 @@ using Enums;
 /// <remarks>
 /// The payee public key is a 33 byte public key that is used to identify the payee
 /// </remarks>
-/// <seealso cref="BaseTaggedField{T}"/>
-/// <seealso cref="TaggedFieldTypes"/>
-/// <seealso cref="PubKey"/>
-public sealed class PayeePubKeyTaggedField : BaseTaggedField<PubKey>
+/// <seealso cref="ITaggedField"/>
+public sealed class PayeePubKeyTaggedField : ITaggedField
 {
-    /// <summary>
-    /// Constructor for PayeePubKeyTaggedField from a BitReader and a length
-    /// </summary>
-    /// <param name="buffer">The BitReader to read the data from</param>
-    /// <param name="length">The length of the tagged field</param>
-    /// <remarks>
-    /// This constructor is used to create a PayeePubKeyTaggedField from a BitReader and a length.
-    /// The Value property is set to the decoded value.
-    /// </remarks>
-    /// <seealso cref="BitReader"/>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public PayeePubKeyTaggedField(BitReader buffer, short length) : base(TaggedFieldTypes.PayeePubKey, buffer, length)
-    { }
+    public TaggedFieldTypes Type => TaggedFieldTypes.PAYEE_PUB_KEY;
+    public PubKey Value { get; }
+    public short Length => TaggedFieldConstants.PAYEE_PUBKEY_LENGTH;
 
     /// <summary>
-    /// Constructor for PayeePubKeyTaggedField from a value
+    /// Initializes a new instance of the <see cref="ExpiryTimeTaggedField"/> class.
     /// </summary>
-    /// <param name="value">The value of the tagged field</param>
-    /// <remarks>
-    /// This constructor is used to create a PayeePubKeyTaggedField from a value.
-    /// The Data property is set to the encoded value.
-    /// </remarks>
-    /// <seealso cref="PubKey"/>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public PayeePubKeyTaggedField(PubKey value) : base(TaggedFieldTypes.PayeePubKey, value)
-    { }
-
-    /// <inheritdoc/>
-    public override bool IsValid()
+    /// <param name="value">The Expiry Time in seconds</param>
+    public PayeePubKeyTaggedField(PubKey value)
     {
-        return Data.Length == 33;
+        Value = value;
+    }
+
+    public void WriteToBitWriter(BitWriter bitWriter)
+    {
+        // Write type
+        bitWriter.WriteByteAsBits((byte)Type, 5);
+
+        // Write length
+        bitWriter.WriteInt16AsBits(Length, 10);
+
+        // Write data
+        bitWriter.WriteBits(Value.ToBytes(), Length * 5);
     }
 
     /// <inheritdoc/>
-    /// <returns>The payee public key as a PubKey</returns>
-    protected override PubKey Decode(byte[] data)
+    public bool IsValid()
     {
-        return new PubKey(data);
+        return true;
     }
 
-    /// <inheritdoc/>
-    /// <returns>The payee public key as a PubKey</returns>
-    protected override byte[] Encode(PubKey value)
+    public object GetValue()
     {
-        return AccountForPaddingWhenEncoding(value.ToBytes());
+        return Value;
+    }
+
+    public static PayeePubKeyTaggedField FromBitReader(BitReader bitReader, short length)
+    {
+        if (length != TaggedFieldConstants.PAYEE_PUBKEY_LENGTH)
+        {
+            throw new ArgumentException($"Invalid length for DescriptionHashTaggedField. Expected {TaggedFieldConstants.PAYEE_PUBKEY_LENGTH}, but got {length}");
+        }
+
+        // Read the data from the BitReader
+        var data = new byte[(TaggedFieldConstants.PAYEE_PUBKEY_LENGTH * 5 + 7) / 8];
+        bitReader.ReadBits(data, length * 5);
+
+        return new PayeePubKeyTaggedField(new PubKey(data));
     }
 }

@@ -4,7 +4,7 @@ using Bolts.BOLT8.Services;
 using Mock;
 using Utils;
 
-public partial class HandshakeServiceTests
+public class HandshakeServiceTests
 {
     private readonly Mock<FakeHandshakeState> _handshakeStateMock;
 

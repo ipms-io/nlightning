@@ -8,12 +8,12 @@ namespace NLightning.Common.Types;
 /// <param name="type">A message-specific, 64-bit identifier for the TLV</param>
 /// <param name="length">The length of the value</param>
 /// <param name="value">The value</param>
-public class TLV(BigSize type, BigSize length, byte[] value) : IEquatable<TLV>
+public class Tlv(BigSize type, BigSize length, byte[] value) : IEquatable<Tlv>
 {
     /// <summary>
     /// The type of the TLV
     /// </summary>
-    public BigSize Type { get; set; } = type;
+    public BigSize Type => type;
 
     /// <summary>
     /// The length of the value
@@ -33,7 +33,7 @@ public class TLV(BigSize type, BigSize length, byte[] value) : IEquatable<TLV>
     /// <remarks>
     /// The length of the value is automatically calculated
     /// </remarks>
-    public TLV(BigSize type, byte[] value) : this(type, value.Length, value)
+    public Tlv(BigSize type, byte[] value) : this(type, value.Length, value)
     { }
 
     /// <summary>
@@ -43,7 +43,7 @@ public class TLV(BigSize type, BigSize length, byte[] value) : IEquatable<TLV>
     /// <remarks>
     /// Used internally to create a TLV with a length of 0 and an empty value.
     /// </remarks>
-    internal TLV(BigSize type) : this(type, 0, [])
+    internal Tlv(BigSize type) : this(type, 0, [])
     { }
 
     /// <summary>
@@ -70,10 +70,10 @@ public class TLV(BigSize type, BigSize length, byte[] value) : IEquatable<TLV>
     /// <summary>
     /// Deserialize a TLV from a stream
     /// </summary>
-    /// <param name="reader">The reader to use</param>
+    /// <param name="stream">The stream to use</param>
     /// <returns>The TLV</returns>
     /// <exception cref="SerializationException">Error deserializing TLV or any of it's parts</exception>
-    public static async Task<TLV> DeserializeAsync(Stream stream)
+    public static async Task<Tlv> DeserializeAsync(Stream stream)
     {
         try
         {
@@ -82,7 +82,7 @@ public class TLV(BigSize type, BigSize length, byte[] value) : IEquatable<TLV>
             var value = new byte[length];
             await stream.ReadExactlyAsync(value);
 
-            return new TLV(type, length, value);
+            return new Tlv(type, length, value);
         }
         catch (Exception e)
         {
@@ -101,7 +101,7 @@ public class TLV(BigSize type, BigSize length, byte[] value) : IEquatable<TLV>
     /// </summary>
     /// <param name="other">The other TLV</param>
     /// <returns>true if the specified object is equal to the current object; otherwise, false.</returns>
-    public bool Equals(TLV? other)
+    public bool Equals(Tlv? other)
     {
         return other?.Type == Type;
     }
@@ -109,6 +109,6 @@ public class TLV(BigSize type, BigSize length, byte[] value) : IEquatable<TLV>
     /// <inheritdoc />
     public override bool Equals(object? obj)
     {
-        return obj is TLV tlv && Equals(tlv);
+        return obj is Tlv tlv && Equals(tlv);
     }
 }

@@ -3,8 +3,8 @@ using System.Text;
 namespace NLightning.Bolts.Tests.BOLT1.Payloads;
 
 using Bolts.BOLT1.Payloads;
-using Common.Types;
 using Common.BitUtils;
+using Common.Types;
 
 public class ErrorPayloadTests
 {
@@ -36,8 +36,8 @@ public class ErrorPayloadTests
         // Assert
         memoryStream.Seek(0, SeekOrigin.Begin);
         var expectedLengthBytes = new byte[2];
-        await memoryStream.ReadAsync(expectedLengthBytes.AsMemory(0, 2));
+        _ = await memoryStream.ReadAsync(expectedLengthBytes.AsMemory(0, 2));
 
-        Assert.Equal(0, EndianBitConverter.ToUInt16BE(expectedLengthBytes));
+        Assert.Equal(0, EndianBitConverter.ToUInt16BigEndian(expectedLengthBytes));
     }
 }

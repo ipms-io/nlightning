@@ -30,15 +30,15 @@ public static class ArgumentOptionParser
             {
                 if (parsedArgs.TestNet)
                 {
-                    opts.Network = Network.TestNet;
+                    opts.Network = Network.TEST_NET;
                 }
                 else if (parsedArgs.RegTest)
                 {
-                    opts.Network = Network.RegTest;
+                    opts.Network = Network.REG_TEST;
                 }
                 else if (parsedArgs.SigNet)
                 {
-                    opts.Network = Network.SigNet;
+                    opts.Network = Network.SIG_NET;
                 }
             }
 

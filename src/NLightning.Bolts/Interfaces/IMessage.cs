@@ -18,7 +18,7 @@ public interface IMessage
     /// <summary>
     /// The extension of the message, if any.
     /// </summary>
-    TLVStream? Extension { get; }
+    TlvStream? Extension { get; }
 
     /// <summary>
     /// Serialize the message to a stream.

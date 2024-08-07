@@ -47,11 +47,11 @@ public class ErrorPayload(byte[] data) : IMessagePayload
         await ChannelId.SerializeAsync(stream);
         if (Data == null)
         {
-            await stream.WriteAsync(new byte[2] { 0, 0 });
+            await stream.WriteAsync(new byte[] { 0, 0 });
         }
         else
         {
-            await stream.WriteAsync(EndianBitConverter.GetBytesBE((ushort)Data.Length));
+            await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian((ushort)Data.Length));
             await stream.WriteAsync(Data);
         }
     }
@@ -70,7 +70,7 @@ public class ErrorPayload(byte[] data) : IMessagePayload
 
             var buffer = new byte[2];
             await stream.ReadExactlyAsync(buffer);
-            var dataLength = EndianBitConverter.ToUInt16BE(buffer);
+            var dataLength = EndianBitConverter.ToUInt16BigEndian(buffer);
 
             var data = new byte[dataLength];
             await stream.ReadExactlyAsync(data);

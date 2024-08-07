@@ -26,7 +26,7 @@ internal sealed class PreMessagePattern
     /// <summary>
     /// The empty pre-message pattern.
     /// </summary>
-    public static readonly PreMessagePattern Empty = new();
+    public static readonly PreMessagePattern EMPTY = new();
 
     /// <summary>
     /// Gets the tokens of the pre-message pattern.

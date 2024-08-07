@@ -2,7 +2,7 @@ using System.Net.Sockets;
 
 namespace NLightning.Bolts.BOLT1.Interfaces;
 
-using BOLT1.Primitives;
+using Primitives;
 
 /// <summary>
 /// Interface for a peer service.

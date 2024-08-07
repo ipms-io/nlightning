@@ -10,15 +10,15 @@ public readonly struct ShortChannelId
 {
     public const int LENGTH = 8;
 
-    public readonly uint BlockHeight;
-    public readonly uint TransactionIndex;
-    public readonly ushort OutputIndex;
+    public readonly uint BLOCK_HEIGHT;
+    public readonly uint TRANSACTION_INDEX;
+    public readonly ushort OUTPUT_INDEX;
 
     public ShortChannelId(uint blockHeight, uint transactionIndex, ushort outputIndex)
     {
-        BlockHeight = blockHeight;
-        TransactionIndex = transactionIndex;
-        OutputIndex = outputIndex;
+        BLOCK_HEIGHT = blockHeight;
+        TRANSACTION_INDEX = transactionIndex;
+        OUTPUT_INDEX = outputIndex;
     }
 
     public ShortChannelId(byte[] value)
@@ -28,9 +28,9 @@ public readonly struct ShortChannelId
             throw new ArgumentException($"ShortChannelId must be {LENGTH} bytes", nameof(value));
         }
 
-        BlockHeight = (uint)((value[0] << 16) | (value[1] << 8) | value[2]);
-        TransactionIndex = (uint)((value[3] << 16) | (value[4] << 8) | value[5]);
-        OutputIndex = (ushort)((value[6] << 8) | value[7]);
+        BLOCK_HEIGHT = (uint)((value[0] << 16) | (value[1] << 8) | value[2]);
+        TRANSACTION_INDEX = (uint)((value[3] << 16) | (value[4] << 8) | value[5]);
+        OUTPUT_INDEX = (ushort)((value[6] << 8) | value[7]);
     }
 
     public ValueTask SerializeAsync(Stream stream)
@@ -41,7 +41,7 @@ public readonly struct ShortChannelId
     public static async Task<ShortChannelId> DeserializeAsync(Stream stream)
     {
         var buffer = new byte[LENGTH];
-        await stream.ReadAsync(buffer);
+        _ = await stream.ReadAsync(buffer);
         return new ShortChannelId(buffer);
     }
 
@@ -64,21 +64,21 @@ public readonly struct ShortChannelId
     {
         return
         [
-            (byte)(BlockHeight >> 16),
-            (byte)(BlockHeight >> 8),
-            (byte)BlockHeight,
-            (byte)(TransactionIndex >> 16),
-            (byte)(TransactionIndex >> 8),
-            (byte)TransactionIndex,
-            (byte)(OutputIndex >> 8),
-            (byte)OutputIndex
+            (byte)(BLOCK_HEIGHT >> 16),
+            (byte)(BLOCK_HEIGHT >> 8),
+            (byte)BLOCK_HEIGHT,
+            (byte)(TRANSACTION_INDEX >> 16),
+            (byte)(TRANSACTION_INDEX >> 8),
+            (byte)TRANSACTION_INDEX,
+            (byte)(OUTPUT_INDEX >> 8),
+            (byte)OUTPUT_INDEX
         ];
     }
 
     #region Overrides
     public override readonly string ToString()
     {
-        return $"{BlockHeight}x{TransactionIndex}x{OutputIndex}";
+        return $"{BLOCK_HEIGHT}x{TRANSACTION_INDEX}x{OUTPUT_INDEX}";
     }
 
     public override readonly bool Equals(object? obj)
@@ -93,14 +93,14 @@ public readonly struct ShortChannelId
 
     public readonly bool Equals(ShortChannelId other)
     {
-        return BlockHeight == other.BlockHeight &&
-               TransactionIndex == other.TransactionIndex &&
-               OutputIndex == other.OutputIndex;
+        return BLOCK_HEIGHT == other.BLOCK_HEIGHT &&
+               TRANSACTION_INDEX == other.TRANSACTION_INDEX &&
+               OUTPUT_INDEX == other.OUTPUT_INDEX;
     }
 
     public override readonly int GetHashCode()
     {
-        return HashCode.Combine(BlockHeight, TransactionIndex, OutputIndex);
+        return HashCode.Combine(BLOCK_HEIGHT, TRANSACTION_INDEX, OUTPUT_INDEX);
     }
     #endregion
 

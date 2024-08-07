@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Runtime.Serialization;
 using System.Text;
+using NLightning.Common.Extensions;
 
 namespace NLightning.Bolts.BOLT9;
 
@@ -17,13 +18,13 @@ public class Features
     private static readonly Dictionary<Feature, Feature[]> s_featureDependencies = new()
     {
         // This   \/                          Depends on this \/
-        { Feature.GossipQueriesEx,            new[] { Feature.GossipQueries } },
-        { Feature.PaymentSecret,              new[] { Feature.VarOnionOptin } },
-        { Feature.BasicMpp,                   new[] { Feature.PaymentSecret } },
-        { Feature.OptionAnchorOutputs,        new[] { Feature.OptionStaticRemoteKey } },
-        { Feature.OptionAnchorsZeroFeeHtlcTx, new[] { Feature.OptionStaticRemoteKey } },
-        { Feature.OptionRouteBlinding,        new[] { Feature.VarOnionOptin } },
-        { Feature.OptionZeroconf,             new[] { Feature.OptionScidAlias } },
+        { Feature.GOSSIP_QUERIES_EX,            new[] { Feature.GOSSIP_QUERIES } },
+        { Feature.PAYMENT_SECRET,              new[] { Feature.VAR_ONION_OPTIN } },
+        { Feature.BASIC_MPP,                   new[] { Feature.PAYMENT_SECRET } },
+        { Feature.OPTION_ANCHOR_OUTPUTS,        new[] { Feature.OPTION_STATIC_REMOTE_KEY } },
+        { Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX, new[] { Feature.OPTION_STATIC_REMOTE_KEY } },
+        { Feature.OPTION_ROUTE_BLINDING,        new[] { Feature.VAR_ONION_OPTIN } },
+        { Feature.OPTION_ZEROCONF,             new[] { Feature.OPTION_SCID_ALIAS } },
     };
 
     private BitArray _featureFlags;
@@ -32,14 +33,16 @@ public class Features
     /// Initializes a new instance of the <see cref="Features"/> class.
     /// </summary>
     /// <remarks>
-    /// Allways set the bit of <see cref="Feature.VarOnionOptin"/> as Optional.
+    /// Always set the bit of <see cref="Feature.VAR_ONION_OPTIN"/> as Optional.
     /// </remarks>
     public Features()
     {
         _featureFlags = new BitArray(128);
-        // Allways set the compulsory bit of var_onion_optin
-        SetFeature(Feature.VarOnionOptin, false);
+        // Always set the compulsory bit of var_onion_optin
+        SetFeature(Feature.VAR_ONION_OPTIN, false);
     }
+
+    public int SizeInBits => _featureFlags.GetLastIndexOfOne();
 
     /// <summary>
     /// Sets a feature.
@@ -49,11 +52,11 @@ public class Features
     /// <param name="isSet">true to set the feature, false to unset it</param>
     /// <remarks>
     /// If the feature has dependencies, they will be set first.
-    /// The denpendencies keeps the same isCompulsory value as the feature being set.
+    /// The dependencies keep the same isCompulsory value as the feature being set.
     /// </remarks>
     public void SetFeature(Feature feature, bool isCompulsory, bool isSet = true)
     {
-        // If we're setting the feature and it has dependencies, set them first
+        // If we're setting the feature, and it has dependencies, set them first
         if (isSet)
         {
             if (s_featureDependencies.TryGetValue(feature, out var dependencies))
@@ -64,7 +67,7 @@ public class Features
                 }
             }
         }
-        else // If we're unsetting the feature and it has dependents, unset them first
+        else // If we're unsetting the feature, and it has dependents, unset them first
         {
             foreach (var dependent in s_featureDependencies.Where(x => x.Value.Contains(feature)).Select(x => x.Key))
             {
@@ -143,7 +146,7 @@ public class Features
     /// </summary>
     /// <param name="bitPosition">The bit position of the feature to check.</param>
     /// <returns>true if the feature is set, false otherwise.</returns>
-    public bool IsFeatureSet(int bitPosition)
+    private bool IsFeatureSet(int bitPosition)
     {
         if (bitPosition >= _featureFlags.Length)
         {
@@ -159,7 +162,7 @@ public class Features
     /// <returns>true if one of the features are set, false otherwise.</returns>
     public bool IsOptionAnchorsSet()
     {
-        return IsFeatureSet(Feature.OptionAnchorOutputs, false) || IsFeatureSet(Feature.OptionAnchorsZeroFeeHtlcTx, false);
+        return IsFeatureSet(Feature.OPTION_ANCHOR_OUTPUTS, false) || IsFeatureSet(Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX, false);
     }
 
     /// <summary>
@@ -174,7 +177,7 @@ public class Features
     public bool IsCompatible(Features other)
     {
         // Check if the other node supports var_onion_optin
-        if (!other.IsFeatureSet(Feature.VarOnionOptin, false) && !other.IsFeatureSet(Feature.VarOnionOptin, true))
+        if (!other.IsFeatureSet(Feature.VAR_ONION_OPTIN, false) && !other.IsFeatureSet(Feature.VAR_ONION_OPTIN, true))
         {
             return false;
         }
@@ -211,19 +214,14 @@ public class Features
             }
         }
 
-        // Check if all of the other node's dependencies are set
-        if (!other.AreDependenciesSet())
-        {
-            return false;
-        }
-
-        return true;
+        // Check if all the other node's dependencies are set
+        return other.AreDependenciesSet();
     }
 
     /// <summary>
     /// Serializes the features to a binary writer.
     /// </summary>
-    /// <param name="writer">The binary writer to write to.</param>
+    /// <param name="stream">The stream to write to.</param>
     /// <param name="asGlobal">If the features should be serialized as a global feature set.</param>
     /// <param name="includeLength">If the length of the byte array should be included.</param>
     /// <remarks>
@@ -252,9 +250,9 @@ public class Features
 
         // Trim leading zero bytes
         var leadingZeroBytes = 0;
-        for (var i = 0; i < bytes.Length; i++)
+        foreach (var t in bytes)
         {
-            if (bytes[i] == 0)
+            if (t == 0)
             {
                 leadingZeroBytes++;
             }
@@ -269,7 +267,7 @@ public class Features
         // Write the length of the byte array or 1 if all bytes are zero
         if (includeLength)
         {
-            await stream.WriteAsync(EndianBitConverter.GetBytesBE((ushort)trimmedBytes.Length));
+            await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian((ushort)trimmedBytes.Length));
         }
 
         // Otherwise, return the array starting from the first non-zero byte
@@ -279,17 +277,16 @@ public class Features
     /// <summary>
     /// Serializes the features to a byte array.
     /// </summary>
-    public byte[] SerializeToBits()
+    public void WriteToBitWriter(BitWriter bitWriter)
     {
-        var bytes = new byte[(_featureFlags.Length + 7) / 8];
-        _featureFlags.CopyTo(bytes, 0);
+        var length = SizeInBits;
+        var shouldPad = length * 5 / 8 == (length * 5 - 7) / 8;
 
-        if (BitConverter.IsLittleEndian)
+        // Write bits in reverse order
+        for (var i = length; i >= (shouldPad ? 0 : 1) && bitWriter.HasMoreBits(1); i--)
         {
-            Array.Reverse(bytes);
+            bitWriter.WriteBit(_featureFlags[i]);
         }
-
-        return bytes;
     }
 
     /// <summary>
@@ -309,7 +306,7 @@ public class Features
     /// <summary>
     /// Deserializes the features from a binary reader.
     /// </summary>
-    /// <param name="reader">The binary reader to read from.</param>
+    /// <param name="stream">The stream to read from.</param>
     /// <param name="includeLength">If the length of the byte array is included.</param>
     /// <remarks>
     /// If the length of the byte array is included, the first 2 bytes are read as the length of the byte array.
@@ -327,7 +324,7 @@ public class Features
             {
                 // Read the length of the byte array
                 await stream.ReadExactlyAsync(bytes);
-                length = EndianBitConverter.ToUInt16BE(bytes);
+                length = EndianBitConverter.ToUInt16BigEndian(bytes);
             }
 
             // Read the byte array
@@ -380,26 +377,21 @@ public class Features
     /// </summary>
     /// <param name="bitReader">The bit reader to read from.</param>
     /// <param name="length">The number of bits to read.</param>
+    /// <param name="shouldPad">If the bit array should be padded.</param>
     /// <returns>The deserialized features.</returns>
     /// <exception cref="SerializationException">Error deserializing Features</exception>
-    public static Features DeserializeFromBitReader(BitReader bitReader, short length)
+    public static Features DeserializeFromBitReader(BitReader bitReader, int length, bool shouldPad)
     {
         try
         {
             // Create a new bit array
-            var bitArray = new BitArray(length);
+            var bitArray = new BitArray(length + (shouldPad ? 1 : 0));
             for (var i = 0; i < length; i++)
             {
-                bitArray.Set(i, bitReader.ReadBit());
+                bitArray.Set(length - i - (shouldPad ? 0 : 1), bitReader.ReadBit());
             }
-
-            var reversedArray = new BitArray(length);
-            for (var i = 0; i < length; i++)
-            {
-                reversedArray[length - i - 1] = bitArray[i];
-            }
-
-            return new Features { _featureFlags = reversedArray }; ;
+            // 100000000000000000000000000000000000000000000000000000000000000000000000000100000100000000
+            return new Features { _featureFlags = bitArray };
         }
         catch (Exception e)
         {
@@ -448,23 +440,26 @@ public class Features
     /// </summary>
     /// <returns>true if all dependencies are set, false otherwise.</returns>
     /// <remarks>
+    /// This method is used to check if all dependencies are set when a feature is set.
+    /// </remarks>
     private bool AreDependenciesSet()
     {
         // Check if all known (Feature Enum) dependencies are set if the feature is set
         foreach (var feature in Enum.GetValues<Feature>())
         {
-            if (IsFeatureSet((int)feature, false) || IsFeatureSet((int)feature, true))
+            if (!IsFeatureSet((int)feature, false) && !IsFeatureSet((int)feature, true))
             {
-                if (s_featureDependencies.TryGetValue(feature, out var dependencies))
-                {
-                    foreach (var dependency in dependencies)
-                    {
-                        if (!IsFeatureSet(dependency, false) && !IsFeatureSet(dependency, true))
-                        {
-                            return false;
-                        }
-                    }
-                }
+                continue;
+            }
+
+            if (!s_featureDependencies.TryGetValue(feature, out var dependencies))
+            {
+                continue;
+            }
+
+            if (dependencies.Any(dependency => !IsFeatureSet(dependency, false) && !IsFeatureSet(dependency, true)))
+            {
+                return false;
             }
         }
 

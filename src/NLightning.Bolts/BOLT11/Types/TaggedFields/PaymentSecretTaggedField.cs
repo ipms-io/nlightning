@@ -1,10 +1,11 @@
-using System.Diagnostics.CodeAnalysis;
 using NBitcoin;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
 using Common.BitUtils;
+using Constants;
 using Enums;
+using Interfaces;
 
 /// <summary>
 /// Tagged field for the payment secret
@@ -12,59 +13,68 @@ using Enums;
 /// <remarks>
 /// The payment secret is a 32 byte secret that is used to identify a payment
 /// </remarks>
-/// <seealso cref="BaseTaggedField{T}"/>
-/// <seealso cref="TaggedFieldTypes"/>
-/// <seealso cref="uint256"/>
-public sealed class PaymentSecretTaggedField : BaseTaggedField<uint256>
+/// <seealso cref="ITaggedField"/>
+public sealed class PaymentSecretTaggedField : ITaggedField
 {
-    /// <summary>
-    /// Constructor for PaymentSecretTaggedField from a BitReader and a length
-    /// </summary>
-    /// <param name="bitReader">The BitReader to read the data from</param>
-    /// <param name="length">The length of the tagged field</param>
-    /// <remarks>
-    /// This constructor is used to create a PaymentSecretTaggedField from a BitReader and a length.
-    /// The Value property is set to the decoded value.
-    /// </remarks>
-    /// <seealso cref="BitReader"/>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public PaymentSecretTaggedField(BitReader bitReader, short length) : base(TaggedFieldTypes.PaymentSecret, bitReader, length)
-    { }
+    public TaggedFieldTypes Type => TaggedFieldTypes.PAYMENT_SECRET;
+    public uint256 Value { get; }
+    public short Length => TaggedFieldConstants.HASH_LENGTH;
 
     /// <summary>
-    /// Constructor for PaymentSecretTaggedField from a value
+    /// Initializes a new instance of the <see cref="DescriptionHashTaggedField"/> class.
     /// </summary>
-    /// <param name="value">The value of the tagged field</param>
-    /// <remarks>
-    /// This constructor is used to create a PaymentSecretTaggedField from a value.
-    /// The Data property is set to the encoded value.
-    /// </remarks>
-    /// <seealso cref="uint256"/>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public PaymentSecretTaggedField(uint256 value) : base(TaggedFieldTypes.PaymentSecret, value)
-    { }
+    /// <param name="value">The Description Hash</param>
+    public PaymentSecretTaggedField(uint256 value)
+    {
+        Value = value;
+    }
+
+    public void WriteToBitWriter(BitWriter bitWriter)
+    {
+        // Write type
+        bitWriter.WriteByteAsBits((byte)Type, 5);
+
+        // Write length
+        bitWriter.WriteInt16AsBits(Length, 10);
+
+        var data = Value.ToBytes();
+        if (BitConverter.IsLittleEndian)
+        {
+            Array.Reverse(data);
+        }
+
+        // Write data
+        bitWriter.WriteBits(data, Length * 5);
+    }
 
     /// <inheritdoc/>
-    public override bool IsValid()
+    public bool IsValid()
     {
         return Value != uint256.Zero;
     }
 
-    /// <inheritdoc/>
-    /// <returns>The payment secret as a uint256</returns>
-    protected override uint256 Decode(byte[] data)
+    public object GetValue()
     {
-        return new uint256(data);
+        return Value;
     }
 
-    /// <inheritdoc/>
-    /// <returns>The payment secret as a byte array</returns>
-    protected override byte[] Encode(uint256 value)
+    public static PaymentSecretTaggedField FromBitReader(BitReader bitReader, short length)
     {
-        return AccountForPaddingWhenEncoding(value.ToBytes());
+        if (length != TaggedFieldConstants.HASH_LENGTH)
+        {
+            throw new ArgumentException($"Invalid length for PaymentSecretTaggedField. Expected {TaggedFieldConstants.HASH_LENGTH}, but got {length}");
+        }
+
+        // Read the data from the BitReader
+        var data = new byte[(TaggedFieldConstants.HASH_LENGTH * 5 + 7) / 8];
+        bitReader.ReadBits(data, length * 5);
+        data = data[..^1];
+
+        if (BitConverter.IsLittleEndian)
+        {
+            Array.Reverse(data);
+        }
+
+        return new PaymentSecretTaggedField(new uint256(data));
     }
 }

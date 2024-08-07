@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.RegularExpressions;
+using NBitcoin;
 
 namespace NLightning.Bolts.BOLT11;
 
@@ -29,15 +30,16 @@ public class Invoice
     #region Private Fields
     private static readonly Dictionary<string, Network> s_supportedNetworks = new()
     {
-        { InvoiceConstants.PREFIX_MAINET, Network.MainNet },
-        { InvoiceConstants.PREFIX_TESTNET, Network.TestNet },
-        { InvoiceConstants.PREFIX_SIGNET, Network.SigNet },
-        { InvoiceConstants.PREFIX_REGTEST, Network.RegTest },
-        { InvoiceConstants.PREFIX_MAINET.ToUpperInvariant(), Network.MainNet },
-        { InvoiceConstants.PREFIX_TESTNET.ToUpperInvariant(), Network.TestNet },
-        { InvoiceConstants.PREFIX_SIGNET.ToUpperInvariant(), Network.SigNet },
-        { InvoiceConstants.PREFIX_REGTEST.ToUpperInvariant(), Network.RegTest }
+        { InvoiceConstants.PREFIX_MAINET, Network.MAIN_NET },
+        { InvoiceConstants.PREFIX_TESTNET, Network.TEST_NET },
+        { InvoiceConstants.PREFIX_SIGNET, Network.SIG_NET },
+        { InvoiceConstants.PREFIX_REGTEST, Network.REG_TEST },
+        { InvoiceConstants.PREFIX_MAINET.ToUpperInvariant(), Network.MAIN_NET },
+        { InvoiceConstants.PREFIX_TESTNET.ToUpperInvariant(), Network.TEST_NET },
+        { InvoiceConstants.PREFIX_SIGNET.ToUpperInvariant(), Network.SIG_NET },
+        { InvoiceConstants.PREFIX_REGTEST.ToUpperInvariant(), Network.REG_TEST }
     };
+    private readonly Key? _key;
     #endregion
 
     #region Public Properties
@@ -69,8 +71,7 @@ public class Invoice
     /// <seealso cref="ITaggedField"/>
     /// <seealso cref="TaggedFieldTypes"/>
     /// <seealso cref="TaggedFieldFactory"/>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    public TaggedFieldList TaggedFields { get; private set; } = [];
+    public TaggedFieldList TaggedFields { get; } = [];
 
     /// <summary>
     /// The signature of the invoice
@@ -78,7 +79,7 @@ public class Invoice
     public string Signature { get; private set; }
 
     /// <summary>
-    /// The human readable part of the invoice
+    /// The human-readable part of the invoice
     /// </summary>
     public string HumanReadablePart { get; private set; }
 
@@ -96,15 +97,15 @@ public class Invoice
     /// The payment hash is a 32 byte hash that is used to identify a payment
     /// </remarks>
     /// <seealso cref="NBitcoin.uint256"/>
-    public NBitcoin.uint256 PaymentHash
+    public uint256 PaymentHash
     {
         get
         {
-            if (TaggedFields.TryGet(TaggedFieldTypes.PaymentHash, out PaymentHashTaggedField paymentHash))
+            if (TaggedFields.TryGet(TaggedFieldTypes.PAYMENT_HASH, out PaymentHashTaggedField paymentHash))
             {
                 return paymentHash.Value;
             }
-            return new NBitcoin.uint256();
+            return new uint256();
         }
         set
         {
@@ -124,7 +125,7 @@ public class Invoice
     {
         get
         {
-            if (TaggedFields.TryGet(TaggedFieldTypes.RoutingInfo, out RoutingInfoTaggedField routingInfo))
+            if (TaggedFields.TryGet(TaggedFieldTypes.ROUTING_INFO, out RoutingInfoTaggedField routingInfo))
             {
                 return routingInfo.Value;
             }
@@ -150,7 +151,7 @@ public class Invoice
     {
         get
         {
-            if (TaggedFields.TryGet(TaggedFieldTypes.Features, out FeaturesTaggedField features))
+            if (TaggedFields.TryGet(TaggedFieldTypes.FEATURES, out FeaturesTaggedField features))
             {
                 return features.Value;
             }
@@ -176,7 +177,7 @@ public class Invoice
     {
         get
         {
-            if (TaggedFields.TryGet(TaggedFieldTypes.ExpiryTime, out ExpiryTimeTaggedField expireIn))
+            if (TaggedFields.TryGet(TaggedFieldTypes.EXPIRY_TIME, out ExpiryTimeTaggedField expireIn))
             {
                 return DateTimeOffset.FromUnixTimeSeconds(Timestamp + (int)expireIn.GetValue());
             }
@@ -202,16 +203,12 @@ public class Invoice
     /// <remarks>
     /// The fallback addresses are used to specify the fallback addresses the payer can use
     /// </remarks>
-    /// <seealso cref="NBitcoin.BitcoinAddress"/>
-    public List<NBitcoin.BitcoinAddress>? FallbackAddresses
+    /// <seealso cref="BitcoinAddress"/>
+    public List<BitcoinAddress>? FallbackAddresses
     {
         get
         {
-            if (TaggedFields.TryGetAll(TaggedFieldTypes.FallbackAddress, out List<FallbackAddressTaggedField> fallbackAddress))
-            {
-                return fallbackAddress.Select(x => (NBitcoin.BitcoinAddress)x.GetValue()).ToList();
-            }
-            return null;
+            return TaggedFields.TryGetAll(TaggedFieldTypes.FALLBACK_ADDRESS, out List<FallbackAddressTaggedField> fallbackAddress) ? fallbackAddress.Select(x => (BitcoinAddress)x.GetValue()).ToList() : null;
         }
         set
         {
@@ -232,7 +229,7 @@ public class Invoice
     {
         get
         {
-            if (TaggedFields.TryGet(TaggedFieldTypes.Description, out DescriptionTaggedField description))
+            if (TaggedFields.TryGet(TaggedFieldTypes.DESCRIPTION, out DescriptionTaggedField description))
             {
                 return description.Value;
             }
@@ -253,16 +250,12 @@ public class Invoice
     /// <remarks>
     /// The payment secret is a 32 byte secret that is used to identify a payment
     /// </remarks>
-    /// <seealso cref="NBitcoin.uint256"/>
-    public NBitcoin.uint256? PaymentSecret
+    /// <seealso cref="uint256"/>
+    public uint256? PaymentSecret
     {
         get
         {
-            if (TaggedFields.TryGet(TaggedFieldTypes.PaymentSecret, out PaymentSecretTaggedField paymentSecret))
-            {
-                return paymentSecret.Value;
-            }
-            return null;
+            return TaggedFields.TryGet(TaggedFieldTypes.PAYMENT_SECRET, out PaymentSecretTaggedField paymentSecret) ? paymentSecret.Value : null;
         }
         set
         {
@@ -279,12 +272,12 @@ public class Invoice
     /// <remarks>
     /// The payee pubkey is the pubkey of the payee
     /// </remarks>
-    /// <seealso cref="NBitcoin.PubKey"/>
-    public NBitcoin.PubKey? PayeePubKey
+    /// <seealso cref="PubKey"/>
+    public PubKey? PayeePubKey
     {
         get
         {
-            if (TaggedFields.TryGet(TaggedFieldTypes.PayeePubKey, out PayeePubKeyTaggedField payeePubKey))
+            if (TaggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField payeePubKey))
             {
                 return payeePubKey.Value;
             }
@@ -305,16 +298,12 @@ public class Invoice
     /// <remarks>
     /// The description hash is a 32 byte hash of the description
     /// </remarks>
-    /// <seealso cref="NBitcoin.uint256"/>
-    public NBitcoin.uint256? DescriptionHash
+    /// <seealso cref="uint256"/>
+    public uint256? DescriptionHash
     {
         get
         {
-            if (TaggedFields.TryGet(TaggedFieldTypes.DescriptionHash, out DescriptionHashTaggedField descriptionHash))
-            {
-                return descriptionHash.Value;
-            }
-            return null;
+            return TaggedFields.TryGet(TaggedFieldTypes.DESCRIPTION_HASH, out DescriptionHashTaggedField descriptionHash) ? descriptionHash.Value : null;
         }
         set
         {
@@ -335,7 +324,7 @@ public class Invoice
     {
         get
         {
-            if (TaggedFields.TryGet(TaggedFieldTypes.MinFinalCltvExpiry, out MinFinalCltvExpiryTaggedField minFinalCltvExpiry))
+            if (TaggedFields.TryGet(TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY, out MinFinalCltvExpiryTaggedField minFinalCltvExpiry))
             {
                 return minFinalCltvExpiry.Value;
             }
@@ -360,11 +349,7 @@ public class Invoice
     {
         get
         {
-            if (TaggedFields.TryGet(TaggedFieldTypes.Metadata, out MetadataTaggedField metadata))
-            {
-                return metadata.Value;
-            }
-            return null;
+            return TaggedFields.TryGet(TaggedFieldTypes.METADATA, out MetadataTaggedField metadata) ? metadata.Value : null;
         }
         set
         {
@@ -387,25 +372,26 @@ public class Invoice
     /// The invoice is created with the given network, amount of millisatoshis and timestamp.
     /// </remarks>
     /// <seealso cref="Network"/>
-    public Invoice(Network network, ulong? amountMsats = 0, long? timestamp = null)
+    public Invoice(Network network, Key key, ulong? amountMsats = 0, long? timestamp = null)
     {
         AmountMsats = amountMsats ?? 0;
         Network = network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Signature = string.Empty;
+        _key = key;
     }
 
     /// <summary>
     /// The constructor for the invoice
     /// </summary>
-    /// <param name="humanReadablePart">The human readable part of the invoice</param>
+    /// <param name="humanReadablePart">The human-readable part of the invoice</param>
     /// <param name="network">The network the invoice is created for</param>
     /// <param name="amountMsats">The amount of millisatoshis the invoice is for</param>
     /// <param name="timestamp">The timestamp of the invoice</param>
     /// <param name="taggedFields">The tagged fields of the invoice</param>
     /// <remarks>
-    /// The invoice is created with the given human readable part, network, amount of millisatoshis, timestamp and tagged fields.
+    /// The invoice is created with the given human-readable part, network, amount of millisatoshis, timestamp and tagged fields.
     /// </remarks>
     /// <seealso cref="Network"/>
     public Invoice(string humanReadablePart, Network network, ulong amountMsats, long timestamp, TaggedFieldList taggedFields)
@@ -416,13 +402,14 @@ public class Invoice
         Timestamp = timestamp;
         TaggedFields = taggedFields;
         Signature = string.Empty;
+        _key = null;
     }
     #endregion
 
     #region Static Constructors
-    public static Invoice InSatoshis(Network network, long amountSats, long? timestamp = null)
+    public static Invoice InSatoshis(Network network, Key key, long amountSats, long? timestamp = null)
     {
-        return new Invoice(network, (ulong)amountSats * 1_000, timestamp);
+        return new Invoice(network, key, (ulong)amountSats * 1_000, timestamp);
     }
 
     public static Invoice Decode(string invoiceString)
@@ -435,7 +422,7 @@ public class Invoice
             var amount = ConvertHumanReadableToMilliSatoshis(hrp);
 
             // Initialize the BitReader buffer
-            var bitReader = new BitReader(data);
+            using var bitReader = new BitReader(data);
 
             var timestamp = bitReader.ReadInt64FromBits(35);
 
@@ -443,7 +430,7 @@ public class Invoice
 
             // TODO: Check feature bits
             // Get pubkey from tagged fields
-            taggedFields.TryGet(TaggedFieldTypes.PayeePubKey, out PayeePubKeyTaggedField pubkey);
+            taggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField pubkey);
             // Check Signature
             CheckSignature(signature, hrp, data, pubkey?.Value);
 
@@ -459,22 +446,27 @@ public class Invoice
     public string Encode()
     {
         // Calculate the size needed for the buffer
-        var sizeInBits = 35 + TaggedFields.CalculateSizeInBits();
+        var sizeInBits = 35 + (TaggedFields.CalculateSizeInBits() * 5) + (TaggedFields.Count * 15);
 
         // Initialize the BitWriter buffer
-        var bitWriter = new BitWriter(sizeInBits);
+        using var bitWriter = new BitWriter(sizeInBits);
 
         // Write the timestamp
         bitWriter.WriteInt64AsBits(Timestamp, 35);
 
         // Write the tagged fields
         TaggedFields.WriteToBitWriter(bitWriter);
+        var data = bitWriter.ToArray();
 
         // Sign the invoice
-        var signature = SignInvoice(HumanReadablePart, bitWriter.ToArray(), new NBitcoin.Key());
+        var signature = SignInvoice(HumanReadablePart, data, _key);
 
-        var bech32 = new Bech32Encoder(HumanReadablePart);
-        return bech32.EncodeLightningInvoice(bitWriter.ToArray(), signature);
+        // Add the signature to the data
+        bitWriter.GrowByBits(520);
+        bitWriter.WriteBits(signature, 520);
+
+        var bech32Encoder = new Bech32Encoder(HumanReadablePart);
+        return bech32Encoder.EncodeLightningInvoice(bitWriter.ToArray());
     }
 
     #region Overrides
@@ -581,7 +573,7 @@ public class Invoice
         data.CopyTo(message, hrp.Length);
 
         // Get sha256 hash of the message
-        using var sha256 = new SHA256();
+        using var sha256 = new Sha256();
         sha256.AppendData(message);
         var hash = new byte[HashConstants.HASH_LEN];
         sha256.GetHashAndReset(hash);
@@ -608,17 +600,24 @@ public class Invoice
 
     private static byte[] SignInvoice(string hrp, byte[] data, NBitcoin.Key key)
     {
+        // 6c6e62630b25fe64500d04444444444444444444444444444444444444444444444444444444444444444021a00008101820283038404800081018202830384048000810182028303840480810343f506c6561736520636f6e736964657220737570706f7274696e6720746869732070726f6a6563740500e08000
         // Assemble the message (hrp + data)
         var message = new byte[hrp.Length + data.Length];
         Encoding.UTF8.GetBytes(hrp).CopyTo(message, 0);
         data.CopyTo(message, hrp.Length);
 
         // Get sha256 hash of the message
-        using var sha256 = new SHA256();
+        using var sha256 = new Sha256();
         sha256.AppendData(message);
         var hash = new byte[HashConstants.HASH_LEN];
         sha256.GetHashAndReset(hash);
-        var nbitcoinHash = new NBitcoin.uint256(hash);
+
+        if (BitConverter.IsLittleEndian)
+        {
+            Array.Reverse(hash);
+        }
+
+        var nbitcoinHash = new uint256(hash);
 
         // Sign the hash
         var ecdsa = key.Sign(nbitcoinHash);

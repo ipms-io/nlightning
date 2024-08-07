@@ -16,9 +16,9 @@ public abstract class BaseMessage : IMessage
     public virtual IMessagePayload Payload { get; protected set; }
 
     /// <inheritdoc />
-    public TLVStream? Extension { get; protected set; }
+    public TlvStream? Extension { get; protected set; }
 
-    protected BaseMessage(ushort type, IMessagePayload payload, TLVStream? extension = null)
+    protected BaseMessage(ushort type, IMessagePayload payload, TlvStream? extension = null)
     {
         Type = type;
         Payload = payload;
@@ -39,7 +39,7 @@ public abstract class BaseMessage : IMessage
             throw new NullReferenceException("Payload must not be null.");
         }
 
-        await stream.WriteAsync(EndianBitConverter.GetBytesBE(Type));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(Type));
 
         await Payload.SerializeAsync(stream);
 

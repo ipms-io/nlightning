@@ -2,7 +2,7 @@ using System.Runtime.Serialization;
 
 namespace NLightning.Bolts.BOLT1.Messages;
 
-using Bolts.Base;
+using Base;
 using Constants;
 using Exceptions;
 using Payloads;
@@ -17,7 +17,9 @@ using Payloads;
 /// <param name="payload">The error payload.</param>
 public sealed class ErrorMessage(ErrorPayload payload) : BaseMessage(MessageTypes.ERROR, payload)
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// The payload of the message.
+    /// </summary>
     public new ErrorPayload Payload { get => (ErrorPayload)base.Payload; }
 
     /// <summary>

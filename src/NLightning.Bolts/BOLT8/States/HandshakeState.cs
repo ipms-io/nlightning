@@ -12,7 +12,7 @@ using MessagePatterns;
 using Primitives;
 
 /// <inheritdoc/>
-/// <remarks> See <see href="https://github.com/lightning/bolts/blob/master/08-transport.md"/>Lightning Bolt8</see> for specific implementation information.</remarks>
+/// <remarks> See <see href="https://github.com/lightning/bolts/blob/master/08-transport.md">Lightning Bolt8</see> for specific implementation information.</remarks>
 internal sealed class HandshakeState : IHandshakeState
 {
     private const byte HANDSHAKE_VERSION = 0x00;
@@ -31,7 +31,7 @@ internal sealed class HandshakeState : IHandshakeState
     private bool _turnToWrite;
     private bool _disposed;
 
-    public NBitcoin.PubKey? RemoteStaticPublicKey => _rs == null ? null : new NBitcoin.PubKey(_rs);
+    public NBitcoin.PubKey RemoteStaticPublicKey => new(_rs);
 
     /// <summary>
     /// Creates a new HandshakeState instance.
@@ -39,10 +39,11 @@ internal sealed class HandshakeState : IHandshakeState
     /// <param name="initiator">If we are the initiator</param>
     /// <param name="s">Local Static Private Key</param>
     /// <param name="rs">Remote Static Public Key</param>
+    /// <param name="dh">A specific DH Function, or null to use the <see cref="SecP256K1">Protocol Default</see></param>
     /// <exception cref="ArgumentException"></exception>
     public HandshakeState(bool initiator, ReadOnlySpan<byte> s, ReadOnlySpan<byte> rs, IDh? dh = null)
     {
-        _dh = dh ?? new Secp256k1();
+        _dh = dh ?? new SecP256K1();
 
         if (s.IsEmpty)
         {
@@ -67,8 +68,8 @@ internal sealed class HandshakeState : IHandshakeState
         _state = new SymmetricState(ProtocolConstants.NAME);
         _state.MixHash(ProtocolConstants.PROLOGUE);
 
-        _role = initiator ? Role.Alice : Role.Bob;
-        _initiator = Role.Alice;
+        _role = initiator ? Role.ALICE : Role.BOB;
+        _initiator = Role.ALICE;
         _turnToWrite = initiator;
         _s = _dh.GenerateKeyPair(s);
         _rs = rs.ToArray();
@@ -121,8 +122,8 @@ internal sealed class HandshakeState : IHandshakeState
                 case Token.E: messageBuffer = WriteE(messageBuffer); break;
                 case Token.S: messageBuffer = WriteS(messageBuffer); break;
                 case Token.EE: DhAndMixKey(_e, _re); break;
-                case Token.ES: ProcessES(); break;
-                case Token.SE: ProcessSE(); break;
+                case Token.ES: ProcessEs(); break;
+                case Token.SE: ProcessSe(); break;
                 case Token.SS: DhAndMixKey(_s, _rs); break;
             }
         }
@@ -189,8 +190,8 @@ internal sealed class HandshakeState : IHandshakeState
                 case Token.E: message = ReadE(message); break;
                 case Token.S: message = ReadS(message); break;
                 case Token.EE: DhAndMixKey(_e, _re); break;
-                case Token.ES: ProcessES(); break;
-                case Token.SE: ProcessSE(); break;
+                case Token.ES: ProcessEs(); break;
+                case Token.SE: ProcessSe(); break;
                 case Token.SS: DhAndMixKey(_s, _rs); break;
             }
         }
@@ -216,7 +217,7 @@ internal sealed class HandshakeState : IHandshakeState
         {
             if (token == Token.S)
             {
-                _state.MixHash(_role == Role.Alice ? _s.PublicKeyBytes : _rs);
+                _state.MixHash(_role == Role.ALICE ? _s.PublicKeyBytes : _rs);
             }
         }
 
@@ -224,7 +225,7 @@ internal sealed class HandshakeState : IHandshakeState
         {
             if (token == Token.S)
             {
-                _state.MixHash(_role == Role.Alice ? _rs : _s.PublicKeyBytes);
+                _state.MixHash(_role == Role.ALICE ? _rs : _s.PublicKeyBytes);
             }
         }
     }
@@ -297,9 +298,9 @@ internal sealed class HandshakeState : IHandshakeState
         return message[length..];
     }
 
-    private void ProcessES()
+    private void ProcessEs()
     {
-        if (_role == Role.Alice)
+        if (_role == Role.ALICE)
         {
             DhAndMixKey(_e, _rs);
         }
@@ -309,9 +310,9 @@ internal sealed class HandshakeState : IHandshakeState
         }
     }
 
-    private void ProcessSE()
+    private void ProcessSe()
     {
-        if (_role == Role.Alice)
+        if (_role == Role.ALICE)
         {
             DhAndMixKey(_s, _re);
         }
@@ -347,7 +348,7 @@ internal sealed class HandshakeState : IHandshakeState
     {
         _state.Dispose();
         _e?.Dispose();
-        _s?.Dispose();
+        _s.Dispose();
     }
 
     #region Dispose Pattern
@@ -378,7 +379,7 @@ internal sealed class HandshakeState : IHandshakeState
 
     private enum Role
     {
-        Alice,
-        Bob
+        ALICE,
+        BOB
     }
 }

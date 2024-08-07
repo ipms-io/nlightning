@@ -63,7 +63,7 @@ internal sealed class KeyPair : IDisposable
     /// </summary>
     /// <param name="privateKey" cref="Key">The private key.</param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown if the <paramref name="keyPair"/> is null.
+    /// Thrown if the <paramref name="privateKey"/> is null.
     /// </exception>
     internal KeyPair(Key privateKey)
     {

@@ -34,7 +34,7 @@ public class AbcNetworkTests
     public async Task NLightning_BOLT8_Test_Connect_Alice()
     {
         // Arrange
-        var localKeys = new Secp256k1().GenerateKeyPair();
+        var localKeys = new SecP256K1().GenerateKeyPair();
         var hex = BitConverter.ToString(localKeys.PublicKey.ToBytes()).Replace("-", "");
 
         var alice = _lightningRegtestNetworkFixture.Builder?.LNDNodePool?.ReadyNodes.First(x => x.LocalAlias == "alice");
@@ -42,7 +42,7 @@ public class AbcNetworkTests
 
         var nodeOptions = new NodeOptions
         {
-            ChainHashes = [ChainConstants.Regtest],
+            ChainHashes = [ChainConstants.REGTEST],
             EnableDataLossProtect = true,
             EnableStaticRemoteKey = true,
             EnablePaymentSecret = true,
@@ -73,7 +73,7 @@ public class AbcNetworkTests
             // Get ip from host
             var hostAddress = Environment.GetEnvironmentVariable("HOST_ADDRESS") ?? "host.docker.internal";
 
-            var localKeys = new Secp256k1().GenerateKeyPair();
+            var localKeys = new SecP256K1().GenerateKeyPair();
             var hex = BitConverter.ToString(localKeys.PublicKey.ToBytes()).Replace("-", "");
 
             var alice = _lightningRegtestNetworkFixture.Builder?.LNDNodePool?.ReadyNodes.First(x => x.LocalAlias == "alice");
@@ -81,7 +81,7 @@ public class AbcNetworkTests
 
             var nodeOptions = new NodeOptions
             {
-                ChainHashes = [ChainConstants.Regtest],
+                ChainHashes = [ChainConstants.REGTEST],
                 EnableDataLossProtect = true,
                 EnableStaticRemoteKey = true,
                 EnablePaymentSecret = true,
@@ -91,9 +91,11 @@ public class AbcNetworkTests
 
             _ = Task.Run(async () =>
             {
-                var tcpClient = await listener.AcceptTcpClientAsync();
+                {
+                    var tcpClient = await listener.AcceptTcpClientAsync();
 
-                await peerService.AcceptPeerAsync(tcpClient);
+                    await peerService.AcceptPeerAsync(tcpClient);
+                }
             });
             await Task.Delay(1000);
 

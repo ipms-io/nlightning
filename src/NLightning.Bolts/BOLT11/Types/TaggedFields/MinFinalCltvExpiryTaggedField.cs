@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+using NLightning.Bolts.BOLT11.Interfaces;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
@@ -11,57 +11,57 @@ using Enums;
 /// <remarks>
 /// The minimum final cltv expiry is a 4 byte field that specifies the minimum number of blocks that the receiver should wait to claim the payment
 /// </remarks>
-/// <seealso cref="BaseTaggedField{T}"/>
-/// <seealso cref="TaggedFieldTypes"/>
-public sealed class MinFinalCltvExpiryTaggedField : BaseTaggedField<ushort>
+/// <seealso cref="ITaggedField"/>
+public sealed class MinFinalCltvExpiryTaggedField : ITaggedField
 {
-    /// <summary>
-    /// Constructor for MinFinalCltvExpiryTaggedField from a BitReader and a length
-    /// </summary>
-    /// <param name="bitReader">The BitReader to read the data from</param>
-    /// <param name="length">The length of the tagged field</param>
-    /// <remarks>
-    /// This constructor is used to create a MinFinalCltvExpiryTaggedField from a BitReader and a length.
-    /// The Value property is set to the decoded value.
-    /// </remarks>
-    /// <seealso cref="BitReader"/>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public MinFinalCltvExpiryTaggedField(BitReader bitReader, short length) : base(TaggedFieldTypes.ExpiryTime, bitReader, length)
-    { }
+    public TaggedFieldTypes Type => TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY;
+    public ushort Value { get; }
+    public short Length { get; }
 
     /// <summary>
-    /// Constructor for MinFinalCltvExpiryTaggedField from a value
+    /// Initializes a new instance of the <see cref="MinFinalCltvExpiryTaggedField"/> class.
     /// </summary>
-    /// <param name="value">The value of the tagged field</param>
-    /// <remarks>
-    /// This constructor is used to create a MinFinalCltvExpiryTaggedField from a value.
-    /// The Data property is set to the encoded value.
-    /// </remarks>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public MinFinalCltvExpiryTaggedField(ushort value) : base(TaggedFieldTypes.ExpiryTime, value)
-    { }
+    /// <param name="value">The Expiry Time in seconds</param>
+    public MinFinalCltvExpiryTaggedField(ushort value)
+    {
+        Value = value;
+        var data = EndianBitConverter.GetBytesBigEndian(value, true);
+        Length = (short)((data.Length * 8 - 7) / 5);
+    }
+
+    public void WriteToBitWriter(BitWriter bitWriter)
+    {
+        // Write type
+        bitWriter.WriteByteAsBits((byte)Type, 5);
+
+        // Write length
+        bitWriter.WriteInt16AsBits(Length, 10);
+
+        // Write data
+        bitWriter.WriteUInt16AsBits(Value, Length * 5);
+    }
 
     /// <inheritdoc/>
-    public override bool IsValid()
+    public bool IsValid()
     {
         return Value > 0;
     }
 
-    /// <inheritdoc/>
-    /// <returns>The minimum final cltv expiry as an int</returns>
-    protected override ushort Decode(byte[] data)
+    public object GetValue()
     {
-        return EndianBitConverter.ToUInt16BE(data, true);
+        return Value;
     }
 
-    /// <inheritdoc/>
-    /// <returns>The minimum final cltv expiry as a byte array</returns>
-    protected override byte[] Encode(ushort value)
+    public static MinFinalCltvExpiryTaggedField FromBitReader(BitReader bitReader, short length)
     {
-        return AccountForPaddingWhenEncoding(EndianBitConverter.GetBytesBE(value, true));
+        if (length <= 0)
+        {
+            throw new ArgumentException("Invalid length for MinFinalCltvExpiryTaggedField. Length must be greater than 0", nameof(length));
+        }
+
+        // Read the data from the BitReader
+        var value = bitReader.ReadUInt16FromBits(length * 5);
+
+        return new MinFinalCltvExpiryTaggedField(value);
     }
 }

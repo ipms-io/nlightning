@@ -1,5 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using NBitcoin;
+using NLightning.Bolts.BOLT11.Interfaces;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
@@ -12,106 +12,107 @@ using Enums;
 /// <remarks>
 /// The fallback address is a Bitcoin address that can be used to pay the invoice on-chain if the payment fails.
 /// </remarks>
-/// <seealso cref="BaseTaggedField{T}"/>
-/// <seealso cref="TaggedFieldTypes"/>
-/// <seealso cref="BitcoinAddress"/>
-public sealed class FallbackAddressTaggedField : BaseTaggedField<BitcoinAddress>
+/// <seealso cref="ITaggedField"/>
+public sealed class FallbackAddressTaggedField : ITaggedField
 {
-    /// <summary>
-    /// Constructor for FallbackAddressTaggedField from a BitReader and a length
-    /// </summary>
-    /// <param name="bitReader">The BitReader to read the data from</param>
-    /// <param name="length">The length of the tagged field</param>
-    /// <remarks>
-    /// This constructor is used to create a FallbackAddressTaggedField from a BitReader and a length.
-    /// The Value property is set to the decoded value.
-    /// </remarks>
-    /// <seealso cref="BitReader"/>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public FallbackAddressTaggedField(BitReader bitReader, short length) : base(TaggedFieldTypes.FallbackAddress, length)
-    {
-        LengthInBits = length;
-        Data[0] = bitReader.ReadByteFromBits(5);
-        bitReader.ReadBits(Data.AsSpan()[1..], (length - 1) * 5);
+    private readonly byte[] _data;
 
-        if (Data[0] == 0 && length * 5 % 8 != 0 && Data[^1] == 0)
+    public TaggedFieldTypes Type => TaggedFieldTypes.FALLBACK_ADDRESS;
+    public BitcoinAddress Value { get; }
+    public short Length { get; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DescriptionTaggedField"/> class.
+    /// </summary>
+    /// <param name="value">The Description</param>
+    public FallbackAddressTaggedField(BitcoinAddress value)
+    {
+        Value = value;
+        var data = new List<byte>();
+
+        switch (value)
         {
-            Data = Data[..^1];
+            case BitcoinPubKeyAddress pubKeyAddress:
+                // P2PKH
+                data.Add(17);
+                data.AddRange(pubKeyAddress.ScriptPubKey.ToBytes());
+                break;
+            case BitcoinScriptAddress scriptAddress:
+                // P2SH
+                data.Add(18);
+                data.AddRange(scriptAddress.ScriptPubKey.ToBytes());
+                break;
+            case BitcoinWitScriptAddress witScriptAddress:
+                // P2WSH
+                data.Add(0);
+                data.AddRange(witScriptAddress.ScriptPubKey.ToBytes());
+                break;
+            case BitcoinWitPubKeyAddress witPubKeyAddress:
+                // P2WPKH
+                data.Add(0);
+                data.AddRange(witPubKeyAddress.ScriptPubKey.ToBytes());
+                break;
         }
 
-        Value = Decode(Data);
+        _data = data.ToArray();
+        Length = (short)((_data.Length * 8 - 7) / 5);
     }
 
-    /// <summary>
-    /// Constructor for FallbackAddressTaggedField from a value
-    /// </summary>
-    /// <param name="value">The value of the tagged field</param>
-    /// <remarks>
-    /// This constructor is used to create a FallbackAddressTaggedField from a value.
-    /// The Data property is set to the encoded value.
-    /// </remarks>
-    /// <seealso cref="BitcoinAddress"/>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public FallbackAddressTaggedField(BitcoinAddress value) : base(TaggedFieldTypes.FallbackAddress, value)
-    { }
-
-    protected override BitcoinAddress? Decode(byte[] data)
+    public void WriteToBitWriter(BitWriter bitWriter)
     {
+        // Write type
+        bitWriter.WriteByteAsBits((byte)Type, 5);
+
+        // Write length
+        bitWriter.WriteInt16AsBits(Length, 10);
+
+        // Write Address Type
+        bitWriter.WriteByteAsBits(_data[0], 5);
+
+        // Write data
+        bitWriter.WriteBits(_data[1..], (Length - 1) * 5);
+    }
+
+    /// <inheritdoc/>
+    public bool IsValid()
+    {
+        return true;
+    }
+
+    public object GetValue()
+    {
+        return Value;
+    }
+
+    public static FallbackAddressTaggedField FromBitReader(BitReader bitReader, short length)
+    {
+        // Get Address Type
+        var addressType = bitReader.ReadByteFromBits(5);
+        var newLength = length - 1;
+
+        // Read address bytes
+        var data = new byte[(newLength * 5 + 7) / 8];
+        bitReader.ReadBits(data.AsSpan(), newLength * 5);
+
+        if (newLength * 5 % 8 != 0 && data[^1] == 0)
+        {
+            data = data[..^1];
+        }
+
         // TODO: Get current network
-        if (data[0] == 0) // Witness
+        BitcoinAddress address = addressType switch
         {
-            if (data.Length == 21) // P2WPKH
-            {
-                return new WitKeyId(Data[1..]).GetAddress(Network.Main);
-            }
-            else // P2WSH
-            {
-                return new WitScriptId(Data[1..]).GetAddress(Network.Main);
-            }
-        }
-        if (Data[0] == 17) // P2PKH
-        {
-            return new KeyId(Data[1..]).GetAddress(Network.Main);
-        }
-        else if (Data[0] == 18) // P2SH
-        {
-            return new ScriptId(Data[1..]).GetAddress(Network.Main);
-        }
-
-        return null;
-    }
-
-    public override bool IsValid()
-    {
-        return Value != null;
-    }
-
-    protected override byte[] Encode(BitcoinAddress? value)
-    {
-        if (value == null)
-        {
-            return [];
-        }
-
-        var data = new byte[value.ScriptPubKey.Length + 1];
-
-        if (value is BitcoinPubKeyAddress pubKeyAddress)
-        {
+            // Witness P2WPKH
+            0 when data.Length == 20 => new WitKeyId(data).GetAddress(Network.Main),
+            // Witness P2WSH
+            0 when data.Length == 32 => new WitScriptId(data).GetAddress(Network.Main),
             // P2PKH
-            data[0] = 17;
-            pubKeyAddress.ScriptPubKey.ToBytes().CopyTo(data, 1);
-        }
-        else if (value is BitcoinScriptAddress scriptAddress)
-        {
+            17 => new KeyId(data).GetAddress(Network.Main),
             // P2SH
-            data[0] = 18;
-            scriptAddress.ScriptPubKey.ToBytes().CopyTo(data, 1);
-        }
+            18 => new ScriptId(data).GetAddress(Network.Main),
+            _ => throw new ArgumentException("Address is unknown or invalid.", nameof(bitReader))
+        };
 
-        return AccountForPaddingWhenEncoding(data);
+        return new FallbackAddressTaggedField(address);
     }
 }

@@ -2,9 +2,9 @@ using System.Runtime.Serialization;
 
 namespace NLightning.Bolts.BOLT1.Messages;
 
-using Bolts.Base;
-using Bolts.Exceptions;
+using Base;
 using Constants;
+using Exceptions;
 using Payloads;
 
 /// <summary>
@@ -16,7 +16,9 @@ using Payloads;
 /// </remarks>
 public sealed class PingMessage() : BaseMessage(MessageTypes.PING, new PingPayload())
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// The payload of the message.
+    /// </summary>
     public new PingPayload Payload => (PingPayload)base.Payload;
 
     private PingMessage(PingPayload payload) : this()

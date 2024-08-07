@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+using NLightning.Bolts.BOLT11.Interfaces;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
@@ -12,67 +12,56 @@ using Enums;
 /// <remarks>
 /// The features are a collection of features that are supported by the node.
 /// </remarks>
-/// <seealso cref="Features"/>
-/// <seealso cref="BaseTaggedField{T}"/>
-public sealed class FeaturesTaggedField : BaseTaggedField<Features>
+/// <seealso cref="ITaggedField"/>
+public sealed class FeaturesTaggedField : ITaggedField
 {
-    /// <summary>
-    /// Constructor for FeaturesTaggedField from a BitReader and a length
-    /// </summary>
-    /// <param name="bitReader">The BitReader to read the data from</param>
-    /// <param name="length">The length of the tagged field</param>
-    /// <remarks>
-    /// This constructor is used to create a FeaturesTaggedField from a BitReader and a length.
-    /// The Value property is set to the decoded value.
-    /// </remarks>
-    /// <seealso cref="BitReader"/>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public FeaturesTaggedField(BitReader bitReader, short length) : base(TaggedFieldTypes.Features)
-    {
-        LengthInBits = length;
-        Value = Features.DeserializeFromBitReader(bitReader, (short)(length * 5));
-        Data = Encode(Value);
-    }
+    public TaggedFieldTypes Type => TaggedFieldTypes.FEATURES;
+    public Features Value { get; }
+    public short Length { get; }
 
     /// <summary>
-    /// Constructor for FeaturesTaggedField from a value
+    /// Initializes a new instance of the <see cref="DescriptionTaggedField"/> class.
     /// </summary>
-    /// <param name="value">The value of the tagged field</param>
-    /// <remarks>
-    /// This constructor is used to create a FeaturesTaggedField from a value.
-    /// The Data property is set to the encoded value.
-    /// </remarks>
-    /// <seealso cref="Features"/>
-    /// <seealso cref="Feature"/>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public FeaturesTaggedField(Features value) : base(TaggedFieldTypes.Features, value)
-    { }
-
-    /// <inheritdoc/>
-    public override bool IsValid()
+    /// <param name="value">The Description</param>
+    public FeaturesTaggedField(Features value)
     {
-        return Value != null;
+        Value = value;
+        Length = (short)((value.SizeInBits / 5) + (value.SizeInBits % 5 == 0 ? 0 : 1));
+    }
+
+    public void WriteToBitWriter(BitWriter bitWriter)
+    {
+        // Write type
+        bitWriter.WriteByteAsBits((byte)Type, 5);
+
+        // Write length
+        bitWriter.WriteInt16AsBits(Length, 10);
+
+        // Write data
+        Value.WriteToBitWriter(bitWriter);
     }
 
     /// <inheritdoc/>
-    /// <returns>The features as a Features object</returns>
-    /// <seealso cref="Features"/>
-    /// <seealso cref="Feature"/>
-    protected override Features Decode(byte[] data)
+    public bool IsValid()
     {
-        throw new NotImplementedException();
+        return true;
     }
 
-    /// <inheritdoc/>
-    /// <returns>The features as a byte array</returns>
-    /// <seealso cref="Features"/>
-    /// <seealso cref="Feature"/>
-    protected override byte[] Encode(Features value)
+    public object GetValue()
     {
-        return AccountForPaddingWhenEncoding(value.SerializeToBits());
+        return Value;
+    }
+
+    public static FeaturesTaggedField FromBitReader(BitReader bitReader, short length)
+    {
+        if (length <= 0)
+        {
+            throw new ArgumentException("Invalid length for FeaturesTaggedField. Length must be greater than 0", nameof(length));
+        }
+
+        var shouldPad = length * 5 / 8 == (length * 5 - 7) / 8;
+        var features = Features.DeserializeFromBitReader(bitReader, length * 5, shouldPad);
+
+        return new FeaturesTaggedField(features);
     }
 }

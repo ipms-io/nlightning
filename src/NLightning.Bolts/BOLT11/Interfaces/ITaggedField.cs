@@ -1,3 +1,5 @@
+using NLightning.Common.BitUtils;
+
 namespace NLightning.Bolts.BOLT11.Interfaces;
 
 using Enums;
@@ -9,7 +11,6 @@ using Enums;
 /// Tagged fields are used in the BOLT11 invoice format to add additional information to the invoice.
 /// </remarks>
 /// <seealso cref="TaggedFieldTypes"/>
-/// <seealso cref="BaseTaggedField{T}"/>
 public interface ITaggedField
 {
     /// <summary>
@@ -25,16 +26,6 @@ public interface ITaggedField
     /// Length is represented by 10 bits, big-endian, and has a maximum value of 1023
     /// </remarks>
     short Length { get; }
-
-    short LengthInBits { get; }
-
-    /// <summary>
-    /// The data of the tagged field
-    /// </summary>
-    /// <remarks>
-    /// Data is represented by a byte array
-    /// </remarks>
-    byte[] Data { get; }
 
     /// <summary>
     /// Check if the tagged field is valid
@@ -52,5 +43,14 @@ public interface ITaggedField
     /// <remarks>
     /// This method should be implemented by the derived class
     /// </remarks>
-    object GetValue();
+    object? GetValue();
+
+    /// <summary>
+    /// Write the tagged field to a BitWriter
+    /// </summary>
+    /// <remarks>
+    /// This method should be implemented by the derived class
+    /// </remarks>
+    /// <see cref="BitWriter"/>
+    void WriteToBitWriter(BitWriter bitWriter);
 }

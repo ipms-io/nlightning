@@ -28,7 +28,7 @@ public class PongPayload(ushort bytesLen) : IMessagePayload
     /// <inheritdoc/>
     public async Task SerializeAsync(Stream stream)
     {
-        await stream.WriteAsync(EndianBitConverter.GetBytesBE(BytesLength));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(BytesLength));
         await stream.WriteAsync(Ignored);
     }
 
@@ -44,7 +44,7 @@ public class PongPayload(ushort bytesLen) : IMessagePayload
         {
             var buffer = new byte[2];
             await stream.ReadExactlyAsync(buffer);
-            var bytesLength = EndianBitConverter.ToUInt16BE(buffer);
+            var bytesLength = EndianBitConverter.ToUInt16BigEndian(buffer);
 
             var ignored = new byte[bytesLength];
             await stream.ReadExactlyAsync(ignored);

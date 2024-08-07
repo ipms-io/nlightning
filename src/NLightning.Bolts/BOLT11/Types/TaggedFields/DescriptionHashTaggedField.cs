@@ -1,10 +1,11 @@
-using System.Diagnostics.CodeAnalysis;
 using NBitcoin;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
 using Common.BitUtils;
+using Constants;
 using Enums;
+using Interfaces;
 
 /// <summary>
 /// Tagged field for the description hash
@@ -12,61 +13,68 @@ using Enums;
 /// <remarks>
 /// The description hash is a 32 byte hash that is used to identify a description
 /// </remarks>
-/// <seealso cref="BaseTaggedField{T}"/>
-/// <seealso cref="TaggedFieldTypes"/>
-/// <seealso cref="uint256"/>
-public sealed class DescriptionHashTaggedField : BaseTaggedField<uint256>
+/// <seealso cref="ITaggedField"/>
+public sealed class DescriptionHashTaggedField : ITaggedField
 {
-    /// <summary>
-    /// Constructor for DescriptionHashTaggedField from a BitReader and a length
-    /// </summary>
-    /// <param name="bitReader">The BitReader to read the data from</param>
-    /// <param name="length">The length of the tagged field</param>
-    /// <remarks>
-    /// This constructor is used to create a DescriptionHashTaggedField from a BitReader and a length.
-    /// The Value property is set to the decoded value.
-    /// </remarks>
-    /// <seealso cref="BitReader"/>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public DescriptionHashTaggedField(BitReader bitReader, short length) : base(TaggedFieldTypes.DescriptionHash, bitReader, length)
-    { }
+    public TaggedFieldTypes Type => TaggedFieldTypes.DESCRIPTION_HASH;
+    public uint256 Value { get; }
+    public short Length => TaggedFieldConstants.HASH_LENGTH;
 
     /// <summary>
-    /// Constructor for DescriptionHashTaggedField from a value
+    /// Initializes a new instance of the <see cref="DescriptionHashTaggedField"/> class.
     /// </summary>
-    /// <param name="value">The value of the tagged field</param>
-    /// <remarks>
-    /// This constructor is used to create a DescriptionHashTaggedField from a value.
-    /// The Data property is set to the encoded value.
-    /// </remarks>
-    /// <seealso cref="uint256"/>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public DescriptionHashTaggedField(uint256 value) : base(TaggedFieldTypes.DescriptionHash, value)
-    { }
+    /// <param name="value">The Description Hash</param>
+    public DescriptionHashTaggedField(uint256 value)
+    {
+        Value = value;
+    }
+
+    public void WriteToBitWriter(BitWriter bitWriter)
+    {
+        // Write type
+        bitWriter.WriteByteAsBits((byte)Type, 5);
+
+        // Write length
+        bitWriter.WriteInt16AsBits(Length, 10);
+
+        var data = Value.ToBytes();
+        if (BitConverter.IsLittleEndian)
+        {
+            Array.Reverse(data);
+        }
+
+        // Write data
+        bitWriter.WriteBits(data, Length * 5);
+    }
 
     /// <inheritdoc/>
-    public override bool IsValid()
+    public bool IsValid()
     {
         return Value != uint256.Zero;
     }
 
-    /// <inheritdoc/>
-    /// <returns>The description hash as a uint256</returns>
-    /// <seealso cref="uint256"/>
-    protected override uint256 Decode(byte[] data)
+    public object GetValue()
     {
-        return new uint256(data);
+        return Value;
     }
 
-    /// <inheritdoc/>
-    /// <returns>The description hash as a uint256</returns>
-    /// <seealso cref="uint256"/>
-    protected override byte[] Encode(uint256 value)
+    public static DescriptionHashTaggedField FromBitReader(BitReader bitReader, short length)
     {
-        return AccountForPaddingWhenEncoding(value.ToBytes());
+        if (length != TaggedFieldConstants.HASH_LENGTH)
+        {
+            throw new ArgumentException($"Invalid length for DescriptionHashTaggedField. Expected {TaggedFieldConstants.HASH_LENGTH}, but got {length}");
+        }
+
+        // Read the data from the BitReader
+        var data = new byte[(TaggedFieldConstants.HASH_LENGTH * 5 + 7) / 8];
+        bitReader.ReadBits(data, length * 5);
+        data = data[..^1];
+
+        if (BitConverter.IsLittleEndian)
+        {
+            Array.Reverse(data);
+        }
+
+        return new DescriptionHashTaggedField(new uint256(data));
     }
 }

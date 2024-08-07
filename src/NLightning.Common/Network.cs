@@ -4,10 +4,10 @@ namespace NLightning.Common;
 
 public readonly struct Network(string name)
 {
-    public static readonly Network MainNet = new(NetworkConstants.MAINNET);
-    public static readonly Network TestNet = new(NetworkConstants.TESTNET);
-    public static readonly Network RegTest = new(NetworkConstants.REGTEST);
-    public static readonly Network SigNet = new(NetworkConstants.SIGNET);
+    public static readonly Network MAIN_NET = new(NetworkConstants.MAINNET);
+    public static readonly Network TEST_NET = new(NetworkConstants.TESTNET);
+    public static readonly Network REG_TEST = new(NetworkConstants.REGTEST);
+    public static readonly Network SIG_NET = new(NetworkConstants.SIGNET);
 
     public string Name { get; } = name;
 

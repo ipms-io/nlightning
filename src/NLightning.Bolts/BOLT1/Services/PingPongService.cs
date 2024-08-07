@@ -1,8 +1,8 @@
 namespace NLightning.Bolts.BOLT1.Services;
 
-using BOLT1.Interfaces;
-using BOLT1.Messages;
 using Bolts.Factories;
+using Interfaces;
+using Messages;
 
 /// <summary>
 /// Service for managing the ping pong protocol.
@@ -44,7 +44,7 @@ public class PingPongService(TimeSpan networkTimeout) : IPingPongService
                 return;
             }
 
-            await Task.Delay(new Random().Next(30000, 300000), cancellationToken);
+            await Task.Delay(_random.Next(30000, 300000), cancellationToken);
 
             _pongReceivedTaskSource = new();
             _pingMessage = (PingMessage)MessageFactory.CreatePingMessage();

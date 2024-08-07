@@ -12,20 +12,20 @@ public class TaggedFieldList : List<ITaggedField>
     public new void Add(ITaggedField taggedField)
     {
         // Check for uniqueness
-        if (this.Any(x => x.Type.Equals(taggedField.Type)) && taggedField.Type != TaggedFieldTypes.FallbackAddress)
+        if (this.Any(x => x.Type.Equals(taggedField.Type)) && taggedField.Type != TaggedFieldTypes.FALLBACK_ADDRESS)
         {
             throw new ArgumentException($"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
         }
-        else if (taggedField.Type == TaggedFieldTypes.Description)
+        else if (taggedField.Type == TaggedFieldTypes.DESCRIPTION)
         {
-            if (this.Any(x => x.Type.Equals(TaggedFieldTypes.DescriptionHash)))
+            if (this.Any(x => x.Type.Equals(TaggedFieldTypes.DESCRIPTION_HASH)))
             {
                 throw new ArgumentException($"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
             }
         }
-        else if (taggedField.Type == TaggedFieldTypes.DescriptionHash)
+        else if (taggedField.Type == TaggedFieldTypes.DESCRIPTION_HASH)
         {
-            if (this.Any(x => x.Type.Equals(TaggedFieldTypes.Description)))
+            if (this.Any(x => x.Type.Equals(TaggedFieldTypes.DESCRIPTION)))
             {
                 throw new ArgumentException($"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
             }
@@ -111,8 +111,9 @@ public class TaggedFieldList : List<ITaggedField>
                         {
                             taggedFields.Add(taggedField);
                         }
-                        catch
+                        catch (Exception e)
                         {
+                            Debug.WriteLine(e.Message);
                             // Skip for now, log latter
                         }
                     }
@@ -132,20 +133,12 @@ public class TaggedFieldList : List<ITaggedField>
     {
         foreach (var taggedField in this)
         {
-            // Write type
-            bitWriter.WriteByteAsBits((byte)taggedField.Type, 5);
-
-            // Write length
-            var length = taggedField.LengthInBits;
-            bitWriter.WriteInt16AsBits(length, 10);
-
-            // Write data
-            bitWriter.WriteBits(taggedField.Data, length);
+            taggedField.WriteToBitWriter(bitWriter);
         }
     }
 
     internal int CalculateSizeInBits()
     {
-        return this.Sum(x => x.LengthInBits);
+        return this.Sum(x => x.Length);
     }
 }

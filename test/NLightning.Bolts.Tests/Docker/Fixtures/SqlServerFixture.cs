@@ -9,7 +9,7 @@ namespace NLightning.Bolts.Tests.Docker.Fixtures;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class SqlServerFixture : IDisposable
 {
-    private const string ContainerName = "sqlserver";
+    private const string CONTAINER_NAME = "sqlserver";
     private readonly DockerClient _client = new DockerClientConfiguration().CreateClient();
     private string? _containerId;
     private string? _ip;
@@ -26,7 +26,7 @@ public class SqlServerFixture : IDisposable
         GC.SuppressFinalize(this);
 
         // Remove containers
-        RemoveContainer(ContainerName).Wait();
+        RemoveContainer(CONTAINER_NAME).Wait();
 
         _client.Dispose();
     }
@@ -35,7 +35,7 @@ public class SqlServerFixture : IDisposable
     {
 
         await _client.PullImageAndWaitForCompleted("mcr.microsoft.com/mssql/server", "2022-latest");
-        await RemoveContainer(ContainerName);
+        await RemoveContainer(CONTAINER_NAME);
         var nodeContainer = await _client.Containers.CreateContainerAsync(new CreateContainerParameters
         {
             Image = "mcr.microsoft.com/mssql/server:2022-latest",
@@ -43,8 +43,8 @@ public class SqlServerFixture : IDisposable
             {
                 NetworkMode = "bridge"
             },
-            Name = $"{ContainerName}",
-            Hostname = $"{ContainerName}",
+            Name = $"{CONTAINER_NAME}",
+            Hostname = $"{CONTAINER_NAME}",
             Env =
             [
                 "MSSQL_SA_PASSWORD=Superuser1234*",
@@ -54,7 +54,7 @@ public class SqlServerFixture : IDisposable
 
         Assert.NotNull(nodeContainer);
         _containerId = nodeContainer.ID;
-        var started = await _client.Containers.StartContainerAsync(_containerId, new ContainerStartParameters());
+        _ = await _client.Containers.StartContainerAsync(_containerId, new ContainerStartParameters());
 
         //Build connection string
         var ipAddressReady = false;
@@ -121,7 +121,7 @@ public class SqlServerFixture : IDisposable
 
         try
         {
-            var inspect = _client.Containers.InspectContainerAsync(ContainerName);
+            var inspect = _client.Containers.InspectContainerAsync(CONTAINER_NAME);
             inspect.Wait();
             return inspect.Result.State.Running;
         }

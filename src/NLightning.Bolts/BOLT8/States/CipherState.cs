@@ -13,9 +13,6 @@ internal sealed class CipherState : IDisposable
 {
     private const ulong MAX_NONCE = 1000;
 
-    private static readonly byte[] s_zeroLen = [];
-    private static readonly byte[] s_zeros = new byte[32];
-
     private readonly ChaCha20Poly1305 _cipher = new();
     private readonly Hkdf _hkdf = new();
     private byte[]? _ck;

@@ -11,7 +11,7 @@ using Types;
 /// <remarks>
 /// The networks TLV is used in the InitMessage to communicate the networks that the node supports.
 /// </remarks>
-public class NetworksTLV : TLV
+public class NetworksTlv : Tlv
 {
     /// <summary>
     /// The chain hashes.
@@ -21,14 +21,19 @@ public class NetworksTLV : TLV
     /// </remarks>
     public IEnumerable<ChainHash>? ChainHashes { get; private set; }
 
-    public NetworksTLV() : base(TLVConstants.NETWORKS)
+    public NetworksTlv() : base(TlvConstants.NETWORKS)
     { }
-    public NetworksTLV(IEnumerable<ChainHash> chainHashes) : base(TLVConstants.NETWORKS)
+    public NetworksTlv(IEnumerable<ChainHash> chainHashes) : base(TlvConstants.NETWORKS)
     {
         ChainHashes = chainHashes;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Serialize the TLV to a stream
+    /// </summary>
+    /// <param name="stream">The stream to write to</param>
+    /// <returns>A task that represents the asynchronous operation</returns>
+    /// <exception cref="SerializationException">Error serializing TLV or any of it's parts</exception>
     public new async Task SerializeAsync(Stream stream)
     {
         if (ChainHashes != null)
@@ -53,11 +58,11 @@ public class NetworksTLV : TLV
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized NetworksTLV.</returns>
     /// <exception cref="SerializationException">Error deserializing NetworksTLV</exception>
-    public static new async Task<NetworksTLV> DeserializeAsync(Stream stream)
+    public static new async Task<NetworksTlv> DeserializeAsync(Stream stream)
     {
-        var tlv = await TLV.DeserializeAsync(stream) as NetworksTLV ?? throw new SerializationException("Invalid TLV type");
+        var tlv = await Tlv.DeserializeAsync(stream) as NetworksTlv ?? throw new SerializationException("Invalid TLV type");
 
-        if (tlv.Type != TLVConstants.NETWORKS)
+        if (tlv.Type != TlvConstants.NETWORKS)
         {
             throw new SerializationException("Invalid TLV type");
         }

@@ -11,17 +11,17 @@ public static class TaggedFieldFactory
     {
         return type switch
         {
-            TaggedFieldTypes.PaymentHash => new PaymentHashTaggedField(bitReader, length),
-            TaggedFieldTypes.RoutingInfo => new RoutingInfoTaggedField(bitReader, length),
-            TaggedFieldTypes.Features => new FeaturesTaggedField(bitReader, length),
-            TaggedFieldTypes.ExpiryTime => new ExpiryTimeTaggedField(bitReader, length),
-            TaggedFieldTypes.FallbackAddress => new FallbackAddressTaggedField(bitReader, length),
-            TaggedFieldTypes.Description => new DescriptionTaggedField(bitReader, length),
-            TaggedFieldTypes.PaymentSecret => new PaymentSecretTaggedField(bitReader, length),
-            TaggedFieldTypes.PayeePubKey => new PayeePubKeyTaggedField(bitReader, length),
-            TaggedFieldTypes.DescriptionHash => new DescriptionHashTaggedField(bitReader, length),
-            TaggedFieldTypes.MinFinalCltvExpiry => new MinFinalCltvExpiryTaggedField(bitReader, length),
-            TaggedFieldTypes.Metadata => new MetadataTaggedField(bitReader, length),
+            TaggedFieldTypes.PAYMENT_HASH => PaymentHashTaggedField.FromBitReader(bitReader, length),
+            TaggedFieldTypes.ROUTING_INFO => RoutingInfoTaggedField.FromBitReader(bitReader, length),
+            TaggedFieldTypes.FEATURES => FeaturesTaggedField.FromBitReader(bitReader, length),
+            TaggedFieldTypes.EXPIRY_TIME => ExpiryTimeTaggedField.FromBitReader(bitReader, length),
+            TaggedFieldTypes.FALLBACK_ADDRESS => FallbackAddressTaggedField.FromBitReader(bitReader, length),
+            TaggedFieldTypes.DESCRIPTION => DescriptionTaggedField.FromBitReader(bitReader, length),
+            TaggedFieldTypes.PAYMENT_SECRET => PaymentSecretTaggedField.FromBitReader(bitReader, length),
+            TaggedFieldTypes.PAYEE_PUB_KEY => PayeePubKeyTaggedField.FromBitReader(bitReader, length),
+            TaggedFieldTypes.DESCRIPTION_HASH => DescriptionHashTaggedField.FromBitReader(bitReader, length),
+            TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY => MinFinalCltvExpiryTaggedField.FromBitReader(bitReader, length),
+            TaggedFieldTypes.METADATA => MetadataTaggedField.FromBitReader(bitReader, length),
             // Add more cases as needed for other types
             _ => throw new ArgumentException($"Unknown tagged field type: {type}", nameof(type))
         };

@@ -4,8 +4,8 @@ namespace NLightning.Bolts.Tests.BOLT1.Services;
 
 using Bolts.BOLT1.Services;
 using Bolts.BOLT8.Interfaces;
-using Bolts.Factories;
-using Bolts.Interfaces;
+using Factories;
+using Interfaces;
 
 public class MessageServiceTests
 {

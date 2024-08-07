@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+using NLightning.Bolts.BOLT11.Interfaces;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
@@ -11,61 +11,57 @@ using Enums;
 /// <remarks>
 /// The expiry time is the time in seconds after which the invoice is invalid.
 /// </remarks>
-/// <seealso cref="BaseTaggedField{T}"/>
-/// <seealso cref="TaggedFieldTypes"/>
-public sealed class ExpiryTimeTaggedField : BaseTaggedField<int>
+/// <seealso cref="ITaggedField"/>
+public sealed class ExpiryTimeTaggedField : ITaggedField
 {
-    /// <summary>
-    /// Constructor for ExpiryTimeTaggedField from a BitReader and a length
-    /// </summary>
-    /// <param name="bitReader">The BitReader to read the data from</param>
-    /// <param name="length">The length of the tagged field</param>
-    /// <remarks>
-    /// This constructor is used to create a ExpiryTimeTaggedField from a BitReader and a length.
-    /// The Value property is set to the decoded value.
-    /// </remarks>
-    /// <seealso cref="BitReader"/>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public ExpiryTimeTaggedField(BitReader bitReader, short length) : base(TaggedFieldTypes.ExpiryTime)
-    {
-        LengthInBits = length;
-        Value = bitReader.ReadInt32FromBits(length * 5);
-        Data = Encode(Value);
-    }
+    public TaggedFieldTypes Type => TaggedFieldTypes.EXPIRY_TIME;
+    public int Value { get; }
+    public short Length { get; }
 
     /// <summary>
-    /// Constructor for ExpiryTimeTaggedField from a value
+    /// Initializes a new instance of the <see cref="ExpiryTimeTaggedField"/> class.
     /// </summary>
-    /// <param name="value">The expiration in seconds</param>
-    /// <remarks>
-    /// This constructor is used to create a ExpiryTimeTaggedField from a value.
-    /// The Data property is set to the encoded value.
-    /// </remarks>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public ExpiryTimeTaggedField(int value) : base(TaggedFieldTypes.ExpiryTime, value)
-    { }
-
-    /// <inheritdoc/>
-    public override bool IsValid()
+    /// <param name="value">The Expiry Time in seconds</param>
+    public ExpiryTimeTaggedField(int value)
     {
-        return Value >= 0;
+        Value = value;
+        var data = EndianBitConverter.GetBytesBigEndian(value, true);
+        Length = (short)((data.Length * 8 - 7) / 5);
+    }
+
+    public void WriteToBitWriter(BitWriter bitWriter)
+    {
+        // Write type
+        bitWriter.WriteByteAsBits((byte)Type, 5);
+
+        // Write length
+        bitWriter.WriteInt16AsBits(Length, 10);
+
+        // Write data
+        bitWriter.WriteInt32AsBits(Value, Length * 5);
     }
 
     /// <inheritdoc/>
-    /// <returns>The expiry time in seconds</returns>
-    protected override int Decode(byte[] data)
+    public bool IsValid()
     {
-        throw new NotImplementedException();
+        return Value > 0;
     }
 
-    /// <inheritdoc/>
-    /// <returns>The expiry time as a byte array</returns>
-    protected override byte[] Encode(int value)
+    public object GetValue()
     {
-        return AccountForPaddingWhenEncoding(EndianBitConverter.GetBytesBE(value, true));
+        return Value;
+    }
+
+    public static ExpiryTimeTaggedField FromBitReader(BitReader bitReader, short length)
+    {
+        if (length <= 0)
+        {
+            throw new ArgumentException("Invalid length for ExpiryTimeTaggedField. Length must be greater than 0", nameof(length));
+        }
+
+        // Read the data from the BitReader
+        var value = bitReader.ReadInt32FromBits(length * 5);
+
+        return new ExpiryTimeTaggedField(value);
     }
 }

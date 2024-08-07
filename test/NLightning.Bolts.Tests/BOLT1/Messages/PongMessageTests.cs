@@ -4,7 +4,7 @@ namespace NLightning.Bolts.Tests.BOLT1.Messages;
 
 using Bolts.BOLT1.Messages;
 using Bolts.BOLT1.Payloads;
-using Bolts.Exceptions;
+using Exceptions;
 
 public class PongMessageTests
 {

@@ -8,7 +8,7 @@ public enum TaggedFieldTypes : byte
     /// <remarks>
     /// represented by the letter p
     /// </remarks>
-    PaymentHash = 1,
+    PAYMENT_HASH = 1,
 
     /// <summary>
     /// The Routing Information
@@ -16,7 +16,7 @@ public enum TaggedFieldTypes : byte
     /// <remarks>
     /// represented by the letter r
     /// </remarks>
-    RoutingInfo = 3,
+    ROUTING_INFO = 3,
 
     /// <summary>
     /// The Features
@@ -24,7 +24,7 @@ public enum TaggedFieldTypes : byte
     /// <remarks>
     /// represented by the letter 9
     /// </remarks>
-    Features = 5,
+    FEATURES = 5,
 
     /// <summary>
     /// The Expiry Time
@@ -32,7 +32,7 @@ public enum TaggedFieldTypes : byte
     /// <remarks>
     /// represented by the letter x
     /// </remarks>
-    ExpiryTime = 6,
+    EXPIRY_TIME = 6,
 
     /// <summary>
     /// The FallBack Address
@@ -40,7 +40,7 @@ public enum TaggedFieldTypes : byte
     /// <remarks>
     /// represented by the letter f
     /// </remarks>
-    FallbackAddress = 9,
+    FALLBACK_ADDRESS = 9,
 
     /// <summary>
     /// The Description
@@ -48,7 +48,7 @@ public enum TaggedFieldTypes : byte
     /// <remarks>
     /// represented by the letter d
     /// </remarks>
-    Description = 13,
+    DESCRIPTION = 13,
 
     /// <summary>
     /// The Payment Secret
@@ -56,7 +56,7 @@ public enum TaggedFieldTypes : byte
     /// <remarks>
     /// represented by the letter s
     /// </remarks>
-    PaymentSecret = 16,
+    PAYMENT_SECRET = 16,
 
     /// <summary>
     /// The Payee Public Key
@@ -64,7 +64,7 @@ public enum TaggedFieldTypes : byte
     /// <remarks>
     /// represented by the letter n
     /// </remarks>
-    PayeePubKey = 19,
+    PAYEE_PUB_KEY = 19,
 
     /// <summary>
     /// The Description Hash
@@ -72,7 +72,7 @@ public enum TaggedFieldTypes : byte
     /// <remarks>
     /// represented by the letter h
     /// </remarks>
-    DescriptionHash = 23,
+    DESCRIPTION_HASH = 23,
 
     /// <summary>
     /// The Min Final Cltv Expiry
@@ -80,7 +80,7 @@ public enum TaggedFieldTypes : byte
     /// <remarks>
     /// represented by the letter c
     /// </remarks>
-    MinFinalCltvExpiry = 24,
+    MIN_FINAL_CLTV_EXPIRY = 24,
 
     /// <summary>
     /// The Additional Metadata
@@ -88,5 +88,5 @@ public enum TaggedFieldTypes : byte
     /// <remarks>
     /// represented by the letter m
     /// </remarks>
-    Metadata = 27
+    METADATA = 27
 }

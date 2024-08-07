@@ -1,10 +1,10 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
 using Common.BitUtils;
 using Enums;
+using Interfaces;
 
 /// <summary>
 /// Tagged field for the description
@@ -12,69 +12,74 @@ using Enums;
 /// <remarks>
 /// The description is a UTF-8 encoded string that describes, in short, the purpose of payment
 /// </remarks>
-/// <seealso cref="BaseTaggedField{T}"/>
-/// <seealso cref="TaggedFieldTypes"/>
-public sealed class DescriptionTaggedField : BaseTaggedField<string>
+/// <seealso cref="ITaggedField"/>
+public sealed class DescriptionTaggedField : ITaggedField
 {
+    private readonly byte[] _data;
+
+    public TaggedFieldTypes Type => TaggedFieldTypes.DESCRIPTION;
+    public string Value { get; }
+    public short Length { get; }
+
     /// <summary>
-    /// Constructor for DescriptionTaggedField from a BitReader and a length
+    /// Initializes a new instance of the <see cref="DescriptionTaggedField"/> class.
     /// </summary>
-    /// <param name="buffer">The BitReader to read the data from</param>
-    /// <param name="length">The length of the tagged field</param>
-    /// <remarks>
-    /// This constructor is used to create a DescriptionTaggedField from a BitReader and a length.
-    /// The Value property is set to the decoded value.
-    /// </remarks>
-    /// <seealso cref="BitReader"/>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public DescriptionTaggedField(BitReader buffer, short length) : base(TaggedFieldTypes.Description, length)
+    /// <param name="value">The Description</param>
+    public DescriptionTaggedField(string value)
     {
-        buffer.ReadBits(Data, length * 5);
-        if (length * 5 % 8 > 0)
+        Value = value;
+
+        // Add Padding if needed
+        var data = Encoding.UTF8.GetBytes(Value);
+        var bitLength = data.Length * 8;
+        var totalBits = bitLength + (5 - bitLength % 5) % 5;
+        if (totalBits != bitLength)
         {
-            Data = Data[..^1];
+            _data = new byte[data.Length + 1];
+            Array.Copy(data, _data, data.Length);
         }
-        Value = Decode(Data);
+        else
+        {
+            _data = data;
+        }
+
+        Length = (short)(totalBits / 5);
     }
 
-    /// <summary>
-    /// Constructor for DescriptionTaggedField from a value
-    /// </summary>
-    /// <param name="value">The value of the tagged field</param>
-    /// <remarks>
-    /// This constructor is used to create a DescriptionTaggedField from a value.
-    /// The Data property is set to the encoded value.
-    /// </remarks>
-    /// <seealso cref="BaseTaggedField{T}"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    [SetsRequiredMembers]
-    public DescriptionTaggedField(string value) : base(TaggedFieldTypes.Description, value)
-    { }
+    public void WriteToBitWriter(BitWriter bitWriter)
+    {
+        // Write type
+        bitWriter.WriteByteAsBits((byte)Type, 5);
+
+        // Write length
+        bitWriter.WriteInt16AsBits(Length, 10);
+
+        // Write data
+        bitWriter.WriteBits(_data, Length * 5);
+    }
 
     /// <inheritdoc/>
-    public override bool IsValid()
+    public bool IsValid()
     {
         return !string.IsNullOrWhiteSpace(Value);
     }
 
-    /// <inheritdoc/>
-    /// <returns>The description as a string</returns>
-    protected override string Decode(byte[] data)
+    public object GetValue()
     {
-        return Encoding.UTF8.GetString(data);
+        return Value;
     }
 
-    /// <inheritdoc/>
-    /// <returns>The description as a byte array</returns>
-    protected override byte[] Encode(string value)
+    public static DescriptionTaggedField FromBitReader(BitReader bitReader, short length)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        if (length <= 0)
         {
-            throw new ArgumentException("Description cannot be null or empty", nameof(value));
+            throw new ArgumentException("Invalid length for DescriptionTaggedField. Length must be greater than 0", nameof(length));
         }
 
-        return AccountForPaddingWhenEncoding(Encoding.UTF8.GetBytes(value));
+        // Read the data from the BitReader
+        var data = new byte[(length * 5 + 7) / 8];
+        bitReader.ReadBits(data, length * 5);
+
+        return new DescriptionTaggedField(Encoding.UTF8.GetString(length * 5 % 8 > 0 ? data[..^1] : data));
     }
 }

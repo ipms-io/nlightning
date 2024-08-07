@@ -6,10 +6,10 @@ namespace NLightning.Bolts.Tests.BOLT8.Services;
 
 using BOLT1.Fixtures;
 using Bolts.BOLT8.Services;
-using Bolts.Exceptions;
+using Exceptions;
 using Mock;
 
-public partial class TransportServiceTests
+public class TransportServiceTests
 {
     [Fact]
     public async void Given_TransportServiceAsInitiator_When_InitializeIsCalled_Then_HandshakeServicePerformStepIsCalledTwice()
