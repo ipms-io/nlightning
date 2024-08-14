@@ -7,6 +7,8 @@ using System.Security.Cryptography;
 
 namespace NLightning.Bolts.BOLT8.Ciphers;
 
+using Common;
+
 /// <summary>
 /// AEAD_CHACHA20_POLY1305 from <see href="https://tools.ietf.org/html/rfc7539">RFC 7539</see>.
 /// The 96-bit nonce is formed by encoding 32 bits of zeros followed by

@@ -1,15 +1,16 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using NBitcoin;
+using NLightning.Common.Managers;
 
 namespace NLightning.Bolts.BOLT11;
 
 using BOLT8.Constants;
 using BOLT8.Hashes;
 using BOLT9;
-using Common;
 using Common.BitUtils;
 using Common.Constants;
+using Common.Types;
 using Constants;
 using Encoders;
 using Enums;
@@ -39,7 +40,6 @@ public class Invoice
         { InvoiceConstants.PREFIX_SIGNET.ToUpperInvariant(), Network.SIG_NET },
         { InvoiceConstants.PREFIX_REGTEST.ToUpperInvariant(), Network.REG_TEST }
     };
-    private readonly Key? _key;
     #endregion
 
     #region Public Properties
@@ -372,14 +372,13 @@ public class Invoice
     /// The invoice is created with the given network, amount of millisatoshis and timestamp.
     /// </remarks>
     /// <seealso cref="Network"/>
-    internal Invoice(Network network, Key key, ulong? amountMsats = 0, long? timestamp = null)
+    internal Invoice(Network network, ulong? amountMsats = 0, long? timestamp = null)
     {
         AmountMsats = amountMsats ?? 0;
         Network = network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Signature = string.Empty;
-        _key = key;
     }
 
     /// <summary>
@@ -391,14 +390,13 @@ public class Invoice
     /// The invoice is created with the given network, amount of millisatoshis and timestamp.
     /// </remarks>
     /// <seealso cref="Network"/>
-    internal Invoice(Network network, Key key, ulong? amountMsats = 0)
+    internal Invoice(Network network, ulong? amountMsats = 0)
     {
         AmountMsats = amountMsats ?? 0;
         Network = network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Signature = string.Empty;
-        _key = key;
     }
 
     /// <summary>
@@ -421,14 +419,13 @@ public class Invoice
         Timestamp = timestamp;
         TaggedFields = taggedFields;
         Signature = string.Empty;
-        _key = null;
     }
     #endregion
 
     #region Static Constructors
-    public static Invoice InSatoshis(Network network, Key key, long amountSats, long? timestamp = null)
+    public static Invoice InSatoshis(Network network, long amountSats, long? timestamp = null)
     {
-        return new Invoice(network, key, (ulong)amountSats * 1_000, timestamp);
+        return new Invoice(network, (ulong)amountSats * 1_000, timestamp);
     }
 
     public static Invoice Decode(string invoiceString)
@@ -480,7 +477,7 @@ public class Invoice
         TaggedFields.WriteToBitWriter(bitWriter);
 
         // Sign the invoice
-        var compactSignature = SignInvoice(HumanReadablePart, bitWriter, _key);
+        var compactSignature = SignInvoice(HumanReadablePart, bitWriter);
         var signature = new byte[compactSignature.Signature.Length + 1];
         compactSignature.Signature.CopyTo(signature, 0);
         signature[^1] = (byte)compactSignature.RecoveryId;
@@ -641,7 +638,7 @@ public class Invoice
         throw new ArgumentException("Invalid signature in invoice");
     }
 
-    private static CompactSignature SignInvoice(string hrp, BitWriter bitWriter, Key key)
+    private static CompactSignature SignInvoice(string hrp, BitWriter bitWriter)
     {
         // Assemble the message (hrp + data)
         var data = bitWriter.ToArray();
@@ -654,19 +651,11 @@ public class Invoice
         sha256.AppendData(message);
         var hash = new byte[HashConstants.HASH_LEN];
         sha256.GetHashAndReset(hash);
-
-        // if (BitConverter.IsLittleEndian)
-        // {
-        //     Array.Reverse(hash);
-        // }
-
         var nBitcoinHash = new uint256(hash);
 
         // Sign the hash
-        var compactSignature = key.SignCompact(nBitcoinHash, false);
-        var payeePubKey = PubKey.RecoverCompact(nBitcoinHash, compactSignature);
-
-        return compactSignature;
+        using var key = new Key(SecureKeyManager.GetPrivateKey());
+        return key.SignCompact(nBitcoinHash, false);
     }
 
     private static Network GetNetwork(string invoiceString)

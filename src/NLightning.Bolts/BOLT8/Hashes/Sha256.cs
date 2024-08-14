@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace NLightning.Bolts.BOLT8.Hashes;
 
+using Common;
 using Constants;
 
 /// <summary>

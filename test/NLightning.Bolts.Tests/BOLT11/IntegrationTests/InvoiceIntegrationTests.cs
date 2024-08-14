@@ -1,16 +1,16 @@
 using System.Text;
 using NBitcoin;
-using NLightning.Bolts.BOLT11.Enums;
+using NLightning.Common.Managers;
 
 namespace NLightning.Bolts.Tests.BOLT11.IntegrationTests;
 
+using Bolts.BOLT11;
+using Bolts.BOLT11.Enums;
 using Bolts.BOLT11.Types;
+using Bolts.BOLT8.Constants;
+using Bolts.BOLT8.Hashes;
 using Bolts.BOLT9;
 using Common.Types;
-using NLightning.Bolts.BOLT11;
-using NLightning.Bolts.BOLT8.Constants;
-using NLightning.Bolts.BOLT8.Hashes;
-// using Common.Utils;
 using static Utils.TestUtils;
 
 public class InvoiceIntegrationTests
@@ -99,7 +99,7 @@ public class InvoiceIntegrationTests
         // Arrange
         const string HEX_PRIVATE_KEY = "e126f68f7eafcc8b74f54d269fe206be715000f94dac067d1c04a8ca3b2db734";
         var privateKeyBytes = NBitcoin.DataEncoders.Encoders.Hex.DecodeData(HEX_PRIVATE_KEY);
-        var key = new Key(privateKeyBytes);
+        SecureKeyManager.Initialize(privateKeyBytes);
 
         var testInvoices = ReadTestInvoices("BOLT11/Invoices/ValidInvoices.txt");
 
@@ -109,7 +109,7 @@ public class InvoiceIntegrationTests
             // TODO: Remove once address is fixed
             if (testInvoice.ExpectedTaggedFields.ContainsKey(TaggedFieldTypes.FALLBACK_ADDRESS)) continue;
 
-            var invoice = new Invoice(testInvoice.ExpectedNetwork!.Value, key, testInvoice.ExpectedAmountMilliSats, testInvoice.ExpectedTimestamp);
+            var invoice = new Invoice(testInvoice.ExpectedNetwork!.Value, testInvoice.ExpectedAmountMilliSats, testInvoice.ExpectedTimestamp);
 
             foreach (var taggedField in testInvoice.ExpectedTaggedFields)
             {
@@ -163,7 +163,7 @@ public class InvoiceIntegrationTests
     private class TestInvoice(string invoiceString)
     {
         public readonly string INVOICE_STRING = invoiceString;
-        public Common.Network? ExpectedNetwork;
+        public Network? ExpectedNetwork;
         public ulong? ExpectedAmountMilliSats;
         public long? ExpectedTimestamp;
         public Dictionary<TaggedFieldTypes, object> ExpectedTaggedFields = [];
@@ -188,7 +188,7 @@ public class InvoiceIntegrationTests
                     throw new InvalidOperationException("network line without invoice line");
                 }
 
-                currentInvoice.ExpectedNetwork = new Common.Network(line[8..]);
+                currentInvoice.ExpectedNetwork = new Network(line[8..]);
             }
             else if (line.StartsWith("amount="))
             {
@@ -298,7 +298,7 @@ public class InvoiceIntegrationTests
                 // }
                 //
                 // currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.FALLBACK_ADDRESS, BitcoinAddress.Create(line[2..], network));
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.FALLBACK_ADDRESS, null);
+                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.FALLBACK_ADDRESS, null!);
             }
             else if (line.StartsWith("r="))
             {

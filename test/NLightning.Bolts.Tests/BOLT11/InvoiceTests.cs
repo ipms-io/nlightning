@@ -1,8 +1,8 @@
 namespace NLightning.Bolts.Tests.BOLT11;
 
 using Bolts.BOLT11;
-using Common;
 using Common.Constants;
+using Common.Types;
 
 public class InvoiceTests
 {
@@ -15,7 +15,7 @@ public class InvoiceTests
     public void Given_NetworkType_When_InvoiceIsCreated_Then_PrefixIsCorrect(string network, ulong amountMsats, string expectedPrefix)
     {
         // Act
-        var invoice = new Invoice(network, null, amountMsats);
+        var invoice = new Invoice(network, amountMsats);
 
         // Assert
         Assert.StartsWith(expectedPrefix, invoice.HumanReadablePart);
@@ -39,7 +39,7 @@ public class InvoiceTests
     public void Given_Amount_When_InvoiceIsCreated_Then_AmountIsCorrect(string network, ulong amountMsats, string expectedHumanReadablePart)
     {
         // Act
-        var invoice = new Invoice(network, null, amountMsats);
+        var invoice = new Invoice(network, amountMsats);
 
         // Assert
         Assert.Equal(expectedHumanReadablePart, invoice.HumanReadablePart);
@@ -53,7 +53,7 @@ public class InvoiceTests
         const ulong AMOUNT_MSATS = 0;
 
         // Act
-        var invoice = new Invoice(network, null, AMOUNT_MSATS);
+        var invoice = new Invoice(network, AMOUNT_MSATS);
 
         // Assert
         Assert.Equal("lnbc", invoice.HumanReadablePart);
@@ -66,7 +66,7 @@ public class InvoiceTests
         var invalidNetwork = (Network)"invalid";
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new Invoice(invalidNetwork, null, 1000));
+        Assert.Throws<ArgumentException>(() => new Invoice(invalidNetwork, 1000));
     }
 
     [Theory]
@@ -84,7 +84,7 @@ public class InvoiceTests
     public void Given_Amount_When_InvoiceIsCreatedWithInSatoshis_Then_AmountIsCorrect(string network, long amountSats, string expectedHumanReadablePart)
     {
         // Act
-        var invoice = Invoice.InSatoshis(network, null, amountSats);
+        var invoice = Invoice.InSatoshis(network, amountSats);
 
         // Assert
         Assert.Equal(expectedHumanReadablePart, invoice.HumanReadablePart);

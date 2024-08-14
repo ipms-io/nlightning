@@ -1,9 +1,10 @@
-using NLightning.Common;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 
 namespace NLightning.NLTG;
+
+using Common.Types;
 
 [YamlSerializable]
 public class Options

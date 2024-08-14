@@ -1,6 +1,6 @@
-using NLightning.Common.Constants;
+namespace NLightning.Common.Types;
 
-namespace NLightning.Common;
+using Constants;
 
 public readonly struct Network(string name)
 {

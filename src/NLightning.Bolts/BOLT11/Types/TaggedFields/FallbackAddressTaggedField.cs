@@ -1,10 +1,10 @@
 using NBitcoin;
-using NLightning.Bolts.BOLT11.Interfaces;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
 using Common.BitUtils;
 using Enums;
+using Interfaces;
 
 /// <summary>
 /// Tagged field for the fallback address
@@ -81,7 +81,7 @@ public sealed class FallbackAddressTaggedField : ITaggedField
     public static FallbackAddressTaggedField FromBitReader(BitReader bitReader, short length)
     {
         // TODO: Get network from context
-        var network = Network.Main;
+        var network = NBitcoin.Network.Main;
 
         // Get Address Type
         var addressType = bitReader.ReadByteFromBits(5);

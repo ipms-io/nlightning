@@ -75,6 +75,6 @@ public class MessageServiceTests
         // Assert
         transportServiceMock.Verify(t => t.Dispose(), Times.Once());
 
-        await Assert.ThrowsAnyAsync<ObjectDisposedException>(() => messageService.SendMessageAsync(null));
+        await Assert.ThrowsAnyAsync<ObjectDisposedException>(() => messageService.SendMessageAsync(null!));
     }
 }
