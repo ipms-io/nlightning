@@ -50,10 +50,10 @@ public class InvoiceTests
     {
         // Arrange
         var network = Network.MAIN_NET;
-        ulong amountMsats = 0;
+        const ulong AMOUNT_MSATS = 0;
 
         // Act
-        var invoice = new Invoice(network, null, amountMsats);
+        var invoice = new Invoice(network, null, AMOUNT_MSATS);
 
         // Assert
         Assert.Equal("lnbc", invoice.HumanReadablePart);

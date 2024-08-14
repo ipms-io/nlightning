@@ -46,7 +46,7 @@ public class SqlServerTests
         {
             Task.Delay(100).Wait();
         }
-        context.Database.Migrate();
+        context?.Database.Migrate();
     }
 
     [Fact]

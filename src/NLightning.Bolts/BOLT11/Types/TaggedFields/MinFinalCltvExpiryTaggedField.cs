@@ -1,9 +1,10 @@
-using NLightning.Bolts.BOLT11.Interfaces;
+using System.Numerics;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
 using Common.BitUtils;
 using Enums;
+using Interfaces;
 
 /// <summary>
 /// Tagged field for the minimum final cltv expiry
@@ -25,8 +26,9 @@ public sealed class MinFinalCltvExpiryTaggedField : ITaggedField
     public MinFinalCltvExpiryTaggedField(ushort value)
     {
         Value = value;
-        var data = EndianBitConverter.GetBytesBigEndian(value, true);
-        Length = (short)((data.Length * 8 - 7) / 5);
+        // Calculate the length of the field by getting the number of bits needed to represent the value plus 1
+        // then add 4 to round up to the next multiple of 5 and divide by 5 to get the number of bytes
+        Length = (short)((BitOperations.Log2((uint)Value) + 1 + 4) / 5);
     }
 
     public void WriteToBitWriter(BitWriter bitWriter)

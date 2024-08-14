@@ -372,12 +372,31 @@ public class Invoice
     /// The invoice is created with the given network, amount of millisatoshis and timestamp.
     /// </remarks>
     /// <seealso cref="Network"/>
-    public Invoice(Network network, Key key, ulong? amountMsats = 0, long? timestamp = null)
+    internal Invoice(Network network, Key key, ulong? amountMsats = 0, long? timestamp = null)
     {
         AmountMsats = amountMsats ?? 0;
         Network = network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        Signature = string.Empty;
+        _key = key;
+    }
+
+    /// <summary>
+    /// The base constructor for the invoice
+    /// </summary>
+    /// <param name="network">The network the invoice is created for</param>
+    /// <param name="amountMsats">The amount of millisatoshis the invoice is for</param>
+    /// <remarks>
+    /// The invoice is created with the given network, amount of millisatoshis and timestamp.
+    /// </remarks>
+    /// <seealso cref="Network"/>
+    internal Invoice(Network network, Key key, ulong? amountMsats = 0)
+    {
+        AmountMsats = amountMsats ?? 0;
+        Network = network;
+        HumanReadablePart = BuildHumanReadablePart();
+        Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Signature = string.Empty;
         _key = key;
     }
@@ -394,7 +413,7 @@ public class Invoice
     /// The invoice is created with the given human-readable part, network, amount of millisatoshis, timestamp and tagged fields.
     /// </remarks>
     /// <seealso cref="Network"/>
-    public Invoice(string humanReadablePart, Network network, ulong amountMsats, long timestamp, TaggedFieldList taggedFields)
+    private Invoice(string humanReadablePart, Network network, ulong amountMsats, long timestamp, TaggedFieldList taggedFields)
     {
         Network = network;
         HumanReadablePart = humanReadablePart;
@@ -501,36 +520,59 @@ public class Invoice
         };
     }
 
-    private void ConvertMilliSatoshisToHumanReadable(ulong millisatoshis, StringBuilder sb)
+    private static void ConvertMilliSatoshisToHumanReadable(ulong millisatoshis, StringBuilder sb)
     {
         var btcAmount = millisatoshis / InvoiceConstants.BTC_IN_MILLISATOSHIS;
 
-        if (btcAmount >= 1)
+        // Start with the smallest multiplier
+        var tempAmount = btcAmount * 1_000_000_000_000m; // Start with pico
+        char? suffix = InvoiceConstants.MULTIPLIER_PICO;
+
+        // Try nano
+        if (millisatoshis % 10 == 0)
         {
-            sb.Append(btcAmount.ToString("F0").TrimEnd('.'));
+            var nanoAmount = btcAmount * 1_000_000_000m;
+            if (nanoAmount == decimal.Truncate(nanoAmount))
+            {
+                tempAmount = nanoAmount;
+                suffix = InvoiceConstants.MULTIPLIER_NANO;
+            }
         }
-        else if (btcAmount >= 0.001m)
+
+        // Try micro
+        if (millisatoshis % 1_000 == 0)
         {
-            sb.Append((btcAmount * 1_000).ToString("F0").TrimEnd('.'));
-            sb.Append(InvoiceConstants.MULTIPLIER_MILLI);
+            var microAmount = btcAmount * 1_000_000m;
+            if (microAmount == decimal.Truncate(microAmount))
+            {
+                tempAmount = microAmount;
+                suffix = InvoiceConstants.MULTIPLIER_MICRO;
+            }
         }
-        else if (btcAmount >= 0.000001m)
+
+        // Try milli
+        if (millisatoshis % 1_000_000 == 0)
         {
-            sb.Append((btcAmount * 1_000_000).ToString("F0").TrimEnd('.'));
-            sb.Append(InvoiceConstants.MULTIPLIER_MICRO);
+            var milliAmount = btcAmount * 1000m;
+            if (milliAmount == decimal.Truncate(milliAmount))
+            {
+                tempAmount = milliAmount;
+                suffix = InvoiceConstants.MULTIPLIER_MILLI;
+            }
         }
-        else if (btcAmount >= 0.000000001m)
+
+        // Try full BTC
+        if (millisatoshis % 1_000_000_000 == 0)
         {
-            sb.Append((btcAmount * 1_000_000_000).ToString("F0").TrimEnd('.'));
-            sb.Append(InvoiceConstants.MULTIPLIER_NANO);
+            if (btcAmount == decimal.Truncate(btcAmount))
+            {
+                tempAmount = btcAmount;
+                suffix = null;
+            }
         }
-        else
-        {
-            // Ensure the last decimal of amount is 0 when using 'p' multiplier
-            var picoAmount = millisatoshis * 10;
-            sb.Append(picoAmount.ToString().TrimEnd('.'));
-            sb.Append(InvoiceConstants.MULTIPLIER_PICO);
-        }
+
+        sb.Append(tempAmount.ToString("F0").TrimEnd('.'));
+        sb.Append(suffix);
     }
 
     private static ulong ConvertHumanReadableToMilliSatoshis(string humanReadablePart)
@@ -613,15 +655,18 @@ public class Invoice
         var hash = new byte[HashConstants.HASH_LEN];
         sha256.GetHashAndReset(hash);
 
-        if (BitConverter.IsLittleEndian)
-        {
-            Array.Reverse(hash);
-        }
+        // if (BitConverter.IsLittleEndian)
+        // {
+        //     Array.Reverse(hash);
+        // }
 
         var nBitcoinHash = new uint256(hash);
 
         // Sign the hash
-        return key.SignCompact(nBitcoinHash);
+        var compactSignature = key.SignCompact(nBitcoinHash, false);
+        var payeePubKey = PubKey.RecoverCompact(nBitcoinHash, compactSignature);
+
+        return compactSignature;
     }
 
     private static Network GetNetwork(string invoiceString)

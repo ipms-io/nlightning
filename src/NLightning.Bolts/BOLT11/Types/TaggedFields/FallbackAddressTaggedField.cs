@@ -64,7 +64,7 @@ public sealed class FallbackAddressTaggedField : ITaggedField
         bitWriter.WriteByteAsBits(_data[0], 5);
 
         // Write data
-        bitWriter.WriteBits(_data[1..], (Length - 1) * 5);
+        bitWriter.WriteBits(_data.AsSpan()[1..], (Length - 1) * 5);
     }
 
     /// <inheritdoc/>
@@ -80,6 +80,9 @@ public sealed class FallbackAddressTaggedField : ITaggedField
 
     public static FallbackAddressTaggedField FromBitReader(BitReader bitReader, short length)
     {
+        // TODO: Get network from context
+        var network = Network.Main;
+
         // Get Address Type
         var addressType = bitReader.ReadByteFromBits(5);
         var newLength = length - 1;
@@ -97,13 +100,13 @@ public sealed class FallbackAddressTaggedField : ITaggedField
         BitcoinAddress address = addressType switch
         {
             // Witness P2WPKH
-            0 when data.Length == 20 => new WitKeyId(data).GetAddress(Network.Main),
+            0 when data.Length == 20 => new WitKeyId(data).GetAddress(network),
             // Witness P2WSH
-            0 when data.Length == 32 => new WitScriptId(data).GetAddress(Network.Main),
+            0 when data.Length == 32 => new WitScriptId(data).GetAddress(network),
             // P2PKH
-            17 => new KeyId(data).GetAddress(Network.Main),
+            17 => new KeyId(data).GetAddress(network),
             // P2SH
-            18 => new ScriptId(data).GetAddress(Network.Main),
+            18 => new ScriptId(data).GetAddress(network),
             _ => throw new ArgumentException("Address is unknown or invalid.", nameof(bitReader))
         };
 

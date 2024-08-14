@@ -7,7 +7,8 @@ using Common.BitUtils;
 public class ExpiryTimeTaggedFieldTests
 {
     private const int EXPECTED_VALUE = 3600; // 1 hour in seconds
-    private readonly byte[] _expectedBytes = [0x80];
+    private readonly byte[] _expectedBytes = [0x1C, 0x20];
+    private const short EXPECTED_LENGTH = 3;
 
     [Fact]
     public void Constructor_FromValue_SetsPropertiesCorrectly()
@@ -18,7 +19,7 @@ public class ExpiryTimeTaggedFieldTests
         // Assert
         Assert.Equal(TaggedFieldTypes.EXPIRY_TIME, taggedField.Type);
         Assert.Equal(EXPECTED_VALUE, taggedField.Value);
-        Assert.Equal((short)1, taggedField.Length);
+        Assert.Equal(EXPECTED_LENGTH, taggedField.Length);
     }
 
     [Fact]
@@ -26,7 +27,7 @@ public class ExpiryTimeTaggedFieldTests
     {
         // Arrange
         var taggedField = new ExpiryTimeTaggedField(EXPECTED_VALUE);
-        using var bitWriter = new BitWriter(1);
+        using var bitWriter = new BitWriter(taggedField.Length * 5);
 
         // Act
         taggedField.WriteToBitWriter(bitWriter);

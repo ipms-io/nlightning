@@ -25,7 +25,7 @@ public sealed class Bech32Encoder(string? hrp = null) : NBitcoin.DataEncoders.Be
         convertedData.CopyTo(invoiceData, 0);
         convertedSignature.CopyTo(invoiceData, convertedData.Length);
 
-        return EncodeData(invoiceData, Bech32EncodingType.BECH32M);
+        return EncodeData(invoiceData, Bech32EncodingType.BECH32);
     }
 
     public static void DecodeLightningInvoice(string invoiceString, out byte[] data, out byte[] signature, out string hrp)
@@ -56,7 +56,12 @@ public sealed class Bech32Encoder(string? hrp = null) : NBitcoin.DataEncoders.Be
         {
             StrictLength = false
         };
-        var invoiceData = bech32.DecodeDataRaw(invoiceString, out _);
+        var invoiceData = bech32.DecodeDataRaw(invoiceString, out var encodingType);
+
+        if (encodingType != Bech32EncodingType.BECH32)
+        {
+            throw new ArgumentException("Invalid encoding type in invoice", nameof(invoiceString));
+        }
 
         signature = bech32.ConvertBits(invoiceData.AsSpan()[(invoiceData.Length - 104)..], 5, 8);
         data = bech32.ConvertBits(invoiceData.AsSpan()[..(invoiceData.Length - 104)], 5, 8);
