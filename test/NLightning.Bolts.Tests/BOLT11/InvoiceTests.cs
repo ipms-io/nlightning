@@ -1,3 +1,5 @@
+using NLightning.Common.Managers;
+
 namespace NLightning.Bolts.Tests.BOLT11;
 
 using Bolts.BOLT11;
@@ -50,10 +52,9 @@ public class InvoiceTests
     {
         // Arrange
         var network = Network.MAIN_NET;
-        const ulong AMOUNT_MSATS = 0;
 
         // Act
-        var invoice = new Invoice(network, AMOUNT_MSATS);
+        var invoice = new Invoice(network);
 
         // Assert
         Assert.Equal("lnbc", invoice.HumanReadablePart);
@@ -83,8 +84,11 @@ public class InvoiceTests
     [InlineData(NetworkConstants.MAINNET, 10_000_000_000, "lnbc100")]
     public void Given_Amount_When_InvoiceIsCreatedWithInSatoshis_Then_AmountIsCorrect(string network, long amountSats, string expectedHumanReadablePart)
     {
+        // Arrange
+        ConfigManager.Instance.Network = network;
+
         // Act
-        var invoice = Invoice.InSatoshis(network, amountSats);
+        var invoice = Invoice.InSatoshis(amountSats);
 
         // Assert
         Assert.Equal(expectedHumanReadablePart, invoice.HumanReadablePart);

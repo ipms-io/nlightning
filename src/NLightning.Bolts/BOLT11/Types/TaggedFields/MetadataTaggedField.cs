@@ -25,7 +25,7 @@ public sealed class MetadataTaggedField : ITaggedField
     public MetadataTaggedField(byte[] value)
     {
         Value = value;
-        Length = (short)((value.Length * 8 - 7) / 5);
+        Length = (short)Math.Ceiling(value.Length * 8 / 5.0);
     }
 
     public void WriteToBitWriter(BitWriter bitWriter)

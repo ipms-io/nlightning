@@ -1,6 +1,5 @@
 using System.Text;
 using NBitcoin;
-using NLightning.Common.Managers;
 
 namespace NLightning.Bolts.Tests.BOLT11.IntegrationTests;
 
@@ -10,6 +9,7 @@ using Bolts.BOLT11.Types;
 using Bolts.BOLT8.Constants;
 using Bolts.BOLT8.Hashes;
 using Bolts.BOLT9;
+using Common.Managers;
 using Common.Types;
 using static Utils.TestUtils;
 
@@ -26,14 +26,17 @@ public class InvoiceIntegrationTests
         // Act
         foreach (var testInvoice in testInvoices)
         {
+            // Arrange
+            ConfigManager.Instance.Network = testInvoice.ExpectedNetwork!.Value;
+
             var invoice = Invoice.Decode(testInvoice.INVOICE_STRING);
 
             // Assert
             Assert.Equal(testInvoice.ExpectedNetwork, invoice.Network);
-            Assert.Equal(testInvoice.ExpectedAmountMilliSats, invoice.AmountMsats);
+            Assert.Equal(testInvoice.ExpectedAmountMilliSats, invoice.AmountMilliSats);
             Assert.Equal(testInvoice.ExpectedTimestamp, invoice.Timestamp);
 
-            foreach (var taggedField in testInvoice.ExpectedTaggedFields)
+            foreach (var taggedField in testInvoice.EXPECTED_TAGGED_FIELDS)
             {
                 switch (taggedField.Key)
                 {
@@ -46,9 +49,9 @@ public class InvoiceIntegrationTests
                     case TaggedFieldTypes.DESCRIPTION_HASH:
                         Assert.Equal(taggedField.Value, invoice.DescriptionHash);
                         break;
-                    // case TaggedFieldTypes.FALLBACK_ADDRESS:
-                    //     Assert.Equal(taggedField.Value, invoice.FallbackAddresses?.FirstOrDefault());
-                    //     break;
+                    case TaggedFieldTypes.FALLBACK_ADDRESS:
+                        Assert.Equal(taggedField.Value, invoice.FallbackAddresses?.FirstOrDefault());
+                        break;
                     case TaggedFieldTypes.DESCRIPTION:
                         Assert.Equal(taggedField.Value, invoice.Description);
                         break;
@@ -103,15 +106,13 @@ public class InvoiceIntegrationTests
 
         var testInvoices = ReadTestInvoices("BOLT11/Invoices/ValidInvoices.txt");
 
-        // Act
         foreach (var testInvoice in testInvoices)
         {
-            // TODO: Remove once address is fixed
-            if (testInvoice.ExpectedTaggedFields.ContainsKey(TaggedFieldTypes.FALLBACK_ADDRESS)) continue;
+            if (testInvoice.IgnoreEncode) continue;
 
             var invoice = new Invoice(testInvoice.ExpectedNetwork!.Value, testInvoice.ExpectedAmountMilliSats, testInvoice.ExpectedTimestamp);
 
-            foreach (var taggedField in testInvoice.ExpectedTaggedFields)
+            foreach (var taggedField in testInvoice.EXPECTED_TAGGED_FIELDS)
             {
                 switch (taggedField.Key)
                 {
@@ -153,10 +154,11 @@ public class InvoiceIntegrationTests
                 }
             }
 
+            // Act
             var invoiceString = invoice.Encode();
 
             // Assert
-            Assert.Equal(testInvoice.INVOICE_STRING, invoiceString);
+            Assert.Equal(testInvoice.INVOICE_STRING.ToLowerInvariant(), invoiceString);
         }
     }
 
@@ -166,7 +168,8 @@ public class InvoiceIntegrationTests
         public Network? ExpectedNetwork;
         public ulong? ExpectedAmountMilliSats;
         public long? ExpectedTimestamp;
-        public Dictionary<TaggedFieldTypes, object> ExpectedTaggedFields = [];
+        public readonly Dictionary<TaggedFieldTypes, object> EXPECTED_TAGGED_FIELDS = [];
+        public bool IgnoreEncode;
     }
 
     private static List<TestInvoice> ReadTestInvoices(string filePath)
@@ -221,7 +224,7 @@ public class InvoiceIntegrationTests
                     Array.Reverse(data);
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.PAYMENT_HASH, new uint256(data));
+                currentInvoice.EXPECTED_TAGGED_FIELDS.Add(TaggedFieldTypes.PAYMENT_HASH, new uint256(data));
             }
             else if (line.StartsWith("s="))
             {
@@ -236,7 +239,7 @@ public class InvoiceIntegrationTests
                     Array.Reverse(data);
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.PAYMENT_SECRET, new uint256(data));
+                currentInvoice.EXPECTED_TAGGED_FIELDS.Add(TaggedFieldTypes.PAYMENT_SECRET, new uint256(data));
             }
             else if (line.StartsWith("d="))
             {
@@ -245,7 +248,7 @@ public class InvoiceIntegrationTests
                     throw new InvalidOperationException("d line without invoice line");
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.DESCRIPTION, line[2..]);
+                currentInvoice.EXPECTED_TAGGED_FIELDS.Add(TaggedFieldTypes.DESCRIPTION, line[2..]);
             }
             else if (line.StartsWith("x="))
             {
@@ -254,7 +257,7 @@ public class InvoiceIntegrationTests
                     throw new InvalidOperationException("x line without invoice line");
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.EXPIRY_TIME, DateTimeOffset.FromUnixTimeSeconds(currentInvoice.ExpectedTimestamp!.Value + long.Parse(line[2..])));
+                currentInvoice.EXPECTED_TAGGED_FIELDS.Add(TaggedFieldTypes.EXPIRY_TIME, DateTimeOffset.FromUnixTimeSeconds(currentInvoice.ExpectedTimestamp!.Value + long.Parse(line[2..])));
             }
             else if (line.StartsWith("h="))
             {
@@ -272,33 +275,31 @@ public class InvoiceIntegrationTests
                     Array.Reverse(hash);
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.DESCRIPTION_HASH, new uint256(hash));
+                currentInvoice.EXPECTED_TAGGED_FIELDS.Add(TaggedFieldTypes.DESCRIPTION_HASH, new uint256(hash));
             }
             else if (line.StartsWith("f="))
             {
-                // TODO: Get network from context first
                 if (currentInvoice == null)
                 {
                     throw new InvalidOperationException("f line without invoice line");
                 }
-                //
-                // var network = Network.Main;
-                // if (currentInvoice.ExpectedNetwork == null || currentInvoice.ExpectedNetwork == Common.Network.SIG_NET)
-                // {
-                //     throw new Exception("Invalid network");
-                // } 
-                //
-                // if (currentInvoice.ExpectedNetwork == Common.Network.TEST_NET)
-                // {
-                //     network = Network.TestNet;
-                // } 
-                // else if (currentInvoice.ExpectedNetwork == Common.Network.REG_TEST)
-                // {
-                //     network = Network.RegTest;
-                // }
-                //
-                // currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.FALLBACK_ADDRESS, BitcoinAddress.Create(line[2..], network));
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.FALLBACK_ADDRESS, null!);
+
+                var network = NBitcoin.Network.Main;
+                if (currentInvoice.ExpectedNetwork == null || currentInvoice.ExpectedNetwork == Network.SIG_NET)
+                {
+                    throw new Exception("Invalid network");
+                }
+
+                if (currentInvoice.ExpectedNetwork == Network.TEST_NET)
+                {
+                    network = NBitcoin.Network.TestNet;
+                }
+                else if (currentInvoice.ExpectedNetwork == Network.REG_TEST)
+                {
+                    network = NBitcoin.Network.RegTest;
+                }
+
+                currentInvoice.EXPECTED_TAGGED_FIELDS.Add(TaggedFieldTypes.FALLBACK_ADDRESS, BitcoinAddress.Create(line[2..], network));
             }
             else if (line.StartsWith("r="))
             {
@@ -326,7 +327,7 @@ public class InvoiceIntegrationTests
                     routingInfo.Add(new RoutingInfo(pubKey, shortChannelId, feeBaseMsat, feeProportionalMillionths, cltvExpiryDelta));
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.ROUTING_INFO, routingInfo);
+                currentInvoice.EXPECTED_TAGGED_FIELDS.Add(TaggedFieldTypes.ROUTING_INFO, routingInfo);
             }
             else if (line.StartsWith("9="))
             {
@@ -335,7 +336,7 @@ public class InvoiceIntegrationTests
                     throw new InvalidOperationException("f line without invoice line");
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.FEATURES, Features.DeserializeFromBytes(GetBytes(line[2..])));
+                currentInvoice.EXPECTED_TAGGED_FIELDS.Add(TaggedFieldTypes.FEATURES, Features.DeserializeFromBytes(GetBytes(line[2..])));
             }
             else if (line.StartsWith("m="))
             {
@@ -344,7 +345,7 @@ public class InvoiceIntegrationTests
                     throw new InvalidOperationException("m line without invoice line");
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.METADATA, GetBytes(line[2..]));
+                currentInvoice.EXPECTED_TAGGED_FIELDS.Add(TaggedFieldTypes.METADATA, GetBytes(line[2..]));
             }
             else if (line.StartsWith("c="))
             {
@@ -353,7 +354,16 @@ public class InvoiceIntegrationTests
                     throw new InvalidOperationException("c line without invoice line");
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY, ushort.Parse(line[2..]));
+                currentInvoice.EXPECTED_TAGGED_FIELDS.Add(TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY, ushort.Parse(line[2..]));
+            }
+            else if (line.StartsWith("ignoreEncode="))
+            {
+                if (currentInvoice == null)
+                {
+                    throw new InvalidOperationException("c line without invoice line");
+                }
+
+                currentInvoice.IgnoreEncode = bool.Parse(line[13..]);
             }
             else if (line.Length == 0)
             {

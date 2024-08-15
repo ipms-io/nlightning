@@ -28,7 +28,7 @@ public sealed class RoutingInfoTaggedField : ITaggedField
     public RoutingInfoTaggedField(RoutingInfoCollection value)
     {
         Value = value;
-        Length = (short)(value.Count * TaggedFieldConstants.ROUTING_INFO_LENGTH + (value.Count * 2));
+        Length = (short)((value.Count * TaggedFieldConstants.ROUTING_INFO_LENGTH + value.Count * 2) / 5);
     }
 
     public void WriteToBitWriter(BitWriter bitWriter)

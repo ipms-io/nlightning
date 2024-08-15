@@ -1,4 +1,5 @@
 using NBitcoin;
+using NLightning.Common.Managers;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
@@ -35,27 +36,30 @@ public sealed class FallbackAddressTaggedField : ITaggedField
             case BitcoinPubKeyAddress pubKeyAddress:
                 // P2PKH
                 data.Add(17);
-                data.AddRange(pubKeyAddress.ScriptPubKey.ToBytes());
+                data.AddRange(pubKeyAddress.Hash.ToBytes());
+                Length = 33;
                 break;
             case BitcoinScriptAddress scriptAddress:
                 // P2SH
                 data.Add(18);
-                data.AddRange(scriptAddress.ScriptPubKey.ToBytes());
+                data.AddRange(scriptAddress.Hash.ToBytes());
+                Length = 33;
                 break;
             case BitcoinWitScriptAddress witScriptAddress:
                 // P2WSH
                 data.Add(0);
-                data.AddRange(witScriptAddress.ScriptPubKey.ToBytes());
+                data.AddRange(witScriptAddress.Hash.ToBytes());
+                Length = 53;
                 break;
             case BitcoinWitPubKeyAddress witPubKeyAddress:
                 // P2WPKH
                 data.Add(0);
-                data.AddRange(witPubKeyAddress.ScriptPubKey.ToBytes());
+                data.AddRange(witPubKeyAddress.Hash.ToBytes());
+                Length = 33;
                 break;
         }
 
-        _data = data.ToArray();
-        Length = (short)((_data.Length * 8 - 7) / 5);
+        _data = [.. data];
     }
 
     public void WriteToBitWriter(BitWriter bitWriter)
@@ -80,8 +84,7 @@ public sealed class FallbackAddressTaggedField : ITaggedField
 
     public static FallbackAddressTaggedField FromBitReader(BitReader bitReader, short length)
     {
-        // TODO: Get network from context
-        var network = NBitcoin.Network.Main;
+        var network = ConfigManager.Instance.Network;
 
         // Get Address Type
         var addressType = bitReader.ReadByteFromBits(5);
@@ -96,7 +99,6 @@ public sealed class FallbackAddressTaggedField : ITaggedField
             data = data[..^1];
         }
 
-        // TODO: Get current network
         BitcoinAddress address = addressType switch
         {
             // Witness P2WPKH

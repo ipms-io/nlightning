@@ -42,6 +42,9 @@ public class Features
         SetFeature(Feature.VAR_ONION_OPTIN, false);
     }
 
+    /// <summary>
+    /// Gets the position of the last index of one in the BitArray and add 1 because arrays starts at 0.
+    /// </summary>
     public int SizeInBits => _featureFlags.GetLastIndexOfOne();
 
     /// <summary>
@@ -277,15 +280,11 @@ public class Features
     /// <summary>
     /// Serializes the features to a byte array.
     /// </summary>
-    public void WriteToBitWriter(BitWriter bitWriter)
+    public void WriteToBitWriter(BitWriter bitWriter, int length, bool shouldPad)
     {
-        var length = SizeInBits;
-        var shouldPad = length * 5 / 8 == (length * 5 - 7) / 8;
-
-        // Write bits in reverse order
-        for (var i = length; i >= (shouldPad ? 0 : 1) && bitWriter.HasMoreBits(1); i--)
+        for (var i = 0; i < length && bitWriter.HasMoreBits(1); i++)
         {
-            bitWriter.WriteBit(_featureFlags[i]);
+            bitWriter.WriteBit(_featureFlags[length - i - (shouldPad ? 0 : 1)]);
         }
     }
 
@@ -390,7 +389,7 @@ public class Features
             {
                 bitArray.Set(length - i - (shouldPad ? 0 : 1), bitReader.ReadBit());
             }
-            // 100000000000000000000000000000000000000000000000000000000000000000000000000100000100000000
+
             return new Features { _featureFlags = bitArray };
         }
         catch (Exception e)

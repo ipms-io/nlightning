@@ -26,13 +26,15 @@ public sealed class FeaturesTaggedField : ITaggedField
     public FeaturesTaggedField(Features value)
     {
         Value = value;
-        Length = (short)((value.SizeInBits / 5) + (value.SizeInBits % 5 == 0 ? 0 : 1));
+        Length = (short)(value.SizeInBits / 5 + (value.SizeInBits % 5 == 0 ? 0 : 1));
     }
 
     public void WriteToBitWriter(BitWriter bitWriter)
     {
+        var shouldPad = Length * 5 / 8 == (Length * 5 - 7) / 8;
+
         // Write data
-        Value.WriteToBitWriter(bitWriter);
+        Value.WriteToBitWriter(bitWriter, Length * 5, shouldPad);
     }
 
     /// <inheritdoc/>

@@ -16,6 +16,27 @@ public readonly struct Network(string name)
     #region Implicit Conversions
     public static implicit operator string(Network network) => network.Name;
     public static implicit operator Network(string value) => new(value);
+
+    public static implicit operator NBitcoin.Network(Network network)
+    {
+        return network.Name switch
+        {
+            NetworkConstants.MAINNET => NBitcoin.Network.Main,
+            NetworkConstants.TESTNET => NBitcoin.Network.TestNet,
+            NetworkConstants.REGTEST => NBitcoin.Network.RegTest,
+            _ => throw new ArgumentException("Unsupported network type", nameof(network)),
+        };
+    }
+    public static implicit operator Network(NBitcoin.Network network)
+    {
+        return network.Name switch
+        {
+            "Main" => MAIN_NET,
+            "TestNet" => TEST_NET,
+            "RegTest" => REG_TEST,
+            _ => throw new ArgumentException("Unsupported network type", nameof(network)),
+        };
+    }
     #endregion
 
     #region Equality

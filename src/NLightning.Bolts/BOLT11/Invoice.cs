@@ -1,7 +1,6 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using NBitcoin;
-using NLightning.Common.Managers;
 
 namespace NLightning.Bolts.BOLT11;
 
@@ -10,13 +9,12 @@ using BOLT8.Hashes;
 using BOLT9;
 using Common.BitUtils;
 using Common.Constants;
+using Common.Managers;
 using Common.Types;
 using Constants;
 using Encoders;
 using Enums;
 using Exceptions;
-using Factories;
-using Interfaces;
 using Types;
 using Types.TaggedFields;
 
@@ -26,7 +24,7 @@ using Types.TaggedFields;
 /// <remarks>
 /// The invoice is a payment request that can be sent to a payer to request a payment.
 /// </remarks>
-public class Invoice
+public partial class Invoice
 {
     #region Private Fields
     private static readonly Dictionary<string, Network> s_supportedNetworks = new()
@@ -40,6 +38,11 @@ public class Invoice
         { InvoiceConstants.PREFIX_SIGNET.ToUpperInvariant(), Network.SIG_NET },
         { InvoiceConstants.PREFIX_REGTEST.ToUpperInvariant(), Network.REG_TEST }
     };
+
+    private TaggedFieldList _taggedFields { get; } = [];
+
+    [GeneratedRegex(@"^[a-z]+(\d+)?([munp]?)")]
+    private static partial Regex AmountRegex();
     #endregion
 
     #region Public Properties
@@ -51,7 +54,7 @@ public class Invoice
     /// <summary>
     /// The amount of millisatoshis the invoice is for
     /// </summary>
-    public ulong AmountMsats { get; private set; }
+    public ulong AmountMilliSats { get; private set; }
 
     /// <summary>
     /// The timestamp of the invoice
@@ -60,18 +63,6 @@ public class Invoice
     /// The timestamp is the time the invoice was created in seconds since the Unix epoch.
     /// </remarks>
     public long Timestamp { get; private set; }
-
-    /// <summary>
-    /// The tagged fields of the invoice
-    /// </summary>
-    /// <remarks>
-    /// The tagged fields are used to add additional information to the invoice.
-    /// </remarks>
-    /// <seealso cref="TaggedFieldList"/>
-    /// <seealso cref="ITaggedField"/>
-    /// <seealso cref="TaggedFieldTypes"/>
-    /// <seealso cref="TaggedFieldFactory"/>
-    public TaggedFieldList TaggedFields { get; } = [];
 
     /// <summary>
     /// The signature of the invoice
@@ -86,7 +77,7 @@ public class Invoice
     /// <summary>
     /// The amount of satoshis the invoice is for
     /// </summary>
-    public ulong AmountSats => AmountMsats * 1_000;
+    public ulong AmountSats => AmountMilliSats * 1_000;
     #endregion
 
     #region Public Properties from Tagged Fields
@@ -101,7 +92,7 @@ public class Invoice
     {
         get
         {
-            if (TaggedFields.TryGet(TaggedFieldTypes.PAYMENT_HASH, out PaymentHashTaggedField paymentHash))
+            if (_taggedFields.TryGet(TaggedFieldTypes.PAYMENT_HASH, out PaymentHashTaggedField paymentHash))
             {
                 return paymentHash.Value;
             }
@@ -109,7 +100,7 @@ public class Invoice
         }
         set
         {
-            TaggedFields.Add(new PaymentHashTaggedField(value));
+            _taggedFields.Add(new PaymentHashTaggedField(value));
         }
     }
 
@@ -125,7 +116,7 @@ public class Invoice
     {
         get
         {
-            if (TaggedFields.TryGet(TaggedFieldTypes.ROUTING_INFO, out RoutingInfoTaggedField routingInfo))
+            if (_taggedFields.TryGet(TaggedFieldTypes.ROUTING_INFO, out RoutingInfoTaggedField routingInfo))
             {
                 return routingInfo.Value;
             }
@@ -135,7 +126,7 @@ public class Invoice
         {
             if (value != null)
             {
-                TaggedFields.Add(new RoutingInfoTaggedField(value));
+                _taggedFields.Add(new RoutingInfoTaggedField(value));
             }
         }
     }
@@ -151,7 +142,7 @@ public class Invoice
     {
         get
         {
-            if (TaggedFields.TryGet(TaggedFieldTypes.FEATURES, out FeaturesTaggedField features))
+            if (_taggedFields.TryGet(TaggedFieldTypes.FEATURES, out FeaturesTaggedField features))
             {
                 return features.Value;
             }
@@ -161,7 +152,7 @@ public class Invoice
         {
             if (value != null)
             {
-                TaggedFields.Add(new FeaturesTaggedField(value));
+                _taggedFields.Add(new FeaturesTaggedField(value));
             }
         }
     }
@@ -177,7 +168,7 @@ public class Invoice
     {
         get
         {
-            if (TaggedFields.TryGet(TaggedFieldTypes.EXPIRY_TIME, out ExpiryTimeTaggedField expireIn))
+            if (_taggedFields.TryGet(TaggedFieldTypes.EXPIRY_TIME, out ExpiryTimeTaggedField expireIn))
             {
                 return DateTimeOffset.FromUnixTimeSeconds(Timestamp + (int)expireIn.GetValue());
             }
@@ -188,7 +179,7 @@ public class Invoice
             var expireIn = value?.ToUnixTimeSeconds() - Timestamp;
             if (expireIn.HasValue)
             {
-                TaggedFields.Add(new ExpiryTimeTaggedField((int)expireIn.Value));
+                _taggedFields.Add(new ExpiryTimeTaggedField((int)expireIn.Value));
             }
             else
             {
@@ -208,13 +199,13 @@ public class Invoice
     {
         get
         {
-            return TaggedFields.TryGetAll(TaggedFieldTypes.FALLBACK_ADDRESS, out List<FallbackAddressTaggedField> fallbackAddress) ? fallbackAddress.Select(x => (BitcoinAddress)x.GetValue()).ToList() : null;
+            return _taggedFields.TryGetAll(TaggedFieldTypes.FALLBACK_ADDRESS, out List<FallbackAddressTaggedField> fallbackAddress) ? fallbackAddress.Select(x => (BitcoinAddress)x.GetValue()).ToList() : null;
         }
         set
         {
             if (value != null)
             {
-                TaggedFields.AddRange(value.Select(x => new FallbackAddressTaggedField(x)));
+                _taggedFields.AddRange(value.Select(x => new FallbackAddressTaggedField(x)));
             }
         }
     }
@@ -229,7 +220,7 @@ public class Invoice
     {
         get
         {
-            if (TaggedFields.TryGet(TaggedFieldTypes.DESCRIPTION, out DescriptionTaggedField description))
+            if (_taggedFields.TryGet(TaggedFieldTypes.DESCRIPTION, out DescriptionTaggedField description))
             {
                 return description.Value;
             }
@@ -239,7 +230,7 @@ public class Invoice
         {
             if (value != null)
             {
-                TaggedFields.Add(new DescriptionTaggedField(value));
+                _taggedFields.Add(new DescriptionTaggedField(value));
             }
         }
     }
@@ -255,13 +246,13 @@ public class Invoice
     {
         get
         {
-            return TaggedFields.TryGet(TaggedFieldTypes.PAYMENT_SECRET, out PaymentSecretTaggedField paymentSecret) ? paymentSecret.Value : null;
+            return _taggedFields.TryGet(TaggedFieldTypes.PAYMENT_SECRET, out PaymentSecretTaggedField paymentSecret) ? paymentSecret.Value : null;
         }
         set
         {
             if (value != null)
             {
-                TaggedFields.Add(new PaymentSecretTaggedField(value));
+                _taggedFields.Add(new PaymentSecretTaggedField(value));
             }
         }
     }
@@ -277,7 +268,7 @@ public class Invoice
     {
         get
         {
-            if (TaggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField payeePubKey))
+            if (_taggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField payeePubKey))
             {
                 return payeePubKey.Value;
             }
@@ -287,7 +278,7 @@ public class Invoice
         {
             if (value != null)
             {
-                TaggedFields.Add(new PayeePubKeyTaggedField(value));
+                _taggedFields.Add(new PayeePubKeyTaggedField(value));
             }
         }
     }
@@ -303,13 +294,13 @@ public class Invoice
     {
         get
         {
-            return TaggedFields.TryGet(TaggedFieldTypes.DESCRIPTION_HASH, out DescriptionHashTaggedField descriptionHash) ? descriptionHash.Value : null;
+            return _taggedFields.TryGet(TaggedFieldTypes.DESCRIPTION_HASH, out DescriptionHashTaggedField descriptionHash) ? descriptionHash.Value : null;
         }
         set
         {
             if (value != null)
             {
-                TaggedFields.Add(new DescriptionHashTaggedField(value));
+                _taggedFields.Add(new DescriptionHashTaggedField(value));
             }
         }
     }
@@ -324,7 +315,7 @@ public class Invoice
     {
         get
         {
-            if (TaggedFields.TryGet(TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY, out MinFinalCltvExpiryTaggedField minFinalCltvExpiry))
+            if (_taggedFields.TryGet(TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY, out MinFinalCltvExpiryTaggedField minFinalCltvExpiry))
             {
                 return minFinalCltvExpiry.Value;
             }
@@ -334,7 +325,7 @@ public class Invoice
         {
             if (value.HasValue)
             {
-                TaggedFields.Add(new MinFinalCltvExpiryTaggedField(value.Value));
+                _taggedFields.Add(new MinFinalCltvExpiryTaggedField(value.Value));
             }
         }
     }
@@ -349,13 +340,13 @@ public class Invoice
     {
         get
         {
-            return TaggedFields.TryGet(TaggedFieldTypes.METADATA, out MetadataTaggedField metadata) ? metadata.Value : null;
+            return _taggedFields.TryGet(TaggedFieldTypes.METADATA, out MetadataTaggedField metadata) ? metadata.Value : null;
         }
         set
         {
             if (value != null)
             {
-                TaggedFields.Add(new MetadataTaggedField(value));
+                _taggedFields.Add(new MetadataTaggedField(value));
             }
         }
     }
@@ -365,16 +356,33 @@ public class Invoice
     /// <summary>
     /// The base constructor for the invoice
     /// </summary>
+    /// <param name="amountMilliSats">The amount of millisatoshis the invoice is for</param>
+    /// <remarks>
+    /// The invoice is created with the given network, amount of millisatoshis and timestamp.
+    /// </remarks>
+    /// <seealso cref="Network"/>
+    public Invoice(ulong? amountMilliSats = 0)
+    {
+        AmountMilliSats = amountMilliSats ?? 0;
+        Network = ConfigManager.Instance.Network;
+        HumanReadablePart = BuildHumanReadablePart();
+        Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        Signature = string.Empty;
+    }
+
+    /// <summary>
+    /// This constructor is used by tests
+    /// </summary>
     /// <param name="network">The network the invoice is created for</param>
-    /// <param name="amountMsats">The amount of millisatoshis the invoice is for</param>
+    /// <param name="amountMilliSats">The amount of millisatoshis the invoice is for</param>
     /// <param name="timestamp">The timestamp of the invoice</param>
     /// <remarks>
     /// The invoice is created with the given network, amount of millisatoshis and timestamp.
     /// </remarks>
     /// <seealso cref="Network"/>
-    internal Invoice(Network network, ulong? amountMsats = 0, long? timestamp = null)
+    internal Invoice(Network network, ulong? amountMilliSats = 0, long? timestamp = null)
     {
-        AmountMsats = amountMsats ?? 0;
+        AmountMilliSats = amountMilliSats ?? 0;
         Network = network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -382,50 +390,32 @@ public class Invoice
     }
 
     /// <summary>
-    /// The base constructor for the invoice
-    /// </summary>
-    /// <param name="network">The network the invoice is created for</param>
-    /// <param name="amountMsats">The amount of millisatoshis the invoice is for</param>
-    /// <remarks>
-    /// The invoice is created with the given network, amount of millisatoshis and timestamp.
-    /// </remarks>
-    /// <seealso cref="Network"/>
-    internal Invoice(Network network, ulong? amountMsats = 0)
-    {
-        AmountMsats = amountMsats ?? 0;
-        Network = network;
-        HumanReadablePart = BuildHumanReadablePart();
-        Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        Signature = string.Empty;
-    }
-
-    /// <summary>
-    /// The constructor for the invoice
+    /// This constructor is used by Decode
     /// </summary>
     /// <param name="humanReadablePart">The human-readable part of the invoice</param>
     /// <param name="network">The network the invoice is created for</param>
-    /// <param name="amountMsats">The amount of millisatoshis the invoice is for</param>
+    /// <param name="amountMilliSats">The amount of millisatoshis the invoice is for</param>
     /// <param name="timestamp">The timestamp of the invoice</param>
     /// <param name="taggedFields">The tagged fields of the invoice</param>
     /// <remarks>
     /// The invoice is created with the given human-readable part, network, amount of millisatoshis, timestamp and tagged fields.
     /// </remarks>
     /// <seealso cref="Network"/>
-    private Invoice(string humanReadablePart, Network network, ulong amountMsats, long timestamp, TaggedFieldList taggedFields)
+    private Invoice(string humanReadablePart, Network network, ulong amountMilliSats, long timestamp, TaggedFieldList taggedFields)
     {
         Network = network;
         HumanReadablePart = humanReadablePart;
-        AmountMsats = amountMsats;
+        AmountMilliSats = amountMilliSats;
         Timestamp = timestamp;
-        TaggedFields = taggedFields;
+        _taggedFields = taggedFields;
         Signature = string.Empty;
     }
     #endregion
 
     #region Static Constructors
-    public static Invoice InSatoshis(Network network, long amountSats, long? timestamp = null)
+    public static Invoice InSatoshis(long amountSats)
     {
-        return new Invoice(network, (ulong)amountSats * 1_000, timestamp);
+        return new Invoice((ulong)amountSats * 1_000);
     }
 
     public static Invoice Decode(string invoiceString)
@@ -465,7 +455,7 @@ public class Invoice
     public string Encode()
     {
         // Calculate the size needed for the buffer
-        var sizeInBits = 35 + (TaggedFields.CalculateSizeInBits() * 5) + (TaggedFields.Count * 15);
+        var sizeInBits = 35 + (_taggedFields.CalculateSizeInBits() * 5) + (_taggedFields.Count * 15);
 
         // Initialize the BitWriter buffer
         using var bitWriter = new BitWriter(sizeInBits);
@@ -474,7 +464,7 @@ public class Invoice
         bitWriter.WriteInt64AsBits(Timestamp, 35);
 
         // Write the tagged fields
-        TaggedFields.WriteToBitWriter(bitWriter);
+        _taggedFields.WriteToBitWriter(bitWriter);
 
         // Sign the invoice
         var compactSignature = SignInvoice(HumanReadablePart, bitWriter);
@@ -498,9 +488,9 @@ public class Invoice
     {
         StringBuilder sb = new(InvoiceConstants.PREFIX);
         sb.Append(GetPrefix(Network));
-        if (AmountMsats > 0)
+        if (AmountMilliSats > 0)
         {
-            ConvertMilliSatoshisToHumanReadable(AmountMsats, sb);
+            ConvertMilliSatoshisToHumanReadable(AmountMilliSats, sb);
         }
         return sb.ToString();
     }
@@ -574,8 +564,7 @@ public class Invoice
 
     private static ulong ConvertHumanReadableToMilliSatoshis(string humanReadablePart)
     {
-        var amountPattern = @"^[a-z]+(\d+)?([munp]?)";
-        var match = Regex.Match(humanReadablePart, amountPattern);
+        var match = AmountRegex().Match(humanReadablePart);
         if (!match.Success)
         {
             throw new ArgumentException("Invalid amount format in invoice", nameof(humanReadablePart));
@@ -584,23 +573,25 @@ public class Invoice
         var amountString = match.Groups[1].Value;
         var multiplier = match.Groups[2].Value;
         var millisatoshis = 0ul;
-        if (ulong.TryParse(amountString, out var amount))
+        if (!ulong.TryParse(amountString, out var amount))
         {
-            if (multiplier == "p" && amount % 10 != 0)
-            {
-                throw new ArgumentException("Invalid pico amount in invoice", nameof(humanReadablePart));
-            }
-
-            // Calculate the millisatoshis
-            millisatoshis = multiplier switch
-            {
-                "m" => amount * 100_000_000,
-                "u" => amount * 100_000,
-                "n" => amount * 100,
-                "p" => amount / 10,
-                _ => amount * 100_000_000_000
-            };
+            return millisatoshis;
         }
+
+        if (multiplier == "p" && amount % 10 != 0)
+        {
+            throw new ArgumentException("Invalid pico amount in invoice", nameof(humanReadablePart));
+        }
+
+        // Calculate the millisatoshis
+        millisatoshis = multiplier switch
+        {
+            "m" => amount * 100_000_000,
+            "u" => amount * 100_000,
+            "n" => amount * 100,
+            "p" => amount / 10,
+            _ => amount * 100_000_000_000
+        };
 
         return millisatoshis;
     }
