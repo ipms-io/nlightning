@@ -1,10 +1,9 @@
-using NLightning.Bolts.BOLT11.Interfaces;
-
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
 using BOLT9;
 using Common.BitUtils;
 using Enums;
+using Interfaces;
 
 /// <summary>
 /// Tagged field for features

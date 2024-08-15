@@ -54,7 +54,7 @@ public sealed class PayeePubKeyTaggedField : ITaggedField
         }
 
         // Read the data from the BitReader
-        var data = new byte[(TaggedFieldConstants.PAYEE_PUBKEY_LENGTH * 5 + 7) / 8];
+        var data = new byte[33];
         bitReader.ReadBits(data, length * 5);
 
         return new PayeePubKeyTaggedField(new PubKey(data));

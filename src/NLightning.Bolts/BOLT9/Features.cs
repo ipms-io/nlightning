@@ -282,6 +282,13 @@ public class Features
     /// </summary>
     public void WriteToBitWriter(BitWriter bitWriter, int length, bool shouldPad)
     {
+        // Check if _featureFlags is as long as the length
+        var extraLength = length - _featureFlags.Length;
+        if (extraLength > 0)
+        {
+            _featureFlags.Length += extraLength;
+        }
+
         for (var i = 0; i < length && bitWriter.HasMoreBits(1); i++)
         {
             bitWriter.WriteBit(_featureFlags[length - i - (shouldPad ? 0 : 1)]);

@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace NLightning.Bolts.Tests.BOLT11.Types.TaggedFields;
 
 using Bolts.BOLT11.Enums;
@@ -8,46 +6,34 @@ using Common.BitUtils;
 
 public class DescriptionTaggedFieldTests
 {
-    private const string EXPECTED_VALUE = "Test Description";
-    private readonly byte[] _expectedBytes =
-    [
-        0x54,
-        0x65,
-        0x73,
-        0x74,
-        0x20,
-        0x44,
-        0x65,
-        0x73,
-        0x63,
-        0x72,
-        0x69,
-        0x70,
-        0x74,
-        0x69,
-        0x6F,
-        0x6E,
-        0x00
-    ];
-
-    [Fact]
-    public void Constructor_FromValue_SetsPropertiesCorrectly()
+    [Theory]
+    [InlineData("Test Description", 26)]
+    [InlineData("Test Description1", 28)]
+    [InlineData("Test Description12", 29)]
+    [InlineData("Test Description123", 31)]
+    [InlineData("Test Description1234", 32)]
+    public void Constructor_FromValue_SetsPropertiesCorrectly(string value, short expectedLength)
     {
         // Act
-        var taggedField = new DescriptionTaggedField(EXPECTED_VALUE);
+        var taggedField = new DescriptionTaggedField(value);
 
         // Assert
         Assert.Equal(TaggedFieldTypes.DESCRIPTION, taggedField.Type);
-        Assert.Equal(EXPECTED_VALUE, taggedField.Value);
-        Assert.Equal((short)((Encoding.UTF8.GetByteCount(EXPECTED_VALUE) * 8 + 4) / 5), taggedField.Length);
+        Assert.Equal(value, taggedField.Value);
+        Assert.Equal(expectedLength, taggedField.Length);
     }
 
-    [Fact]
-    public void WriteToBitWriter_WritesCorrectData()
+    [Theory]
+    [InlineData("Test Description", new byte[] { 0x54, 0x65, 0x73, 0x74, 0x20, 0x44, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6F, 0x6E, 0x00 })]
+    [InlineData("Test Description1", new byte[] { 0x54, 0x65, 0x73, 0x74, 0x20, 0x44, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6F, 0x6E, 0x31, 0x00 })]
+    [InlineData("Test Description12", new byte[] { 0x54, 0x65, 0x73, 0x74, 0x20, 0x44, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6F, 0x6E, 0x31, 0x32, 0x00 })]
+    [InlineData("Test Description123", new byte[] { 0x54, 0x65, 0x73, 0x74, 0x20, 0x44, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6F, 0x6E, 0x31, 0x32, 0x33, 0x00 })]
+    [InlineData("Test Description1234", new byte[] { 0x54, 0x65, 0x73, 0x74, 0x20, 0x44, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6F, 0x6E, 0x31, 0x32, 0x33, 0x34 })]
+    public void WriteToBitWriter_WritesCorrectData(string value, byte[] expectedBytes)
     {
         // Arrange
-        var taggedField = new DescriptionTaggedField(EXPECTED_VALUE);
-        using var bitWriter = new BitWriter(130);
+        var taggedField = new DescriptionTaggedField(value);
+        using var bitWriter = new BitWriter(taggedField.Length * 5);
 
         // Act
         taggedField.WriteToBitWriter(bitWriter);
@@ -55,14 +41,43 @@ public class DescriptionTaggedFieldTests
         // Assert
         var result = bitWriter.ToArray();
 
-        Assert.Equal(_expectedBytes, result);
+        Assert.Equal(expectedBytes, result);
+    }
+
+    [Theory]
+    [InlineData("Test Description", 26, new byte[] { 0x54, 0x65, 0x73, 0x74, 0x20, 0x44, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6F, 0x6E, 0x00 })]
+    [InlineData("Test Description1", 28, new byte[] { 0x54, 0x65, 0x73, 0x74, 0x20, 0x44, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6F, 0x6E, 0x31, 0x00 })]
+    [InlineData("Test Description12", 29, new byte[] { 0x54, 0x65, 0x73, 0x74, 0x20, 0x44, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6F, 0x6E, 0x31, 0x32, 0x00 })]
+    [InlineData("Test Description123", 31, new byte[] { 0x54, 0x65, 0x73, 0x74, 0x20, 0x44, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6F, 0x6E, 0x31, 0x32, 0x33, 0x00 })]
+    [InlineData("Test Description1234", 32, new byte[] { 0x54, 0x65, 0x73, 0x74, 0x20, 0x44, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6F, 0x6E, 0x31, 0x32, 0x33, 0x34 })]
+    public void FromBitReader_CreatesCorrectlyFromBitReader(string expectedValue, short bitLength, byte[] bytes)
+    {
+        // Arrange
+        using var bitReader = new BitReader(bytes);
+
+        // Act
+        var taggedField = DescriptionTaggedField.FromBitReader(bitReader, bitLength);
+
+        // Assert
+        Assert.Equal(expectedValue, taggedField.Value);
+    }
+
+    [Fact]
+    public void FromBitReader_ThrowsArgumentException_ForInvalidLength()
+    {
+        // Arrange
+        var buffer = new byte[50];
+        using var bitReader = new BitReader(buffer);
+
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => DescriptionTaggedField.FromBitReader(bitReader, 0));
     }
 
     [Fact]
     public void IsValid_ReturnsTrueForNonEmptyValue()
     {
         // Arrange
-        var taggedField = new DescriptionTaggedField(EXPECTED_VALUE);
+        var taggedField = new DescriptionTaggedField("Test");
 
         // Act & Assert
         Assert.True(taggedField.IsValid());
@@ -76,29 +91,5 @@ public class DescriptionTaggedFieldTests
 
         // Act & Assert
         Assert.False(taggedField.IsValid());
-    }
-
-    [Fact]
-    public void FromBitReader_CreatesCorrectlyFromBitReader()
-    {
-        // Arrange
-        using var bitReader = new BitReader(_expectedBytes);
-
-        // Act
-        var taggedField = DescriptionTaggedField.FromBitReader(bitReader, 26);
-
-        // Assert
-        Assert.Equal(EXPECTED_VALUE, taggedField.Value);
-    }
-
-    [Fact]
-    public void FromBitReader_ThrowsArgumentException_ForInvalidLength()
-    {
-        // Arrange
-        var buffer = new byte[50];
-        using var bitReader = new BitReader(buffer);
-
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() => DescriptionTaggedField.FromBitReader(bitReader, 0));
     }
 }
