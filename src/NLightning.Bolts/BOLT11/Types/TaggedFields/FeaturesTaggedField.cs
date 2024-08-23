@@ -12,22 +12,23 @@ using Interfaces;
 /// The features are a collection of features that are supported by the node.
 /// </remarks>
 /// <seealso cref="ITaggedField"/>
-public sealed class FeaturesTaggedField : ITaggedField
+internal sealed class FeaturesTaggedField : ITaggedField
 {
     public TaggedFieldTypes Type => TaggedFieldTypes.FEATURES;
-    public Features Value { get; }
+    internal Features Value { get; }
     public short Length { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DescriptionTaggedField"/> class.
     /// </summary>
     /// <param name="value">The Description</param>
-    public FeaturesTaggedField(Features value)
+    internal FeaturesTaggedField(Features value)
     {
         Value = value;
         Length = (short)(value.SizeInBits / 5 + (value.SizeInBits % 5 == 0 ? 0 : 1));
     }
 
+    /// <inheritdoc/>
     public void WriteToBitWriter(BitWriter bitWriter)
     {
         var shouldPad = Length * 5 / 8 == (Length * 5 - 7) / 8;
@@ -42,12 +43,14 @@ public sealed class FeaturesTaggedField : ITaggedField
         return true;
     }
 
-    public object GetValue()
-    {
-        return Value;
-    }
-
-    public static FeaturesTaggedField FromBitReader(BitReader bitReader, short length)
+    /// <summary>
+    /// Reads a FeaturesTaggedField from a BitReader
+    /// </summary>
+    /// <param name="bitReader">The BitReader to read from</param>
+    /// <param name="length">The length of the field</param>
+    /// <returns>The FeaturesTaggedField</returns>
+    /// <exception cref="ArgumentException">Thrown when the length is invalid</exception>
+    internal static FeaturesTaggedField FromBitReader(BitReader bitReader, short length)
     {
         if (length <= 0)
         {

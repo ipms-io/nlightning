@@ -5,9 +5,20 @@ using Enums;
 using Interfaces;
 using Types.TaggedFields;
 
-public static class TaggedFieldFactory
+/// <summary>
+/// Factory class to create tagged fields from a bit reader.
+/// </summary>
+internal static class TaggedFieldFactory
 {
-    public static ITaggedField CreateTaggedFieldFromBitReader(TaggedFieldTypes type, BitReader bitReader, short length)
+    /// <summary>
+    /// Create a tagged field from a bit reader.
+    /// </summary>
+    /// <param name="type">The type of tagged field to create.</param>
+    /// <param name="bitReader">The bit reader to read the tagged field from.</param>
+    /// <param name="length">The length of the tagged field.</param>
+    /// <returns>The tagged field.</returns>
+    /// <exception cref="ArgumentException">Thrown when the tagged field type is unknown.</exception>
+    internal static ITaggedField CreateTaggedFieldFromBitReader(TaggedFieldTypes type, BitReader bitReader, short length)
     {
         return type switch
         {

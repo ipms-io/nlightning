@@ -16,14 +16,14 @@ using Interfaces;
 public sealed class ExpiryTimeTaggedField : ITaggedField
 {
     public TaggedFieldTypes Type => TaggedFieldTypes.EXPIRY_TIME;
-    public int Value { get; }
+    internal int Value { get; }
     public short Length { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExpiryTimeTaggedField"/> class.
     /// </summary>
     /// <param name="value">The Expiry Time in seconds</param>
-    public ExpiryTimeTaggedField(int value)
+    internal ExpiryTimeTaggedField(int value)
     {
         Value = value;
         // Calculate the length of the field by getting the number of bits needed to represent the value plus 1
@@ -31,6 +31,7 @@ public sealed class ExpiryTimeTaggedField : ITaggedField
         Length = (short)((BitOperations.Log2((uint)Value) + 1 + 4) / 5);
     }
 
+    /// <inheritdoc/>
     public void WriteToBitWriter(BitWriter bitWriter)
     {
         // Write data
@@ -43,12 +44,14 @@ public sealed class ExpiryTimeTaggedField : ITaggedField
         return Value > 0;
     }
 
-    public object GetValue()
-    {
-        return Value;
-    }
-
-    public static ExpiryTimeTaggedField FromBitReader(BitReader bitReader, short length)
+    /// <summary>
+    /// Reads a ExpiryTimeTaggedField from a BitReader
+    /// </summary>
+    /// <param name="bitReader">The BitReader to read from</param>
+    /// <param name="length">The length of the field</param>
+    /// <returns>The ExpiryTimeTaggedField</returns>
+    /// <exception cref="ArgumentException">Thrown when the length is invalid</exception>
+    internal static ExpiryTimeTaggedField FromBitReader(BitReader bitReader, short length)
     {
         if (length <= 0)
         {

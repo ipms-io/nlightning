@@ -1,13 +1,17 @@
-using NLightning.Common.Managers;
+using NBitcoin;
 
 namespace NLightning.Bolts.Tests.BOLT11;
 
 using Bolts.BOLT11;
 using Common.Constants;
+using Common.Managers;
 using Common.Types;
 
 public class InvoiceTests
 {
+    private static readonly uint256 s_testPaymentHash = new("0001020304050607080900010203040506070809000102030405060708090102");
+    private static readonly uint256 s_testPaymentSecret = new("1111111111111111111111111111111111111111111111111111111111111111");
+
     #region HumanReadablePart
     [Theory]
     [InlineData(NetworkConstants.MAINNET, 100_000_000_000, "lnbc1")]
@@ -88,7 +92,7 @@ public class InvoiceTests
         ConfigManager.Instance.Network = network;
 
         // Act
-        var invoice = Invoice.InSatoshis(amountSats);
+        var invoice = Invoice.InSatoshis(amountSats, "test", s_testPaymentHash, s_testPaymentSecret);
 
         // Assert
         Assert.Equal(expectedHumanReadablePart, invoice.HumanReadablePart);

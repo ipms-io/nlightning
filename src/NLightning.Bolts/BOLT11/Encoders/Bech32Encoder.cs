@@ -1,14 +1,24 @@
 using System.Text;
-using NLightning.Common.BitUtils;
+using NBitcoin.DataEncoders;
 
 namespace NLightning.Bolts.BOLT11.Encoders;
 
+using Common.BitUtils;
 using Constants;
-using NBitcoin.DataEncoders;
 
-public sealed class Bech32Encoder(string? hrp = null) : NBitcoin.DataEncoders.Bech32Encoder(hrp is null ? Encoding.UTF8.GetBytes(InvoiceConstants.PREFIX) : Encoding.UTF8.GetBytes(hrp))
+/// <summary>
+/// Bech32 encoder for lightning invoices
+/// </summary>
+/// <param name="hrp">The Human Readable Part</param>
+internal sealed class Bech32Encoder(string? hrp = null) : NBitcoin.DataEncoders.Bech32Encoder(hrp is null ? Encoding.UTF8.GetBytes(InvoiceConstants.PREFIX) : Encoding.UTF8.GetBytes(hrp))
 {
-    public string EncodeLightningInvoice(BitWriter bitWriter, byte[] signature)
+    /// <summary>
+    /// Encode the lightning invoice into a bech32 string
+    /// </summary>
+    /// <param name="bitWriter">Bit writer to write to</param>
+    /// <param name="signature">Signature to encode</param>
+    /// <returns>String representing the invoice</returns>
+    internal string EncodeLightningInvoice(BitWriter bitWriter, byte[] signature)
     {
         // Convert to 5 bits per byte
         var convertedSignature = ConvertBits(signature.AsReadOnly(), 8, 5);
@@ -28,7 +38,14 @@ public sealed class Bech32Encoder(string? hrp = null) : NBitcoin.DataEncoders.Be
         return EncodeData(invoiceData, Bech32EncodingType.BECH32);
     }
 
-    public static void DecodeLightningInvoice(string invoiceString, out byte[] data, out byte[] signature, out string hrp)
+    /// <summary>
+    /// Decode the lightning invoice from a bech32 string
+    /// </summary>
+    /// <param name="invoiceString">String representing the invoice</param>
+    /// <param name="data">Data part of the invoice</param>
+    /// <param name="signature">Signature part of the invoice</param>
+    /// <param name="hrp">Human Readable Part of the invoice</param>
+    internal static void DecodeLightningInvoice(string invoiceString, out byte[] data, out byte[] signature, out string hrp)
     {
         // Be lenient and covert it all to lower case
         invoiceString = invoiceString.ToLowerInvariant();
@@ -65,10 +82,5 @@ public sealed class Bech32Encoder(string? hrp = null) : NBitcoin.DataEncoders.Be
 
         signature = bech32.ConvertBits(invoiceData.AsSpan()[(invoiceData.Length - 104)..], 5, 8);
         data = bech32.ConvertBits(invoiceData.AsSpan()[..(invoiceData.Length - 104)], 5, 8);
-    }
-
-    public static void ConvertBits(ReadOnlySpan<byte> data, int fromBits, int toBits, out byte[] newData)
-    {
-        newData = new Bech32Encoder().ConvertBits(data, fromBits, toBits);
     }
 }

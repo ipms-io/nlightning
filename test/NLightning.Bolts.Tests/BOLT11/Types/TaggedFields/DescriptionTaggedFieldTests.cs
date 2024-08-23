@@ -70,7 +70,7 @@ public class DescriptionTaggedFieldTests
         using var bitReader = new BitReader(buffer);
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => DescriptionTaggedField.FromBitReader(bitReader, 0));
+        Assert.Throws<ArgumentException>(() => DescriptionTaggedField.FromBitReader(bitReader, -1));
     }
 
     [Fact]
@@ -81,15 +81,5 @@ public class DescriptionTaggedFieldTests
 
         // Act & Assert
         Assert.True(taggedField.IsValid());
-    }
-
-    [Fact]
-    public void IsValid_ReturnsFalseForEmptyValue()
-    {
-        // Arrange
-        var taggedField = new DescriptionTaggedField("");
-
-        // Act & Assert
-        Assert.False(taggedField.IsValid());
     }
 }

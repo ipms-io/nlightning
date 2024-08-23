@@ -1,9 +1,9 @@
 using NBitcoin;
-using NLightning.Common.Managers;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
 using Common.BitUtils;
+using Common.Managers;
 using Enums;
 using Interfaces;
 
@@ -14,19 +14,19 @@ using Interfaces;
 /// The fallback address is a Bitcoin address that can be used to pay the invoice on-chain if the payment fails.
 /// </remarks>
 /// <seealso cref="ITaggedField"/>
-public sealed class FallbackAddressTaggedField : ITaggedField
+internal sealed class FallbackAddressTaggedField : ITaggedField
 {
     private readonly byte[] _data;
 
     public TaggedFieldTypes Type => TaggedFieldTypes.FALLBACK_ADDRESS;
-    public BitcoinAddress Value { get; }
+    internal BitcoinAddress Value { get; }
     public short Length { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DescriptionTaggedField"/> class.
     /// </summary>
     /// <param name="value">The Description</param>
-    public FallbackAddressTaggedField(BitcoinAddress value)
+    internal FallbackAddressTaggedField(BitcoinAddress value)
     {
         Value = value;
         var data = new List<byte>();
@@ -62,6 +62,7 @@ public sealed class FallbackAddressTaggedField : ITaggedField
         _data = [.. data];
     }
 
+    /// <inheritdoc/>
     public void WriteToBitWriter(BitWriter bitWriter)
     {
         // Write Address Type
@@ -77,12 +78,17 @@ public sealed class FallbackAddressTaggedField : ITaggedField
         return true;
     }
 
-    public object GetValue()
-    {
-        return Value;
-    }
-
-    public static FallbackAddressTaggedField FromBitReader(BitReader bitReader, short length)
+    /// <summary>
+    /// Reads a FallbackAddressTaggedField from a BitReader
+    /// </summary>
+    /// <remarks>
+    /// This needs a ConfigManager to get the network
+    /// </remarks>
+    /// <param name="bitReader">The BitReader to read from</param>
+    /// <param name="length">The length of the field</param>
+    /// <returns>The FallbackAddressTaggedField</returns>
+    /// <exception cref="ArgumentException">Thrown when the address is unknown or invalid</exception>
+    internal static FallbackAddressTaggedField FromBitReader(BitReader bitReader, short length)
     {
         var network = ConfigManager.Instance.Network;
 

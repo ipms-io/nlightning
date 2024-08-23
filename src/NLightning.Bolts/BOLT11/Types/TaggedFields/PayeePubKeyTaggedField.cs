@@ -14,21 +14,22 @@ using Interfaces;
 /// The payee public key is a 33 byte public key that is used to identify the payee
 /// </remarks>
 /// <seealso cref="ITaggedField"/>
-public sealed class PayeePubKeyTaggedField : ITaggedField
+internal sealed class PayeePubKeyTaggedField : ITaggedField
 {
     public TaggedFieldTypes Type => TaggedFieldTypes.PAYEE_PUB_KEY;
-    public PubKey Value { get; }
+    internal PubKey Value { get; }
     public short Length => TaggedFieldConstants.PAYEE_PUBKEY_LENGTH;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExpiryTimeTaggedField"/> class.
     /// </summary>
     /// <param name="value">The Expiry Time in seconds</param>
-    public PayeePubKeyTaggedField(PubKey value)
+    internal PayeePubKeyTaggedField(PubKey value)
     {
         Value = value;
     }
 
+    /// <inheritdoc/>
     public void WriteToBitWriter(BitWriter bitWriter)
     {
         // Write data
@@ -41,12 +42,14 @@ public sealed class PayeePubKeyTaggedField : ITaggedField
         return true;
     }
 
-    public object GetValue()
-    {
-        return Value;
-    }
-
-    public static PayeePubKeyTaggedField FromBitReader(BitReader bitReader, short length)
+    /// <summary>
+    /// Reads a PayeePubKeyTaggedField from a BitReader
+    /// </summary>
+    /// <param name="bitReader">The BitReader to read from</param>
+    /// <param name="length">The length of the field</param>
+    /// <returns>The PayeePubKeyTaggedField</returns>
+    /// <exception cref="ArgumentException">Thrown when the length is invalid</exception>
+    internal static PayeePubKeyTaggedField FromBitReader(BitReader bitReader, short length)
     {
         if (length != TaggedFieldConstants.PAYEE_PUBKEY_LENGTH)
         {

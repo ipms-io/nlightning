@@ -39,10 +39,12 @@ public partial class Invoice
         { InvoiceConstants.PREFIX_REGTEST.ToUpperInvariant(), Network.REG_TEST }
     };
 
-    private TaggedFieldList _taggedFields { get; } = [];
-
     [GeneratedRegex(@"^[a-z]+(\d+)?([munp]?)")]
     private static partial Regex AmountRegex();
+
+    private TaggedFieldList _taggedFields { get; } = [];
+
+    private string? _invoiceString;
     #endregion
 
     #region Public Properties
@@ -92,11 +94,9 @@ public partial class Invoice
     {
         get
         {
-            if (_taggedFields.TryGet(TaggedFieldTypes.PAYMENT_HASH, out PaymentHashTaggedField paymentHash))
-            {
-                return paymentHash.Value;
-            }
-            return new uint256();
+            return _taggedFields.TryGet(TaggedFieldTypes.PAYMENT_HASH, out PaymentHashTaggedField paymentHash)
+                ? paymentHash.Value
+                : new uint256();
         }
         set
         {
@@ -116,11 +116,9 @@ public partial class Invoice
     {
         get
         {
-            if (_taggedFields.TryGet(TaggedFieldTypes.ROUTING_INFO, out RoutingInfoTaggedField routingInfo))
-            {
-                return routingInfo.Value;
-            }
-            return null;
+            return _taggedFields.TryGet(TaggedFieldTypes.ROUTING_INFO, out RoutingInfoTaggedField routingInfo)
+                ? routingInfo.Value
+                : null;
         }
         set
         {
@@ -142,11 +140,9 @@ public partial class Invoice
     {
         get
         {
-            if (_taggedFields.TryGet(TaggedFieldTypes.FEATURES, out FeaturesTaggedField features))
-            {
-                return features.Value;
-            }
-            return null;
+            return _taggedFields.TryGet(TaggedFieldTypes.FEATURES, out FeaturesTaggedField features)
+                ? features.Value
+                : null;
         }
         set
         {
@@ -168,11 +164,9 @@ public partial class Invoice
     {
         get
         {
-            if (_taggedFields.TryGet(TaggedFieldTypes.EXPIRY_TIME, out ExpiryTimeTaggedField expireIn))
-            {
-                return DateTimeOffset.FromUnixTimeSeconds(Timestamp + (int)expireIn.GetValue());
-            }
-            return DateTimeOffset.FromUnixTimeSeconds(Timestamp + InvoiceConstants.DEFAULT_EXPIRATION_SECONDS);
+            return _taggedFields.TryGet(TaggedFieldTypes.EXPIRY_TIME, out ExpiryTimeTaggedField expireIn)
+                ? DateTimeOffset.FromUnixTimeSeconds(Timestamp + expireIn.Value)
+                : DateTimeOffset.FromUnixTimeSeconds(Timestamp + InvoiceConstants.DEFAULT_EXPIRATION_SECONDS);
         }
         set
         {
@@ -199,7 +193,9 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGetAll(TaggedFieldTypes.FALLBACK_ADDRESS, out List<FallbackAddressTaggedField> fallbackAddress) ? fallbackAddress.Select(x => (BitcoinAddress)x.GetValue()).ToList() : null;
+            return _taggedFields.TryGetAll(TaggedFieldTypes.FALLBACK_ADDRESS, out List<FallbackAddressTaggedField> fallbackAddress)
+                ? fallbackAddress.Select(x => x.Value).ToList()
+                : null;
         }
         set
         {
@@ -220,11 +216,9 @@ public partial class Invoice
     {
         get
         {
-            if (_taggedFields.TryGet(TaggedFieldTypes.DESCRIPTION, out DescriptionTaggedField description))
-            {
-                return description.Value;
-            }
-            return null;
+            return _taggedFields.TryGet(TaggedFieldTypes.DESCRIPTION, out DescriptionTaggedField description)
+                ? description.Value
+                : null;
         }
         set
         {
@@ -246,7 +240,9 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.PAYMENT_SECRET, out PaymentSecretTaggedField paymentSecret) ? paymentSecret.Value : null;
+            return _taggedFields.TryGet(TaggedFieldTypes.PAYMENT_SECRET, out PaymentSecretTaggedField paymentSecret)
+                ? paymentSecret.Value
+                : null;
         }
         set
         {
@@ -268,11 +264,9 @@ public partial class Invoice
     {
         get
         {
-            if (_taggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField payeePubKey))
-            {
-                return payeePubKey.Value;
-            }
-            return null;
+            return _taggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField payeePubKey)
+                ? payeePubKey.Value
+                : null;
         }
         set
         {
@@ -294,7 +288,9 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.DESCRIPTION_HASH, out DescriptionHashTaggedField descriptionHash) ? descriptionHash.Value : null;
+            return _taggedFields.TryGet(TaggedFieldTypes.DESCRIPTION_HASH, out DescriptionHashTaggedField descriptionHash)
+                ? descriptionHash.Value
+                : null;
         }
         set
         {
@@ -315,11 +311,9 @@ public partial class Invoice
     {
         get
         {
-            if (_taggedFields.TryGet(TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY, out MinFinalCltvExpiryTaggedField minFinalCltvExpiry))
-            {
-                return minFinalCltvExpiry.Value;
-            }
-            return null;
+            return _taggedFields.TryGet(TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY, out MinFinalCltvExpiryTaggedField minFinalCltvExpiry)
+                ? minFinalCltvExpiry.Value
+                : null;
         }
         set
         {
@@ -340,7 +334,9 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.METADATA, out MetadataTaggedField metadata) ? metadata.Value : null;
+            return _taggedFields.TryGet(TaggedFieldTypes.METADATA, out MetadataTaggedField metadata)
+                ? metadata.Value
+                : null;
         }
         set
         {
@@ -353,21 +349,55 @@ public partial class Invoice
     #endregion
 
     #region Constructors
+
     /// <summary>
     /// The base constructor for the invoice
     /// </summary>
     /// <param name="amountMilliSats">The amount of millisatoshis the invoice is for</param>
+    /// <param name="description">The description of the invoice</param>
+    /// <param name="paymentHash">The payment hash of the invoice</param>
+    /// <param name="paymentSecret">The payment secret of the invoice</param>
     /// <remarks>
-    /// The invoice is created with the given network, amount of millisatoshis and timestamp.
+    /// The invoice is created with the given amount of millisatoshis, a description, the payment hash and the payment secret.
     /// </remarks>
     /// <seealso cref="Network"/>
-    public Invoice(ulong? amountMilliSats = 0)
+    public Invoice(ulong amountMilliSats, string description, uint256 paymentHash, uint256 paymentSecret)
     {
-        AmountMilliSats = amountMilliSats ?? 0;
+        AmountMilliSats = amountMilliSats;
         Network = ConfigManager.Instance.Network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Signature = string.Empty;
+
+        // Set Required Fields
+        PaymentHash = paymentHash;
+        PaymentSecret = paymentSecret;
+        Description = description;
+    }
+
+    /// <summary>
+    /// The base constructor for the invoice
+    /// </summary>
+    /// <param name="amountMilliSats">The amount of millisatoshis the invoice is for</param>
+    /// <param name="descriptionHash">The description hash of the invoice</param>
+    /// <param name="paymentHash">The payment hash of the invoice</param>
+    /// <param name="paymentSecret">The payment secret of the invoice</param>
+    /// <remarks>
+    /// The invoice is created with the given amount of millisatoshis, a description hash, the payment hash and the payment secret.
+    /// </remarks>
+    /// <seealso cref="Network"/>
+    public Invoice(ulong amountMilliSats, uint256 descriptionHash, uint256 paymentHash, uint256 paymentSecret)
+    {
+        AmountMilliSats = amountMilliSats;
+        Network = ConfigManager.Instance.Network;
+        HumanReadablePart = BuildHumanReadablePart();
+        Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        Signature = string.Empty;
+
+        // Set Required Fields
+        PaymentHash = paymentHash;
+        PaymentSecret = paymentSecret;
+        DescriptionHash = descriptionHash;
     }
 
     /// <summary>
@@ -392,6 +422,7 @@ public partial class Invoice
     /// <summary>
     /// This constructor is used by Decode
     /// </summary>
+    /// <param name="invoiceString">The invoice string</param>
     /// <param name="humanReadablePart">The human-readable part of the invoice</param>
     /// <param name="network">The network the invoice is created for</param>
     /// <param name="amountMilliSats">The amount of millisatoshis the invoice is for</param>
@@ -401,8 +432,10 @@ public partial class Invoice
     /// The invoice is created with the given human-readable part, network, amount of millisatoshis, timestamp and tagged fields.
     /// </remarks>
     /// <seealso cref="Network"/>
-    private Invoice(string humanReadablePart, Network network, ulong amountMilliSats, long timestamp, TaggedFieldList taggedFields)
+    private Invoice(string invoiceString, string humanReadablePart, Network network, ulong amountMilliSats, long timestamp, TaggedFieldList taggedFields)
     {
+        _invoiceString = invoiceString;
+
         Network = network;
         HumanReadablePart = humanReadablePart;
         AmountMilliSats = amountMilliSats;
@@ -413,11 +446,44 @@ public partial class Invoice
     #endregion
 
     #region Static Constructors
-    public static Invoice InSatoshis(long amountSats)
+    /// <summary>
+    /// Creates a new invoice with the given amount of satoshis
+    /// </summary>
+    /// <param name="amountSats">The amount of satoshis the invoice is for</param>
+    /// <param name="description">The description of the invoice</param>
+    /// <param name="paymentHash">The payment hash of the invoice</param>
+    /// <param name="paymentSecret">The payment secret of the invoice</param>
+    /// <remarks>
+    /// The invoice is created with the given amount of satoshis, a description, the payment hash and the payment secret.
+    /// </remarks>
+    /// <returns>The invoice</returns>
+    public static Invoice InSatoshis(long amountSats, string description, uint256 paymentHash, uint256 paymentSecret)
     {
-        return new Invoice((ulong)amountSats * 1_000);
+        return new Invoice((ulong)amountSats * 1_000, description, paymentHash, paymentSecret);
     }
 
+    /// <summary>
+    /// Creates a new invoice with the given amount of satoshis
+    /// </summary>
+    /// <param name="amountSats">The amount of satoshis the invoice is for</param>
+    /// <param name="descriptionHash">The description hash of the invoice</param>
+    /// <param name="paymentHash">The payment hash of the invoice</param>
+    /// <param name="paymentSecret">The payment secret of the invoice</param>
+    /// <remarks>
+    /// The invoice is created with the given amount of satoshis, a description hash, the payment hash and the payment secret.
+    /// </remarks>
+    /// <returns>The invoice</returns>
+    public static Invoice InSatoshis(long amountSats, uint256 descriptionHash, uint256 paymentHash, uint256 paymentSecret)
+    {
+        return new Invoice((ulong)amountSats * 1_000, descriptionHash, paymentHash, paymentSecret);
+    }
+
+    /// <summary>
+    /// Decodes an invoice from a string
+    /// </summary>
+    /// <param name="invoiceString">The invoice string</param>
+    /// <returns>The invoice</returns>
+    /// <exception cref="InvoiceSerializationException">If something goes wrong in the decoding process</exception>
     public static Invoice Decode(string invoiceString)
     {
         try
@@ -436,50 +502,64 @@ public partial class Invoice
 
             // TODO: Check feature bits
 
-            var invoice = new Invoice(hrp, network, amount, timestamp, taggedFields);
+            var invoice = new Invoice(invoiceString, hrp, network, amount, timestamp, taggedFields);
 
             // Get pubkey from tagged fields
             taggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField pubkey);
             // Check Signature
-            invoice.CheckSignature(signature, hrp, data, pubkey?.Value);
+            invoice.CheckSignature(signature, hrp, data, pubkey.Value);
 
             return invoice;
         }
         catch (Exception e)
         {
-            throw new InvoiceSerializationException("Error parsing invoice", e);
+            throw new InvoiceSerializationException("Error decoding invoice", e);
         }
     }
     #endregion
 
+    /// <summary>
+    /// Encodes the invoice to a string
+    /// </summary>
+    /// <returns>A string representing the invoice</returns>
+    /// <exception cref="InvoiceSerializationException">If something goes wrong in the encoding process</exception>
     public string Encode()
     {
-        // Calculate the size needed for the buffer
-        var sizeInBits = 35 + (_taggedFields.CalculateSizeInBits() * 5) + (_taggedFields.Count * 15);
+        try
+        {
+            // Calculate the size needed for the buffer
+            var sizeInBits = 35 + (_taggedFields.CalculateSizeInBits() * 5) + (_taggedFields.Count * 15);
 
-        // Initialize the BitWriter buffer
-        using var bitWriter = new BitWriter(sizeInBits);
+            // Initialize the BitWriter buffer
+            using var bitWriter = new BitWriter(sizeInBits);
 
-        // Write the timestamp
-        bitWriter.WriteInt64AsBits(Timestamp, 35);
+            // Write the timestamp
+            bitWriter.WriteInt64AsBits(Timestamp, 35);
 
-        // Write the tagged fields
-        _taggedFields.WriteToBitWriter(bitWriter);
+            // Write the tagged fields
+            _taggedFields.WriteToBitWriter(bitWriter);
 
-        // Sign the invoice
-        var compactSignature = SignInvoice(HumanReadablePart, bitWriter);
-        var signature = new byte[compactSignature.Signature.Length + 1];
-        compactSignature.Signature.CopyTo(signature, 0);
-        signature[^1] = (byte)compactSignature.RecoveryId;
+            // Sign the invoice
+            var compactSignature = SignInvoice(HumanReadablePart, bitWriter);
+            var signature = new byte[compactSignature.Signature.Length + 1];
+            compactSignature.Signature.CopyTo(signature, 0);
+            signature[^1] = (byte)compactSignature.RecoveryId;
 
-        var bech32Encoder = new Bech32Encoder(HumanReadablePart);
-        return bech32Encoder.EncodeLightningInvoice(bitWriter, signature);
+            var bech32Encoder = new Bech32Encoder(HumanReadablePart);
+            _invoiceString = bech32Encoder.EncodeLightningInvoice(bitWriter, signature);
+
+            return _invoiceString;
+        }
+        catch (Exception e)
+        {
+            throw new InvoiceSerializationException("Error encoding invoice", e);
+        }
     }
 
     #region Overrides
     public override string ToString()
     {
-        return Encode();
+        return string.IsNullOrWhiteSpace(_invoiceString) ? Encode() : _invoiceString;
     }
     #endregion
 
@@ -620,7 +700,8 @@ public partial class Invoice
             PayeePubKey = PubKey.RecoverCompact(nBitcoinHash, compactSignature);
             return;
         }
-        else if (NBitcoin.Crypto.ECDSASignature.TryParseFromCompact(compactSignature.Signature, out var ecdsa)
+
+        if (NBitcoin.Crypto.ECDSASignature.TryParseFromCompact(compactSignature.Signature, out var ecdsa)
                 && pubkey.Verify(nBitcoinHash, ecdsa))
         {
             return;

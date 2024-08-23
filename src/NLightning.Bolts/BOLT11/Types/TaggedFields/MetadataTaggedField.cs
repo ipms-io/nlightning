@@ -12,22 +12,23 @@ using Enums;
 /// The metadata is a variable length field that can be used to store additional information
 /// </remarks>
 /// <seealso cref="ITaggedField"/>
-public sealed class MetadataTaggedField : ITaggedField
+internal sealed class MetadataTaggedField : ITaggedField
 {
     public TaggedFieldTypes Type => TaggedFieldTypes.METADATA;
-    public byte[] Value { get; }
+    internal byte[] Value { get; }
     public short Length { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MetadataTaggedField"/> class.
     /// </summary>
     /// <param name="value">The metadata bytes</param>
-    public MetadataTaggedField(byte[] value)
+    internal MetadataTaggedField(byte[] value)
     {
         Value = value;
         Length = (short)Math.Ceiling(value.Length * 8 / 5.0);
     }
 
+    /// <inheritdoc/>
     public void WriteToBitWriter(BitWriter bitWriter)
     {
         // Write data
@@ -40,12 +41,14 @@ public sealed class MetadataTaggedField : ITaggedField
         return true;
     }
 
-    public object GetValue()
-    {
-        return Value;
-    }
-
-    public static MetadataTaggedField FromBitReader(BitReader bitReader, short length)
+    /// <summary>
+    /// Reads a MetadataTaggedField from a BitReader
+    /// </summary>
+    /// <param name="bitReader">The BitReader to read from</param>
+    /// <param name="length">The length of the field</param>
+    /// <returns>The MetadataTaggedField</returns>
+    /// <exception cref="ArgumentException">Thrown when the length is invalid</exception>
+    internal static MetadataTaggedField FromBitReader(BitReader bitReader, short length)
     {
         if (length <= 0)
         {

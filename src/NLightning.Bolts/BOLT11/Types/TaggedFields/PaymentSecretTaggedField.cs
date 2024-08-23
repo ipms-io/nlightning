@@ -14,21 +14,22 @@ using Interfaces;
 /// The payment secret is a 32 byte secret that is used to identify a payment
 /// </remarks>
 /// <seealso cref="ITaggedField"/>
-public sealed class PaymentSecretTaggedField : ITaggedField
+internal sealed class PaymentSecretTaggedField : ITaggedField
 {
     public TaggedFieldTypes Type => TaggedFieldTypes.PAYMENT_SECRET;
-    public uint256 Value { get; }
+    internal uint256 Value { get; }
     public short Length => TaggedFieldConstants.HASH_LENGTH;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DescriptionHashTaggedField"/> class.
     /// </summary>
     /// <param name="value">The Description Hash</param>
-    public PaymentSecretTaggedField(uint256 value)
+    internal PaymentSecretTaggedField(uint256 value)
     {
         Value = value;
     }
 
+    /// <inheritdoc/>
     public void WriteToBitWriter(BitWriter bitWriter)
     {
         var data = Value.ToBytes();
@@ -47,12 +48,14 @@ public sealed class PaymentSecretTaggedField : ITaggedField
         return Value != uint256.Zero;
     }
 
-    public object GetValue()
-    {
-        return Value;
-    }
-
-    public static PaymentSecretTaggedField FromBitReader(BitReader bitReader, short length)
+    /// <summary>
+    /// Reads a PaymentSecretTaggedField from a BitReader
+    /// </summary>
+    /// <param name="bitReader">The BitReader to read from</param>
+    /// <param name="length">The length of the field</param>
+    /// <returns>The PaymentSecretTaggedField</returns>
+    /// <exception cref="ArgumentException">Thrown when the length is invalid</exception>
+    internal static PaymentSecretTaggedField FromBitReader(BitReader bitReader, short length)
     {
         if (length != TaggedFieldConstants.HASH_LENGTH)
         {

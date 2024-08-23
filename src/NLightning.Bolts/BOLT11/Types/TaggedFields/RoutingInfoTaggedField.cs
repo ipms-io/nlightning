@@ -15,22 +15,23 @@ using Interfaces;
 /// Each entry contains the public key of the node, the short channel id, the base fee in msat, the fee proportional millionths and the cltv expiry delta.
 /// </remarks>
 /// <seealso cref="ITaggedField"/>
-public sealed class RoutingInfoTaggedField : ITaggedField
+internal sealed class RoutingInfoTaggedField : ITaggedField
 {
     public TaggedFieldTypes Type => TaggedFieldTypes.ROUTING_INFO;
-    public RoutingInfoCollection Value { get; }
+    internal RoutingInfoCollection Value { get; }
     public short Length { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DescriptionHashTaggedField"/> class.
     /// </summary>
     /// <param name="value">The Description Hash</param>
-    public RoutingInfoTaggedField(RoutingInfoCollection value)
+    internal RoutingInfoTaggedField(RoutingInfoCollection value)
     {
         Value = value;
         Length = (short)((value.Count * TaggedFieldConstants.ROUTING_INFO_LENGTH + value.Count * 2) / 5);
     }
 
+    /// <inheritdoc/>
     public void WriteToBitWriter(BitWriter bitWriter)
     {
         // Write data
@@ -73,12 +74,13 @@ public sealed class RoutingInfoTaggedField : ITaggedField
         return true;
     }
 
-    public object GetValue()
-    {
-        return Value;
-    }
-
-    public static RoutingInfoTaggedField FromBitReader(BitReader bitReader, short length)
+    /// <summary>
+    /// Create a new instance of the <see cref="RoutingInfoTaggedField"/> from a <see cref="BitReader"/>
+    /// </summary>
+    /// <param name="bitReader">The bit reader to read from</param>
+    /// <param name="length">The length of the tagged field</param>
+    /// <returns>A new instance of the <see cref="RoutingInfoTaggedField"/></returns>
+    internal static RoutingInfoTaggedField FromBitReader(BitReader bitReader, short length)
     {
         var l = length * 5;
         var bitsReadAcc = 0;

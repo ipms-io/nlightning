@@ -14,21 +14,22 @@ using Interfaces;
 /// The description hash is a 32 byte hash that is used to identify a description
 /// </remarks>
 /// <seealso cref="ITaggedField"/>
-public sealed class DescriptionHashTaggedField : ITaggedField
+internal sealed class DescriptionHashTaggedField : ITaggedField
 {
     public TaggedFieldTypes Type => TaggedFieldTypes.DESCRIPTION_HASH;
-    public uint256 Value { get; }
+    internal uint256 Value { get; }
     public short Length => TaggedFieldConstants.HASH_LENGTH;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DescriptionHashTaggedField"/> class.
     /// </summary>
     /// <param name="value">The Description Hash</param>
-    public DescriptionHashTaggedField(uint256 value)
+    internal DescriptionHashTaggedField(uint256 value)
     {
         Value = value;
     }
 
+    /// <inheritdoc/>
     public void WriteToBitWriter(BitWriter bitWriter)
     {
         var data = Value.ToBytes();
@@ -47,12 +48,14 @@ public sealed class DescriptionHashTaggedField : ITaggedField
         return Value != uint256.Zero;
     }
 
-    public object GetValue()
-    {
-        return Value;
-    }
-
-    public static DescriptionHashTaggedField FromBitReader(BitReader bitReader, short length)
+    /// <summary>
+    /// Reads a DescriptionHashTaggedField from a BitReader
+    /// </summary>
+    /// <param name="bitReader">The BitReader to read from</param>
+    /// <param name="length">The length of the field</param>
+    /// <returns>The DescriptionHashTaggedField</returns>
+    /// <exception cref="ArgumentException">Thrown when the length is invalid</exception>
+    internal static DescriptionHashTaggedField FromBitReader(BitReader bitReader, short length)
     {
         if (length != TaggedFieldConstants.HASH_LENGTH)
         {

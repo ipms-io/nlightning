@@ -68,7 +68,7 @@ public class FeaturesTaggedFieldTests
         // Assert
         foreach (var featureBit in featureBits)
         {
-            taggedField.Value.IsFeatureSet(featureBit, true);
+            Assert.True(taggedField.Value.IsFeatureSet(featureBit, false));
         }
     }
 

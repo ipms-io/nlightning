@@ -5,7 +5,7 @@ namespace NLightning.Bolts.BOLT11.Types;
 /// <summary>
 /// A collection of routing information
 /// </summary>
-public class RoutingInfoCollection : ObservableCollection<RoutingInfo>
+public sealed class RoutingInfoCollection : ObservableCollection<RoutingInfo>
 {
     /// <summary>
     /// Te maximum amount of routing information that can be stored in a single routing information list
@@ -14,7 +14,7 @@ public class RoutingInfoCollection : ObservableCollection<RoutingInfo>
     /// The maximum length of a tagged field is 1023 * 5 bits. The routing information is 408 bits long.
     /// 1023 * 5 bits = 5115 bits / 408 bits = 12.5 => round down to 12
     /// </remarks>
-    public const int MAX_CAPACITY = 12;
+    private const int MAX_CAPACITY = 12;
 
     /// <summary>
     /// Adds a routing information to the collection
