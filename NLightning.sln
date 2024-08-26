@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Models.SqlServer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Common.Tests", "test\NLightning.Common.Tests\NLightning.Common.Tests.csproj", "{B6169CE9-FEB2-46EC-994D-4082186EB705}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Bolt11", "src\NLightning.Bolt11\NLightning.Bolt11.csproj", "{B29DC607-C3E0-4519-B47A-AB8A000F2BED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{B6169CE9-FEB2-46EC-994D-4082186EB705}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B6169CE9-FEB2-46EC-994D-4082186EB705}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B6169CE9-FEB2-46EC-994D-4082186EB705}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B29DC607-C3E0-4519-B47A-AB8A000F2BED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B29DC607-C3E0-4519-B47A-AB8A000F2BED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B29DC607-C3E0-4519-B47A-AB8A000F2BED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B29DC607-C3E0-4519-B47A-AB8A000F2BED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -84,5 +90,6 @@ Global
 		{04D4EEFE-A127-445B-8D41-252E85CE969C} = {123D0631-533C-447F-B7DA-D1D37E5E64BF}
 		{7F9B8714-BFAC-4F98-9BAB-EA2FC1B29688} = {123D0631-533C-447F-B7DA-D1D37E5E64BF}
 		{B6169CE9-FEB2-46EC-994D-4082186EB705} = {AF4411D4-8EE9-423E-8213-1C9D35E47882}
+		{B29DC607-C3E0-4519-B47A-AB8A000F2BED} = {123D0631-533C-447F-B7DA-D1D37E5E64BF}
 	EndGlobalSection
 EndGlobal

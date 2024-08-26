@@ -17,7 +17,10 @@ public static class SecureKeyManager
             s_securePrivateKeyPtr = Libsodium.sodium_malloc(s_privateKeyLength);
 
             // Lock the memory to prevent swapping
-            Libsodium.sodium_mlock(s_securePrivateKeyPtr, s_privateKeyLength);
+            if (Libsodium.sodium_mlock(s_securePrivateKeyPtr, s_privateKeyLength) == -1)
+            {
+                throw new InvalidOperationException("Failed to lock memory.");
+            }
 
             // Copy the private key to secure memory
             Marshal.Copy(privateKey, 0, s_securePrivateKeyPtr, (int)s_privateKeyLength);
