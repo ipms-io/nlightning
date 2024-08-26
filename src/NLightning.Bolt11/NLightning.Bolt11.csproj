@@ -41,8 +41,7 @@
     <Compile Include="..\NLightning.Bolts\Exceptions\InvoiceSerializationException.cs" />
   </ItemGroup>
 
-  <ItemGroup> 
-    <PackageReference Include="DnsClient" Version="1.7.0" /> 
+  <ItemGroup>
     <PackageReference Include="libsodium" Version="1.0.19" />
     <PackageReference Include="NBitcoin" Version="7.0.37" />
   </ItemGroup>
