@@ -11,6 +11,7 @@ using Bolts.BOLT8.Hashes;
 using Bolts.BOLT9;
 using Common.Managers;
 using Common.Types;
+using Exceptions;
 using static Utils.TestUtils;
 
 public class InvoiceIntegrationTests
@@ -96,6 +97,24 @@ public class InvoiceIntegrationTests
         }
     }
 
+    [Theory]
+    [InlineData("Error in Bech32 string", "lnbc2500u1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpquwpc4curk03c9wlrswe78q4eyqc7d8d0xqzpuyk0sg5g70me25alkluzd2x62aysf2pyy8edtjeevuv4p2d5p76r4zkmneet7uvyakky2zr4cusd45tftc9c5fh0nnqpnl2jfll544esqchsrnt")]
+    [InlineData("Missing prefix in invoice", "pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpquwpc4curk03c9wlrswe78q4eyqc7d8d0xqzpuyk0sg5g70me25alkluzd2x62aysf2pyy8edtjeevuv4p2d5p76r4zkmneet7uvyakky2zr4cusd45tftc9c5fh0nnqpnl2jfll544esqchsrny")]
+    [InlineData("Impossible to recover the public key", "lnbc2500u1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq5xysxxatsyp3k7enxv4jsxqzpusp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygs9qrsgqwgt7mcn5yqw3yx0w94pswkpq6j9uh6xfqqqtsk4tnarugeektd4hg5975x9am52rz4qskukxdmjemg92vvqz8nvmsye63r5ykel43pgz7zq0g2")]
+    [InlineData("Specified argument was out of the range of valid values", "lnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6na6hlh")]
+    [InlineData("Invalid amount format in invoice", "lnbc2500x1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq5xysxxatsyp3k7enxv4jsxqzpusp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygs9qrsgqrrzc4cvfue4zp3hggxp47ag7xnrlr8vgcmkjxk3j5jqethnumgkpqp23z9jclu3v0a7e0aruz366e9wqdykw6dxhdzcjjhldxq0w6wgqcnu43j")]
+    [InlineData("Invalid pico amount in invoice", "lnbc2500000001p1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq5xysxxatsyp3k7enxv4jsxqzpusp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygs9qrsgq0lzc236j96a95uv0m3umg28gclm5lqxtqqwk32uuk4k6673k6n5kfvx3d2h8s295fad45fdhmusm8sjudfhlf6dcsxmfvkeywmjdkxcp99202x")]
+    public void Given_InvalidInvoiceString_When_Decoding_Then_ExceptionIsThrown(string errorMessage, string invoiceString)
+    {
+        // Arrange
+        ConfigManager.Instance.Network = NBitcoin.Network.Main;
+
+        // Act & Assert
+        var exception = Assert.Throws<InvoiceSerializationException>(() => Invoice.Decode(invoiceString));
+        Assert.Equal("Error decoding invoice", exception.Message);
+        Assert.Contains(errorMessage, exception.InnerException?.Message);
+    }
+
     [Fact]
     public void Given_ValidDecodedInvoice_When_Encoding_Then_InvoiceStringIsCorrect()
     {
@@ -170,6 +189,7 @@ public class InvoiceIntegrationTests
         public long? ExpectedTimestamp;
         public readonly Dictionary<TaggedFieldTypes, object> EXPECTED_TAGGED_FIELDS = [];
         public bool IgnoreEncode;
+        public string? ErrorMessage;
     }
 
     private static List<TestInvoice> ReadTestInvoices(string filePath)
@@ -364,6 +384,15 @@ public class InvoiceIntegrationTests
                 }
 
                 currentInvoice.IgnoreEncode = bool.Parse(line[13..]);
+            }
+            else if (line.StartsWith("error="))
+            {
+                if (currentInvoice == null)
+                {
+                    throw new InvalidOperationException("error line without invoice line");
+                }
+
+                currentInvoice.ErrorMessage = line[6..];
             }
             else if (line.Length == 0)
             {

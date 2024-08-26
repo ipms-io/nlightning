@@ -56,7 +56,7 @@ internal class TaggedFieldList : List<ITaggedField>
     /// <param name="taggedField">The tagged field</param>
     /// <typeparam name="T">The type of the tagged field</typeparam>
     /// <returns>True if the tagged field was found, false otherwise</returns>
-    internal bool TryGet<T>(TaggedFieldTypes taggedFieldType, out T taggedField) where T : ITaggedField
+    internal bool TryGet<T>(TaggedFieldTypes taggedFieldType, out T? taggedField) where T : ITaggedField
     {
         var value = Get<T>(taggedFieldType);
         if (value != null)

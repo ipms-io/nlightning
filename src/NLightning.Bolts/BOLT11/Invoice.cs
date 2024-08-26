@@ -39,7 +39,7 @@ public partial class Invoice
         { InvoiceConstants.PREFIX_REGTEST.ToUpperInvariant(), Network.REG_TEST }
     };
 
-    [GeneratedRegex(@"^[a-z]+(\d+)?([munp]?)")]
+    [GeneratedRegex(@"^[a-z]+((\d+)([munp])?)?$")]
     private static partial Regex AmountRegex();
 
     private TaggedFieldList _taggedFields { get; } = [];
@@ -505,9 +505,9 @@ public partial class Invoice
             var invoice = new Invoice(invoiceString, hrp, network, amount, timestamp, taggedFields);
 
             // Get pubkey from tagged fields
-            taggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField pubkey);
+            taggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField? pubkey);
             // Check Signature
-            invoice.CheckSignature(signature, hrp, data, pubkey.Value);
+            invoice.CheckSignature(signature, hrp, data, pubkey?.Value);
 
             return invoice;
         }
@@ -650,8 +650,8 @@ public partial class Invoice
             throw new ArgumentException("Invalid amount format in invoice", nameof(humanReadablePart));
         }
 
-        var amountString = match.Groups[1].Value;
-        var multiplier = match.Groups[2].Value;
+        var amountString = match.Groups[2].Value;
+        var multiplier = match.Groups[3].Value;
         var millisatoshis = 0ul;
         if (!ulong.TryParse(amountString, out var amount))
         {
