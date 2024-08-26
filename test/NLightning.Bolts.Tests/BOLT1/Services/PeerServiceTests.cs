@@ -5,16 +5,16 @@ using NBitcoin;
 
 namespace NLightning.Bolts.Tests.BOLT1.Services;
 
-using BOLT1.Fixtures;
-using BOLT1.Mock;
 using Bolts.BOLT1.Interfaces;
 using Bolts.BOLT1.Primitives;
 using Bolts.BOLT1.Services;
 using Bolts.BOLT8.Interfaces;
-using Bolts.Exceptions;
 using Common.Exceptions;
+using Exceptions;
+using Fixtures;
+using Mock;
 
-public partial class PeerServiceTests
+public class PeerServiceTests
 {
     private readonly PubKey _pubKey = new("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7");
     private readonly NodeOptions _nodeOptions = new();
@@ -87,8 +87,6 @@ public partial class PeerServiceTests
                                       .Returns(_mockMessageService.Object);
             _mockPingPongServiceFactory.Setup(f => f.CreatePingPongService(It.IsAny<TimeSpan>()))
                                        .Returns(_mockPingPongService.Object);
-
-            var nodeOptions = new NodeOptions { NetworkTimeout = TimeSpan.FromSeconds(1) };
 
             var peerService = new PeerService(_nodeOptions, _mockTransportServiceFactory.Object, _mockPingPongServiceFactory.Object, _mockMessageServiceFactory.Object);
 
@@ -166,7 +164,6 @@ public partial class PeerServiceTests
         try
         {
             var tsc = new TaskCompletionSource<bool>();
-            var pubkey = new Key().PubKey;
 
             _mockTransportServiceFactory.Setup(f => f.CreateTransportService(It.IsAny<bool>(), It.IsAny<byte[]>(), It.IsAny<byte[]>(), It.IsAny<TcpClient>()))
                                         .Returns(_mockTransportService.Object);

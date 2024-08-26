@@ -18,7 +18,6 @@ internal static class ProtocolConstants
     /// The byte[] representation of the Prologue for the Lightning Network.
     /// </summary>
     public static readonly byte[] PROLOGUE = Encoding.ASCII.GetBytes("lightning");
-    // TODO: Add PROLOGUE_BYTES
 
     /// <summary>
     /// The byte[] representations of the name of the Noise protocol.

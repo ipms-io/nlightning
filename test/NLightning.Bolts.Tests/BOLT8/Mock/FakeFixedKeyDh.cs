@@ -6,7 +6,7 @@ using Bolts.BOLT8.Primitives;
 
 internal class FakeFixedKeyDh(byte[] privateKey) : IDh
 {
-    private readonly Secp256k1 _dh = new();
+    private readonly SecP256K1 _dh = new();
 
     public KeyPair GenerateKeyPair()
     {

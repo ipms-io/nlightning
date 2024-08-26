@@ -5,10 +5,10 @@ namespace NLightning.Bolts.Tests.BOLT1.Messages;
 using Bolts.BOLT1.Messages;
 using Bolts.BOLT1.Payloads;
 using Bolts.BOLT9;
-using Bolts.Exceptions;
 using Common.Constants;
 using Common.TLVs;
 using Common.Types;
+using Exceptions;
 
 public class InitMessageTests
 {
@@ -17,8 +17,8 @@ public class InitMessageTests
     {
         // Arrange
         var expectedPayload = new InitPayload(new Features());
-        var expectedExtension = new TLVStream();
-        var expectedTlv = new NetworksTLV([ChainConstants.Main]);
+        var expectedExtension = new TlvStream();
+        var expectedTlv = new NetworksTlv([ChainConstants.MAIN]);
         expectedExtension.Add(expectedTlv);
         var stream = await CreateStreamFromPayloadAndExtensionAsync(expectedPayload, expectedExtension);
 
@@ -26,10 +26,10 @@ public class InitMessageTests
         var initMessage = await InitMessage.DeserializeAsync(stream);
 
         // Assert
-        TLV? tlv = null;
+        Tlv? tlv = null;
         Assert.NotNull(initMessage);
         Assert.Equal(expectedPayload.Features.ToString(), initMessage.Payload.Features.ToString());
-        var hasTlv = initMessage.Extension?.TryGetTlv(TLVConstants.NETWORKS, out tlv);
+        var hasTlv = initMessage.Extension?.TryGetTlv(TlvConstants.NETWORKS, out tlv);
         Assert.True(hasTlv);
         Assert.Equal(expectedTlv.Value, tlv!.Value);
     }
@@ -60,7 +60,7 @@ public class InitMessageTests
         await Assert.ThrowsAsync<MessageSerializationException>(() => InitMessage.DeserializeAsync(invalidStream));
     }
 
-    private static async Task<Stream> CreateStreamFromPayloadAndExtensionAsync(InitPayload payload, TLVStream extension)
+    private static async Task<Stream> CreateStreamFromPayloadAndExtensionAsync(InitPayload payload, TlvStream extension)
     {
         var stream = new MemoryStream();
         await payload.SerializeAsync(stream);

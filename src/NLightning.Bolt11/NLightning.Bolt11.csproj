@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Version>0.0.1</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Nickolas Goline</Authors>
+    <Description>A Bitcoin Lightning Invoice Decoder/Encoder implemented in C# </Description>
+    <Copyright>Copyright © Níckolas Goline 2024</Copyright>
+    <RepositoryUrl>https://github.com/ipms-io/nlightning</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <AssemblyVersion>0.0.1</AssemblyVersion>
+    <FileVersion>0.0.1</FileVersion>
+    <NeutralLanguage>en</NeutralLanguage>
+    <Icon>logo_small.png</Icon>
+    <PackageTags>lightning,invoice,bolt11,encoder,decoder</PackageTags>
+    <PackageProjectUrl>https://nlightning.ipms.io/api/NLightning.Bolts.BOLT11.html</PackageProjectUrl>
+    <PackageIcon>logo_small.png</PackageIcon>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\NLightning.Common\BitUtils\*.cs" />
+    <Compile Include="..\NLightning.Common\Constants\NetworkConstants.cs" />
+    <Compile Include="..\NLightning.Common\Managers\*.cs" />
+    <Compile Include="..\NLightning.Common\Types\Network.cs" />
+    <Compile Include="..\NLightning.Common\Libsodium.cs" />
+    <Compile Include="..\NLightning.Common\Exceptions\*.cs" />
+    <Compile Include="..\NLightning.Common\Extensions\BitArrayExtension.cs" />
+    <Compile Include="..\NLightning.Common\Types\ShortChannelId.cs" />
+    <Compile Include="..\NLightning.Bolts\BOLT8\Constants\HashConstants.cs" />
+    <Compile Include="..\NLightning.Bolts\BOLT8\Hashes\Sha256.cs" />
+    <Compile Include="..\NLightning.Bolts\BOLT9\**\*.cs" />
+    <Compile Include="..\NLightning.Bolts\BOLT11\**\*.cs" />
+    <Compile Include="..\NLightning.Bolts\Exceptions\InvoiceSerializationException.cs" />
+  </ItemGroup>
+
+  <ItemGroup> 
+    <PackageReference Include="DnsClient" Version="1.7.0" /> 
+    <PackageReference Include="libsodium" Version="1.0.19" />
+    <PackageReference Include="NBitcoin" Version="7.0.37" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\images\logo_small.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

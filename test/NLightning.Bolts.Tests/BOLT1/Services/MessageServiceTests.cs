@@ -4,8 +4,8 @@ namespace NLightning.Bolts.Tests.BOLT1.Services;
 
 using Bolts.BOLT1.Services;
 using Bolts.BOLT8.Interfaces;
-using Bolts.Factories;
-using Bolts.Interfaces;
+using Factories;
+using Interfaces;
 
 public class MessageServiceTests
 {
@@ -75,6 +75,6 @@ public class MessageServiceTests
         // Assert
         transportServiceMock.Verify(t => t.Dispose(), Times.Once());
 
-        await Assert.ThrowsAnyAsync<ObjectDisposedException>(() => messageService.SendMessageAsync(null));
+        await Assert.ThrowsAnyAsync<ObjectDisposedException>(() => messageService.SendMessageAsync(null!));
     }
 }

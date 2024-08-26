@@ -13,8 +13,7 @@ using Primitives;
 /// </summary>
 internal sealed class SymmetricState : IDisposable
 {
-    private readonly ChaCha20Poly1305 _cipher = new();
-    private readonly SHA256 _hash = new();
+    private readonly Sha256 _hash = new();
     private readonly Hkdf _hkdf = new();
     private readonly CipherState _state = new();
     private readonly byte[] _ck;
@@ -27,12 +26,10 @@ internal sealed class SymmetricState : IDisposable
     /// </summary>
     public SymmetricState(ReadOnlySpan<byte> protocolName)
     {
-        var length = HashConstants.HASH_LEN;
+        _ck = new byte[HashConstants.HASH_LEN];
+        _h = new byte[HashConstants.HASH_LEN];
 
-        _ck = new byte[length];
-        _h = new byte[length];
-
-        if (protocolName.Length <= length)
+        if (protocolName.Length <= HashConstants.HASH_LEN)
         {
             protocolName.CopyTo(_h);
         }
@@ -42,7 +39,7 @@ internal sealed class SymmetricState : IDisposable
             _hash.GetHashAndReset(_h);
         }
 
-        Array.Copy(_h, _ck, length);
+        Array.Copy(_h, _ck, HashConstants.HASH_LEN);
     }
 
     /// <summary>
@@ -53,7 +50,7 @@ internal sealed class SymmetricState : IDisposable
     public void MixKey(ReadOnlySpan<byte> inputKeyMaterial)
     {
         var length = inputKeyMaterial.Length;
-        Debug.Assert(length == 0 || length == ChaCha20Poly1305.KEY_SIZE || length == DhConstants.PRIVKEY_LEN);
+        Debug.Assert(length == 0 || length == ChaCha20Poly1305.KEY_SIZE);
 
         Span<byte> output = stackalloc byte[2 * HashConstants.HASH_LEN];
         _hkdf.ExtractAndExpand2(_ck, inputKeyMaterial, output);
@@ -83,7 +80,7 @@ internal sealed class SymmetricState : IDisposable
     public void MixKeyAndHash(ReadOnlySpan<byte> inputKeyMaterial)
     {
         var length = inputKeyMaterial.Length;
-        Debug.Assert(length == 0 || length == ChaCha20Poly1305.KEY_SIZE || length == DhConstants.PRIVKEY_LEN);
+        Debug.Assert(length is 0 or ChaCha20Poly1305.KEY_SIZE);
 
         Span<byte> output = stackalloc byte[3 * HashConstants.HASH_LEN];
         _hkdf.ExtractAndExpand3(_ck, inputKeyMaterial, output);

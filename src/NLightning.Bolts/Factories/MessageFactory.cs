@@ -2,7 +2,8 @@ namespace NLightning.Bolts.Factories;
 
 using BOLT1.Messages;
 using BOLT1.Payloads;
-using Bolts.Constants;
+using Common.BitUtils;
+using Constants;
 using Exceptions;
 using Interfaces;
 
@@ -69,7 +70,7 @@ public static class MessageFactory
         // Get type of message
         var typeBytes = new byte[2];
         await stream.ReadExactlyAsync(typeBytes);
-        var type = EndianBitConverter.ToUInt16BE(typeBytes);
+        var type = EndianBitConverter.ToUInt16BigEndian(typeBytes);
 
         // Deserialize message based on type
         return type switch

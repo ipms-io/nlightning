@@ -16,4 +16,4 @@
 - [x] BOLT 8: Encrypted and Authenticated Transport
 - [x] BOLT 9: Assigned Feature Flags
 - [x] BOLT 10: DNS Bootstrap and Assisted Node Location
-- [ ] BOLT 11: Invoice Protocol for Lightning Payments
+- [x] BOLT 11: Invoice Protocol for Lightning Payments

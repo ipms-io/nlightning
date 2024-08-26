@@ -19,8 +19,8 @@ internal sealed class Transport : ITransport
 
     public Transport(bool initiator, CipherState c1, CipherState c2)
     {
-        Exceptions.ThrowIfNull(c1, nameof(c1));
-        Exceptions.ThrowIfNull(c2, nameof(c2));
+        ExceptionUtils.ThrowIfNull(c1, nameof(c1));
+        ExceptionUtils.ThrowIfNull(c2, nameof(c2));
 
         _initiator = initiator;
         _sendingKey = c1;
@@ -28,6 +28,9 @@ internal sealed class Transport : ITransport
     }
 
     /// <inheritdoc/>
+    /// <exception cref="ObjectDisposedException">Thrown if the current instance has already been disposed.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the responder has attempted to write a message to a one-way stream.</exception>
+    /// <exception cref="ArgumentException">Thrown if the encrypted payload was greater than <see cref="ProtocolConstants.MAX_MESSAGE_LENGTH"/> bytes in length, or if the output buffer did not have enough space to hold the ciphertext.</exception>
     public int WriteMessage(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
         // Serialize length into 2 bytes encoded as a big-endian integer
@@ -49,7 +52,7 @@ internal sealed class Transport : ITransport
     /// <inheritdoc/>
     public int ReadMessageLength(ReadOnlySpan<byte> lc)
     {
-        Exceptions.ThrowIfDisposed(_disposed, nameof(Transport));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Transport));
 
         if (lc.Length != ProtocolConstants.MESSAGE_HEADER_SIZE)
         {
@@ -86,12 +89,12 @@ internal sealed class Transport : ITransport
     /// Thrown if the responder has attempted to write a message to a one-way stream.
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// Thrown if the encrypted payload was greater than <see cref="Protocol.MaxMessageLength"/>
+    /// Thrown if the encrypted payload was greater than <see cref="ProtocolConstants.MAX_MESSAGE_LENGTH"/>
     /// bytes in length, or if the output buffer did not have enough space to hold the ciphertext.
     /// </exception>
     private int WriteMessagePart(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
-        Exceptions.ThrowIfDisposed(_disposed, nameof(Transport));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Transport));
 
         if (payload.Length + ChaCha20Poly1305.TAG_SIZE > ProtocolConstants.MAX_MESSAGE_LENGTH)
         {
@@ -104,7 +107,7 @@ internal sealed class Transport : ITransport
         }
 
         var cipher = _initiator ? _sendingKey : _receivingKey;
-        Debug.Assert(cipher?.HasKey() ?? false);
+        Debug.Assert(cipher.HasKey());
 
         return cipher.Encrypt(payload, messageBuffer);
     }
@@ -122,7 +125,7 @@ internal sealed class Transport : ITransport
     /// Thrown if the initiator has attempted to read a message from a one-way stream.
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// Thrown if the message was greater than <see cref="Protocol.MaxMessageLength"/>
+    /// Thrown if the message was greater than <see cref="ProtocolConstants.MAX_MESSAGE_LENGTH"/>
     /// bytes in length, or if the output buffer did not have enough space to hold the plaintext.
     /// </exception>
     /// <exception cref="System.Security.Cryptography.CryptographicException">
@@ -130,7 +133,7 @@ internal sealed class Transport : ITransport
     /// </exception>
     private int ReadMessagePart(ReadOnlySpan<byte> message, Span<byte> payloadBuffer)
     {
-        Exceptions.ThrowIfDisposed(_disposed, nameof(Transport));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Transport));
 
         if (message.Length > ProtocolConstants.MAX_MESSAGE_LENGTH)
         {
@@ -148,7 +151,7 @@ internal sealed class Transport : ITransport
         }
 
         var cipher = _initiator ? _receivingKey : _sendingKey;
-        Debug.Assert(cipher?.HasKey() ?? false);
+        Debug.Assert(cipher.HasKey());
 
         return cipher.Decrypt(message, payloadBuffer);
     }

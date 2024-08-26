@@ -13,7 +13,7 @@ internal class FakeHandshakeService : IHandshakeService, ITestHandshakeService
 
     public ITransport? Transport => _transport;
 
-    public PubKey? RemoteStaticPublicKey => new Key().PubKey;
+    public PubKey RemoteStaticPublicKey => new Key().PubKey;
 
     public void SetIsInitiator(bool isInitiator)
     {

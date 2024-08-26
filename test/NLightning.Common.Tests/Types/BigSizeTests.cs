@@ -4,7 +4,7 @@ using Common.Types;
 
 using static Utils.TestUtils;
 
-public partial class BigSizeTests
+public class BigSizeTests
 {
     [Fact]
     public async Task Given_VectorInputs_When_DeserializeBigSize_Then_ResultIsKnown()
@@ -36,11 +36,12 @@ public partial class BigSizeTests
             // Arrange
             using var memoryStream = new MemoryStream(testVector.Bytes);
 
+            // Assert
+            await Assert.ThrowsAnyAsync<Exception>(Deserialize);
+            continue;
+
             // Act
             Task Deserialize() => BigSize.DeserializeAsync(memoryStream);
-
-            // Assert
-            var exception = await Assert.ThrowsAnyAsync<Exception>(Deserialize);
         }
     }
 
@@ -93,27 +94,27 @@ public partial class BigSizeTests
         // Assert
         switch (type)
         {
-            case Type longType when longType == typeof(long):
+            case not null when type == typeof(long):
                 var longException = Assert.Throws<OverflowException>(() => (long)bigSize);
                 Assert.Equal($"Cannot convert {bigSize.Value} to long because it's too large.", longException.Message);
                 break;
-            case Type uintType when uintType == typeof(uint):
+            case not null when type == typeof(uint):
                 var uintException = Assert.Throws<OverflowException>(() => (uint)bigSize);
                 Assert.Equal($"Cannot convert {bigSize.Value} to uint because it's too large.", uintException.Message);
                 break;
-            case Type intType when intType == typeof(int):
+            case not null when type == typeof(int):
                 var intException = Assert.Throws<OverflowException>(() => (int)bigSize);
                 Assert.Equal($"Cannot convert {bigSize.Value} to int because it's too large.", intException.Message);
                 break;
-            case Type ushortType when ushortType == typeof(ushort):
+            case not null when type == typeof(ushort):
                 var ushortException = Assert.Throws<OverflowException>(() => (ushort)bigSize);
                 Assert.Equal($"Cannot convert {bigSize.Value} to ushort because it's too large.", ushortException.Message);
                 break;
-            case Type shortType when shortType == typeof(short):
+            case not null when type == typeof(short):
                 var shortException = Assert.Throws<OverflowException>(() => (short)bigSize);
                 Assert.Equal($"Cannot convert {bigSize.Value} to short because it's too large.", shortException.Message);
                 break;
-            case Type byteType when byteType == typeof(byte):
+            case not null when type == typeof(byte):
                 var byteException = Assert.Throws<OverflowException>(() => (byte)bigSize);
                 Assert.Equal($"Cannot convert {bigSize.Value} to byte because it's too large.", byteException.Message);
                 break;
@@ -159,25 +160,25 @@ public partial class BigSizeTests
         // Assert
         switch (type)
         {
-            case Type ulongType when ulongType == typeof(ulong):
+            case not null when type == typeof(ulong):
                 Assert.Equal(value, (ulong)bigSize);
                 break;
-            case Type longType when longType == typeof(long):
+            case not null when type == typeof(long):
                 Assert.Equal((long)value, (long)bigSize);
                 break;
-            case Type uintType when uintType == typeof(uint):
+            case not null when type == typeof(uint):
                 Assert.Equal((uint)value, (uint)bigSize);
                 break;
-            case Type intType when intType == typeof(int):
+            case not null when type == typeof(int):
                 Assert.Equal((int)value, (int)bigSize);
                 break;
-            case Type ushortType when ushortType == typeof(ushort):
+            case not null when type == typeof(ushort):
                 Assert.Equal((ushort)value, (ushort)bigSize);
                 break;
-            case Type shortType when shortType == typeof(short):
+            case not null when type == typeof(short):
                 Assert.Equal((short)value, (short)bigSize);
                 break;
-            case Type byteType when byteType == typeof(byte):
+            case not null when type == typeof(byte):
                 Assert.Equal((byte)value, (byte)bigSize);
                 break;
             default:

@@ -1,6 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
-using NLightning.NLTG.Parsers;
 using Serilog;
+
+namespace NLightning.NLTG;
+
+using Parsers;
 
 class Program
 {

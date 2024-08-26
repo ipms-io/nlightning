@@ -2,9 +2,9 @@ using System.Runtime.Serialization;
 
 namespace NLightning.Bolts.BOLT1.Messages;
 
-using Bolts.Base;
-using Bolts.Exceptions;
+using Base;
 using Constants;
+using Exceptions;
 using Payloads;
 
 /// <summary>
@@ -17,7 +17,9 @@ using Payloads;
 /// <param name="bytesLen">The number of bytes in the pong message.</param>
 public sealed class PongMessage(ushort bytesLen) : BaseMessage(MessageTypes.PONG, new PongPayload(bytesLen))
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// The payload of the message.
+    /// </summary>
     public new PongPayload Payload => (PongPayload)base.Payload;
 
     private PongMessage(PongPayload payload) : this(payload.BytesLength)

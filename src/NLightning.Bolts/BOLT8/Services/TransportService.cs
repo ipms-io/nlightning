@@ -6,7 +6,7 @@ using Bolts.Interfaces;
 using Constants;
 using Exceptions;
 using Interfaces;
-using static Common.Utils.Exceptions;
+using static ExceptionUtils;
 
 public sealed class TransportService : ITransportService
 {
@@ -17,7 +17,6 @@ public sealed class TransportService : ITransportService
     private readonly CancellationTokenSource _cts = new();
 
     private ITransport? _transport;
-    private NBitcoin.PubKey? _remoteStaticPublicKey;
     private bool _disposed;
 
     // event that will be called when a message is received
@@ -60,7 +59,7 @@ public sealed class TransportService : ITransportService
         var writeBuffer = new byte[50];
         var stream = _tcpClient.GetStream();
 
-        CancellationTokenSource networkTimeoutCancelationTokenSource = new();
+        CancellationTokenSource networkTimeoutCancellationTokenSource = new();
 
         if (_handshakeService.IsInitiator)
         {
@@ -68,14 +67,14 @@ public sealed class TransportService : ITransportService
             {
                 // Write Act One
                 var len = _handshakeService.PerformStep(ProtocolConstants.EMPTY_MESSAGE, writeBuffer);
-                await stream.WriteAsync(writeBuffer.AsMemory()[..len]);
-                await stream.FlushAsync();
+                await stream.WriteAsync(writeBuffer.AsMemory()[..len], networkTimeoutCancellationTokenSource.Token);
+                await stream.FlushAsync(networkTimeoutCancellationTokenSource.Token);
 
                 // Read exactly 50 bytes
-                networkTimeoutCancelationTokenSource = new CancellationTokenSource(networkTimeout);
+                networkTimeoutCancellationTokenSource = new CancellationTokenSource(networkTimeout);
                 var readBuffer = new byte[50];
-                await stream.ReadExactlyAsync(readBuffer, networkTimeoutCancelationTokenSource.Token);
-                networkTimeoutCancelationTokenSource.Dispose();
+                await stream.ReadExactlyAsync(readBuffer, networkTimeoutCancellationTokenSource.Token);
+                networkTimeoutCancellationTokenSource.Dispose();
 
                 // Read Act Two and Write Act Three
                 writeBuffer = new byte[66];
@@ -95,9 +94,9 @@ public sealed class TransportService : ITransportService
             try
             {
                 // Read exactly 50 bytes
-                networkTimeoutCancelationTokenSource = new CancellationTokenSource(networkTimeout);
+                networkTimeoutCancellationTokenSource = new CancellationTokenSource(networkTimeout);
                 var readBuffer = new byte[50];
-                await stream.ReadExactlyAsync(readBuffer, networkTimeoutCancelationTokenSource.Token);
+                await stream.ReadExactlyAsync(readBuffer, networkTimeoutCancellationTokenSource.Token);
 
                 // Read Act One and Write Act Two
                 var len = _handshakeService.PerformStep(readBuffer, writeBuffer);
@@ -106,10 +105,10 @@ public sealed class TransportService : ITransportService
 
                 // Read exactly 66 bytes
                 act = 3;
-                networkTimeoutCancelationTokenSource = new CancellationTokenSource(networkTimeout);
+                networkTimeoutCancellationTokenSource = new CancellationTokenSource(networkTimeout);
                 readBuffer = new byte[66];
-                await stream.ReadExactlyAsync(readBuffer, networkTimeoutCancelationTokenSource.Token);
-                networkTimeoutCancelationTokenSource.Dispose();
+                await stream.ReadExactlyAsync(readBuffer, networkTimeoutCancellationTokenSource.Token);
+                networkTimeoutCancellationTokenSource.Dispose();
 
                 // Read Act Three
                 _ = _handshakeService.PerformStep(readBuffer, writeBuffer);
@@ -125,7 +124,6 @@ public sealed class TransportService : ITransportService
 
         // Handshake completed
         _transport = _handshakeService.Transport ?? throw new InvalidOperationException("Handshake not completed");
-        _remoteStaticPublicKey = _handshakeService.RemoteStaticPublicKey;
 
         // Dispose of the handshake service
         _handshakeService.Dispose();
@@ -191,9 +189,9 @@ public sealed class TransportService : ITransportService
             // Read response
             var stream = _tcpClient.GetStream();
             var memory = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH].AsMemory();
-            await stream.ReadAsync(memory[..ProtocolConstants.MESSAGE_HEADER_SIZE], _cts.Token);
+            _ = await stream.ReadAsync(memory[..ProtocolConstants.MESSAGE_HEADER_SIZE], _cts.Token);
             var messageLen = _transport.ReadMessageLength(memory.Span[..ProtocolConstants.MESSAGE_HEADER_SIZE]);
-            await stream.ReadAsync(memory[..messageLen], _cts.Token);
+            _ = await stream.ReadAsync(memory[..messageLen], _cts.Token);
             messageLen = _transport.ReadMessagePayload(memory.Span[..messageLen], memory.Span);
 
             // Raise event

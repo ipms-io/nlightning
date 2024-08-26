@@ -1,18 +1,18 @@
 namespace NLightning.Bolts.Tests.BOLT9;
 
 using Bolts.BOLT9;
-using Common.Utils;
+using Common.BitUtils;
 
 public class FeaturesTests
 {
     #region SetFeature IsFeatureSet
     [Theory]
-    [InlineData(Feature.OptionDataLossProtect, false)]
-    [InlineData(Feature.OptionDataLossProtect, true)]
-    [InlineData(Feature.OptionUpfrontShutdownScript, false)]
-    [InlineData(Feature.OptionUpfrontShutdownScript, true)]
-    [InlineData(Feature.OptionSupportLargeChannel, false)]
-    [InlineData(Feature.OptionSupportLargeChannel, true)]
+    [InlineData(Feature.OPTION_DATA_LOSS_PROTECT, false)]
+    [InlineData(Feature.OPTION_DATA_LOSS_PROTECT, true)]
+    [InlineData(Feature.OPTION_UPFRONT_SHUTDOWN_SCRIPT, false)]
+    [InlineData(Feature.OPTION_UPFRONT_SHUTDOWN_SCRIPT, true)]
+    [InlineData(Feature.OPTION_SUPPORT_LARGE_CHANNEL, false)]
+    [InlineData(Feature.OPTION_SUPPORT_LARGE_CHANNEL, true)]
     public void Given_Features_When_SetFeatureA_Then_OnlyFeatureAIsSet(Feature feature, bool isCompulsory)
     {
         // Arrange
@@ -24,22 +24,22 @@ public class FeaturesTests
         // Assert
         Assert.True(features.IsFeatureSet(feature, isCompulsory));
         Assert.False(features.IsFeatureSet(feature, !isCompulsory));
-        Assert.False(features.IsFeatureSet(Feature.OptionPaymentMetadata, isCompulsory));
-        Assert.False(features.IsFeatureSet(Feature.OptionPaymentMetadata, !isCompulsory));
+        Assert.False(features.IsFeatureSet(Feature.OPTION_PAYMENT_METADATA, isCompulsory));
+        Assert.False(features.IsFeatureSet(Feature.OPTION_PAYMENT_METADATA, !isCompulsory));
     }
 
     [Theory]
-    [InlineData(Feature.OptionDataLossProtect, false)]
-    [InlineData(Feature.OptionDataLossProtect, true)]
-    [InlineData(Feature.OptionUpfrontShutdownScript, false)]
-    [InlineData(Feature.OptionUpfrontShutdownScript, true)]
-    [InlineData(Feature.OptionSupportLargeChannel, false)]
-    [InlineData(Feature.OptionSupportLargeChannel, true)]
+    [InlineData(Feature.OPTION_DATA_LOSS_PROTECT, false)]
+    [InlineData(Feature.OPTION_DATA_LOSS_PROTECT, true)]
+    [InlineData(Feature.OPTION_UPFRONT_SHUTDOWN_SCRIPT, false)]
+    [InlineData(Feature.OPTION_UPFRONT_SHUTDOWN_SCRIPT, true)]
+    [InlineData(Feature.OPTION_SUPPORT_LARGE_CHANNEL, false)]
+    [InlineData(Feature.OPTION_SUPPORT_LARGE_CHANNEL, true)]
     public void Given_Features_When_UnsetFeatureA_Then_FeatureBIsSet(Feature feature, bool isCompulsory)
     {
         // Arrange
         var features = new Features();
-        features.SetFeature(Feature.OptionPaymentMetadata, isCompulsory);
+        features.SetFeature(Feature.OPTION_PAYMENT_METADATA, isCompulsory);
         features.SetFeature(feature, isCompulsory);
 
         // Act
@@ -48,17 +48,17 @@ public class FeaturesTests
         // Assert
         Assert.False(features.IsFeatureSet(feature, isCompulsory));
         Assert.False(features.IsFeatureSet(feature, !isCompulsory));
-        Assert.True(features.IsFeatureSet(Feature.OptionPaymentMetadata, isCompulsory));
-        Assert.False(features.IsFeatureSet(Feature.OptionPaymentMetadata, !isCompulsory));
+        Assert.True(features.IsFeatureSet(Feature.OPTION_PAYMENT_METADATA, isCompulsory));
+        Assert.False(features.IsFeatureSet(Feature.OPTION_PAYMENT_METADATA, !isCompulsory));
     }
 
     [Theory]
-    [InlineData(Feature.GossipQueriesEx, Feature.GossipQueries, false)]
-    [InlineData(Feature.GossipQueriesEx, Feature.GossipQueries, true)]
-    [InlineData(Feature.PaymentSecret, Feature.VarOnionOptin, false)]
-    [InlineData(Feature.PaymentSecret, Feature.VarOnionOptin, true)]
-    [InlineData(Feature.OptionAnchorOutputs, Feature.OptionStaticRemoteKey, false)]
-    [InlineData(Feature.OptionAnchorOutputs, Feature.OptionStaticRemoteKey, true)]
+    [InlineData(Feature.GOSSIP_QUERIES_EX, Feature.GOSSIP_QUERIES, false)]
+    [InlineData(Feature.GOSSIP_QUERIES_EX, Feature.GOSSIP_QUERIES, true)]
+    [InlineData(Feature.PAYMENT_SECRET, Feature.VAR_ONION_OPTIN, false)]
+    [InlineData(Feature.PAYMENT_SECRET, Feature.VAR_ONION_OPTIN, true)]
+    [InlineData(Feature.OPTION_ANCHOR_OUTPUTS, Feature.OPTION_STATIC_REMOTE_KEY, false)]
+    [InlineData(Feature.OPTION_ANCHOR_OUTPUTS, Feature.OPTION_STATIC_REMOTE_KEY, true)]
     public void Given_Features_When_SetFeatureADependsOnFeatureB_Then_FeatureBIsSet(Feature feature, Feature dependsOn, bool isCompulsory)
     {
         // Arrange
@@ -73,12 +73,12 @@ public class FeaturesTests
     }
 
     [Theory]
-    [InlineData(Feature.GossipQueries, Feature.GossipQueriesEx, false)]
-    [InlineData(Feature.GossipQueries, Feature.GossipQueriesEx, true)]
-    [InlineData(Feature.VarOnionOptin, Feature.PaymentSecret, false)]
-    [InlineData(Feature.VarOnionOptin, Feature.PaymentSecret, true)]
-    [InlineData(Feature.OptionStaticRemoteKey, Feature.OptionAnchorOutputs, false)]
-    [InlineData(Feature.OptionStaticRemoteKey, Feature.OptionAnchorOutputs, true)]
+    [InlineData(Feature.GOSSIP_QUERIES, Feature.GOSSIP_QUERIES_EX, false)]
+    [InlineData(Feature.GOSSIP_QUERIES, Feature.GOSSIP_QUERIES_EX, true)]
+    [InlineData(Feature.VAR_ONION_OPTIN, Feature.PAYMENT_SECRET, false)]
+    [InlineData(Feature.VAR_ONION_OPTIN, Feature.PAYMENT_SECRET, true)]
+    [InlineData(Feature.OPTION_STATIC_REMOTE_KEY, Feature.OPTION_ANCHOR_OUTPUTS, false)]
+    [InlineData(Feature.OPTION_STATIC_REMOTE_KEY, Feature.OPTION_ANCHOR_OUTPUTS, true)]
     public void Given_Features_When_UnsetFeatureA_Then_FeatureBIsUnset(Feature feature, Feature dependent, bool isCompulsory)
     {
         // Arrange
@@ -109,15 +109,15 @@ public class FeaturesTests
 
     #region IsCompatible
     [Theory]
-    [InlineData(Feature.OptionDataLossProtect, false, false, false, false, true)]
-    [InlineData(Feature.OptionDataLossProtect, false, true, false, false, true)]
-    [InlineData(Feature.OptionDataLossProtect, false, true, false, true, true)]
-    [InlineData(Feature.OptionDataLossProtect, false, false, false, true, true)]
-    [InlineData(Feature.OptionDataLossProtect, true, false, false, false, true)]
-    [InlineData(Feature.OptionDataLossProtect, false, false, true, false, true)]
-    [InlineData(Feature.OptionDataLossProtect, true, false, true, false, true)]
-    [InlineData(Feature.OptionDataLossProtect, false, true, true, false, false)]
-    [InlineData(Feature.OptionDataLossProtect, true, false, false, true, false)]
+    [InlineData(Feature.OPTION_DATA_LOSS_PROTECT, false, false, false, false, true)]
+    [InlineData(Feature.OPTION_DATA_LOSS_PROTECT, false, true, false, false, true)]
+    [InlineData(Feature.OPTION_DATA_LOSS_PROTECT, false, true, false, true, true)]
+    [InlineData(Feature.OPTION_DATA_LOSS_PROTECT, false, false, false, true, true)]
+    [InlineData(Feature.OPTION_DATA_LOSS_PROTECT, true, false, false, false, true)]
+    [InlineData(Feature.OPTION_DATA_LOSS_PROTECT, false, false, true, false, true)]
+    [InlineData(Feature.OPTION_DATA_LOSS_PROTECT, true, false, true, false, true)]
+    [InlineData(Feature.OPTION_DATA_LOSS_PROTECT, false, true, true, false, false)]
+    [InlineData(Feature.OPTION_DATA_LOSS_PROTECT, true, false, false, true, false)]
     public void Given_Features_When_IsCompatible_Then_ReturnIsKnown(Feature feature, bool unsetLocal, bool isLocalCompulsorySet, bool unsetOther, bool isOtherCompulsorySet, bool expected)
     {
         // Arrange
@@ -155,8 +155,8 @@ public class FeaturesTests
         var features = new Features();
         var other = new Features();
 
-        other.SetFeature(Feature.VarOnionOptin, true, false);
-        other.SetFeature(Feature.VarOnionOptin, false, false);
+        other.SetFeature(Feature.VAR_ONION_OPTIN, true, false);
+        other.SetFeature(Feature.VAR_ONION_OPTIN, false, false);
 
         // Act
         var result = features.IsCompatible(other);
@@ -171,7 +171,7 @@ public class FeaturesTests
         // Arrange
         var features = new Features();
         var other = new Features();
-        features.SetFeature(Feature.OptionDataLossProtect, false);
+        features.SetFeature(Feature.OPTION_DATA_LOSS_PROTECT, false);
         other.SetFeature(41, true);
 
         // Act
@@ -187,7 +187,7 @@ public class FeaturesTests
         // Arrange
         var features = new Features();
         var other = new Features();
-        features.SetFeature(Feature.OptionDataLossProtect, false);
+        features.SetFeature(Feature.OPTION_DATA_LOSS_PROTECT, false);
         other.SetFeature(42, true);
 
         // Act
@@ -202,10 +202,10 @@ public class FeaturesTests
     {
         // Arrange
         var features = new Features();
-        features.SetFeature(Feature.OptionZeroconf, false);
+        features.SetFeature(Feature.OPTION_ZEROCONF, false);
         var other = new Features();
-        other.SetFeature(Feature.OptionZeroconf, false);
-        other.SetFeature((int)Feature.OptionScidAlias, false);
+        other.SetFeature(Feature.OPTION_ZEROCONF, false);
+        other.SetFeature((int)Feature.OPTION_SCID_ALIAS, false);
 
         // Act
         var result = features.IsCompatible(other);
@@ -217,48 +217,61 @@ public class FeaturesTests
 
     #region Serialization
     [Theory]
-    [InlineData(Feature.OptionZeroconf, false, 7)]
-    [InlineData(Feature.OptionZeroconf, true, 7)]
-    [InlineData(Feature.OptionScidAlias, false, 6)]
-    [InlineData(Feature.OptionScidAlias, true, 6)]
-    [InlineData(Feature.OptionOnionMessages, false, 5)]
-    [InlineData(Feature.OptionOnionMessages, true, 5)]
-    [InlineData(Feature.OptionDualFund, false, 4)]
-    [InlineData(Feature.OptionDualFund, true, 4)]
-    [InlineData(Feature.OptionAnchorsZeroFeeHtlcTx, false, 3)]
-    [InlineData(Feature.OptionAnchorsZeroFeeHtlcTx, true, 3)]
-    [InlineData(Feature.OptionStaticRemoteKey, false, 2)]
-    [InlineData(Feature.OptionStaticRemoteKey, true, 2)]
-    [InlineData(Feature.GossipQueries, false, 1)]
-    [InlineData(Feature.GossipQueries, true, 1)]
+    [InlineData(Feature.OPTION_ZEROCONF, false, 7)]
+    [InlineData(Feature.OPTION_ZEROCONF, true, 7)]
+    [InlineData(Feature.OPTION_SCID_ALIAS, false, 6)]
+    [InlineData(Feature.OPTION_SCID_ALIAS, true, 6)]
+    [InlineData(Feature.OPTION_ONION_MESSAGES, false, 5)]
+    [InlineData(Feature.OPTION_ONION_MESSAGES, true, 5)]
+    [InlineData(Feature.OPTION_DUAL_FUND, false, 4)]
+    [InlineData(Feature.OPTION_DUAL_FUND, true, 4)]
+    [InlineData(Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX, false, 3)]
+    [InlineData(Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX, true, 3)]
+    [InlineData(Feature.OPTION_STATIC_REMOTE_KEY, false, 2)]
+    [InlineData(Feature.OPTION_STATIC_REMOTE_KEY, true, 2)]
+    [InlineData(Feature.GOSSIP_QUERIES, false, 1)]
+    [InlineData(Feature.GOSSIP_QUERIES, true, 1)]
     public async Task Given_Features_When_Serialize_Then_BytesAreTrimmed(Feature feature, bool isCompulsory, int expectedLength)
     {
         // Arrange
         var features = new Features();
         features.SetFeature(feature, isCompulsory);
         // Clean default features
-        features.SetFeature(Feature.VarOnionOptin, false, false);
+        features.SetFeature(Feature.VAR_ONION_OPTIN, false, false);
 
         using var stream = new MemoryStream();
 
         // Act
         await features.SerializeAsync(stream);
         var bytes = stream.ToArray();
-        var length = EndianBitConverter.ToUInt16BE(bytes[..2]);
+        var length = EndianBitConverter.ToUInt16BigEndian(bytes[..2]);
 
         // Assert
         Assert.Equal(expectedLength, length);
     }
 
-    [Fact]
-    public async Task Given_Features_When_SerializeWithoutLength_Then_LengthIsAlways8()
+    [Theory]
+    [InlineData(Feature.OPTION_ZEROCONF, false, 7)]
+    [InlineData(Feature.OPTION_ZEROCONF, true, 7)]
+    [InlineData(Feature.OPTION_SCID_ALIAS, false, 6)]
+    [InlineData(Feature.OPTION_SCID_ALIAS, true, 6)]
+    [InlineData(Feature.OPTION_ONION_MESSAGES, false, 5)]
+    [InlineData(Feature.OPTION_ONION_MESSAGES, true, 5)]
+    [InlineData(Feature.OPTION_DUAL_FUND, false, 4)]
+    [InlineData(Feature.OPTION_DUAL_FUND, true, 4)]
+    [InlineData(Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX, false, 3)]
+    [InlineData(Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX, true, 3)]
+    [InlineData(Feature.OPTION_STATIC_REMOTE_KEY, false, 2)]
+    [InlineData(Feature.OPTION_STATIC_REMOTE_KEY, true, 2)]
+    [InlineData(Feature.GOSSIP_QUERIES, false, 1)]
+    [InlineData(Feature.GOSSIP_QUERIES, true, 1)]
+    public async Task Given_Features_When_SerializeWithoutLength_Then_LengthIsKnown(Feature feature, bool isCompulsory, int expectedLength)
     {
         // Arrange
         var features = new Features();
-        // Sets bit 0
-        features.SetFeature(Feature.OptionDataLossProtect, true);
+        features.SetFeature(feature, isCompulsory);
         // Clean default features
-        features.SetFeature(Feature.VarOnionOptin, false, false);
+        features.SetFeature(Feature.VAR_ONION_OPTIN, false, false);
 
         using var stream = new MemoryStream();
 
@@ -267,31 +280,31 @@ public class FeaturesTests
         var bytes = stream.ToArray();
 
         // Assert
-        Assert.Equal(8, bytes.Length);
+        Assert.Equal(expectedLength, bytes.Length);
     }
 
     [Theory]
-    [InlineData(Feature.OptionZeroconf, false, new byte[7] { 8, 128, 0, 0, 0, 0, 0 })]
-    [InlineData(Feature.OptionZeroconf, true, new byte[7] { 4, 64, 0, 0, 0, 0, 0 })]
-    [InlineData(Feature.OptionScidAlias, false, new byte[6] { 128, 0, 0, 0, 0, 0 })]
-    [InlineData(Feature.OptionScidAlias, true, new byte[6] { 64, 0, 0, 0, 0, 0 })]
-    [InlineData(Feature.OptionOnionMessages, false, new byte[5] { 128, 0, 0, 0, 0 })]
-    [InlineData(Feature.OptionOnionMessages, true, new byte[5] { 64, 0, 0, 0, 0 })]
-    [InlineData(Feature.OptionDualFund, false, new byte[4] { 32, 0, 0, 0 })]
-    [InlineData(Feature.OptionDualFund, true, new byte[4] { 16, 0, 0, 0 })]
-    [InlineData(Feature.OptionAnchorsZeroFeeHtlcTx, false, new byte[3] { 128, 32, 0 })]
-    [InlineData(Feature.OptionAnchorsZeroFeeHtlcTx, true, new byte[3] { 64, 16, 0 })]
-    [InlineData(Feature.OptionStaticRemoteKey, false, new byte[2] { 32, 0 })]
-    [InlineData(Feature.OptionStaticRemoteKey, true, new byte[2] { 16, 0 })]
-    [InlineData(Feature.GossipQueries, false, new byte[1] { 128 })]
-    [InlineData(Feature.GossipQueries, true, new byte[1] { 64 })]
+    [InlineData(Feature.OPTION_ZEROCONF, false, new byte[] { 8, 128, 0, 0, 0, 0, 0 })]
+    [InlineData(Feature.OPTION_ZEROCONF, true, new byte[] { 4, 64, 0, 0, 0, 0, 0 })]
+    [InlineData(Feature.OPTION_SCID_ALIAS, false, new byte[] { 128, 0, 0, 0, 0, 0 })]
+    [InlineData(Feature.OPTION_SCID_ALIAS, true, new byte[] { 64, 0, 0, 0, 0, 0 })]
+    [InlineData(Feature.OPTION_ONION_MESSAGES, false, new byte[] { 128, 0, 0, 0, 0 })]
+    [InlineData(Feature.OPTION_ONION_MESSAGES, true, new byte[] { 64, 0, 0, 0, 0 })]
+    [InlineData(Feature.OPTION_DUAL_FUND, false, new byte[] { 32, 0, 0, 0 })]
+    [InlineData(Feature.OPTION_DUAL_FUND, true, new byte[] { 16, 0, 0, 0 })]
+    [InlineData(Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX, false, new byte[] { 128, 32, 0 })]
+    [InlineData(Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX, true, new byte[] { 64, 16, 0 })]
+    [InlineData(Feature.OPTION_STATIC_REMOTE_KEY, false, new byte[] { 32, 0 })]
+    [InlineData(Feature.OPTION_STATIC_REMOTE_KEY, true, new byte[] { 16, 0 })]
+    [InlineData(Feature.GOSSIP_QUERIES, false, new byte[] { 128 })]
+    [InlineData(Feature.GOSSIP_QUERIES, true, new byte[] { 64 })]
     public async Task Given_Features_When_Serialize_Then_BytesAreKnown(Feature feature, bool isCompulsory, byte[] expected)
     {
         // Arrange
         var features = new Features();
         features.SetFeature(feature, isCompulsory);
         // Clean default features
-        features.SetFeature(Feature.VarOnionOptin, false, false);
+        features.SetFeature(Feature.VAR_ONION_OPTIN, false, false);
 
         using var stream = new MemoryStream();
 
@@ -309,9 +322,9 @@ public class FeaturesTests
         // Arrange
         var features = new Features();
         // Sets bit 0
-        features.SetFeature(Feature.OptionDataLossProtect, true);
+        features.SetFeature(Feature.OPTION_DATA_LOSS_PROTECT, true);
         // Clean default features
-        features.SetFeature(Feature.VarOnionOptin, false, false);
+        features.SetFeature(Feature.VAR_ONION_OPTIN, false, false);
 
         using var stream = new MemoryStream();
 
@@ -320,7 +333,7 @@ public class FeaturesTests
         var bytes = stream.ToArray();
 
         // Assert
-        Assert.Equal([0, 0, 0, 0, 0, 0, 0, 1], bytes);
+        Assert.Equal([1], bytes);
     }
 
     [Fact]
@@ -329,9 +342,9 @@ public class FeaturesTests
         // Arrange
         var features = new Features();
         // Sets bit 0
-        features.SetFeature(Feature.OptionSupportLargeChannel, true);
+        features.SetFeature(Feature.OPTION_SUPPORT_LARGE_CHANNEL, true);
         // Clean default features
-        features.SetFeature(Feature.VarOnionOptin, false, false);
+        features.SetFeature(Feature.VAR_ONION_OPTIN, false, false);
 
         using var stream = new MemoryStream();
 
@@ -340,26 +353,26 @@ public class FeaturesTests
         var bytes = stream.ToArray();
 
         // Assert
-        Assert.Equal(0, bytes[2]);
+        Assert.Equal(2, bytes.Length);
     }
     #endregion
 
     #region Deserialization
     [Theory]
-    [InlineData(new byte[9] { 0, 7, 8, 128, 0, 0, 0, 0, 0 }, false, Feature.OptionZeroconf)]
-    [InlineData(new byte[9] { 0, 7, 4, 64, 0, 0, 0, 0, 0 }, true, Feature.OptionZeroconf)]
-    [InlineData(new byte[8] { 0, 6, 128, 0, 0, 0, 0, 0 }, false, Feature.OptionScidAlias)]
-    [InlineData(new byte[8] { 0, 6, 64, 0, 0, 0, 0, 0 }, true, Feature.OptionScidAlias)]
-    [InlineData(new byte[7] { 0, 5, 128, 0, 0, 0, 0 }, false, Feature.OptionOnionMessages)]
-    [InlineData(new byte[7] { 0, 5, 64, 0, 0, 0, 0 }, true, Feature.OptionOnionMessages)]
-    [InlineData(new byte[6] { 0, 4, 32, 0, 0, 0 }, false, Feature.OptionDualFund)]
-    [InlineData(new byte[6] { 0, 4, 16, 0, 0, 0 }, true, Feature.OptionDualFund)]
-    [InlineData(new byte[5] { 0, 3, 128, 32, 0 }, false, Feature.OptionAnchorsZeroFeeHtlcTx)]
-    [InlineData(new byte[5] { 0, 3, 64, 16, 0 }, true, Feature.OptionAnchorsZeroFeeHtlcTx)]
-    [InlineData(new byte[4] { 0, 2, 32, 0 }, false, Feature.OptionStaticRemoteKey)]
-    [InlineData(new byte[4] { 0, 2, 16, 0 }, true, Feature.OptionStaticRemoteKey)]
-    [InlineData(new byte[3] { 0, 1, 128 }, false, Feature.GossipQueries)]
-    [InlineData(new byte[3] { 0, 1, 64 }, true, Feature.GossipQueries)]
+    [InlineData(new byte[] { 0, 7, 8, 128, 0, 0, 0, 0, 0 }, false, Feature.OPTION_ZEROCONF)]
+    [InlineData(new byte[] { 0, 7, 4, 64, 0, 0, 0, 0, 0 }, true, Feature.OPTION_ZEROCONF)]
+    [InlineData(new byte[] { 0, 6, 128, 0, 0, 0, 0, 0 }, false, Feature.OPTION_SCID_ALIAS)]
+    [InlineData(new byte[] { 0, 6, 64, 0, 0, 0, 0, 0 }, true, Feature.OPTION_SCID_ALIAS)]
+    [InlineData(new byte[] { 0, 5, 128, 0, 0, 0, 0 }, false, Feature.OPTION_ONION_MESSAGES)]
+    [InlineData(new byte[] { 0, 5, 64, 0, 0, 0, 0 }, true, Feature.OPTION_ONION_MESSAGES)]
+    [InlineData(new byte[] { 0, 4, 32, 0, 0, 0 }, false, Feature.OPTION_DUAL_FUND)]
+    [InlineData(new byte[] { 0, 4, 16, 0, 0, 0 }, true, Feature.OPTION_DUAL_FUND)]
+    [InlineData(new byte[] { 0, 3, 128, 32, 0 }, false, Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX)]
+    [InlineData(new byte[] { 0, 3, 64, 16, 0 }, true, Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX)]
+    [InlineData(new byte[] { 0, 2, 32, 0 }, false, Feature.OPTION_STATIC_REMOTE_KEY)]
+    [InlineData(new byte[] { 0, 2, 16, 0 }, true, Feature.OPTION_STATIC_REMOTE_KEY)]
+    [InlineData(new byte[] { 0, 1, 128 }, false, Feature.GOSSIP_QUERIES)]
+    [InlineData(new byte[] { 0, 1, 64 }, true, Feature.GOSSIP_QUERIES)]
     public async Task Given_Buffer_When_Deserialize_Then_FeatureIsSet(byte[] buffer, bool isCompulsory, Feature expected)
     {
         // Arrange
@@ -383,8 +396,8 @@ public class FeaturesTests
         var features = await Features.DeserializeAsync(stream, false);
 
         // Assert
-        Assert.True(features.IsFeatureSet(Feature.OptionDataLossProtect, true));
-        Assert.False(features.IsFeatureSet(Feature.OptionDataLossProtect, false));
+        Assert.True(features.IsFeatureSet(Feature.OPTION_DATA_LOSS_PROTECT, true));
+        Assert.False(features.IsFeatureSet(Feature.OPTION_DATA_LOSS_PROTECT, false));
     }
 
     [Fact]
@@ -397,8 +410,8 @@ public class FeaturesTests
         var features = await Features.DeserializeAsync(stream);
 
         // Assert
-        Assert.False(features.IsFeatureSet(Feature.OptionZeroconf, false));
-        Assert.False(features.IsFeatureSet(Feature.OptionZeroconf, true));
+        Assert.False(features.IsFeatureSet(Feature.OPTION_ZEROCONF, false));
+        Assert.False(features.IsFeatureSet(Feature.OPTION_ZEROCONF, true));
     }
     #endregion
 
@@ -408,23 +421,23 @@ public class FeaturesTests
     {
         // Arrange
         var global = new Features();
-        global.SetFeature(Feature.OptionDataLossProtect, true);
-        global.SetFeature(Feature.OptionUpfrontShutdownScript, false);
-        global.SetFeature(Feature.GossipQueries, true);
+        global.SetFeature(Feature.OPTION_DATA_LOSS_PROTECT, true);
+        global.SetFeature(Feature.OPTION_UPFRONT_SHUTDOWN_SCRIPT, false);
+        global.SetFeature(Feature.GOSSIP_QUERIES, true);
 
         var features = new Features();
-        features.SetFeature(Feature.OptionUpfrontShutdownScript, true);
-        features.SetFeature(Feature.GossipQueries, false);
-        features.SetFeature(Feature.OptionSupportLargeChannel, true);
+        features.SetFeature(Feature.OPTION_UPFRONT_SHUTDOWN_SCRIPT, true);
+        features.SetFeature(Feature.GOSSIP_QUERIES, false);
+        features.SetFeature(Feature.OPTION_SUPPORT_LARGE_CHANNEL, true);
 
         // Act
         var combined = Features.Combine(global, features);
 
         // Assert
-        Assert.True(combined.IsFeatureSet(Feature.OptionDataLossProtect, true));
-        Assert.True(combined.IsFeatureSet(Feature.OptionUpfrontShutdownScript, true));
-        Assert.True(combined.IsFeatureSet(Feature.OptionSupportLargeChannel, true));
-        Assert.True(combined.IsFeatureSet(Feature.GossipQueries, true));
+        Assert.True(combined.IsFeatureSet(Feature.OPTION_DATA_LOSS_PROTECT, true));
+        Assert.True(combined.IsFeatureSet(Feature.OPTION_UPFRONT_SHUTDOWN_SCRIPT, true));
+        Assert.True(combined.IsFeatureSet(Feature.OPTION_SUPPORT_LARGE_CHANNEL, true));
+        Assert.True(combined.IsFeatureSet(Feature.GOSSIP_QUERIES, true));
     }
     #endregion
 }

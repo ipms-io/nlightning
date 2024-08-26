@@ -14,8 +14,6 @@ public readonly struct ChannelId
 
     public static ChannelId Zero => new(new byte[LENGTH]);
 
-    public readonly bool Equals(ChannelId other) => _value.SequenceEqual(other._value);
-
     public ChannelId(byte[] value)
     {
         if (value.Length != LENGTH)
@@ -34,7 +32,7 @@ public readonly struct ChannelId
     public static async Task<ChannelId> DeserializeAsync(Stream stream)
     {
         var buffer = new byte[LENGTH];
-        await stream.ReadAsync(buffer);
+        _ = await stream.ReadAsync(buffer);
         return new ChannelId(buffer);
     }
 
@@ -48,6 +46,8 @@ public readonly struct ChannelId
 
         return false;
     }
+
+    public readonly bool Equals(ChannelId other) => _value.SequenceEqual(other._value);
 
     public override readonly int GetHashCode()
     {

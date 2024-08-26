@@ -2,7 +2,7 @@ using System.Runtime.Serialization;
 
 namespace NLightning.Bolts.BOLT1.Payloads;
 
-using Bolts.BOLT9;
+using BOLT9;
 using Bolts.Interfaces;
 
 /// <summary>
@@ -38,7 +38,7 @@ public class InitPayload(Features features) : IMessagePayload
     {
         try
         {
-            var globalFeatures = await Features.DeserializeAsync(stream, true);
+            var globalFeatures = await Features.DeserializeAsync(stream);
 
             var features = await Features.DeserializeAsync(stream);
 

@@ -3,17 +3,18 @@ using System.Runtime.InteropServices;
 
 namespace NLightning.Bolts.BOLT8.Hashes;
 
+using Common;
 using Constants;
 
 /// <summary>
 /// SHA-256 from <see href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf">FIPS 180-4</see>.
 /// </summary>
-internal sealed class SHA256 : IDisposable
+internal sealed class Sha256 : IDisposable
 {
     private readonly IntPtr _state = Marshal.AllocHGlobal(104);
     private bool _disposed;
 
-    internal SHA256() => Reset();
+    internal Sha256() => Reset();
 
     /// <summary>
     /// Appends the specified data to the data already processed in the hash.
@@ -63,7 +64,7 @@ internal sealed class SHA256 : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    ~SHA256()
+    ~Sha256()
     {
         Dispose();
     }

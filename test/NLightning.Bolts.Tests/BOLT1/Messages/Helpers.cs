@@ -1,6 +1,6 @@
 namespace NLightning.Bolts.Tests.BOLT1.Messages;
 
-using Bolts.Interfaces;
+using Interfaces;
 
 public static class Helpers
 {

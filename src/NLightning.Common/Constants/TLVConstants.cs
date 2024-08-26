@@ -5,7 +5,7 @@ namespace NLightning.Common.Constants;
 /// <summary>
 /// Constants for TLV.
 /// </summary>
-public static class TLVConstants
+public static class TlvConstants
 {
     /// <summary>
     /// Networks TLV type.

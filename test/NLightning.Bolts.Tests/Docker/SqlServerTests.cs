@@ -13,19 +13,18 @@ using Utils;
 [Collection("sqlserver")]
 public class SqlServerTests
 {
-    private readonly SqlServerFixture _sqlServerFixture;
     private readonly ServiceProvider _serviceProvider;
 
     public SqlServerTests(SqlServerFixture fixture, ITestOutputHelper output)
     {
-        _sqlServerFixture = fixture;
+        var sqlServerFixture = fixture;
 
         Console.SetOut(new TestOutputWriter(output));
 
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddDbContextFactory<NLightningContext>(
             options =>
-                options.UseSqlServer(_sqlServerFixture.DbConnectionString, x =>
+                options.UseSqlServer(sqlServerFixture.DbConnectionString, x =>
                     {
                         x.MigrationsAssembly("NLightning.Models.SqlServer");
                     })
@@ -33,9 +32,9 @@ public class SqlServerTests
                    );
         serviceCollection.AddDbContext<NLightningContext>(x =>
         {
-            x.UseNpgsql(_sqlServerFixture.DbConnectionString, x =>
+            x.UseNpgsql(sqlServerFixture.DbConnectionString, y =>
             {
-                x.MigrationsAssembly("NLightning.Models.SqlServer");
+                y.MigrationsAssembly("NLightning.Models.SqlServer");
             })
                 .EnableSensitiveDataLogging()
                 ;
@@ -47,10 +46,10 @@ public class SqlServerTests
         {
             Task.Delay(100).Wait();
         }
-        context!.Database.Migrate();
+        context?.Database.Migrate();
     }
 
-    [Fact()]
+    [Fact]
 
     public Task TestDb()
     {

@@ -6,10 +6,10 @@ namespace NLightning.Bolts.Tests.BOLT8.Services;
 
 using BOLT1.Fixtures;
 using Bolts.BOLT8.Services;
-using Bolts.Exceptions;
+using Exceptions;
 using Mock;
 
-public partial class TransportServiceTests
+public class TransportServiceTests
 {
     [Fact]
     public async void Given_TransportServiceAsInitiator_When_InitializeIsCalled_Then_HandshakeServicePerformStepIsCalledTwice()
@@ -25,31 +25,34 @@ public partial class TransportServiceTests
             var steps = 2;
             handshakeServiceMock.Setup(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny)).Returns((byte[] inMessage, out byte[] outMessage) =>
             {
-                if (steps == 2)
+                switch (steps)
                 {
-                    steps--;
-                    if (inMessage.Length != 50 && inMessage.Length != 0)
-                    {
-                        throw new InvalidOperationException("Expected 50 bytes");
-                    }
-                    outMessage = new byte[50];
-                    return 50;
+                    case 2:
+                        {
+                            steps--;
+                            if (inMessage.Length != 50 && inMessage.Length != 0)
+                            {
+                                throw new InvalidOperationException("Expected 50 bytes");
+                            }
+                            outMessage = new byte[50];
+                            return 50;
+                        }
+                    case 1:
+                        {
+                            steps--;
+                            if (inMessage.Length != 50 && inMessage.Length != 66 && inMessage.Length != 0)
+                            {
+                                throw new InvalidOperationException("Expected 66 bytes");
+                            }
+                            outMessage = new byte[66];
+
+                            handshakeServiceMock.Object.SetTransport(new FakeTransport());
+
+                            return 66;
+                        }
+                    default:
+                        throw new InvalidOperationException("There's no more steps to complete");
                 }
-                else if (steps == 1)
-                {
-                    steps--;
-                    if (inMessage.Length != 50 && inMessage.Length != 66 && inMessage.Length != 0)
-                    {
-                        throw new InvalidOperationException("Expected 66 bytes");
-                    }
-                    outMessage = new byte[66];
-
-                    handshakeServiceMock.Object.SetTransport(new FakeTransport());
-
-                    return 66;
-                }
-
-                throw new InvalidOperationException("There's no more steps to complete");
             });
             handshakeServiceMock.Object.SetIsInitiator(true);
             var tcpClient1 = new TcpClient();
@@ -65,7 +68,7 @@ public partial class TransportServiceTests
                 buffer = new byte[66];
                 await stream.ReadExactlyAsync(buffer);
             });
-            tcpClient1.Connect(IPEndPoint.Parse(tcpListener.LocalEndpoint.ToEndpointString()));
+            await tcpClient1.ConnectAsync(IPEndPoint.Parse(tcpListener.LocalEndpoint.ToEndpointString()));
             var transportService = new TransportService(handshakeServiceMock.Object, tcpClient1);
 
             // Act
@@ -110,18 +113,19 @@ public partial class TransportServiceTests
             var steps = 2;
             handshakeServiceMock.Setup(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny)).Returns((byte[] inMessage, out byte[] outMessage) =>
             {
-                if (steps == 2)
+                if (steps != 2)
                 {
-                    steps--;
-                    if (inMessage.Length != 50 && inMessage.Length != 0)
-                    {
-                        throw new InvalidOperationException("Expected 50 bytes");
-                    }
-                    outMessage = new byte[50];
-                    return 50;
+                    throw new InvalidOperationException("There's no more steps to complete");
                 }
 
-                throw new InvalidOperationException("There's no more steps to complete");
+                steps--;
+                if (inMessage.Length != 50 && inMessage.Length != 0)
+                {
+                    throw new InvalidOperationException("Expected 50 bytes");
+                }
+                outMessage = new byte[50];
+                return 50;
+
             });
             handshakeServiceMock.Object.SetIsInitiator(true);
             var tcpClient1 = new TcpClient();

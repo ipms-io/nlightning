@@ -15,7 +15,7 @@ internal sealed class Hkdf : IDisposable
     private static readonly byte[] s_two = [2];
     private static readonly byte[] s_three = [3];
 
-    private readonly SHA256 _hasher = new();
+    private readonly Sha256 _hasher = new();
     private bool _disposed;
 
     /// <summary>

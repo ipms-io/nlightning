@@ -10,7 +10,7 @@
   <ItemGroup> 
     <PackageReference Include="DnsClient" Version="1.7.0" /> 
     <PackageReference Include="libsodium" Version="1.0.19" />
-    <PackageReference Include="NBitcoin" Version="7.0.36" />
+    <PackageReference Include="NBitcoin" Version="7.0.37" />
   </ItemGroup>
 
   <ItemGroup>

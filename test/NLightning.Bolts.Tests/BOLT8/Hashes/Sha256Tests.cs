@@ -7,12 +7,12 @@ using static Utils.TestUtils;
 /// Test our SHA256 implementation against the test vector available at
 /// <see href="https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/secure-hashing">NIST</see>.
 /// </summary>
-public partial class SHA256Tests
+public class Sha256Tests
 {
     [Fact]
     public void Given_NistVectorInputs_When_DataIsHashed_Then_ResultIsKnown()
     {
-        var hasher = new SHA256();
+        var hasher = new Sha256();
         var testVectors = ReadTestVectors("BOLT8/Vectors/SHA256LongMsg.rsp");
         var result = new byte[32];
 
@@ -21,7 +21,7 @@ public partial class SHA256Tests
             hasher.AppendData(vector.Msg);
             hasher.GetHashAndReset(result);
 
-            Assert.Equal(vector.MD, result);
+            Assert.Equal(vector.Md, result);
         }
     }
 
@@ -29,7 +29,7 @@ public partial class SHA256Tests
     {
         public int Len { get; set; }
         public byte[]? Msg { get; set; }
-        public byte[]? MD { get; set; }
+        public byte[]? Md { get; set; }
     }
 
     private static List<TestVector> ReadTestVectors(string filePath)
@@ -72,7 +72,7 @@ public partial class SHA256Tests
                     throw new InvalidOperationException("MD line without Msg line");
                 }
 
-                currentVector.MD = GetBytes(line[5..]);
+                currentVector.Md = GetBytes(line[5..]);
                 testVectors.Add(currentVector);
             }
         }

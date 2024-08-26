@@ -9,7 +9,7 @@ namespace NLightning.Bolts.Tests.Docker.Fixtures;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class PostgresFixture : IDisposable
 {
-    private const string ContainerName = "postgres";
+    private const string CONTAINER_NAME = "postgres";
     private readonly DockerClient _client = new DockerClientConfiguration().CreateClient();
     private string? _containerId;
     private string? _ip;
@@ -26,7 +26,7 @@ public class PostgresFixture : IDisposable
         GC.SuppressFinalize(this);
 
         // Remove containers
-        RemoveContainer(ContainerName).Wait();
+        RemoveContainer(CONTAINER_NAME).Wait();
 
         _client.Dispose();
     }
@@ -34,7 +34,7 @@ public class PostgresFixture : IDisposable
     public async Task StartPostgres()
     {
         await _client.PullImageAndWaitForCompleted("postgres", "16.2-alpine");
-        await RemoveContainer(ContainerName);
+        await RemoveContainer(CONTAINER_NAME);
         var nodeContainer = await _client.Containers.CreateContainerAsync(new CreateContainerParameters
         {
             Image = "postgres:16.2-alpine",
@@ -42,8 +42,8 @@ public class PostgresFixture : IDisposable
             {
                 NetworkMode = "bridge"
             },
-            Name = $"{ContainerName}",
-            Hostname = $"{ContainerName}",
+            Name = $"{CONTAINER_NAME}",
+            Hostname = $"{CONTAINER_NAME}",
             Env =
             [
                 "POSTGRES_PASSWORD=superuser",
@@ -53,7 +53,7 @@ public class PostgresFixture : IDisposable
         });
         Assert.NotNull(nodeContainer);
         _containerId = nodeContainer.ID;
-        var started = await _client.Containers.StartContainerAsync(_containerId, new ContainerStartParameters());
+        _ = await _client.Containers.StartContainerAsync(_containerId, new ContainerStartParameters());
 
         //Build connection string
         var ipAddressReady = false;
@@ -117,7 +117,7 @@ public class PostgresFixture : IDisposable
     {
         try
         {
-            var inspect = await _client.Containers.InspectContainerAsync(ContainerName);
+            var inspect = await _client.Containers.InspectContainerAsync(CONTAINER_NAME);
             return inspect.State.Running;
         }
         catch

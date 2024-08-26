@@ -8,7 +8,7 @@ using Bolts.BOLT8.Primitives;
 using Bolts.BOLT8.States;
 using Utils;
 
-public partial class EndToEntIntegrationTests
+public class EndToEntIntegrationTests
 {
     [Fact]
     public void Given_TwoParties_When_HandshakeEnds_Then_KeysMatch()
@@ -61,17 +61,17 @@ public partial class EndToEntIntegrationTests
 
         var flags = BindingFlags.Instance | BindingFlags.NonPublic;
         // Get initiator sk
-        var c1 = ((CipherState?)initiatorTransport.GetType().GetField("_sendingKey", flags)?.GetValue(initiatorTransport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new ArgumentNullException("_sendingKey");
-        var initiatorSk = ((byte[]?)c1.GetType().GetField("_k", flags)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new ArgumentNullException("_sendingKey._k");
+        var c1 = ((CipherState?)initiatorTransport.GetType().GetField("_sendingKey", flags)?.GetValue(initiatorTransport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new NullReferenceException("_sendingKey");
+        var initiatorSk = ((byte[]?)c1.GetType().GetField("_k", flags)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new NullReferenceException("_sendingKey._k");
         // Get initiator rk
-        var c2 = ((CipherState?)initiatorTransport.GetType().GetField("_receivingKey", flags)?.GetValue(initiatorTransport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new ArgumentNullException("_receivingKey");
-        var initiatorRk = ((byte[]?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new ArgumentNullException("_receivingKey._k");
+        var c2 = ((CipherState?)initiatorTransport.GetType().GetField("_receivingKey", flags)?.GetValue(initiatorTransport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new NullReferenceException("_receivingKey");
+        var initiatorRk = ((byte[]?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new NullReferenceException("_receivingKey._k");
         // Get responder sk
-        c1 = ((CipherState?)responderTransport.GetType().GetField("_sendingKey", flags)?.GetValue(responderTransport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new ArgumentNullException("_sendingKey");
-        var responderSk = ((byte[]?)c1.GetType().GetField("_k", flags)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new ArgumentNullException("_sendingKey._k");
+        c1 = ((CipherState?)responderTransport.GetType().GetField("_sendingKey", flags)?.GetValue(responderTransport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new NullReferenceException("_sendingKey");
+        var responderSk = ((byte[]?)c1.GetType().GetField("_k", flags)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new NullReferenceException("_sendingKey._k");
         // Get responder rk
-        c2 = ((CipherState?)responderTransport.GetType().GetField("_receivingKey", flags)?.GetValue(responderTransport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new ArgumentNullException("_receivingKey");
-        var responderRk = ((byte[]?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new ArgumentNullException("_receivingKey._k");
+        c2 = ((CipherState?)responderTransport.GetType().GetField("_receivingKey", flags)?.GetValue(responderTransport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new NullReferenceException("_receivingKey");
+        var responderRk = ((byte[]?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new NullReferenceException("_receivingKey._k");
 
         Assert.Equal(initiatorHandshakeHash, responderHandshakeHash);
         Assert.Equal(initiatorSk, responderSk);

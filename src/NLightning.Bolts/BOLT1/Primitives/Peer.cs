@@ -20,7 +20,6 @@ internal sealed class Peer
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly IMessageService _messageService;
     private readonly IPingPongService _pingPongService;
-    private readonly PeerAddress _peerAddress;
     private readonly NodeOptions _nodeOptions;
     private readonly bool _isInbound;
 
@@ -37,14 +36,12 @@ internal sealed class Peer
     /// <param name="nodeOptions">The node options.</param>
     /// <param name="messageService">The message service.</param>
     /// <param name="pingPongService">The ping pong service.</param>
-    /// <param name="peerAddress">The peer address.</param>
     /// <param name="isInbound">A value indicating whether the peer is inbound.</param>
     /// <exception cref="ConnectionException">Thrown when the connection to the peer fails.</exception>
-    internal Peer(NodeOptions nodeOptions, IMessageService messageService, IPingPongService pingPongService, PeerAddress peerAddress, bool isInbound)
+    internal Peer(NodeOptions nodeOptions, IMessageService messageService, IPingPongService pingPongService, bool isInbound)
     {
         _messageService = messageService;
         _pingPongService = pingPongService;
-        _peerAddress = peerAddress;
         _nodeOptions = nodeOptions;
         _isInbound = isInbound;
 
@@ -87,11 +84,13 @@ internal sealed class Peer
         if (!_isInitialized)
         {
             HandleInitializationAsync(message);
-            if (_isInbound)
+            if (!_isInbound)
             {
-                var initMessage = MessageFactory.CreateInitMessage(_nodeOptions);
-                _messageService.SendMessageAsync(initMessage, _cancellationTokenSource.Token);
+                return;
             }
+
+            var initMessage = MessageFactory.CreateInitMessage(_nodeOptions);
+            _messageService.SendMessageAsync(initMessage, _cancellationTokenSource.Token);
         }
         else
         {
@@ -102,9 +101,6 @@ internal sealed class Peer
                     break;
                 case MessageTypes.PONG:
                     _pingPongService.HandlePong((PongMessage)message);
-                    break;
-                default:
-                    // Handle other messages
                     break;
             }
         }
@@ -130,10 +126,10 @@ internal sealed class Peer
         }
 
         // Check if Chains are compatible
-        if (initMessage.Extension != null && initMessage.Extension.TryGetTlv(TLVConstants.NETWORKS, out var networksTlv))
+        if (initMessage.Extension != null && initMessage.Extension.TryGetTlv(TlvConstants.NETWORKS, out var networksTlv))
         {
             // Check if if ChainHash contained in networksTlv.ChainHashes exists in our ChainHashes
-            var networkChainHashes = ((NetworksTLV)networksTlv!).ChainHashes;
+            var networkChainHashes = ((NetworksTlv)networksTlv!).ChainHashes;
             if (networkChainHashes != null)
             {
                 foreach (var chainHash in networkChainHashes)

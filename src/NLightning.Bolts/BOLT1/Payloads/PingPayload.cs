@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 namespace NLightning.Bolts.BOLT1.Payloads;
 
 using Bolts.Interfaces;
+using Common.BitUtils;
 
 /// <summary>
 /// The ping payload.
@@ -16,7 +17,7 @@ public class PingPayload : IMessagePayload
     /// <summary>
     /// The maximum length of the ignored bytes.
     /// </summary>
-    public const ushort MAX_LENGTH = 65531;
+    private const ushort MAX_LENGTH = 65531;
 
     /// <summary>
     /// The number of bytes to send in the pong message.
@@ -44,8 +45,8 @@ public class PingPayload : IMessagePayload
     /// <inheritdoc/>
     public async Task SerializeAsync(Stream stream)
     {
-        await stream.WriteAsync(EndianBitConverter.GetBytesBE(NumPongBytes));
-        await stream.WriteAsync(EndianBitConverter.GetBytesBE(BytesLength));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(NumPongBytes));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(BytesLength));
         await stream.WriteAsync(Ignored);
     }
 
@@ -61,10 +62,10 @@ public class PingPayload : IMessagePayload
         {
             var buffer = new byte[2];
             await stream.ReadExactlyAsync(buffer);
-            var numPongBytes = EndianBitConverter.ToUInt16BE(buffer);
+            var numPongBytes = EndianBitConverter.ToUInt16BigEndian(buffer);
 
             await stream.ReadExactlyAsync(buffer);
-            var bytesLength = EndianBitConverter.ToUInt16BE(buffer);
+            var bytesLength = EndianBitConverter.ToUInt16BigEndian(buffer);
 
             var ignored = new byte[bytesLength];
             await stream.ReadExactlyAsync(ignored);

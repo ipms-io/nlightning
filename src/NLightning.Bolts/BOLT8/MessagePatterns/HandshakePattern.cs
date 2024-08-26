@@ -35,7 +35,7 @@ internal sealed class HandshakePattern
     /// <para>- → s, se</para>
     /// </summary>
     public static readonly HandshakePattern XK = new(
-        PreMessagePattern.Empty,
+        PreMessagePattern.EMPTY,
         PreMessagePattern.S,
         new MessagePattern(Token.E, Token.ES),
         new MessagePattern(Token.E, Token.EE),

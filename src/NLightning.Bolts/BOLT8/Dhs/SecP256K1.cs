@@ -6,10 +6,10 @@ using Interfaces;
 using Primitives;
 
 /// <summary>
-/// The Secp256k1 DH function (
+/// The SecP256k1 DH function (
 /// <see href="https://github.com/lightning/bolts/blob/master/08-transport.md#handshake-state">Bolt 8 - Handshake State</see>).
 /// </summary>
-internal sealed class Secp256k1 : IDh
+internal sealed class SecP256K1 : IDh
 {
     /// <inheritdoc/>
     /// <param name="k">Private Key</param>
@@ -23,7 +23,7 @@ internal sealed class Secp256k1 : IDh
         var sharedPubKey = pubKey.GetSharedPubkey(k);
 
         // SHA256 hash of the compressed format of the shared public key
-        using var hasher = new SHA256();
+        using var hasher = new Sha256();
         hasher.AppendData(sharedPubKey.Compress().ToBytes());
         hasher.GetHashAndReset(sharedKey);
     }

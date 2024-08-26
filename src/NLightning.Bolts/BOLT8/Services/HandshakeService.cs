@@ -11,10 +11,9 @@ using States;
 /// <param name="isInitiator">If we are initiating the connection</param>
 /// <param name="localStaticPrivateKey">Our local Private Key</param>
 /// <param name="staticPublicKey">If we are initiating, the remote Public Key, else our local Public Key</param>
-/// <param name="dh">A specific DH Function, or null to use the <see cref="Dhs.Secp256k1">Protocol Default</see></param>
 internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> localStaticPrivateKey, ReadOnlySpan<byte> staticPublicKey, IHandshakeState? handshakeState = null) : IHandshakeService
 {
-    private readonly IHandshakeState _handshakeState = handshakeState ?? new HandshakeState(isInitiator, localStaticPrivateKey, staticPublicKey, new Secp256k1());
+    private readonly IHandshakeState _handshakeState = handshakeState ?? new HandshakeState(isInitiator, localStaticPrivateKey, staticPublicKey, new SecP256K1());
 
     private byte _steps = 2;
     private bool _disposed;

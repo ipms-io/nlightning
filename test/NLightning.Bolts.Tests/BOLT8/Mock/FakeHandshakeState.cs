@@ -6,7 +6,7 @@ using NBitcoin;
 
 internal class FakeHandshakeState : IHandshakeState, ITestHandshakeState
 {
-    public PubKey? RemoteStaticPublicKey => new Key().PubKey;
+    public PubKey RemoteStaticPublicKey => new Key().PubKey;
 
     public virtual (int, byte[]?, Transport?) WriteMessageTest(byte[] span, byte[] buffer)
     {

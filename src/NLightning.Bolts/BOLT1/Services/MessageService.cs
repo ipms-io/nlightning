@@ -39,7 +39,7 @@ internal sealed class MessageService : IMessageService
     /// <exception cref="ObjectDisposedException">Thrown when the object is disposed.</exception>
     public async Task SendMessageAsync(IMessage message, CancellationToken cancellationToken = default)
     {
-        Common.Utils.Exceptions.ThrowIfDisposed(_disposed, nameof(MessageService));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(MessageService));
 
         await _transportService.WriteMessageAsync(message, cancellationToken);
     }

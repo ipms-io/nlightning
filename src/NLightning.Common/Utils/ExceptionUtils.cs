@@ -1,6 +1,6 @@
 namespace NLightning.Common.Utils;
 
-public static class Exceptions
+public static class ExceptionUtils
 {
     public static void ThrowIfNull(object? value, string name)
     {

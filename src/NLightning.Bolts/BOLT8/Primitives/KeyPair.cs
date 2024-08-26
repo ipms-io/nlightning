@@ -23,7 +23,7 @@ internal sealed class KeyPair : IDisposable
     {
         get
         {
-            Exceptions.ThrowIfDisposed(_disposed, nameof(KeyPair));
+            ExceptionUtils.ThrowIfDisposed(_disposed, nameof(KeyPair));
             return _privateKey;
         }
     }
@@ -38,7 +38,7 @@ internal sealed class KeyPair : IDisposable
     {
         get
         {
-            Exceptions.ThrowIfDisposed(_disposed, nameof(KeyPair));
+            ExceptionUtils.ThrowIfDisposed(_disposed, nameof(KeyPair));
             return _publicKey;
         }
     }
@@ -53,7 +53,7 @@ internal sealed class KeyPair : IDisposable
     {
         get
         {
-            Exceptions.ThrowIfDisposed(_disposed, nameof(KeyPair));
+            ExceptionUtils.ThrowIfDisposed(_disposed, nameof(KeyPair));
             return _publicKey.ToBytes();
         }
     }
@@ -63,11 +63,11 @@ internal sealed class KeyPair : IDisposable
     /// </summary>
     /// <param name="privateKey" cref="Key">The private key.</param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown if the <paramref name="keyPair"/> is null.
+    /// Thrown if the <paramref name="privateKey"/> is null.
     /// </exception>
     internal KeyPair(Key privateKey)
     {
-        Exceptions.ThrowIfNull(privateKey, nameof(KeyPair));
+        ExceptionUtils.ThrowIfNull(privateKey, nameof(KeyPair));
         _privateKey = privateKey;
         _publicKey = privateKey.PubKey;
     }

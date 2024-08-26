@@ -96,7 +96,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableBasicMPP = false;
+    public bool EnableBasicMpp = false;
 
     /// <summary>
     /// Enable large channels.
@@ -213,7 +213,7 @@ public sealed class NodeOptions
     /// </remarks>
     public NodeOptions()
     {
-        KeyPair = new Secp256k1().GenerateKeyPair();
+        KeyPair = new SecP256K1().GenerateKeyPair();
     }
 
     /// <summary>
@@ -241,97 +241,97 @@ public sealed class NodeOptions
 
         if (EnableDataLossProtect)
         {
-            features.SetFeature(Feature.OptionDataLossProtect, false);
+            features.SetFeature(Feature.OPTION_DATA_LOSS_PROTECT, false);
         }
 
         if (EnableInitialRoutingSync)
         {
-            features.SetFeature(Feature.InitialRoutingSync, false);
+            features.SetFeature(Feature.INITIAL_ROUTING_SYNC, false);
         }
 
         if (EnableUpfrontShutdownScript)
         {
-            features.SetFeature(Feature.OptionUpfrontShutdownScript, false);
+            features.SetFeature(Feature.OPTION_UPFRONT_SHUTDOWN_SCRIPT, false);
         }
 
         if (EnableGossipQueries)
         {
-            features.SetFeature(Feature.GossipQueries, false);
+            features.SetFeature(Feature.GOSSIP_QUERIES, false);
         }
 
         if (EnableExpandedGossipQueries)
         {
-            features.SetFeature(Feature.GossipQueriesEx, false);
+            features.SetFeature(Feature.GOSSIP_QUERIES_EX, false);
         }
 
         if (EnableStaticRemoteKey)
         {
-            features.SetFeature(Feature.OptionStaticRemoteKey, false);
+            features.SetFeature(Feature.OPTION_STATIC_REMOTE_KEY, false);
         }
 
         if (EnablePaymentSecret)
         {
-            features.SetFeature(Feature.PaymentSecret, false);
+            features.SetFeature(Feature.PAYMENT_SECRET, false);
         }
 
-        if (EnableBasicMPP)
+        if (EnableBasicMpp)
         {
-            features.SetFeature(Feature.BasicMpp, false);
+            features.SetFeature(Feature.BASIC_MPP, false);
         }
 
         if (EnableLargeChannels)
         {
-            features.SetFeature(Feature.OptionSupportLargeChannel, false);
+            features.SetFeature(Feature.OPTION_SUPPORT_LARGE_CHANNEL, false);
         }
 
         if (EnableAnchorOutputs)
         {
-            features.SetFeature(Feature.OptionAnchorOutputs, false);
+            features.SetFeature(Feature.OPTION_ANCHOR_OUTPUTS, false);
         }
 
         if (EnableZeroFeeAnchorTx)
         {
-            features.SetFeature(Feature.OptionAnchorsZeroFeeHtlcTx, false);
+            features.SetFeature(Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX, false);
         }
 
         if (EnableRouteBlinding)
         {
-            features.SetFeature(Feature.OptionRouteBlinding, false);
+            features.SetFeature(Feature.OPTION_ROUTE_BLINDING, false);
         }
 
         if (EnableBeyondSegwitShutdown)
         {
-            features.SetFeature(Feature.OptionShutdownAnySegwit, false);
+            features.SetFeature(Feature.OPTION_SHUTDOWN_ANY_SEGWIT, false);
         }
 
         if (EnableDualFund)
         {
-            features.SetFeature(Feature.OptionDualFund, false);
+            features.SetFeature(Feature.OPTION_DUAL_FUND, false);
         }
 
         if (EnableOnionMessages)
         {
-            features.SetFeature(Feature.OptionOnionMessages, false);
+            features.SetFeature(Feature.OPTION_ONION_MESSAGES, false);
         }
 
         if (EnableChannelType)
         {
-            features.SetFeature(Feature.OptionChannelType, false);
+            features.SetFeature(Feature.OPTION_CHANNEL_TYPE, false);
         }
 
         if (EnableScidAlias)
         {
-            features.SetFeature(Feature.OptionScidAlias, false);
+            features.SetFeature(Feature.OPTION_SCID_ALIAS, false);
         }
 
         if (EnablePaymentMetadata)
         {
-            features.SetFeature(Feature.OptionPaymentMetadata, false);
+            features.SetFeature(Feature.OPTION_PAYMENT_METADATA, false);
         }
 
         if (EnableZeroConf)
         {
-            features.SetFeature(Feature.OptionZeroconf, false);
+            features.SetFeature(Feature.OPTION_ZEROCONF, false);
         }
 
         return features;
@@ -344,17 +344,17 @@ public sealed class NodeOptions
     /// <remarks>
     /// If there are no ChainHashes, Mainnet is used as default.
     /// </remarks>
-    internal TLVStream GetInitExtension()
+    internal TlvStream GetInitExtension()
     {
-        var extension = new TLVStream();
+        var extension = new TlvStream();
 
         // If there are no ChainHashes, use Mainnet as default
         if (!ChainHashes.Any())
         {
-            ChainHashes = [ChainConstants.Main];
+            ChainHashes = [ChainConstants.MAIN];
         }
 
-        var networks = new NetworksTLV(ChainHashes);
+        var networks = new NetworksTlv(ChainHashes);
         extension.Add(networks);
 
         // TODO: Review this when implementing BOLT7
@@ -373,30 +373,29 @@ public sealed class NodeOptions
     /// <param name="features">The features of the node.</param>
     /// <param name="extension">The extension of the node.</param>
     /// <returns>The node options.</returns>
-    /// <remarks>
-    internal static NodeOptions GetNodeOptions(Features features, TLVStream? extension)
+    internal static NodeOptions GetNodeOptions(Features features, TlvStream? extension)
     {
         var options = new NodeOptions
         {
-            EnableDataLossProtect = features.HasFeature(Feature.OptionDataLossProtect),
-            EnableInitialRoutingSync = features.HasFeature(Feature.InitialRoutingSync),
-            EnableUpfrontShutdownScript = features.HasFeature(Feature.OptionUpfrontShutdownScript),
-            EnableGossipQueries = features.HasFeature(Feature.GossipQueries),
-            EnableExpandedGossipQueries = features.HasFeature(Feature.GossipQueriesEx),
-            EnableStaticRemoteKey = features.HasFeature(Feature.OptionStaticRemoteKey),
-            EnablePaymentSecret = features.HasFeature(Feature.PaymentSecret),
-            EnableBasicMPP = features.HasFeature(Feature.BasicMpp),
-            EnableLargeChannels = features.HasFeature(Feature.OptionSupportLargeChannel),
-            EnableAnchorOutputs = features.HasFeature(Feature.OptionAnchorOutputs),
-            EnableZeroFeeAnchorTx = features.HasFeature(Feature.OptionAnchorsZeroFeeHtlcTx),
-            EnableRouteBlinding = features.HasFeature(Feature.OptionRouteBlinding),
-            EnableBeyondSegwitShutdown = features.HasFeature(Feature.OptionShutdownAnySegwit),
-            EnableDualFund = features.HasFeature(Feature.OptionDualFund),
-            EnableOnionMessages = features.HasFeature(Feature.OptionOnionMessages),
-            EnableChannelType = features.HasFeature(Feature.OptionChannelType),
-            EnableScidAlias = features.HasFeature(Feature.OptionScidAlias),
-            EnablePaymentMetadata = features.HasFeature(Feature.OptionPaymentMetadata),
-            EnableZeroConf = features.HasFeature(Feature.OptionZeroconf)
+            EnableDataLossProtect = features.HasFeature(Feature.OPTION_DATA_LOSS_PROTECT),
+            EnableInitialRoutingSync = features.HasFeature(Feature.INITIAL_ROUTING_SYNC),
+            EnableUpfrontShutdownScript = features.HasFeature(Feature.OPTION_UPFRONT_SHUTDOWN_SCRIPT),
+            EnableGossipQueries = features.HasFeature(Feature.GOSSIP_QUERIES),
+            EnableExpandedGossipQueries = features.HasFeature(Feature.GOSSIP_QUERIES_EX),
+            EnableStaticRemoteKey = features.HasFeature(Feature.OPTION_STATIC_REMOTE_KEY),
+            EnablePaymentSecret = features.HasFeature(Feature.PAYMENT_SECRET),
+            EnableBasicMpp = features.HasFeature(Feature.BASIC_MPP),
+            EnableLargeChannels = features.HasFeature(Feature.OPTION_SUPPORT_LARGE_CHANNEL),
+            EnableAnchorOutputs = features.HasFeature(Feature.OPTION_ANCHOR_OUTPUTS),
+            EnableZeroFeeAnchorTx = features.HasFeature(Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX),
+            EnableRouteBlinding = features.HasFeature(Feature.OPTION_ROUTE_BLINDING),
+            EnableBeyondSegwitShutdown = features.HasFeature(Feature.OPTION_SHUTDOWN_ANY_SEGWIT),
+            EnableDualFund = features.HasFeature(Feature.OPTION_DUAL_FUND),
+            EnableOnionMessages = features.HasFeature(Feature.OPTION_ONION_MESSAGES),
+            EnableChannelType = features.HasFeature(Feature.OPTION_CHANNEL_TYPE),
+            EnableScidAlias = features.HasFeature(Feature.OPTION_SCID_ALIAS),
+            EnablePaymentMetadata = features.HasFeature(Feature.OPTION_PAYMENT_METADATA),
+            EnableZeroConf = features.HasFeature(Feature.OPTION_ZEROCONF)
         };
 
         if (extension?.TryGetTlv(new BigSize(1), out var chainHashes) ?? false)

@@ -27,7 +27,7 @@ public class PeerAddressTests
     {
         // Arrange
         var pubKey = new PubKey("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7");
-        var address = "http://example.com:8080/";
+        var address = "http://ipms.io:8080/";
 
         // Act
         var peerAddress = new PeerAddress(pubKey, address);
@@ -36,8 +36,8 @@ public class PeerAddressTests
         Assert.Equal(pubKey, peerAddress.PubKey);
         Assert.Equal(
             peerAddress.Host.IsIPv4()
-                ? IPAddress.Parse("93.184.216.34")
-                : IPAddress.Parse("2606:2800:220:1:248:1893:25c8:1946"), peerAddress.Host);
+                ? IPAddress.Parse("209.38.173.107")
+                : IPAddress.Parse("2604:a880:4:1d0::5b0:d000"), peerAddress.Host);
         Assert.Equal(8080, peerAddress.Port);
     }
 
