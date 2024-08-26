@@ -51,12 +51,12 @@ public partial class Invoice
     /// <summary>
     /// The network the invoice is created for
     /// </summary>
-    public Network Network { get; }
+    public Network Network { get; private set; }
 
     /// <summary>
     /// The amount of millisatoshis the invoice is for
     /// </summary>
-    public ulong AmountMilliSats { get; }
+    public ulong AmountMilliSats { get; private set; }
 
     /// <summary>
     /// The timestamp of the invoice
@@ -64,17 +64,17 @@ public partial class Invoice
     /// <remarks>
     /// The timestamp is the time the invoice was created in seconds since the Unix epoch.
     /// </remarks>
-    public long Timestamp { get; }
+    public long Timestamp { get; private set; }
 
     /// <summary>
     /// The signature of the invoice
     /// </summary>
-    public string Signature { get; }
+    public string Signature { get; private set; }
 
     /// <summary>
     /// The human-readable part of the invoice
     /// </summary>
-    public string HumanReadablePart { get; }
+    public string HumanReadablePart { get; private set; }
 
     /// <summary>
     /// The amount of satoshis the invoice is for
@@ -94,8 +94,8 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.PAYMENT_HASH, out PaymentHashTaggedField? paymentHash)
-                ? paymentHash!.Value
+            return _taggedFields.TryGet(TaggedFieldTypes.PAYMENT_HASH, out PaymentHashTaggedField paymentHash)
+                ? paymentHash.Value
                 : new uint256();
         }
         set
@@ -116,8 +116,8 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.ROUTING_INFO, out RoutingInfoTaggedField? routingInfo)
-                ? routingInfo!.Value
+            return _taggedFields.TryGet(TaggedFieldTypes.ROUTING_INFO, out RoutingInfoTaggedField routingInfo)
+                ? routingInfo.Value
                 : null;
         }
         set
@@ -140,8 +140,8 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.FEATURES, out FeaturesTaggedField? features)
-                ? features!.Value
+            return _taggedFields.TryGet(TaggedFieldTypes.FEATURES, out FeaturesTaggedField features)
+                ? features.Value
                 : null;
         }
         set
@@ -164,8 +164,8 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.EXPIRY_TIME, out ExpiryTimeTaggedField? expireIn)
-                ? DateTimeOffset.FromUnixTimeSeconds(Timestamp + expireIn!.Value)
+            return _taggedFields.TryGet(TaggedFieldTypes.EXPIRY_TIME, out ExpiryTimeTaggedField expireIn)
+                ? DateTimeOffset.FromUnixTimeSeconds(Timestamp + expireIn.Value)
                 : DateTimeOffset.FromUnixTimeSeconds(Timestamp + InvoiceConstants.DEFAULT_EXPIRATION_SECONDS);
         }
         set
@@ -216,8 +216,8 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.DESCRIPTION, out DescriptionTaggedField? description)
-                ? description!.Value
+            return _taggedFields.TryGet(TaggedFieldTypes.DESCRIPTION, out DescriptionTaggedField description)
+                ? description.Value
                 : null;
         }
         set
@@ -240,8 +240,8 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.PAYMENT_SECRET, out PaymentSecretTaggedField? paymentSecret)
-                ? paymentSecret!.Value
+            return _taggedFields.TryGet(TaggedFieldTypes.PAYMENT_SECRET, out PaymentSecretTaggedField paymentSecret)
+                ? paymentSecret.Value
                 : null;
         }
         set
@@ -264,8 +264,8 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField? payeePubKey)
-                ? payeePubKey!.Value
+            return _taggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField payeePubKey)
+                ? payeePubKey.Value
                 : null;
         }
         set
@@ -288,8 +288,8 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.DESCRIPTION_HASH, out DescriptionHashTaggedField? descriptionHash)
-                ? descriptionHash!.Value
+            return _taggedFields.TryGet(TaggedFieldTypes.DESCRIPTION_HASH, out DescriptionHashTaggedField descriptionHash)
+                ? descriptionHash.Value
                 : null;
         }
         set
@@ -311,8 +311,8 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY, out MinFinalCltvExpiryTaggedField? minFinalCltvExpiry)
-                ? minFinalCltvExpiry!.Value
+            return _taggedFields.TryGet(TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY, out MinFinalCltvExpiryTaggedField minFinalCltvExpiry)
+                ? minFinalCltvExpiry.Value
                 : null;
         }
         set
@@ -334,8 +334,8 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.METADATA, out MetadataTaggedField? metadata)
-                ? metadata!.Value
+            return _taggedFields.TryGet(TaggedFieldTypes.METADATA, out MetadataTaggedField metadata)
+                ? metadata.Value
                 : null;
         }
         set
