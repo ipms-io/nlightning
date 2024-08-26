@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>0.0.1</Version>
+    <Version>0.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -14,15 +14,15 @@
     <Copyright>Copyright © Níckolas Goline 2024</Copyright>
     <RepositoryUrl>https://github.com/ipms-io/nlightning</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>0.0.1</AssemblyVersion>
-    <FileVersion>0.0.1</FileVersion>
+    <AssemblyVersion>0.1.0</AssemblyVersion>
+    <FileVersion>2</FileVersion>
     <NeutralLanguage>en</NeutralLanguage>
-    <Icon>logo_small.png</Icon>
+    <Icon>logo.png</Icon>
     <PackageTags>lightning,invoice,bolt11,encoder,decoder</PackageTags>
     <PackageProjectUrl>https://nlightning.ipms.io/api/NLightning.Bolts.BOLT11.html</PackageProjectUrl>
-    <PackageIcon>logo_small.png</PackageIcon>
+    <PackageIcon>logo.png</PackageIcon>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -48,7 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\images\logo_small.png">
+    <None Include="..\..\images\logo.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
