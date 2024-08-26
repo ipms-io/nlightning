@@ -189,7 +189,6 @@ public class InvoiceIntegrationTests
         public long? ExpectedTimestamp;
         public readonly Dictionary<TaggedFieldTypes, object> EXPECTED_TAGGED_FIELDS = [];
         public bool IgnoreEncode;
-        public string? ErrorMessage;
     }
 
     private static List<TestInvoice> ReadTestInvoices(string filePath)
@@ -384,15 +383,6 @@ public class InvoiceIntegrationTests
                 }
 
                 currentInvoice.IgnoreEncode = bool.Parse(line[13..]);
-            }
-            else if (line.StartsWith("error="))
-            {
-                if (currentInvoice == null)
-                {
-                    throw new InvalidOperationException("error line without invoice line");
-                }
-
-                currentInvoice.ErrorMessage = line[6..];
             }
             else if (line.Length == 0)
             {
