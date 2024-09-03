@@ -1,0 +1,76 @@
+﻿@page "/bolt11-decoder"
+@using System.Diagnostics
+@using NLightning.Bolts.BOLT11
+@using Bolt11.Decoder.Blazor.Components
+
+<PageTitle>Bolt11 Invoice Decoder</PageTitle>
+
+<div class="bd-intro pt-2 ps-lg-2">
+    <div class="input-group mb-3">
+        <div class="form-floating">
+            <input type="email" class="form-control" id="invoiceInput" placeholder="lnbc..." @bind-value="@_invoiceInput">
+            <label for="invoiceInput">lnbc...</label>
+        </div>
+        <button class="btn btn-primary" type="button" id="button-addon1" @onclick="DecodeInvoice">Decode</button>
+    </div>
+</div>
+
+<div class="bd-content ps-lg-2">
+    @if (_decodedInvoice != null)
+    {
+    <h5>Decoded in @_elapsedMilliseconds milliseconds</h5>
+    <InvoiceComponent Invoice="@_decodedInvoice"/>
+    } else if (_errors.Count > 0)
+    {
+        
+    }
+    else
+    {
+        <h2>
+            Paste a Bolt11 invoice on the box above and click "Decode" to decode your invoice.
+        </h2>
+        <p>
+            This demo page only decodes Bolt11 invoices, usually starting in <b>lnbc</b>, <b>lntb</b>, <b>lnbcrt</b>, or <b>lntbs</b>.
+        </p>
+    }
+</div>
+
+@code {
+    private string? _invoiceInput;
+    private Invoice? _decodedInvoice;
+    private long _elapsedMilliseconds;
+    private readonly List<string> _errors = [];
+
+    private void DecodeInvoice()
+    {
+        _decodedInvoice = null;
+        _errors.Clear();
+
+        var stopwatch = Stopwatch.StartNew(); // Start measuring time
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(_invoiceInput))
+            {
+                // Handle empty input, for example, showing an error message
+                return;
+            }
+
+            _decodedInvoice = Invoice.Decode(_invoiceInput);
+
+            stopwatch.Stop(); // Stop measuring time
+            _elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+        }
+        catch (Exception ex)
+        {
+            // Handle decoding errors, for example, showing an error message
+            Console.WriteLine("Error decoding invoice: " + ex.Message);
+            _errors.Add(ex.Message);
+            if (ex.InnerException != null)
+            {
+                _errors.Add(ex.InnerException.Message);
+            }
+        }
+    }
+
+}
