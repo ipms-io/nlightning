@@ -6,9 +6,8 @@ namespace NLightning.Bolts.Tests.BOLT11.IntegrationTests;
 using Bolts.BOLT11;
 using Bolts.BOLT11.Enums;
 using Bolts.BOLT11.Types;
-using Bolts.BOLT8.Constants;
-using Bolts.BOLT8.Hashes;
 using Bolts.BOLT9;
+using Common.Crypto.Hashes;
 using Common.Managers;
 using Common.Types;
 using Exceptions;
@@ -123,6 +122,10 @@ public class InvoiceIntegrationTests
         var privateKeyBytes = NBitcoin.DataEncoders.Encoders.Hex.DecodeData(HEX_PRIVATE_KEY);
         SecureKeyManager.Initialize(privateKeyBytes);
 
+        // ConfigManager.Instance.Network = Network.MAIN_NET;
+        // var a = new Invoice(0, "", uint256.One, uint256.One);
+        // var b = a.Encode();
+
         var testInvoices = ReadTestInvoices("BOLT11/Invoices/ValidInvoices.txt");
 
         foreach (var testInvoice in testInvoices)
@@ -136,22 +139,22 @@ public class InvoiceIntegrationTests
                 switch (taggedField.Key)
                 {
                     case TaggedFieldTypes.PAYMENT_SECRET:
-                        invoice.PaymentSecret = taggedField.Value as uint256;
+                        invoice.PaymentSecret = taggedField.Value as uint256 ?? throw new InvalidCastException("Unable to cast taggedField to uint256");
                         break;
                     case TaggedFieldTypes.PAYMENT_HASH:
-                        invoice.PaymentHash = taggedField.Value as uint256 ?? throw new NullReferenceException("TaggedFieldTypes.PAYMENT_HASH is null");
+                        invoice.PaymentHash = taggedField.Value as uint256 ?? throw new InvalidCastException("Unable to cast taggedField to uint256");
                         break;
                     case TaggedFieldTypes.DESCRIPTION_HASH:
                         invoice.DescriptionHash = taggedField.Value as uint256;
                         break;
                     case TaggedFieldTypes.FALLBACK_ADDRESS:
-                        invoice.FallbackAddresses = [taggedField.Value as BitcoinAddress ?? throw new NullReferenceException("TaggedFieldTypes.FALLBACK_ADDRESS is null")];
+                        invoice.FallbackAddresses = [taggedField.Value as BitcoinAddress ?? throw new InvalidCastException("Unable to cast taggedField to BitcoinAddress")];
                         break;
                     case TaggedFieldTypes.DESCRIPTION:
                         invoice.Description = taggedField.Value as string;
                         break;
                     case TaggedFieldTypes.EXPIRY_TIME:
-                        invoice.ExpiryDate = taggedField.Value as DateTimeOffset?;
+                        invoice.ExpiryDate = taggedField.Value as DateTimeOffset? ?? throw new InvalidCastException("Unable to cast taggedField to DateTimeOffset");
                         break;
                     case TaggedFieldTypes.ROUTING_INFO:
                         invoice.RoutingInfos = taggedField.Value as RoutingInfoCollection;
@@ -195,7 +198,7 @@ public class InvoiceIntegrationTests
     {
         var testInvoice = new List<TestInvoice>();
         TestInvoice? currentInvoice = null;
-        var hasher = new Sha256();
+        using var sha256 = new Sha256();
 
         foreach (var line in File.ReadLines(filePath))
         {
@@ -285,9 +288,9 @@ public class InvoiceIntegrationTests
                     throw new InvalidOperationException("h line without invoice line");
                 }
 
-                var hash = new byte[HashConstants.HASH_LEN];
-                hasher.AppendData(Encoding.UTF8.GetBytes(line[2..]));
-                hasher.GetHashAndReset(hash);
+                var hash = new byte[32];
+                sha256.AppendData(Encoding.UTF8.GetBytes(line[2..]));
+                sha256.GetHashAndReset(hash);
 
                 if (BitConverter.IsLittleEndian)
                 {

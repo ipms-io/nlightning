@@ -53,7 +53,7 @@ public class PeerServiceTests
 
             _ = Task.Run(async () =>
             {
-                await tcpListener.AcceptTcpClientAsync();
+                _ = await tcpListener.AcceptTcpClientAsync();
             });
 
             // Act

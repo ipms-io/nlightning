@@ -1,11 +1,9 @@
 using NBitcoin;
 
-namespace NLightning.Bolts.BOLT8.Primitives;
-
-using Common.Utils;
+namespace NLightning.Common.Crypto.Primitives;
 
 /// <summary>
-/// A Diffie-Hellman private/public key pair.
+/// A secp256k1 private/public key pair.
 /// </summary>
 internal sealed class KeyPair : IDisposable
 {
@@ -23,7 +21,6 @@ internal sealed class KeyPair : IDisposable
     {
         get
         {
-            ExceptionUtils.ThrowIfDisposed(_disposed, nameof(KeyPair));
             return _privateKey;
         }
     }
@@ -38,7 +35,6 @@ internal sealed class KeyPair : IDisposable
     {
         get
         {
-            ExceptionUtils.ThrowIfDisposed(_disposed, nameof(KeyPair));
             return _publicKey;
         }
     }
@@ -53,7 +49,6 @@ internal sealed class KeyPair : IDisposable
     {
         get
         {
-            ExceptionUtils.ThrowIfDisposed(_disposed, nameof(KeyPair));
             return _publicKey.ToBytes();
         }
     }
@@ -67,7 +62,6 @@ internal sealed class KeyPair : IDisposable
     /// </exception>
     internal KeyPair(Key privateKey)
     {
-        ExceptionUtils.ThrowIfNull(privateKey, nameof(KeyPair));
         _privateKey = privateKey;
         _publicKey = privateKey.PubKey;
     }

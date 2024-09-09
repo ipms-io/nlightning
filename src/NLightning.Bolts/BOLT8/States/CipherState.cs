@@ -2,8 +2,9 @@ using System.Diagnostics;
 
 namespace NLightning.Bolts.BOLT8.States;
 
-using Ciphers;
-using Primitives;
+using Common.Constants;
+using Common.Crypto.Ciphers;
+using Common.Crypto.Functions;
 
 /// <summary>
 /// A CipherState can encrypt and decrypt data based on its variables k
@@ -18,16 +19,15 @@ internal sealed class CipherState : IDisposable
     private byte[]? _ck;
     private byte[]? _k;
     private ulong _n;
-    private bool _disposed;
 
     /// <summary>
     /// Sets k = key. Sets n = 0.
     /// </summary>
     public void InitializeKey(ReadOnlySpan<byte> key)
     {
-        Debug.Assert(key.Length == ChaCha20Poly1305.KEY_SIZE);
+        Debug.Assert(key.Length == CryptoConstants.PRIVKEY_LEN);
 
-        _k ??= new byte[ChaCha20Poly1305.KEY_SIZE];
+        _k ??= new byte[CryptoConstants.PRIVKEY_LEN];
         key.CopyTo(_k);
 
         _n = 0;
@@ -38,13 +38,13 @@ internal sealed class CipherState : IDisposable
     /// </summary>
     public void InitializeKeyAndChainingKey(ReadOnlySpan<byte> key, ReadOnlySpan<byte> chainingKey)
     {
-        Debug.Assert(key.Length == ChaCha20Poly1305.KEY_SIZE);
-        Debug.Assert(chainingKey.Length == ChaCha20Poly1305.KEY_SIZE);
+        Debug.Assert(key.Length == CryptoConstants.PRIVKEY_LEN);
+        Debug.Assert(chainingKey.Length == CryptoConstants.PRIVKEY_LEN);
 
-        _k ??= new byte[ChaCha20Poly1305.KEY_SIZE];
+        _k ??= new byte[CryptoConstants.PRIVKEY_LEN];
         key.CopyTo(_k);
 
-        _ck ??= new byte[ChaCha20Poly1305.KEY_SIZE];
+        _ck ??= new byte[CryptoConstants.PRIVKEY_LEN];
         chainingKey.CopyTo(_ck);
 
         _n = 0;
@@ -153,22 +153,18 @@ internal sealed class CipherState : IDisposable
 
         _n = 0;
 
-        Span<byte> key = stackalloc byte[ChaCha20Poly1305.KEY_SIZE * 2];
+        Span<byte> key = stackalloc byte[CryptoConstants.PRIVKEY_LEN * 2];
         _hkdf.ExtractAndExpand2(_ck, _k, key);
 
-        _ck ??= new byte[ChaCha20Poly1305.KEY_SIZE];
-        key[..ChaCha20Poly1305.KEY_SIZE].CopyTo(_ck);
+        _ck ??= new byte[CryptoConstants.PRIVKEY_LEN];
+        key[..CryptoConstants.PRIVKEY_LEN].CopyTo(_ck);
 
-        _k ??= new byte[ChaCha20Poly1305.KEY_SIZE];
-        key[ChaCha20Poly1305.KEY_SIZE..].CopyTo(_k);
+        _k ??= new byte[CryptoConstants.PRIVKEY_LEN];
+        key[CryptoConstants.PRIVKEY_LEN..].CopyTo(_k);
     }
 
     public void Dispose()
     {
-        if (!_disposed)
-        {
-            Utilities.ZeroMemory(_k);
-            _disposed = true;
-        }
+        _hkdf.Dispose();
     }
 }

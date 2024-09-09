@@ -1,6 +1,6 @@
-namespace NLightning.Bolts.Tests.BOLT8.Hashes;
+namespace NLightning.Common.Tests.Crypto.Hashes;
 
-using Bolts.BOLT8.Hashes;
+using Common.Crypto.Hashes;
 using static Utils.TestUtils;
 
 /// <summary>
@@ -12,22 +12,22 @@ public class Sha256Tests
     [Fact]
     public void Given_NistVectorInputs_When_DataIsHashed_Then_ResultIsKnown()
     {
-        var hasher = new Sha256();
-        var testVectors = ReadTestVectors("BOLT8/Vectors/SHA256LongMsg.rsp");
-        var result = new byte[32];
+        var testVectors = ReadTestVectors("Vectors/SHA256LongMsg.rsp");
+        using var sha256 = new Sha256();
+        Span<byte> result = new byte[32];
 
         foreach (var vector in testVectors)
         {
-            hasher.AppendData(vector.Msg);
-            hasher.GetHashAndReset(result);
+            sha256.AppendData(vector.Msg);
+            sha256.GetHashAndReset(result);
 
-            Assert.Equal(vector.Md, result);
+            Assert.Equal(vector.Md, result.ToArray());
         }
     }
 
-    private class TestVector
+    private class TestVector(int len)
     {
-        public int Len { get; set; }
+        public int Len { get; } = len;
         public byte[]? Msg { get; set; }
         public byte[]? Md { get; set; }
     }
@@ -41,10 +41,7 @@ public class Sha256Tests
         {
             if (line.StartsWith("Len = "))
             {
-                currentVector = new TestVector
-                {
-                    Len = int.Parse(line[6..])
-                };
+                currentVector = new TestVector(int.Parse(line[6..]));
             }
             else if (line.StartsWith("Msg = "))
             {

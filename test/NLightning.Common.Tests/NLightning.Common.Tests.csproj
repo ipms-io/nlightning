@@ -7,6 +7,23 @@
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <Configurations>Debug;Release;Debug.Native;Debug.Wasm;Release.Wasm</Configurations>
+    <Platforms>AnyCPU</Platforms>
+  </PropertyGroup>
+
+  <!-- Check if this is being used in WASM projects -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
+    <DefineConstants>CRYPTO_JS</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Check if this is being used in AOT projects -->
+  <PropertyGroup Condition="'$(PublishAot)' == 'true' Or $(Configuration.Contains('.Native'))">
+    <DefineConstants>CRYPTO_NATIVE</DefineConstants>
+  </PropertyGroup>
+  
+  <!-- Check if this is being used in non-AOT and non-WASM projects -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' And '$(PublishAot)' != 'true' And !$(Configuration.Contains('.Wasm')) And !$(Configuration.Contains('.Native'))">
+    <DefineConstants>CRYPTO_LIBSODIUM</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Vectors/BigSize.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Vectors\*.*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

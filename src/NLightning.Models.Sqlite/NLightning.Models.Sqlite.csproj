@@ -5,6 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <BaseOutputPath>..\NLightning.Models\bin\</BaseOutputPath>
+    <Configurations>Debug;Release;Debug.Native;Debug.Wasm;Release.Wasm</Configurations>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
   <ItemGroup>
 

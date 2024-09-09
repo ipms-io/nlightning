@@ -1,14 +1,91 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project>
+
+  <!--  Import regular sdk if the configuration calls for it  -->
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' And !$(Configuration.Contains('.Wasm'))"/>
+  <!--  Import blazor sdk if the configuration calls for it  -->
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk.Razor" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))"/>
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Version>1.0.0</Version>
+    <Configurations>Debug;Release;Debug.Native;Debug.Wasm;Release.Wasm</Configurations>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="NBitcoin" Version="7.0.37" />
+  <PropertyGroup>
+    <Authors>Nickolas Goline</Authors>
+    <Description>Common Library for NLightning</Description>
+    <Copyright>Copyright © Níckolas Goline 2024</Copyright>
+    <RepositoryUrl>https://github.com/ipms-io/nlightning</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
+    <NeutralLanguage>en</NeutralLanguage>
+    <Icon>logo.png</Icon>
+    <PackageTags>lightning,invoice,bolt11,encoder,decoder</PackageTags>
+    <PackageProjectUrl>https://nlightning.ipms.io/api/NLightning.Common.html</PackageProjectUrl>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageId>NLightning.Common</PackageId>
+  </PropertyGroup>
+
+  <!-- Check if this is being used in WASM projects -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
+    <DefineConstants>CRYPTO_JS</DefineConstants>
+    <PackageId>NLightning.Common.Blazor</PackageId>
+  </PropertyGroup>
+  
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
+    <Content Include="..\NLightning.Common\wwwroot\*.js" LinkBase="wwwroot"/>
+    <Content Include="..\NLightning.Common\wwwroot\*.gz" LinkBase="wwwroot"/>
+    <Content Include="..\NLightning.Common\wwwroot\*.br" LinkBase="wwwroot"/>
+    
+    <PackageReference Include="Microsoft.JSInterop" Version="8.0.8" />
   </ItemGroup>
+
+  <!-- Check if this is being used in AOT projects -->
+  <PropertyGroup Condition="'$(PublishAot)' == 'true' Or $(Configuration.Contains('.Native'))">
+    <DefineConstants>CRYPTO_NATIVE</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Check if this is being used in non-AOT and non-WASM projects -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' And '$(PublishAot)' != 'true' And !$(Configuration.Contains('.Wasm')) And !$(Configuration.Contains('.Native'))">
+    <DefineConstants>CRYPTO_LIBSODIUM</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release.Wasm' ">
+    <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' And '$(PublishAot)' != 'true' And !$(Configuration.Contains('.Wasm')) And !$(Configuration.Contains('.Native'))">
+    <PackageReference Include="libsodium" Version="1.0.19"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NBitcoin" Version="7.0.37"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\images\logo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <!--  Import regular sdk if the configuration calls for it  -->
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' And !$(Configuration.Contains('.Wasm'))"/>
+  <!--  Import blazor sdk if the configuration calls for it  -->
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk.Razor" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))"/>
 
 </Project>

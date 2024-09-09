@@ -1,21 +1,21 @@
-namespace NLightning.Bolts.BOLT8.Dhs;
+namespace NLightning.Common.Crypto.Functions;
 
 using Constants;
 using Hashes;
-using Interfaces;
+using Interfaces.Crypto;
 using Primitives;
 
 /// <summary>
 /// The SecP256k1 DH function (
 /// <see href="https://github.com/lightning/bolts/blob/master/08-transport.md#handshake-state">Bolt 8 - Handshake State</see>).
 /// </summary>
-internal sealed class SecP256K1 : IDh
+internal sealed class Ecdh : IEcdh
 {
     /// <inheritdoc/>
     /// <param name="k">Private Key</param>
     /// <param name="rk">Remote Static PubKey</param>
     /// <param name="sharedKey"></param>
-    public void Dh(NBitcoin.Key k, ReadOnlySpan<byte> rk, Span<byte> sharedKey)
+    public void SecP256K1Dh(NBitcoin.Key k, ReadOnlySpan<byte> rk, Span<byte> sharedKey)
     {
         NBitcoin.PubKey pubKey = new(rk);
 
@@ -23,9 +23,9 @@ internal sealed class SecP256K1 : IDh
         var sharedPubKey = pubKey.GetSharedPubkey(k);
 
         // SHA256 hash of the compressed format of the shared public key
-        using var hasher = new Sha256();
-        hasher.AppendData(sharedPubKey.Compress().ToBytes());
-        hasher.GetHashAndReset(sharedKey);
+        using var sha256 = new Sha256();
+        sha256.AppendData(sharedPubKey.Compress().ToBytes());
+        sha256.GetHashAndReset(sharedKey);
     }
 
     /// <inheritdoc/>
@@ -37,7 +37,7 @@ internal sealed class SecP256K1 : IDh
     /// <inheritdoc/>
     public KeyPair GenerateKeyPair(ReadOnlySpan<byte> privateKey)
     {
-        if (privateKey.Length != DhConstants.PRIVKEY_LEN)
+        if (privateKey.Length != CryptoConstants.PRIVKEY_LEN)
         {
             throw new ArgumentException("Invalid private key length");
         }

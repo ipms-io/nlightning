@@ -1,21 +1,22 @@
-namespace NLightning.Bolts.Tests.BOLT8.Dhs;
+using NLightning.Common.Crypto.Functions;
 
-using Bolts.BOLT8.Dhs;
+namespace NLightning.Common.Tests.Crypto.Functions;
 
-public class SecP256K1Tests
+public class EcdhTests
 {
     [Fact]
     public void Given_InvalidPrivateKeyLength_When_GenerateKeyPairIsCalled_Then_ItThrowsArgumentException()
     {
         // Arrange
-        var secp256K1 = new SecP256K1();
+        var ecdh = new Ecdh();
         var privateKey = new byte[31];
-
-        // Act
-        void Act() => secp256K1.GenerateKeyPair(privateKey);
 
         // Assert
         var exception = Assert.Throws<ArgumentException>(Act);
         Assert.Equal("Invalid private key length", exception.Message);
+        return;
+
+        // Act
+        void Act() => ecdh.GenerateKeyPair(privateKey);
     }
 }

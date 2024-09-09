@@ -13,8 +13,8 @@ using BOLT1.Fixtures;
 using Bolts.BOLT1.Factories;
 using Bolts.BOLT1.Primitives;
 using Bolts.BOLT1.Services;
-using Bolts.BOLT8.Dhs;
 using Common.Constants;
+using Common.Crypto.Functions;
 using Fixtures;
 using Utils;
 
@@ -34,7 +34,7 @@ public class AbcNetworkTests
     public async Task NLightning_BOLT8_Test_Connect_Alice()
     {
         // Arrange
-        var localKeys = new SecP256K1().GenerateKeyPair();
+        var localKeys = new Ecdh().GenerateKeyPair();
         var hex = BitConverter.ToString(localKeys.PublicKey.ToBytes()).Replace("-", "");
 
         var alice = _lightningRegtestNetworkFixture.Builder?.LNDNodePool?.ReadyNodes.First(x => x.LocalAlias == "alice");
@@ -73,7 +73,7 @@ public class AbcNetworkTests
             // Get ip from host
             var hostAddress = Environment.GetEnvironmentVariable("HOST_ADDRESS") ?? "host.docker.internal";
 
-            var localKeys = new SecP256K1().GenerateKeyPair();
+            var localKeys = new Ecdh().GenerateKeyPair();
             var hex = BitConverter.ToString(localKeys.PublicKey.ToBytes()).Replace("-", "");
 
             var alice = _lightningRegtestNetworkFixture.Builder?.LNDNodePool?.ReadyNodes.First(x => x.LocalAlias == "alice");

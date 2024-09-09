@@ -4,6 +4,7 @@ namespace NLightning.Bolt11;
 
 using Common.Types;
 
+[Obsolete("This class is deprecated. Please use NLightning.Bolts.BOLT11.Invoice directly.")]
 public class Invoice : Bolts.BOLT11.Invoice
 {
     public Invoice(ulong amountMilliSats, string description, uint256 paymentHash, uint256 paymentSecret) : base(amountMilliSats, description, paymentHash, paymentSecret)

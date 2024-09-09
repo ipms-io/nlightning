@@ -20,10 +20,6 @@ using Primitives;
 /// <seealso cref="IPeerService" />
 public sealed class PeerService(NodeOptions nodeOptions, ITransportServiceFactory transportServiceFactory, IPingPongServiceFactory pingPongServiceFactory, IMessageServiceFactory messageServiceFactory) : IPeerService
 {
-    private readonly NodeOptions _nodeOptions = nodeOptions;
-    private readonly ITransportServiceFactory _transportServiceFactory = transportServiceFactory;
-    private readonly IPingPongServiceFactory _pingPongServiceFactory = pingPongServiceFactory;
-    private readonly IMessageServiceFactory _messageServiceFactory = messageServiceFactory;
     private readonly Dictionary<NBitcoin.PubKey, Peer> _peers = [];
     private readonly Dictionary<ChannelId, NBitcoin.PubKey> _channels = [];
 
@@ -35,7 +31,7 @@ public sealed class PeerService(NodeOptions nodeOptions, ITransportServiceFactor
         var tcpClient = new TcpClient();
         try
         {
-            await tcpClient.ConnectAsync(peerAddress.Host, peerAddress.Port, new CancellationTokenSource(_nodeOptions.NetworkTimeout).Token);
+            await tcpClient.ConnectAsync(peerAddress.Host, peerAddress.Port, new CancellationTokenSource(nodeOptions.NetworkTimeout).Token);
         }
         catch (OperationCanceledException)
         {
@@ -47,10 +43,10 @@ public sealed class PeerService(NodeOptions nodeOptions, ITransportServiceFactor
         }
 
         // Create and Initialize the transport service
-        var transportService = _transportServiceFactory.CreateTransportService(true, _nodeOptions.KeyPair.PrivateKey.ToBytes(), peerAddress.PubKey.ToBytes(), tcpClient);
-        await transportService.InitializeAsync(_nodeOptions.NetworkTimeout);
+        var transportService = transportServiceFactory.CreateTransportService(true, nodeOptions.KeyPair.PrivateKey.ToBytes(), peerAddress.PubKey.ToBytes(), tcpClient);
+        await transportService.InitializeAsync(nodeOptions.NetworkTimeout);
 
-        var peer = new Peer(_nodeOptions, _messageServiceFactory.CreateMessageService(transportService), _pingPongServiceFactory.CreatePingPongService(_nodeOptions.NetworkTimeout), false);
+        var peer = new Peer(nodeOptions, messageServiceFactory.CreateMessageService(transportService), pingPongServiceFactory.CreatePingPongService(nodeOptions.NetworkTimeout), false);
         peer.DisconnectEvent += (_, _) =>
         {
             _peers.Remove(peerAddress.PubKey);
@@ -69,8 +65,8 @@ public sealed class PeerService(NodeOptions nodeOptions, ITransportServiceFactor
         var port = remoteEndPoint.Port;
 
         // Create and Initialize the transport service
-        var transportService = _transportServiceFactory.CreateTransportService(false, _nodeOptions.KeyPair.PrivateKey.ToBytes(), _nodeOptions.KeyPair.PublicKey.ToBytes(), tcpClient);
-        await transportService.InitializeAsync(_nodeOptions.NetworkTimeout);
+        var transportService = transportServiceFactory.CreateTransportService(false, nodeOptions.KeyPair.PrivateKey.ToBytes(), nodeOptions.KeyPair.PublicKey.ToBytes(), tcpClient);
+        await transportService.InitializeAsync(nodeOptions.NetworkTimeout);
         if (transportService.RemoteStaticPublicKey == null)
         {
             throw new ErrorException("Failed to get remote static public key");
@@ -78,7 +74,7 @@ public sealed class PeerService(NodeOptions nodeOptions, ITransportServiceFactor
         var peerAddress = new PeerAddress(transportService.RemoteStaticPublicKey, ipAddress, port);
 
         // Create the peer
-        var peer = new Peer(_nodeOptions, _messageServiceFactory.CreateMessageService(transportService), _pingPongServiceFactory.CreatePingPongService(_nodeOptions.NetworkTimeout), true);
+        var peer = new Peer(nodeOptions, messageServiceFactory.CreateMessageService(transportService), pingPongServiceFactory.CreatePingPongService(nodeOptions.NetworkTimeout), true);
 
         peer.DisconnectEvent += (_, _) =>
         {

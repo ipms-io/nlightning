@@ -37,7 +37,7 @@ public class MessageServiceTests
 
         var eventRaised = false;
 
-        messageService.MessageReceived += (sender, args) => eventRaised = true;
+        messageService.MessageReceived += (_, _) => eventRaised = true;
 
         // Act
         var method = messageService.GetType().GetMethod("ReceiveMessageAsync", BindingFlags.NonPublic | BindingFlags.Instance);

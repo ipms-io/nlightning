@@ -2,10 +2,11 @@ using System.Diagnostics;
 
 namespace NLightning.Bolts.BOLT8.States;
 
-using Ciphers;
-using Common.Utils;
+using Common.Constants;
+using Common.Crypto.Functions;
+using Common.Crypto.Primitives;
+using Common.Interfaces.Crypto;
 using Constants;
-using Dhs;
 using Enums;
 using Interfaces;
 using MessagePatterns;
@@ -24,12 +25,11 @@ internal sealed class HandshakeState : IHandshakeState
     private readonly KeyPair _s;
     private readonly Queue<MessagePattern> _messagePatterns = new();
 
-    private readonly IDh _dh;
+    private readonly IEcdh _dh;
     private KeyPair? _e;
     private byte[]? _re;
     private byte[] _rs;
     private bool _turnToWrite;
-    private bool _disposed;
 
     public NBitcoin.PubKey RemoteStaticPublicKey => new(_rs);
 
@@ -39,18 +39,18 @@ internal sealed class HandshakeState : IHandshakeState
     /// <param name="initiator">If we are the initiator</param>
     /// <param name="s">Local Static Private Key</param>
     /// <param name="rs">Remote Static Public Key</param>
-    /// <param name="dh">A specific DH Function, or null to use the <see cref="SecP256K1">Protocol Default</see></param>
+    /// <param name="ecdh">A specific DH Function, or null to use the <see cref="Ecdh">Protocol Default</see></param>
     /// <exception cref="ArgumentException"></exception>
-    public HandshakeState(bool initiator, ReadOnlySpan<byte> s, ReadOnlySpan<byte> rs, IDh? dh = null)
+    public HandshakeState(bool initiator, ReadOnlySpan<byte> s, ReadOnlySpan<byte> rs, IEcdh? ecdh = null)
     {
-        _dh = dh ?? new SecP256K1();
+        _dh = ecdh ?? new Ecdh();
 
         if (s.IsEmpty)
         {
             throw new ArgumentException("Local static private key required, but not provided.", nameof(s));
         }
 
-        if (s.Length != DhConstants.PRIVKEY_LEN)
+        if (s.Length != CryptoConstants.PRIVKEY_LEN)
         {
             throw new ArgumentException("Invalid local static private key.", nameof(s));
         }
@@ -60,7 +60,7 @@ internal sealed class HandshakeState : IHandshakeState
             throw new ArgumentException("Remote static public key required, but not provided.", nameof(rs));
         }
 
-        if (rs.Length != DhConstants.PUBKEY_LEN)
+        if (rs.Length != CryptoConstants.PUBKEY_LEN)
         {
             throw new ArgumentException("Invalid remote static public key.", nameof(rs));
         }
@@ -84,14 +84,12 @@ internal sealed class HandshakeState : IHandshakeState
     /// <exception cref="ArgumentException">Thrown if the output was greater than <see cref="ProtocolConstants.MAX_MESSAGE_LENGTH"/> bytes in length, or if the output buffer did not have enough space to hold the ciphertext.</exception>
     public (int, byte[]?, Transport?) WriteMessage(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
-        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(HandshakeState));
-
         if (_messagePatterns.Count == 0)
         {
             throw new InvalidOperationException("Cannot call WriteMessage after the handshake has already been completed.");
         }
 
-        var overhead = _messagePatterns.Peek().Overhead(DhConstants.PUBKEY_LEN, _state.HasKey());
+        var overhead = _messagePatterns.Peek().Overhead(CryptoConstants.PUBKEY_LEN, _state.HasKey());
         var ciphertextSize = payload.Length + overhead;
 
         if (ciphertextSize > ProtocolConstants.MAX_MESSAGE_LENGTH)
@@ -152,14 +150,12 @@ internal sealed class HandshakeState : IHandshakeState
     /// <exception cref="System.Security.Cryptography.CryptographicException">Thrown if the decryption of the message has failed.</exception>
     public (int, byte[]?, Transport?) ReadMessage(ReadOnlySpan<byte> message, Span<byte> payloadBuffer)
     {
-        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(HandshakeState));
-
         if (_messagePatterns.Count == 0)
         {
             throw new InvalidOperationException("Cannot call WriteMessage after the handshake has already been completed.");
         }
 
-        var overhead = _messagePatterns.Peek().Overhead(DhConstants.PUBKEY_LEN, _state.HasKey());
+        var overhead = _messagePatterns.Peek().Overhead(CryptoConstants.PUBKEY_LEN, _state.HasKey());
         var plaintextSize = message.Length - overhead;
 
         if (message.Length > ProtocolConstants.MAX_MESSAGE_LENGTH)
@@ -274,7 +270,7 @@ internal sealed class HandshakeState : IHandshakeState
         buffer = buffer[1..];
 
         // Skip the byte from the version and get all bytes from pubkey
-        _re = buffer[..DhConstants.PUBKEY_LEN].ToArray();
+        _re = buffer[..CryptoConstants.PUBKEY_LEN].ToArray();
         _state.MixHash(_re);
 
         return buffer[_re.Length..];
@@ -289,10 +285,10 @@ internal sealed class HandshakeState : IHandshakeState
         }
         message = message[1..];
 
-        var length = _state.HasKey() ? DhConstants.PUBKEY_LEN + ChaCha20Poly1305.TAG_SIZE : DhConstants.PUBKEY_LEN;
+        var length = _state.HasKey() ? CryptoConstants.PUBKEY_LEN + CryptoConstants.CHACHA20_POLY1305_TAG_LEN : CryptoConstants.PUBKEY_LEN;
         var temp = message[..length];
 
-        _rs = new byte[DhConstants.PUBKEY_LEN];
+        _rs = new byte[CryptoConstants.PUBKEY_LEN];
         _state.DecryptAndHash(temp, _rs);
 
         return message[length..];
@@ -339,47 +335,28 @@ internal sealed class HandshakeState : IHandshakeState
         Debug.Assert(keyPair != null);
         Debug.Assert(!publicKey.IsEmpty);
 
-        Span<byte> sharedKey = stackalloc byte[DhConstants.PRIVKEY_LEN];
-        _dh.Dh(keyPair.PrivateKey, publicKey, sharedKey);
+        Span<byte> sharedKey = stackalloc byte[CryptoConstants.PRIVKEY_LEN];
+        _dh.SecP256K1Dh(keyPair.PrivateKey, publicKey, sharedKey);
         _state.MixKey(sharedKey);
     }
 
     private void Clear()
     {
         _state.Dispose();
-        _e?.Dispose();
         _s.Dispose();
+        _e?.Dispose();
     }
-
-    #region Dispose Pattern
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    private void Dispose(bool disposing)
-    {
-        if (!_disposed)
-        {
-            if (disposing)
-            {
-                Clear();
-            }
-
-            _disposed = true;
-        }
-    }
-
-    ~HandshakeState()
-    {
-        Dispose(false);
-    }
-    #endregion
 
     private enum Role
     {
         ALICE,
         BOB
+    }
+
+    public void Dispose()
+    {
+        _state.Dispose();
+        _s.Dispose();
+        _e?.Dispose();
     }
 }

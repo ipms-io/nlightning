@@ -2,10 +2,9 @@ using System.Diagnostics;
 
 namespace NLightning.Bolts.BOLT8.States;
 
-using Ciphers;
-using Constants;
-using Hashes;
-using Primitives;
+using Common.Constants;
+using Common.Crypto.Functions;
+using Common.Crypto.Hashes;
 
 /// <summary>
 /// A SymmetricState object contains a CipherState plus ck (a chaining
@@ -13,12 +12,11 @@ using Primitives;
 /// </summary>
 internal sealed class SymmetricState : IDisposable
 {
-    private readonly Sha256 _hash = new();
+    private readonly Sha256 _sha256 = new();
     private readonly Hkdf _hkdf = new();
     private readonly CipherState _state = new();
     private readonly byte[] _ck;
     private readonly byte[] _h;
-    private bool _disposed;
 
     /// <summary>
     /// Initializes a new SymmetricState with an
@@ -26,20 +24,20 @@ internal sealed class SymmetricState : IDisposable
     /// </summary>
     public SymmetricState(ReadOnlySpan<byte> protocolName)
     {
-        _ck = new byte[HashConstants.HASH_LEN];
-        _h = new byte[HashConstants.HASH_LEN];
+        _ck = new byte[CryptoConstants.SHA256_HASH_LEN];
+        _h = new byte[CryptoConstants.SHA256_HASH_LEN];
 
-        if (protocolName.Length <= HashConstants.HASH_LEN)
+        if (protocolName.Length <= CryptoConstants.SHA256_HASH_LEN)
         {
             protocolName.CopyTo(_h);
         }
         else
         {
-            _hash.AppendData(protocolName);
-            _hash.GetHashAndReset(_h);
+            _sha256.AppendData(protocolName);
+            _sha256.GetHashAndReset(_h);
         }
 
-        Array.Copy(_h, _ck, HashConstants.HASH_LEN);
+        Array.Copy(_h, _ck, CryptoConstants.SHA256_HASH_LEN);
     }
 
     /// <summary>
@@ -50,14 +48,14 @@ internal sealed class SymmetricState : IDisposable
     public void MixKey(ReadOnlySpan<byte> inputKeyMaterial)
     {
         var length = inputKeyMaterial.Length;
-        Debug.Assert(length == 0 || length == ChaCha20Poly1305.KEY_SIZE);
+        Debug.Assert(length is 0 or CryptoConstants.PRIVKEY_LEN);
 
-        Span<byte> output = stackalloc byte[2 * HashConstants.HASH_LEN];
+        Span<byte> output = stackalloc byte[2 * CryptoConstants.SHA256_HASH_LEN];
         _hkdf.ExtractAndExpand2(_ck, inputKeyMaterial, output);
 
-        output[..HashConstants.HASH_LEN].CopyTo(_ck);
+        output[..CryptoConstants.SHA256_HASH_LEN].CopyTo(_ck);
 
-        var tempK = output.Slice(HashConstants.HASH_LEN, ChaCha20Poly1305.KEY_SIZE);
+        var tempK = output.Slice(CryptoConstants.SHA256_HASH_LEN, CryptoConstants.PRIVKEY_LEN);
         _state.InitializeKey(tempK);
     }
 
@@ -66,9 +64,9 @@ internal sealed class SymmetricState : IDisposable
     /// </summary>
     public void MixHash(ReadOnlySpan<byte> data)
     {
-        _hash.AppendData(_h);
-        _hash.AppendData(data);
-        _hash.GetHashAndReset(_h);
+        _sha256.AppendData(_h);
+        _sha256.AppendData(data);
+        _sha256.GetHashAndReset(_h);
     }
 
     /// <summary>
@@ -80,15 +78,15 @@ internal sealed class SymmetricState : IDisposable
     public void MixKeyAndHash(ReadOnlySpan<byte> inputKeyMaterial)
     {
         var length = inputKeyMaterial.Length;
-        Debug.Assert(length is 0 or ChaCha20Poly1305.KEY_SIZE);
+        Debug.Assert(length is 0 or CryptoConstants.PRIVKEY_LEN);
 
-        Span<byte> output = stackalloc byte[3 * HashConstants.HASH_LEN];
+        Span<byte> output = stackalloc byte[3 * CryptoConstants.SHA256_HASH_LEN];
         _hkdf.ExtractAndExpand3(_ck, inputKeyMaterial, output);
 
-        output[..HashConstants.HASH_LEN].CopyTo(_ck);
+        output[..CryptoConstants.SHA256_HASH_LEN].CopyTo(_ck);
 
-        var tempH = output.Slice(HashConstants.HASH_LEN, HashConstants.HASH_LEN);
-        var tempK = output.Slice(2 * HashConstants.HASH_LEN, ChaCha20Poly1305.KEY_SIZE);
+        var tempH = output.Slice(CryptoConstants.SHA256_HASH_LEN, CryptoConstants.SHA256_HASH_LEN);
+        var tempK = output.Slice(2 * CryptoConstants.SHA256_HASH_LEN, CryptoConstants.PRIVKEY_LEN);
 
         MixHash(tempH);
         _state.InitializeKey(tempK);
@@ -132,11 +130,11 @@ internal sealed class SymmetricState : IDisposable
     /// </summary>
     public (CipherState c1, CipherState c2) Split()
     {
-        Span<byte> output = stackalloc byte[2 * HashConstants.HASH_LEN];
+        Span<byte> output = stackalloc byte[2 * CryptoConstants.SHA256_HASH_LEN];
         _hkdf.ExtractAndExpand2(_ck, null, output);
 
-        var tempK1 = output[..ChaCha20Poly1305.KEY_SIZE];
-        var tempK2 = output.Slice(HashConstants.HASH_LEN, ChaCha20Poly1305.KEY_SIZE);
+        var tempK1 = output[..CryptoConstants.PRIVKEY_LEN];
+        var tempK2 = output.Slice(CryptoConstants.SHA256_HASH_LEN, CryptoConstants.PRIVKEY_LEN);
 
         var c1 = new CipherState();
         var c2 = new CipherState();
@@ -157,13 +155,8 @@ internal sealed class SymmetricState : IDisposable
 
     public void Dispose()
     {
-        if (!_disposed)
-        {
-            _hash.Dispose();
-            _hkdf.Dispose();
-            _state.Dispose();
-            Utilities.ZeroMemory(_ck);
-            _disposed = true;
-        }
+
+        _sha256.Dispose();
+        _state.Dispose();
     }
 }
