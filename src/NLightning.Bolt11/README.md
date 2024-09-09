@@ -21,6 +21,7 @@ using NLightning.Bolt11;
 var invoice = Invoice.Decode(invoice_string);
 
 // Get properties of the invoice
-Console.WriteLine(invoice.Amount);
+Console.WriteLine(invoice.AmountMilliSats);
+Console.WriteLine(invoice.AmountSats);
 Console.WriteLine(invoice.PaymentHash);
 ```
