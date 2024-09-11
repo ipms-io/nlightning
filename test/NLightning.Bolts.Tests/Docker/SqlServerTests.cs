@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using ServiceStack.Text;
 using Xunit.Abstractions;
 
 namespace NLightning.Bolts.Tests.Docker;
@@ -44,30 +46,30 @@ public class SqlServerTests
         while (!context?.Database.CanConnect() ?? true)
         {
             Task.Delay(100).Wait();
+            Debug.Print("Still waiting");
         }
-        context?.Database.Migrate();
+        context.Database.Migrate();
     }
 
-    // [Fact]
+    [Fact]
+    public Task TestDb()
+    {
+        var context = _serviceProvider.GetService<NLightningContext>() ?? throw new Exception("Context is null");
+        context.Nodes.Count().PrintDump();
 
-    // public Task TestDb()
-    // {
-    //     var context = _serviceProvider.GetService<NLightningContext>() ?? throw new Exception("Context is null");
-    //     context.Nodes.Count().PrintDump();
-    //
-    //     context.Nodes.AddRange(
-    //         new NLightningContext.Node(),
-    //         new NLightningContext.Node());
-    //     context.SaveChanges();
-    //     context.Nodes.Count().PrintDump();
-    //     context.Nodes.AddRange(
-    //         new NLightningContext.Node(),
-    //         new NLightningContext.Node());
-    //     context.Nodes.Count().PrintDump();
-    //     context.SaveChanges();
-    //     context.Nodes.Count().PrintDump();
-    //
-    //     return Task.CompletedTask;
-    // }
+        context.Nodes.AddRange(
+            new NLightningContext.Node(),
+            new NLightningContext.Node());
+        context.SaveChanges();
+        context.Nodes.Count().PrintDump();
+        context.Nodes.AddRange(
+            new NLightningContext.Node(),
+            new NLightningContext.Node());
+        context.Nodes.Count().PrintDump();
+        context.SaveChanges();
+        context.Nodes.Count().PrintDump();
+
+        return Task.CompletedTask;
+    }
 }
 #pragma warning restore xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture

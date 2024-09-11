@@ -46,7 +46,7 @@ public class PostgresTests
         {
             Task.Delay(100).Wait();
         }
-        context?.Database.Migrate();
+        context.Database.Migrate();
     }
 
     [Fact]

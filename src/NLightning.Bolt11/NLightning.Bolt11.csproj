@@ -1,4 +1,5 @@
 <Project>
+  
   <!--  Import regular sdk if the configuration calls for it  -->
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' And !$(Configuration.Contains('.Wasm'))"/>
   <!--  Import blazor sdk if the configuration calls for it  -->
@@ -10,7 +11,7 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Version>0.2.0</Version>
-    <Configurations>Debug;Debug.Native;Debug.Wasm;Release;Release.Wasm</Configurations>
+    <Configurations>Debug;Debug.Native;Debug.Wasm;Release;Release.Native;Release.Wasm</Configurations>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
@@ -52,10 +53,19 @@
     <Compile Include="..\NLightning.Bolts\Exceptions\InvoiceSerializationException.cs" LinkBase="Bolts\Exceptions"/>
   </ItemGroup>
 
+  <PropertyGroup Condition="$(Configuration.Contains('Debug'))">
+    <DefineConstants>DEBUG;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(Configuration.Contains('Release'))">
+    <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
+  </PropertyGroup>
+
   <!-- Check if this is being used in WASM projects -->
   <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
-    <DefineConstants>CRYPTO_JS</DefineConstants>
+    <DefineConstants>CRYPTO_JS;$(DefineConstants)</DefineConstants>
     <PackageId>NLightning.Bolt11.Blazor</PackageId>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
@@ -70,7 +80,7 @@
 
   <!-- Check if this is being used in AOT projects -->
   <PropertyGroup Condition="'$(PublishAot)' == 'true' Or $(Configuration.Contains('.Native'))">
-    <DefineConstants>CRYPTO_NATIVE</DefineConstants>
+    <DefineConstants>CRYPTO_NATIVE;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(PublishAot)' == 'true' Or $(Configuration.Contains('.Native'))">
@@ -79,7 +89,7 @@
 
   <!-- Check if this is being used in non-AOT and non-WASM projects -->
   <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' And '$(PublishAot)' != 'true' And !$(Configuration.Contains('.Wasm')) And !$(Configuration.Contains('.Native'))">
-    <DefineConstants>CRYPTO_LIBSODIUM</DefineConstants>
+    <DefineConstants>CRYPTO_LIBSODIUM;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' And '$(PublishAot)' != 'true' And !$(Configuration.Contains('.Wasm')) And !$(Configuration.Contains('.Native'))">

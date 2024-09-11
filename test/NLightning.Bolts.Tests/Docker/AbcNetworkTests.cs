@@ -18,6 +18,7 @@ using Common.Crypto.Functions;
 using Fixtures;
 using Utils;
 
+// ReSharper disable AccessToDisposedClosure
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
 [Collection("regtest")]
 public class AbcNetworkTests
@@ -89,7 +90,7 @@ public class AbcNetworkTests
             };
             var peerService = new PeerService(nodeOptions, new TransportServiceFactory(), new PingPongServiceFactory(), new MessageServiceFactory());
 
-            _ = Task.Run(async () =>
+            var acceptTask = Task.Run(async () =>
             {
                 {
                     var tcpClient = await listener.AcceptTcpClientAsync();
@@ -109,6 +110,7 @@ public class AbcNetworkTests
                 }
             });
             var alicePeers = alice.LightningClient.ListPeers(new ListPeersRequest());
+            await acceptTask;
 
             // Assert
             Assert.NotNull(alicePeers.Peers.FirstOrDefault(x => x.PubKey.Equals(hex, StringComparison.CurrentCultureIgnoreCase)));
@@ -140,3 +142,4 @@ public class AbcNetworkTests
     }
 }
 #pragma warning restore xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
+// ReSharper restore AccessToDisposedClosure

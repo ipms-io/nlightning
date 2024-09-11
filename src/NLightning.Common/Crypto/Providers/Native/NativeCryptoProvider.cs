@@ -30,15 +30,21 @@ internal sealed partial class NativeCryptoProvider: ICryptoProvider
                                                 ReadOnlySpan<byte> secureNonce, ReadOnlySpan<byte> authenticationData,
                                                 ReadOnlySpan<byte> message, Span<byte> cipher, out long cipherLength)
     {
-        using var chaCha20Poly1305 = new ChaCha20Poly1305(key);
-        
-        // var tag = new byte[CryptoConstants.CHACHA20_POLY1305_TAG_LEN];
-        chaCha20Poly1305.Encrypt(publicNonce, message, cipher[..message.Length], cipher[message.Length..], authenticationData);
-        // tag.CopyTo(cipher[message.Length..]); // Append the tag at the end
+        try{
+            using var chaCha20Poly1305 = new ChaCha20Poly1305(key);
+            
+            chaCha20Poly1305.Encrypt(publicNonce, message, cipher[..message.Length],
+                                     cipher[message.Length..(message.Length + CryptoConstants.CHACHA20_POLY1305_TAG_LEN)],
+                                     authenticationData);
 
-        cipherLength = message.Length + CryptoConstants.CHACHA20_POLY1305_TAG_LEN;
+            cipherLength = message.Length + CryptoConstants.CHACHA20_POLY1305_TAG_LEN;
 
-        return 0;
+            return 0;
+        }
+        catch (Exception e)
+        {
+            throw new CryptographicException("Encryption failed.", e);
+        }
     }
 
     public int AeadChacha20Poly1305IetfDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> publicNonce,
@@ -46,17 +52,23 @@ internal sealed partial class NativeCryptoProvider: ICryptoProvider
                                                 ReadOnlySpan<byte> cipher, Span<byte> clearTextMessage,
                                                 out long messageLength)
     {
-        using var chaCha20Poly1305 = new ChaCha20Poly1305(key);
-        
-        var messageLengthWithoutTag = cipher.Length - CryptoConstants.CHACHA20_POLY1305_TAG_LEN;
-        var message = cipher[..messageLengthWithoutTag];
-        var tag = cipher[messageLengthWithoutTag..];
+        try
+        {
+            using var chaCha20Poly1305 = new ChaCha20Poly1305(key);
 
-        chaCha20Poly1305.Decrypt(publicNonce, message, tag, clearTextMessage, authenticationData);
+            var messageLengthWithoutTag = cipher.Length - CryptoConstants.CHACHA20_POLY1305_TAG_LEN;
 
-        messageLength = messageLengthWithoutTag;
+            chaCha20Poly1305.Decrypt(publicNonce, cipher[..messageLengthWithoutTag], cipher[messageLengthWithoutTag..],
+                                     clearTextMessage[..messageLengthWithoutTag], authenticationData);
 
-        return 0;
+            messageLength = messageLengthWithoutTag;
+
+            return 0;
+        }
+        catch (Exception e)
+        {
+            throw new CryptographicException("Decryption failed.", e);
+        }
     }
 
     public IntPtr MemoryAlloc(ulong size)
@@ -80,7 +92,7 @@ internal sealed partial class NativeCryptoProvider: ICryptoProvider
     {
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            VirtualUnlock(addr, len);
+            _ = VirtualUnlock(addr, len);
         }
         // else
         // {

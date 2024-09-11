@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
 namespace NLightning.Bolts;
@@ -11,6 +12,7 @@ using Common.TLVs;
 /// <summary>
 /// Represents the options for a node.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class NodeOptions
 {
     #region Network
