@@ -53,7 +53,7 @@ jobs:
           path: coverage/test-results.trx
       - name: Build for Native Crypto
         if: success()
-        run: dotnet build -c Release.Native
+        run: dotnet build -c Debug.Native
       - name: Test
         if: success()
-        run: ./scripts/testwithcoverage.sh "Release.Native"
+        run: ./scripts/testwithcoverage.sh "Debug.Native"

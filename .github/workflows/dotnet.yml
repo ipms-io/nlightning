@@ -56,12 +56,9 @@ jobs:
         with:
           name: test-results
           path: coverage/test-results.trx
-      - name: Restore for Native Crypto
-        if: success()
-        run: dotnet restore -c Release.Native
       - name: Build for Native Crypto
         if: success()
-        run: dotnet build -c Release.Native --no-restore
+        run: dotnet build -c Debug.Native
       - name: Test
         if: success()
-        run: ./scripts/testwithcoverage.sh "Release.Native"
+        run: ./scripts/testwithcoverage.sh "Debug.Native"

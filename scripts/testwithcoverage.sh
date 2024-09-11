@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # config
-config=${1:-"Release"}
+config=${1:-"Debug"}
 
 # root of the project
 root_dir=$(pwd)
