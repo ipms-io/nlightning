@@ -10,11 +10,18 @@ public class BlazorCryptoProviderInitializer : BlazorTestBase
     {
         // Arrange
         Assert.NotNull(Page);
+        await Page.GotoAsync("about:blank", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle }); // Make sure page is fresh
 
         // Act
         await Page.GotoAsync(ROOT_URI, new PageGotoOptions
         {
             WaitUntil = WaitUntilState.NetworkIdle,
+            Timeout = 5000
+        });
+
+        await Page.WaitForSelectorAsync("h1", new PageWaitForSelectorOptions
+        {
+            State = WaitForSelectorState.Visible,
             Timeout = 5000
         });
 
@@ -30,12 +37,10 @@ public class BlazorCryptoProviderInitializer : BlazorTestBase
     {
         // Arrange
         Assert.NotNull(Page);
-        ClearOutput();
+        await Page.GotoAsync("about:blank", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle }); // Make sure page is fresh
         var console = new List<string>();
-        Page.Console += (_, message) =>
-        {
-            console.Add(message.Text);
-        };
+        ;
+        Page.Console += ConsoleListener;
 
         // Act
         await Page.GotoAsync(ROOT_URI, new PageGotoOptions
@@ -44,8 +49,23 @@ public class BlazorCryptoProviderInitializer : BlazorTestBase
             Timeout = 5000
         });
 
+        await Page.WaitForSelectorAsync("h1", new PageWaitForSelectorOptions
+        {
+            State = WaitForSelectorState.Visible,
+            Timeout = 5000
+        });
+
         // Assert
         Assert.NotEmpty(console);
         Assert.Contains("Sodium init: { version: 1.0.20, wasm: false }", console);
+
+        // Cleanup
+        Page.Console -= ConsoleListener;
+        return;
+
+        void ConsoleListener(object? _, IConsoleMessage message)
+        {
+            console.Add(message.Text);
+        }
     }
 }

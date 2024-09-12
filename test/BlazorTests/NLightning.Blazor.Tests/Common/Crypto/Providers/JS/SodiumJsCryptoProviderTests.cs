@@ -28,7 +28,8 @@ public class SodiumJsCryptoProviderTests : BlazorTestBase
 
         await Page.WaitForSelectorAsync("[data-testid='result']", new PageWaitForSelectorOptions
         {
-            State = WaitForSelectorState.Visible
+            State = WaitForSelectorState.Visible,
+            Timeout = 5000
         });
 
         // Assert
