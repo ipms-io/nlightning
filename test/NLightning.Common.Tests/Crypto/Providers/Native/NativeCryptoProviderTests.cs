@@ -7,8 +7,7 @@ using Vectors;
 public class NativeCryptoProviderTests
 {
     [Fact]
-    public void
-        GivenValidInputs_WhenAeadChacha20Poly1305IetfEncryptCalled_ThenCallsNativeCryptoAeadChacha20Poly1305IetfEncrypt()
+    public void GivenValidInputs_WhenAeadChacha20Poly1305IetfEncryptCalled_ThenCallsNativeCryptoAeadChacha20Poly1305IetfEncrypt()
     {
         // Arrange
         var cryptoProvider = new NativeCryptoProvider();

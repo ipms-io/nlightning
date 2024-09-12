@@ -1,0 +1,45 @@
+﻿@page "/"
+@using NLightning.Common.Crypto.Providers.JS
+@using NLightning.Common.Tests.Vectors
+
+<PageTitle>Test</PageTitle>
+
+<h1>Blazor Test App</h1>
+
+<p>Welcome to our test app.</p>
+<br/>
+<button data-testid="encode" @onclick="Encode">Encode</button>
+<br/>
+<button data-testid="decode" @onclick="Decode">Decode</button>
+<br/>
+@if (hasResult)
+{
+    <p data-testid="result">@result</p>
+}
+
+@code {
+    bool hasResult;
+    string result;
+
+    void Encode()
+    {
+        // Arrange
+        var cryptoProvider = new SodiumJsCryptoProvider();
+        Span<byte> cipher = new byte[AeadChacha20Poly1305IetfVector.MESSAGE.Length + 16];
+
+        // Act
+        cryptoProvider.AeadChacha20Poly1305IetfEncrypt(AeadChacha20Poly1305IetfVector.KEY,
+            AeadChacha20Poly1305IetfVector.PUBLIC_NONCE, null,
+            AeadChacha20Poly1305IetfVector.AUTHENTICATION_DATA,
+            AeadChacha20Poly1305IetfVector.MESSAGE, cipher, out var clenP);
+
+        // Expose Results 
+        result = $"{{\"Result\":{{\"ClenP\":{clenP},\"Cipher\":\"{Convert.ToHexString(cipher)}\"}}}}";
+        hasResult = true;
+    }
+
+    void Decode()
+    {
+        throw new NotImplementedException();
+    }
+}

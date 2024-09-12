@@ -7,11 +7,16 @@ public static class BlazorCryptoProvider
 {
     public static async Task InitializeBlazorCryptoProviderAsync()
     {
-        if (OperatingSystem.IsBrowser())
+        if (!OperatingSystem.IsBrowser())
         {
-            await JSHost.ImportAsync("blazorSodium", "../_content/NLightning.Bolt11.Blazor/blazorSodium.bundle.js");
-            await LibsodiumJsWrapper.InitializeAsync();
+            throw new InvalidOperationException("You can only initialize this in a browser.");
         }
+
+        var assemblyName = typeof(LibsodiumJsWrapper).Assembly.GetName().Name;
+        var scriptPath = $"../_content/{assemblyName}/blazorSodium.bundle.js";
+        
+        await JSHost.ImportAsync("blazorSodium", scriptPath);
+        await LibsodiumJsWrapper.InitializeAsync();
     }
 }
 #endif
