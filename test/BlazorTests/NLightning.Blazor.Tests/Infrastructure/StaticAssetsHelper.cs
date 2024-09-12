@@ -1,4 +1,5 @@
 using NLightning.Blazor.Tests.Helpers;
+using NullReferenceException = System.NullReferenceException;
 
 namespace NLightning.Blazor.Tests.Infrastructure;
 
@@ -50,11 +51,11 @@ public static class StaticAssetsHelper
                     return;
                 }
 
-                if (!assetPaths.Any(x => x.ContentRoot.Equals(assets.ContentRoots[firstAsset.ContentRootIndex])))
+                if (!assetPaths.Any(x => x.ContentRoot.Equals(assets.ContentRoots?[firstAsset.ContentRootIndex])))
                 {
                     assetPaths.Add(new StaticAssetInfo
                     {
-                        ContentRoot = assets.ContentRoots[firstAsset.ContentRootIndex],
+                        ContentRoot = assets.ContentRoots?[firstAsset.ContentRootIndex] ?? throw new NullReferenceException("assets.ContentRoots[firstAsset.ContentRootIndex] was null."),
                         RelativePath = string.Empty
                     });
                 }
@@ -70,11 +71,11 @@ public static class StaticAssetsHelper
             }
 
             // Files at the root level should use an empty relative path
-            if (!assetPaths.Any(x => x.RelativePath.Equals("") && x.ContentRoot.Equals(assets.ContentRoots[asset.ContentRootIndex])))
+            if (!assetPaths.Any(x => x.RelativePath.Equals("") && x.ContentRoot.Equals(assets.ContentRoots?[asset.ContentRootIndex])))
             {
                 assetPaths.Add(new StaticAssetInfo
                 {
-                    ContentRoot = assets.ContentRoots[asset.ContentRootIndex],
+                    ContentRoot = assets.ContentRoots?[asset.ContentRootIndex] ?? throw new NullReferenceException("assets.ContentRoots[asset.ContentRootIndex] was null."),
                     RelativePath = string.Empty
                 });
             }
@@ -93,7 +94,7 @@ public static class StaticAssetsHelper
         {
             assetPaths.Add(new StaticAssetInfo
             {
-                ContentRoot = assets.ContentRoots[firstAsset.ContentRootIndex],
+                ContentRoot = assets.ContentRoots?[firstAsset.ContentRootIndex] ?? throw new NullReferenceException("assets.ContentRoots[firstAsset.ContentRootIndex] was null."),
                 RelativePath = fullRelativePath
             });
         }

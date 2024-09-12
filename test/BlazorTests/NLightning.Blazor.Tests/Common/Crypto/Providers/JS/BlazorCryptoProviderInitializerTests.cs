@@ -1,9 +1,8 @@
 using NLightning.Blazor.Tests.Infrastructure;
-using Xunit.Abstractions;
 
 namespace NLightning.Blazor.Tests.Common.Crypto.Providers.JS;
 
-public class BlazorCryptoProviderInitializer(ITestOutputHelper output) : BlazorTestBase(output)
+public class BlazorCryptoProviderInitializer : BlazorTestBase
 {
     [Fact]
     public async Task GivenHomepage_WhenItLoads_ThenContentIsDisplayedCorrectly()

@@ -12,14 +12,14 @@
 <br/>
 <button data-testid="decode" @onclick="Decode">Decode</button>
 <br/>
-@if (hasResult)
+@if (_hasResult)
 {
-    <p data-testid="result">@result</p>
+    <p data-testid="result">@_result</p>
 }
 
 @code {
-    bool hasResult;
-    string result;
+    bool _hasResult;
+    string? _result;
 
     void Encode()
     {
@@ -34,8 +34,8 @@
             AeadChacha20Poly1305IetfVector.MESSAGE, cipher, out var clenP);
 
         // Expose Results 
-        result = $"{{\"Result\":{{\"ClenP\":{clenP},\"Cipher\":\"{Convert.ToHexString(cipher)}\"}}}}";
-        hasResult = true;
+        _result = $"{{\"Result\":{{\"ClenP\":{clenP},\"Cipher\":\"{Convert.ToHexString(cipher)}\"}}}}";
+        _hasResult = true;
     }
 
     void Decode()

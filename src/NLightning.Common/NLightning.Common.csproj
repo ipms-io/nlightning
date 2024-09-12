@@ -40,6 +40,12 @@
   <PropertyGroup Condition="$(Configuration.Contains('Release'))">
     <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <Content Remove="wwwroot\*.js"/>
+    <Content Remove="wwwroot\*.gz"/>
+    <Content Remove="wwwroot\*.br"/>
+  </ItemGroup>
 
   <!-- Check if this is being used in WASM projects -->
   <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">

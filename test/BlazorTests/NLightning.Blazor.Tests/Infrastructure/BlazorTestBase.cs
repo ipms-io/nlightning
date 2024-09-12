@@ -3,14 +3,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Xunit.Abstractions;
 
 namespace NLightning.Blazor.Tests.Infrastructure;
 
 public class BlazorTestBase : IAsyncLifetime
 {
     private readonly WebApplication _server;
-    private readonly ITestOutputHelper _output;
 
     protected static readonly string ROOT_URI = "http://127.0.0.1:8085";
 
@@ -18,9 +16,8 @@ public class BlazorTestBase : IAsyncLifetime
 
     protected IPage? Page;
 
-    protected BlazorTestBase(ITestOutputHelper output)
+    protected BlazorTestBase()
     {
-        _output = output;
         CONSOLE_OUTPUT = new StringWriter();
         Console.SetOut(CONSOLE_OUTPUT);
 

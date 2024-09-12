@@ -2,11 +2,10 @@ using Newtonsoft.Json;
 using NLightning.Blazor.Tests.Helpers;
 using NLightning.Blazor.Tests.Infrastructure;
 using NLightning.Common.Tests.Vectors;
-using Xunit.Abstractions;
 
 namespace NLightning.Blazor.Tests.Common.Crypto.Providers.JS;
 
-public class SodiumJsCryptoProviderTests(ITestOutputHelper output) : BlazorTestBase(output)
+public class SodiumJsCryptoProviderTests : BlazorTestBase
 {
     [Fact]
     public async Task GivenAeadChacha20Poly1305IetfTestsPage_WhenEncodeButtonIsClicked_ThenConsoleLogsExpectedResult()

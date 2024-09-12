@@ -13,7 +13,7 @@ public class Program
 
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-        await BlazorCryptoProvider.InitializeBlazorCryptoProviderAsync();
+        await Common.Crypto.Providers.JS.BlazorCryptoProvider.InitializeBlazorCryptoProviderAsync();
 
         await builder.Build().RunAsync();
     }
