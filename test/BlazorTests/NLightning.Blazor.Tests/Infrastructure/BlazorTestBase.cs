@@ -6,6 +6,8 @@ using Microsoft.Extensions.Hosting;
 
 namespace NLightning.Blazor.Tests.Infrastructure;
 
+using Helpers;
+
 public class BlazorTestBase : IAsyncLifetime
 {
     private readonly WebApplication _server;
@@ -16,7 +18,7 @@ public class BlazorTestBase : IAsyncLifetime
 
     protected IPage? Page;
 
-    protected BlazorTestBase()
+    public BlazorTestBase()
     {
         CONSOLE_OUTPUT = new StringWriter();
         Console.SetOut(CONSOLE_OUTPUT);

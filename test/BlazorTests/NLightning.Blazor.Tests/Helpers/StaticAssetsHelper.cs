@@ -1,7 +1,6 @@
-using NLightning.Blazor.Tests.Helpers;
 using NullReferenceException = System.NullReferenceException;
 
-namespace NLightning.Blazor.Tests.Infrastructure;
+namespace NLightning.Blazor.Tests.Helpers;
 
 public static class StaticAssetsHelper
 {

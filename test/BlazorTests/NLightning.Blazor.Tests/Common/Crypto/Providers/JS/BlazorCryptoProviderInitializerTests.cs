@@ -1,7 +1,8 @@
-using NLightning.Blazor.Tests.Infrastructure;
-
 namespace NLightning.Blazor.Tests.Common.Crypto.Providers.JS;
 
+using Infrastructure;
+
+[Collection("Blazor Test Collection")]
 public class BlazorCryptoProviderInitializer : BlazorTestBase
 {
     [Fact]
