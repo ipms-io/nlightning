@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Text;
@@ -45,12 +46,12 @@ public class SqlServerTests
         while (!context?.Database.CanConnect() ?? true)
         {
             Task.Delay(100).Wait();
+            Debug.Print("Still waiting");
         }
-        context?.Database.Migrate();
+        context.Database.Migrate();
     }
 
     [Fact]
-
     public Task TestDb()
     {
         var context = _serviceProvider.GetService<NLightningContext>() ?? throw new Exception("Context is null");

@@ -1,5 +1,8 @@
 namespace NLightning.Bolts.BOLT11.Enums;
 
+/// <summary>
+/// Types used for the tagged fields
+/// </summary>
 public enum TaggedFieldTypes : byte
 {
     /// <summary>

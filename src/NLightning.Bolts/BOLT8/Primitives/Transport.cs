@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace NLightning.Bolts.BOLT8.Primitives;
 
-using Ciphers;
+using Common.Constants;
 using Common.Utils;
 using Constants;
 using Interfaces;
@@ -14,8 +14,6 @@ internal sealed class Transport : ITransport
     private readonly bool _initiator;
     private readonly CipherState _sendingKey;
     private readonly CipherState _receivingKey;
-
-    private bool _disposed;
 
     public Transport(bool initiator, CipherState c1, CipherState c2)
     {
@@ -52,8 +50,6 @@ internal sealed class Transport : ITransport
     /// <inheritdoc/>
     public int ReadMessageLength(ReadOnlySpan<byte> lc)
     {
-        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Transport));
-
         if (lc.Length != ProtocolConstants.MESSAGE_HEADER_SIZE)
         {
             throw new ArgumentException($"Lightning Message Header must be {ProtocolConstants.MESSAGE_HEADER_SIZE} bytes in length.");
@@ -66,7 +62,7 @@ internal sealed class Transport : ITransport
         {
             Array.Reverse(l);
         }
-        return BitConverter.ToUInt16(l, 0) + ChaCha20Poly1305.TAG_SIZE;
+        return BitConverter.ToUInt16(l, 0) + CryptoConstants.CHACHA20_POLY1305_TAG_LEN;
     }
 
     /// <inheritdoc/>
@@ -94,14 +90,12 @@ internal sealed class Transport : ITransport
     /// </exception>
     private int WriteMessagePart(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
-        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Transport));
-
-        if (payload.Length + ChaCha20Poly1305.TAG_SIZE > ProtocolConstants.MAX_MESSAGE_LENGTH)
+        if (payload.Length + CryptoConstants.CHACHA20_POLY1305_TAG_LEN > ProtocolConstants.MAX_MESSAGE_LENGTH)
         {
             throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MAX_MESSAGE_LENGTH} bytes in length.");
         }
 
-        if (payload.Length + ChaCha20Poly1305.TAG_SIZE > messageBuffer.Length)
+        if (payload.Length + CryptoConstants.CHACHA20_POLY1305_TAG_LEN > messageBuffer.Length)
         {
             throw new ArgumentException("Message buffer does not have enough space to hold the ciphertext.");
         }
@@ -133,19 +127,17 @@ internal sealed class Transport : ITransport
     /// </exception>
     private int ReadMessagePart(ReadOnlySpan<byte> message, Span<byte> payloadBuffer)
     {
-        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Transport));
-
         if (message.Length > ProtocolConstants.MAX_MESSAGE_LENGTH)
         {
             throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MAX_MESSAGE_LENGTH} bytes in length.");
         }
 
-        if (message.Length < ChaCha20Poly1305.TAG_SIZE)
+        if (message.Length < CryptoConstants.CHACHA20_POLY1305_TAG_LEN)
         {
-            throw new ArgumentException($"Noise message must be greater than or equal to {ChaCha20Poly1305.TAG_SIZE} bytes in length.");
+            throw new ArgumentException($"Noise message must be greater than or equal to {CryptoConstants.CHACHA20_POLY1305_TAG_LEN} bytes in length.");
         }
 
-        if (message.Length - ChaCha20Poly1305.TAG_SIZE > payloadBuffer.Length)
+        if (message.Length - CryptoConstants.CHACHA20_POLY1305_TAG_LEN > payloadBuffer.Length)
         {
             throw new ArgumentException("Payload buffer does not have enough space to hold the plaintext.");
         }
@@ -158,11 +150,7 @@ internal sealed class Transport : ITransport
 
     public void Dispose()
     {
-        if (!_disposed)
-        {
-            _sendingKey.Dispose();
-            _receivingKey.Dispose();
-            _disposed = true;
-        }
+        _sendingKey.Dispose();
+        _receivingKey.Dispose();
     }
 }

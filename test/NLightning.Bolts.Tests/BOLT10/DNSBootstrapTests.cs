@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using ServiceStack.Text;
 using Xunit.Abstractions;
@@ -36,7 +37,7 @@ public class DnsBootstrapTests
         }
     }
 
-    [Theory]
+    [Theory, ExcludeFromCodeCoverage]
     [InlineData(true)]
     [InlineData(false)]
     public void Get_Bootstrap_Nodes_From_DNS_Seeds_IPv6(bool tcpOnly)

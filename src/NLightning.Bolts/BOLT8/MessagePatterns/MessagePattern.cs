@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace NLightning.Bolts.BOLT8.MessagePatterns;
 
-using Ciphers;
+using Common.Constants;
 using Enums;
 
 /// <summary>
@@ -30,25 +30,29 @@ internal sealed class MessagePattern
     /// </summary>
     internal int Overhead(int dhLen, bool hasKey)
     {
-        // OIverhead always includes the Version lenght, which is 1 byte
+        // Overhead always includes the Version length, which is 1 byte
         var overhead = 1;
 
         foreach (var token in Tokens)
         {
-            if (token == Token.E)
+            switch (token)
             {
-                overhead += dhLen;
-            }
-            else if (token == Token.S)
-            {
-                overhead += hasKey ? dhLen + ChaCha20Poly1305.TAG_SIZE : dhLen;
-            }
-            else
-            {
-                hasKey = true;
+                case Token.E:
+                    overhead += dhLen;
+                    break;
+                case Token.S:
+                    overhead += hasKey ? dhLen + CryptoConstants.CHACHA20_POLY1305_TAG_LEN : dhLen;
+                    break;
+                case Token.EE:
+                case Token.SE:
+                case Token.ES:
+                case Token.SS:
+                default:
+                    hasKey = true;
+                    break;
             }
         }
 
-        return hasKey ? overhead + ChaCha20Poly1305.TAG_SIZE : overhead;
+        return hasKey ? overhead + CryptoConstants.CHACHA20_POLY1305_TAG_LEN : overhead;
     }
 }

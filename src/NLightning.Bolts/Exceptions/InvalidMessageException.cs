@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Bolts.Exceptions;
 
 /// <summary>
@@ -7,6 +9,7 @@ namespace NLightning.Bolts.Exceptions;
 /// This exception is thrown when a unknown message type is received
 /// or when a message is received that is not expected.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public class InvalidMessageException(string message) : Exception
 {
     public new string Message = message;

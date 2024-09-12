@@ -14,6 +14,7 @@ using Exceptions;
 using Fixtures;
 using Mock;
 
+// ReSharper disable AccessToDisposedClosure
 public class PeerServiceTests
 {
     private readonly PubKey _pubKey = new("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7");
@@ -51,13 +52,14 @@ public class PeerServiceTests
 
             var peerAddress = new PeerAddress(_pubKey, tcpListener.LocalEndpoint.ToEndpointString());
 
-            _ = Task.Run(async () =>
+            var acceptTask = Task.Run(async () =>
             {
-                await tcpListener.AcceptTcpClientAsync();
+                _ = await tcpListener.AcceptTcpClientAsync();
             });
 
             // Act
             await peerService.ConnectToPeerAsync(peerAddress);
+            await acceptTask;
 
             // Assert
             var field = peerService.GetType().GetField("_peers", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -126,7 +128,7 @@ public class PeerServiceTests
             var peerService = new PeerService(_nodeOptions, _mockTransportServiceFactory.Object, _mockPingPongServiceFactory.Object, _mockMessageServiceFactory.Object);
 
             TcpClient? tcpClient = null;
-            _ = Task.Run(async () =>
+            var acceptTask = Task.Run(async () =>
                 {
                     tcpClient = await tcpListener.AcceptTcpClientAsync();
                     tsc.SetResult(true);
@@ -138,6 +140,7 @@ public class PeerServiceTests
 
             // Act
             await peerService.AcceptPeerAsync(tcpClient!);
+            await acceptTask;
 
             // Assert
             var field = peerService.GetType().GetField("_peers", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -175,7 +178,7 @@ public class PeerServiceTests
             var peerService = new PeerService(_nodeOptions, _mockTransportServiceFactory.Object, _mockPingPongServiceFactory.Object, _mockMessageServiceFactory.Object);
 
             TcpClient? tcpClient = null;
-            _ = Task.Run(async () =>
+            var acceptTask = Task.Run(async () =>
             {
                 tcpClient = await tcpListener.AcceptTcpClientAsync();
                 tsc.SetResult(true);
@@ -188,6 +191,8 @@ public class PeerServiceTests
             // Act & Assert
             var exception = await Assert.ThrowsAnyAsync<ErrorException>(() => peerService.AcceptPeerAsync(tcpClient!));
             Assert.Equal("Failed to get remote static public key", exception.Message);
+
+            await acceptTask;
         }
         finally
         {
@@ -196,3 +201,4 @@ public class PeerServiceTests
         }
     }
 }
+// ReSharper restore AccessToDisposedClosure

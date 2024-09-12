@@ -4,16 +4,35 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <Configurations>Debug;Release;Debug.Native;Release.Native</Configurations>
+    <Platforms>AnyCPU</Platforms>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(Configuration.Contains('Debug'))">
+    <DefineConstants>DEBUG;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(Configuration.Contains('Release'))">
+    <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
+  </PropertyGroup>
+
+  <!-- Check if this is being used in AOT projects -->
+  <PropertyGroup Condition="'$(PublishAot)' == 'true' Or $(Configuration.Contains('.Native'))">
+    <DefineConstants>CRYPTO_NATIVE;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Check if this is being used in non-AOT and non-WASM projects -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' And '$(PublishAot)' != 'true' And !$(Configuration.Contains('.Wasm')) And !$(Configuration.Contains('.Native'))">
+    <DefineConstants>CRYPTO_LIBSODIUM;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
-    <PackageReference Include="Moq" Version="4.20.70" />
-    <PackageReference Include="xunit" Version="2.4.2" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0"/>
+    <PackageReference Include="Moq" Version="4.20.70"/>
+    <PackageReference Include="xunit" Version="2.9.0"/>
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -24,11 +43,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Vectors/BigSize.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Vectors\*.*" CopyToOutputDirectory="PreserveNewest"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\NLightning.Common\NLightning.Common.csproj" />
+    <ProjectReference Include="..\..\src\NLightning.Common\NLightning.Common.csproj"/>
   </ItemGroup>
 
 </Project>

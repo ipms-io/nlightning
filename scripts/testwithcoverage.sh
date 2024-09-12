@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# config
+config=${1:-"Debug"}
+
 # root of the project
 root_dir=$(pwd)
 
@@ -10,7 +13,7 @@ directories=(
 )
 
 # Delete coverage directory
-rm -rf $root_dir/coverage
+rm -rf "$root_dir"/coverage
 
 # Initialize a flag to capture any test failure
 any_fail=0
@@ -19,10 +22,10 @@ any_fail=0
 for directory in "${directories[@]}"
 do
   echo "Running tests in $directory"
-  cd $root_dir/$directory
+  cd "$root_dir"/"$directory" || exit
   # Add this when running Docker tests
   # export HOST_ADDRESS=$(ip route | awk 'NR==1 {print $3}')
-  dotnet test --filter 'FullyQualifiedName!~Docker' --settings coverlet.runsettings --no-build --verbosity normal -l "console;verbosity=detailed" --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx" --results-directory $root_dir/coverage
+  dotnet test -c "$config" --filter 'FullyQualifiedName!~Docker' --settings coverlet.runsettings --no-build --verbosity normal -l "console;verbosity=detailed" --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx" --results-directory $root_dir/coverage
   
   # Capture the exit code
   exit_code=$?

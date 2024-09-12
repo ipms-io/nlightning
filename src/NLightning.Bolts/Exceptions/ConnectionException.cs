@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Bolts.Exceptions;
 
 /// <summary>
@@ -6,6 +8,7 @@ namespace NLightning.Bolts.Exceptions;
 /// <remarks>
 /// We usually want to close the connection when this exception is thrown.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public class ConnectionException : ErrorException
 {
     public ConnectionException(string message) : base(message) { }

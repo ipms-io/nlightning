@@ -4,32 +4,57 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    
+    <Configurations>Debug;Release;Debug.Native;Debug.Wasm;Release.Native;Release.Wasm</Configurations>
+    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
+
+  <PropertyGroup Condition="$(Configuration.Contains('Debug'))">
+    <DefineConstants>DEBUG;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(Configuration.Contains('Release'))">
+    <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
+  </PropertyGroup>
+
+  <!-- Check if this is being used in WASM projects -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
+    <DefineConstants>CRYPTO_JS;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Check if this is being used in AOT projects -->
+  <PropertyGroup Condition="'$(PublishAot)' == 'true' Or $(Configuration.Contains('.Native'))">
+    <DefineConstants>CRYPTO_NATIVE;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Check if this is being used in non-AOT and non-WASM projects -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' And '$(PublishAot)' != 'true' And !$(Configuration.Contains('.Wasm')) And !$(Configuration.Contains('.Native'))">
+    <DefineConstants>CRYPTO_LIBSODIUM;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
   <PropertyGroup>
     <VSTestLogger>trx%3bLogFileName=$(MSBuildProjectName).trx</VSTestLogger>
     <VSTestResultsDirectory>$(MSBuildThisFileDirectory)/TestResults/$(TargetFramework)</VSTestResultsDirectory>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="DnsClient" Version="1.7.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="8.0.3" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3" />
+    <PackageReference Include="DnsClient" Version="1.7.0"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="8.0.3"/>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.3"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3"/>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
-    <PackageReference Include="Npgsql.DependencyInjection" Version="8.0.2" />
-    <PackageReference Include="EFCore.NamingConventions" Version="8.0.3" />
-    <PackageReference Include="LNUnit" Version="1.6.3" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
-    <PackageReference Include="Moq" Version="4.20.70" />
-    <PackageReference Include="xunit" Version="2.7.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.7">
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2"/>
+    <PackageReference Include="Npgsql.DependencyInjection" Version="8.0.2"/>
+    <PackageReference Include="EFCore.NamingConventions" Version="8.0.3"/>
+    <PackageReference Include="LNUnit" Version="1.6.3"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0"/>
+    <PackageReference Include="Moq" Version="4.20.70"/>
+    <PackageReference Include="xunit" Version="2.9.0"/>
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -37,29 +62,28 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.3" /> 
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.3"/>
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="BOLT8/Vectors/SHA256LongMsg.rsp" CopyToOutputDirectory="PreserveNewest" />
-    <None Update="BOLT11/Invoices/ValidInvoices.txt" CopyToOutputDirectory="PreserveNewest" />
-    <None Remove="TestResults\**" />
+    <None Update="BOLT11/Invoices/ValidInvoices.txt" CopyToOutputDirectory="PreserveNewest"/>
+    <None Remove="TestResults\**"/>
   </ItemGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\..\src\NLightning.Bolts\NLightning.Bolts.csproj" />
-    <ProjectReference Include="..\..\src\NLightning.Models\NLightning.Models.csproj" />
-    <ProjectReference Include="..\..\src\NLightning.Models.Postgres\NLightning.Models.Postgres.csproj" />
-    <ProjectReference Include="..\..\src\NLightning.Models.Sqlite\NLightning.Models.Sqlite.csproj" />
-    <ProjectReference Include="..\..\src\NLightning.Models.SqlServer\NLightning.Models.SqlServer.csproj" />
+    <ProjectReference Include="..\..\src\NLightning.Bolts\NLightning.Bolts.csproj"/>
+    <ProjectReference Include="..\..\src\NLightning.Models\NLightning.Models.csproj"/>
+    <ProjectReference Include="..\..\src\NLightning.Models.Postgres\NLightning.Models.Postgres.csproj"/>
+    <ProjectReference Include="..\..\src\NLightning.Models.Sqlite\NLightning.Models.Sqlite.csproj"/>
+    <ProjectReference Include="..\..\src\NLightning.Models.SqlServer\NLightning.Models.SqlServer.csproj"/>
   </ItemGroup>
-  
+
   <ItemGroup>
-    <Compile Remove="TestResults\**" />
+    <Compile Remove="TestResults\**"/>
   </ItemGroup>
-  
+
   <ItemGroup>
-    <EmbeddedResource Remove="TestResults\**" />
+    <EmbeddedResource Remove="TestResults\**"/>
   </ItemGroup>
 
 </Project>

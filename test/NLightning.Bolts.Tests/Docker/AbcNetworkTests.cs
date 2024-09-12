@@ -13,11 +13,12 @@ using BOLT1.Fixtures;
 using Bolts.BOLT1.Factories;
 using Bolts.BOLT1.Primitives;
 using Bolts.BOLT1.Services;
-using Bolts.BOLT8.Dhs;
 using Common.Constants;
+using Common.Crypto.Functions;
 using Fixtures;
 using Utils;
 
+// ReSharper disable AccessToDisposedClosure
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
 [Collection("regtest")]
 public class AbcNetworkTests
@@ -34,7 +35,7 @@ public class AbcNetworkTests
     public async Task NLightning_BOLT8_Test_Connect_Alice()
     {
         // Arrange
-        var localKeys = new SecP256K1().GenerateKeyPair();
+        var localKeys = new Ecdh().GenerateKeyPair();
         var hex = BitConverter.ToString(localKeys.PublicKey.ToBytes()).Replace("-", "");
 
         var alice = _lightningRegtestNetworkFixture.Builder?.LNDNodePool?.ReadyNodes.First(x => x.LocalAlias == "alice");
@@ -73,7 +74,7 @@ public class AbcNetworkTests
             // Get ip from host
             var hostAddress = Environment.GetEnvironmentVariable("HOST_ADDRESS") ?? "host.docker.internal";
 
-            var localKeys = new SecP256K1().GenerateKeyPair();
+            var localKeys = new Ecdh().GenerateKeyPair();
             var hex = BitConverter.ToString(localKeys.PublicKey.ToBytes()).Replace("-", "");
 
             var alice = _lightningRegtestNetworkFixture.Builder?.LNDNodePool?.ReadyNodes.First(x => x.LocalAlias == "alice");
@@ -89,7 +90,7 @@ public class AbcNetworkTests
             };
             var peerService = new PeerService(nodeOptions, new TransportServiceFactory(), new PingPongServiceFactory(), new MessageServiceFactory());
 
-            _ = Task.Run(async () =>
+            var acceptTask = Task.Run(async () =>
             {
                 {
                     var tcpClient = await listener.AcceptTcpClientAsync();
@@ -109,6 +110,7 @@ public class AbcNetworkTests
                 }
             });
             var alicePeers = alice.LightningClient.ListPeers(new ListPeersRequest());
+            await acceptTask;
 
             // Assert
             Assert.NotNull(alicePeers.Peers.FirstOrDefault(x => x.PubKey.Equals(hex, StringComparison.CurrentCultureIgnoreCase)));
@@ -140,3 +142,4 @@ public class AbcNetworkTests
     }
 }
 #pragma warning restore xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
+// ReSharper restore AccessToDisposedClosure

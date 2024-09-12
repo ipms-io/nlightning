@@ -2,6 +2,8 @@ using System.Runtime.InteropServices;
 
 namespace NLightning.Common.Managers;
 
+using Common.Factories.Crypto;
+
 public static class SecureKeyManager
 {
     private static IntPtr s_securePrivateKeyPtr;
@@ -13,11 +15,13 @@ public static class SecureKeyManager
         {
             s_privateKeyLength = (ulong)privateKey.Length;
 
+            using var cryptoProvider = CryptoFactory.GetCryptoProvider();
+
             // Allocate secure memory
-            s_securePrivateKeyPtr = Libsodium.sodium_malloc(s_privateKeyLength);
+            s_securePrivateKeyPtr = cryptoProvider.MemoryAlloc(s_privateKeyLength);
 
             // Lock the memory to prevent swapping
-            if (Libsodium.sodium_mlock(s_securePrivateKeyPtr, s_privateKeyLength) == -1)
+            if (cryptoProvider.MemoryLock(s_securePrivateKeyPtr, s_privateKeyLength) == -1)
             {
                 throw new InvalidOperationException("Failed to lock memory.");
             }
@@ -26,7 +30,7 @@ public static class SecureKeyManager
             Marshal.Copy(privateKey, 0, s_securePrivateKeyPtr, (int)s_privateKeyLength);
 
             // Securely wipe the original key from regular memory
-            Libsodium.sodium_memzero(Marshal.UnsafeAddrOfPinnedArrayElement(privateKey, 0), s_privateKeyLength);
+            cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(privateKey, 0), s_privateKeyLength);
         }
         else
         {
@@ -52,14 +56,15 @@ public static class SecureKeyManager
             return;
         }
 
+        using var cryptoProvider = CryptoFactory.GetCryptoProvider();
         // Securely wipe the memory before freeing it
-        Libsodium.sodium_memzero(s_securePrivateKeyPtr, s_privateKeyLength);
+        cryptoProvider.MemoryZero(s_securePrivateKeyPtr, s_privateKeyLength);
 
         // Unlock the memory
-        Libsodium.sodium_munlock(s_securePrivateKeyPtr, s_privateKeyLength);
+        cryptoProvider.MemoryUnlock(s_securePrivateKeyPtr, s_privateKeyLength);
 
-        // Free the memory
-        Libsodium.sodium_free(s_securePrivateKeyPtr);
+        // MemoryFree the memory
+        cryptoProvider.MemoryFree(s_securePrivateKeyPtr);
         s_securePrivateKeyPtr = IntPtr.Zero;
     }
 }

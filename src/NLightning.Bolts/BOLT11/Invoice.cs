@@ -1,11 +1,10 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using NBitcoin;
+using NLightning.Common.Crypto.Hashes;
 
 namespace NLightning.Bolts.BOLT11;
 
-using BOLT8.Constants;
-using BOLT8.Hashes;
 using BOLT9;
 using Common.BitUtils;
 using Common.Constants;
@@ -69,7 +68,7 @@ public partial class Invoice
     /// <summary>
     /// The signature of the invoice
     /// </summary>
-    public string Signature { get; }
+    public CompactSignature Signature { get; }
 
     /// <summary>
     /// The human-readable part of the invoice
@@ -98,7 +97,7 @@ public partial class Invoice
                 ? paymentHash!.Value
                 : new uint256();
         }
-        set
+        internal set
         {
             _taggedFields.Add(new PaymentHashTaggedField(value));
         }
@@ -160,7 +159,7 @@ public partial class Invoice
     /// The expiry date is the date the invoice expires
     /// </remarks>
     /// <seealso cref="DateTimeOffset"/>
-    public DateTimeOffset? ExpiryDate
+    public DateTimeOffset ExpiryDate
     {
         get
         {
@@ -170,15 +169,8 @@ public partial class Invoice
         }
         set
         {
-            var expireIn = value?.ToUnixTimeSeconds() - Timestamp;
-            if (expireIn.HasValue)
-            {
-                _taggedFields.Add(new ExpiryTimeTaggedField((int)expireIn.Value));
-            }
-            else
-            {
-                throw new ArgumentException("Invalid expiry date", nameof(value));
-            }
+            var expireIn = value.ToUnixTimeSeconds() - Timestamp;
+            _taggedFields.Add(new ExpiryTimeTaggedField((int)expireIn));
         }
     }
 
@@ -220,7 +212,7 @@ public partial class Invoice
                 ? description!.Value
                 : null;
         }
-        set
+        internal set
         {
             if (value != null)
             {
@@ -236,20 +228,17 @@ public partial class Invoice
     /// The payment secret is a 32 byte secret that is used to identify a payment
     /// </remarks>
     /// <seealso cref="uint256"/>
-    public uint256? PaymentSecret
+    public uint256 PaymentSecret
     {
         get
         {
             return _taggedFields.TryGet(TaggedFieldTypes.PAYMENT_SECRET, out PaymentSecretTaggedField? paymentSecret)
                 ? paymentSecret!.Value
-                : null;
+                : new uint256();
         }
-        set
+        internal set
         {
-            if (value != null)
-            {
-                _taggedFields.Add(new PaymentSecretTaggedField(value));
-            }
+            _taggedFields.Add(new PaymentSecretTaggedField(value));
         }
     }
 
@@ -292,7 +281,7 @@ public partial class Invoice
                 ? descriptionHash!.Value
                 : null;
         }
-        set
+        internal set
         {
             if (value != null)
             {
@@ -367,7 +356,7 @@ public partial class Invoice
         Network = ConfigManager.Instance.Network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        Signature = string.Empty;
+        Signature = new CompactSignature(-1, new byte[64]);
 
         // Set Required Fields
         PaymentHash = paymentHash;
@@ -392,7 +381,7 @@ public partial class Invoice
         Network = ConfigManager.Instance.Network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        Signature = string.Empty;
+        Signature = new CompactSignature(-1, new byte[64]);
 
         // Set Required Fields
         PaymentHash = paymentHash;
@@ -416,7 +405,7 @@ public partial class Invoice
         Network = network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        Signature = string.Empty;
+        Signature = new CompactSignature(-1, new byte[64]);
     }
 
     /// <summary>
@@ -428,11 +417,12 @@ public partial class Invoice
     /// <param name="amountMilliSats">The amount of millisatoshis the invoice is for</param>
     /// <param name="timestamp">The timestamp of the invoice</param>
     /// <param name="taggedFields">The tagged fields of the invoice</param>
+    /// <param name="signature">The invoice signature</param>
     /// <remarks>
     /// The invoice is created with the given human-readable part, network, amount of millisatoshis, timestamp and tagged fields.
     /// </remarks>
     /// <seealso cref="Network"/>
-    private Invoice(string invoiceString, string humanReadablePart, Network network, ulong amountMilliSats, long timestamp, TaggedFieldList taggedFields)
+    private Invoice(string invoiceString, string humanReadablePart, Network network, ulong amountMilliSats, long timestamp, TaggedFieldList taggedFields, CompactSignature signature)
     {
         _invoiceString = invoiceString;
 
@@ -441,7 +431,7 @@ public partial class Invoice
         AmountMilliSats = amountMilliSats;
         Timestamp = timestamp;
         _taggedFields = taggedFields;
-        Signature = string.Empty;
+        Signature = signature;
     }
     #endregion
 
@@ -502,12 +492,15 @@ public partial class Invoice
 
             // TODO: Check feature bits
 
-            var invoice = new Invoice(invoiceString, hrp, network, amount, timestamp, taggedFields);
+            var invoice = new Invoice(invoiceString, hrp, network, amount, timestamp, taggedFields, new CompactSignature(signature[^1], signature[..^1]));
 
             // Get pubkey from tagged fields
-            taggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField? pubkey);
+            if (taggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField? pubkeyTaggedField))
+            {
+                invoice.PayeePubKey = pubkeyTaggedField?.Value;
+            }
             // Check Signature
-            invoice.CheckSignature(signature, hrp, data, pubkey?.Value);
+            invoice.CheckSignature(data);
 
             return invoice;
         }
@@ -676,33 +669,29 @@ public partial class Invoice
         return millisatoshis;
     }
 
-    private void CheckSignature(byte[] signature, string hrp, byte[] data, PubKey? pubkey)
+    private void CheckSignature(byte[] data)
     {
         // Assemble the message (hrp + data)
-        var message = new byte[hrp.Length + data.Length];
-        Encoding.UTF8.GetBytes(hrp).CopyTo(message, 0);
-        data.CopyTo(message, hrp.Length);
+        var message = new byte[HumanReadablePart.Length + data.Length];
+        Encoding.UTF8.GetBytes(HumanReadablePart).CopyTo(message, 0);
+        data.CopyTo(message, HumanReadablePart.Length);
 
         // Get sha256 hash of the message
+        var hash = new byte[CryptoConstants.SHA256_HASH_LEN];
         using var sha256 = new Sha256();
         sha256.AppendData(message);
-        var hash = new byte[HashConstants.HASH_LEN];
         sha256.GetHashAndReset(hash);
+
         var nBitcoinHash = new uint256(hash);
 
-        var recoveryId = (int)signature[^1];
-        signature = signature[..^1];
-        var compactSignature = new CompactSignature(recoveryId, signature);
-
         // Check if recovery is necessary
-        if (pubkey == null)
+        if (PayeePubKey == null)
         {
-            PayeePubKey = PubKey.RecoverCompact(nBitcoinHash, compactSignature);
+            PayeePubKey = PubKey.RecoverCompact(nBitcoinHash, Signature);
             return;
         }
 
-        if (NBitcoin.Crypto.ECDSASignature.TryParseFromCompact(compactSignature.Signature, out var ecdsa)
-                && pubkey.Verify(nBitcoinHash, ecdsa))
+        if (NBitcoin.Crypto.ECDSASignature.TryParseFromCompact(Signature.Signature, out var ecdsa) && PayeePubKey.Verify(nBitcoinHash, ecdsa))
         {
             return;
         }
@@ -719,9 +708,9 @@ public partial class Invoice
         data.CopyTo(message, hrp.Length);
 
         // Get sha256 hash of the message
+        var hash = new byte[CryptoConstants.SHA256_HASH_LEN];
         using var sha256 = new Sha256();
         sha256.AppendData(message);
-        var hash = new byte[HashConstants.HASH_LEN];
         sha256.GetHashAndReset(hash);
         var nBitcoinHash = new uint256(hash);
 

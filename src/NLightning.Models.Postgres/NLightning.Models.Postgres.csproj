@@ -1,25 +1,36 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-      <BaseOutputPath>..\NLightning.Models\bin\</BaseOutputPath>
-    </PropertyGroup>
-  <ItemGroup>
-    
-  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3"/>
-  <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.3"/>
-  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.3">
-    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    <PrivateAssets>all</PrivateAssets>
-  </PackageReference>
-  <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.3"/>
-  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2"/>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <BaseOutputPath>..\NLightning.Models\bin\</BaseOutputPath>
+    <Configurations>Debug;Release;Debug.Native;Debug.Wasm;Release.Wasm;Release.Native</Configurations>
+    <Platforms>AnyCPU</Platforms>
+  </PropertyGroup>
 
-  <PackageReference Include="EFCore.NamingConventions" Version="8.0.3"/>
-  </ItemGroup>
+  <PropertyGroup Condition="$(Configuration.Contains('Debug'))">
+    <DefineConstants>DEBUG;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(Configuration.Contains('Release'))">
+    <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
+  </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\NLightning.Models\NLightning.Models.csproj" /> 
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.3"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.3"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.3"/>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2"/>
+    <PackageReference Include="EFCore.NamingConventions" Version="8.0.3"/>
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NLightning.Models\NLightning.Models.csproj"/>
+  </ItemGroup>
+  
 </Project>

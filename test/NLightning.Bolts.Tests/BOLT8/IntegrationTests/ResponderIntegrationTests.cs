@@ -4,9 +4,9 @@ using System.Text;
 namespace NLightning.Bolts.Tests.BOLT8.IntegrationTests;
 
 using Bolts.BOLT8.Constants;
-using Bolts.BOLT8.Interfaces;
 using Bolts.BOLT8.Primitives;
 using Bolts.BOLT8.States;
+using Common.Interfaces.Crypto;
 using Mock;
 using Utils;
 
@@ -14,7 +14,7 @@ using static Utils.TestUtils;
 
 public class ResponderIntegrationTests
 {
-    private static readonly IDh s_dhFake = new FakeFixedKeyDh(ResponderValidKeysUtil.EphemeralPrivateKey);
+    private static readonly IEcdh s_dhFake = new FakeFixedKeyDh(ResponderValidKeysUtil.EphemeralPrivateKey);
 
     [Fact]
     public void Given_ValidKeys_When_ResponderReadsActOne_Then_ItDoesntThrow()

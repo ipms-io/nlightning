@@ -1,7 +1,7 @@
 namespace NLightning.Bolts.BOLT8.Services;
 
+using Common.Crypto.Functions;
 using Constants;
-using Dhs;
 using Interfaces;
 using States;
 
@@ -13,10 +13,9 @@ using States;
 /// <param name="staticPublicKey">If we are initiating, the remote Public Key, else our local Public Key</param>
 internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> localStaticPrivateKey, ReadOnlySpan<byte> staticPublicKey, IHandshakeState? handshakeState = null) : IHandshakeService
 {
-    private readonly IHandshakeState _handshakeState = handshakeState ?? new HandshakeState(isInitiator, localStaticPrivateKey, staticPublicKey, new SecP256K1());
+    private readonly IHandshakeState _handshakeState = handshakeState ?? new HandshakeState(isInitiator, localStaticPrivateKey, staticPublicKey, new Ecdh());
 
     private byte _steps = 2;
-    private bool _disposed;
 
     /// <inheritdoc/>
     public bool IsInitiator => isInitiator;
@@ -123,29 +122,10 @@ internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> loca
     }
     #endregion
 
-    #region Dispose Pattern
     public void Dispose()
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
+        _handshakeState.Dispose();
+        handshakeState?.Dispose();
+        Transport?.Dispose();
     }
-
-    private void Dispose(bool disposing)
-    {
-        if (!_disposed)
-        {
-            if (disposing)
-            {
-                _handshakeState.Dispose();
-            }
-
-            _disposed = true;
-        }
-    }
-
-    ~HandshakeService()
-    {
-        Dispose(false);
-    }
-    #endregion
 }

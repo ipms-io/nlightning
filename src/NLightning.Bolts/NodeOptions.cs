@@ -1,16 +1,18 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
 namespace NLightning.Bolts;
 
-using BOLT8.Dhs;
-using BOLT8.Primitives;
 using BOLT9;
 using Common.Constants;
+using Common.Crypto.Functions;
+using Common.Crypto.Primitives;
 using Common.TLVs;
 
 /// <summary>
 /// Represents the options for a node.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class NodeOptions
 {
     #region Network
@@ -40,7 +42,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableDataLossProtect = false;
+    public bool EnableDataLossProtect;
 
     /// <summary>
     /// Enable initial routing sync.
@@ -48,7 +50,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableInitialRoutingSync = false;
+    public bool EnableInitialRoutingSync;
 
     /// <summary>
     /// Enable upfront shutdown script.
@@ -56,7 +58,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableUpfrontShutdownScript = false;
+    public bool EnableUpfrontShutdownScript;
 
     /// <summary>
     /// Enable gossip queries.
@@ -64,7 +66,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableGossipQueries = false;
+    public bool EnableGossipQueries;
 
     /// <summary>
     /// Enable expanded gossip queries.
@@ -72,7 +74,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableExpandedGossipQueries = false;
+    public bool EnableExpandedGossipQueries;
 
     /// <summary>
     /// Enable static remote key.
@@ -80,7 +82,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableStaticRemoteKey = false;
+    public bool EnableStaticRemoteKey;
 
     /// <summary>
     /// Enable payment secret.
@@ -88,7 +90,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnablePaymentSecret = false;
+    public bool EnablePaymentSecret;
 
     /// <summary>
     /// Enable basic MPP.
@@ -96,7 +98,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableBasicMpp = false;
+    public bool EnableBasicMpp;
 
     /// <summary>
     /// Enable large channels.
@@ -104,7 +106,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableLargeChannels = false;
+    public bool EnableLargeChannels;
 
     /// <summary>
     /// Enable anchor outputs.
@@ -112,7 +114,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableAnchorOutputs = false;
+    public bool EnableAnchorOutputs;
 
     /// <summary>
     /// Enable zero fee anchor tx.
@@ -120,7 +122,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableZeroFeeAnchorTx = false;
+    public bool EnableZeroFeeAnchorTx;
 
     /// <summary>
     /// Enable route blinding.
@@ -128,7 +130,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableRouteBlinding = false;
+    public bool EnableRouteBlinding;
 
     /// <summary>
     /// Enable beyond segwit shutdown.
@@ -136,7 +138,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableBeyondSegwitShutdown = false;
+    public bool EnableBeyondSegwitShutdown;
 
     /// <summary>
     /// Enable dual fund.
@@ -144,7 +146,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableDualFund = false;
+    public bool EnableDualFund;
 
     /// <summary>
     /// Enable onion messages.
@@ -152,7 +154,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableOnionMessages = false;
+    public bool EnableOnionMessages;
 
     /// <summary>
     /// Enable channel type.
@@ -160,7 +162,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableChannelType = false;
+    public bool EnableChannelType;
 
     /// <summary>
     /// Enable scid alias.
@@ -168,7 +170,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableScidAlias = false;
+    public bool EnableScidAlias;
 
     /// <summary>
     /// Enable payment metadata.
@@ -176,7 +178,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnablePaymentMetadata = false;
+    public bool EnablePaymentMetadata;
 
     /// <summary>
     /// Enable zero conf.
@@ -184,7 +186,7 @@ public sealed class NodeOptions
     /// <remarks>
     /// This will be added to the features of the node as OPTIONAL.
     /// </remarks>
-    public bool EnableZeroConf = false;
+    public bool EnableZeroConf;
     #endregion
 
     #region InitExtension
@@ -213,7 +215,7 @@ public sealed class NodeOptions
     /// </remarks>
     public NodeOptions()
     {
-        KeyPair = new SecP256K1().GenerateKeyPair();
+        KeyPair = new Ecdh().GenerateKeyPair();
     }
 
     /// <summary>

@@ -55,8 +55,6 @@ public class MessageIntegrationTests
                 case 1001:
                     Assert.Equal(validMessages.Message1001, messageBuffer[..messageSize]);
                     break;
-                default:
-                    break;
             }
         }
     }

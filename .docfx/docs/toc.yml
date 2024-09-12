@@ -1,7 +1,17 @@
 - name: Features
   href: features.md
 - name: Quick Start
-  href: quickstart.md
+  items:
+  - name: Running the Project
+    href: quickstart/quickstart.md
+  - name: MacOS Users
+    href: quickstart/macos.md
+- name: Bolt11
+  items:
+  - name: Quick Start
+    href: bolt11/quickstart.md
+  - name: Webassembly/Blazor
+    href: bolt11/webassembly.md
 - name: Versioning Policy
   href: versioning.md
 - name: Contributing
