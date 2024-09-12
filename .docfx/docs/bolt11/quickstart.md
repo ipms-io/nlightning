@@ -29,7 +29,7 @@ dotnet add package NLightning.Bolt11
 
 ```csharp
 // add the using directive
-using NLightning.Bols.BOLT11;
+using NLightning.Bolts.BOLT11;
 
 // decode the invoice string
 var invoice = Invoice.Decode(invoice_string);
