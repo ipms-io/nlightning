@@ -10,14 +10,11 @@
     <PackageReference Include="BlazorDeferredRemove" Version="0.2.5" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.8"/>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.8" PrivateAssets="all"/>
+    <PackageReference Include="NLightning.Bolt11.Blazor" Version="0.2.0"/>
   </ItemGroup>
 
   <ItemGroup>
     <AdditionalFiles Include="Components\InvoiceComponent.razor"/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\NLightning.Bolt11\NLightning.Bolt11.csproj"/>
   </ItemGroup>
   
   <ItemGroup>
