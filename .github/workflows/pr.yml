@@ -13,17 +13,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install xmlstarlet
-        run: sudo apt-get update && sudo apt-get install -y xmlstarlet
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+      - name: Install xmlstarlet and dotnet-format
+        run: |
+          sudo apt-get update && sudo apt-get install -y xmlstarlet
+          dotnet tool install --global dotnet-format
       - name: Restore dependencies
         run: dotnet restore
       - name: Check code formatting
         run: |
-          dotnet tool install --global dotnet-format
+          dotnet build -c Debug.Wasm
           dotnet format --verify-no-changes
       - name: Build
         run: dotnet build --no-restore
