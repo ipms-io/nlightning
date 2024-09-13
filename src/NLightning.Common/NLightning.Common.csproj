@@ -52,6 +52,7 @@
     <DefineConstants>CRYPTO_JS;$(DefineConstants)</DefineConstants>
     <PackageId>NLightning.Common.Blazor</PackageId>
     <AssemblyName>NLightning.Common.Blazor</AssemblyName>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
