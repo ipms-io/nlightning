@@ -9,6 +9,12 @@ We've decided to have 2 packages, one for desktop/server development, and one fo
 
 The reason behind this is that for a Blazor app running fully on the browser we don't have access to native libsodium.
 
+## Sample
+
+A sample project using this project in a Blazor WebAssembly environment can be found [here](../../samples/Bolt11.Decoder.Blazor).
+
+A live version of the sample can be found at [bolt11.ipms.io](https://bolt11.ipms.io)
+
 ## Usage
 
 Follow the steps below to install and decode bolt11 invoices.
