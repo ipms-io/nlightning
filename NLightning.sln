@@ -37,6 +37,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{29E3DE2A-9C25-4F48-8FCB-0BBAA9699662}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bolt11.Decoder.Blazor", "samples\Bolt11.Decoder.Blazor\Bolt11.Decoder.Blazor.csproj", "{D80680EA-8B09-44BA-A9EE-435C93D298B1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Release|Any CPU = Release|Any CPU
