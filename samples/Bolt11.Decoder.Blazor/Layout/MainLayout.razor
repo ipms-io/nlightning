@@ -1,0 +1,30 @@
+﻿@using NLightning.Bolts.BOLT11
+@inherits LayoutComponentBase
+
+<NavMenu/>
+<div class="container-xxl bd-gutter mt-3 my-md-4 bd-layout">
+    <main class="bd-main order-1">
+        @Body
+    </main>
+</div>
+<footer class="bd-footer py-2 py-md-3 mt-3 bg-body-tertiary">
+    <div class="container py-2 py-md-3 px-2 px-md-1 text-body-secondary">
+        <div class="row">
+            <div class="col-lg-3 mb-1">
+                Níckolas Goline © 2024
+            </div>
+        </div>
+    </div>
+</footer>
+
+@code{
+    protected override void OnInitialized()
+    {
+        // Warmup call to load needed wasm in memory
+        _ = Task.Run(() =>
+        {
+            // Decode a minimal invoice
+            return _ = Invoice.Decode("lnbc1pndpjfppp5qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssp5qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqsdqq5243a4h29w7lm6g89hktd0qzfakevjp7hktskal5p69jxa6vyqw4s95577lltw0t6l9dhp7cfld9urkxfsucsxascnxdqmanrlklsqcp5nwzmf");
+        });
+    }
+}

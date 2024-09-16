@@ -1,0 +1,19 @@
+<table class="table table-striped table-bordered table-sm">
+    <thead>
+    <tr>
+        <th>Property</th>
+        <th>Value</th>
+    </tr>
+    </thead>
+    <tbody class="table-group-divider">
+    @foreach (var item in _invoiceItems!)
+    {
+    <tr>
+        <td class="invoice-prop">
+            @item.Name <sup>@item.SubName</sup>
+        </td>
+        <td class="invoice-value">@item.Value</td>
+    </tr>
+    }
+    </tbody>
+</table>

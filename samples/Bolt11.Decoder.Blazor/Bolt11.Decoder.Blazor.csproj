@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BlazorDeferredRemove" Version="0.2.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.8"/>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.8" PrivateAssets="all"/>
+    <PackageReference Include="NLightning.Bolt11.Blazor" Version="0.2.2"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="Components\InvoiceComponent.razor"/>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="..\..\images\logo.svg"
+          CopyToOutputDirectory="PreserveNewest"
+          LinkBase="wwwroot\"/>
+    <None Include="..\..\images\favicon.ico"
+          CopyToOutputDirectory="PreserveNewest"
+          LinkBase="wwwroot\"/>
+  </ItemGroup>
+
+</Project>

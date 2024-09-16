@@ -33,6 +33,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BlazorTests", "BlazorTests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Blazor.Tests", "test\BlazorTests\NLightning.Blazor.Tests\NLightning.Blazor.Tests.csproj", "{C0F21413-47D0-4584-84A5-B730909E7349}"
 EndProject
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{29E3DE2A-9C25-4F48-8FCB-0BBAA9699662}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bolt11.Decoder.Blazor", "samples\Bolt11.Decoder.Blazor\Bolt11.Decoder.Blazor.csproj", "{D80680EA-8B09-44BA-A9EE-435C93D298B1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Release|Any CPU = Release|Any CPU
@@ -167,6 +172,10 @@ Global
 		{C0F21413-47D0-4584-84A5-B730909E7349}.Debug.Wasm|Any CPU.Build.0 = Debug.Wasm|Any CPU
 		{C0F21413-47D0-4584-84A5-B730909E7349}.Release.Wasm|Any CPU.ActiveCfg = Release.Wasm|Any CPU
 		{C0F21413-47D0-4584-84A5-B730909E7349}.Release.Wasm|Any CPU.Build.0 = Release.Wasm|Any CPU
+		{D80680EA-8B09-44BA-A9EE-435C93D298B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D80680EA-8B09-44BA-A9EE-435C93D298B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D80680EA-8B09-44BA-A9EE-435C93D298B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D80680EA-8B09-44BA-A9EE-435C93D298B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -188,5 +197,6 @@ Global
 		{6F76E9AF-7E6D-42D8-918A-4C5B26BE07C1} = {AF4411D4-8EE9-423E-8213-1C9D35E47882}
 		{99E240CC-6381-40DF-B784-528D2EDBBDFC} = {6F76E9AF-7E6D-42D8-918A-4C5B26BE07C1}
 		{C0F21413-47D0-4584-84A5-B730909E7349} = {6F76E9AF-7E6D-42D8-918A-4C5B26BE07C1}
+		{D80680EA-8B09-44BA-A9EE-435C93D298B1} = {29E3DE2A-9C25-4F48-8FCB-0BBAA9699662}
 	EndGlobalSection
 EndGlobal
