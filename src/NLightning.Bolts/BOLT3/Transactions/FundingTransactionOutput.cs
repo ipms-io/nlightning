@@ -21,18 +21,18 @@ public class FundingTransactionOutput
         Script redeemScript;
         if (pubkey1.CompareTo(pubkey2) < 0)
         {
-            redeemScript = Create2of2MultisigRedeemScript(pubkey1, pubkey2);
+            redeemScript = Create2Of2MultiSigRedeemScript(pubkey1, pubkey2);
         }
         else
         {
-            redeemScript = Create2of2MultisigRedeemScript(pubkey2, pubkey1);
+            redeemScript = Create2Of2MultiSigRedeemScript(pubkey2, pubkey1);
         }
 
         FundingScriptPubKey = PayToWitScriptHashTemplate.Instance.GenerateScriptPubKey(redeemScript.WitHash).ToBytes();
         Value = value;
     }
 
-    private static Script Create2of2MultisigRedeemScript(PubKey pubkey1, PubKey pubkey2)
+    private static Script Create2Of2MultiSigRedeemScript(PubKey pubkey1, PubKey pubkey2)
     {
         return new Script(
             Op.GetPushOp(2),

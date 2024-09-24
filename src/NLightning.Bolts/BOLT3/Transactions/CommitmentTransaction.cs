@@ -1,4 +1,5 @@
 using NBitcoin;
+using NLightning.Common.Managers;
 
 namespace NLightning.Bolts.BOLT3.Transactions;
 
@@ -41,10 +42,18 @@ public class CommitmentTransaction
         Money toLocalAmount,
         Money toRemoteAmount,
         uint toSelfDelay,
-        ulong obscuredCommitmentNumber)
+        ulong obscuredCommitmentNumber,
+        byte[] pubkey1Signature,
+        byte[] pubkey2Signature)
     {
         _isOptionAnchorOutputs = isOptionAnchorOutputs;
-        Transaction = CreateTransaction(fundingTxId, fundingOutputIndex, localPubKey, remotePubKey, localDelayedPubKey, revocationPubKey, toLocalAmount, toRemoteAmount, toSelfDelay, obscuredCommitmentNumber);
+        Transaction = CreateTransaction(fundingTxId, fundingOutputIndex, localPubKey, remotePubKey, localDelayedPubKey, revocationPubKey, toLocalAmount, toRemoteAmount, toSelfDelay, obscuredCommitmentNumber, pubkey1Signature, pubkey2Signature);
+    }
+
+    public CommitmentTransaction(bool isOptionAnchorOutputs, Transaction tx)
+    {
+        _isOptionAnchorOutputs = isOptionAnchorOutputs;
+        Transaction = tx;
     }
 
     private Transaction CreateTransaction(
@@ -57,16 +66,20 @@ public class CommitmentTransaction
         Money toLocalAmount,
         Money toRemoteAmount,
         uint toSelfDelay,
-        ulong obscuredCommitmentNumber)
+        ulong obscuredCommitmentNumber,
+        byte[] pubkey1Signature,
+        byte[] pubkey2Signature)
     {
-        var tx = Transaction.Create(Network.Main);
+        var tx = Transaction.Create(ConfigManager.Instance.Network);
 
         // Set version and locktime
         tx.Version = 2;
         tx.LockTime = new LockTime((0x20 << 24) | (uint)(obscuredCommitmentNumber & 0xFFFFFF));
 
         // Add the funding input
-        tx.Inputs.Add(new OutPoint(fundingTxId, fundingOutputIndex), null, null, new Sequence(0x80 << 24) | (uint)((obscuredCommitmentNumber >> 24) & 0xFFFFFF));
+        var outpoint = new OutPoint(fundingTxId, fundingOutputIndex);
+        var witScript = new WitScript(OpcodeType.OP_0, Op.GetPushOp(pubkey1Signature), Op.GetPushOp(pubkey2Signature));
+        tx.Inputs.Add(outpoint, null, witScript, new Sequence(0x80 << 24) | (uint)((obscuredCommitmentNumber >> 24) & 0xFFFFFF));
 
         // to_local output
         if (toLocalAmount >= new Money((long)546)) // Dust limit in satoshis

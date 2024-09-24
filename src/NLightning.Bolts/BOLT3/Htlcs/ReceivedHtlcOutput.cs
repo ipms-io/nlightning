@@ -2,32 +2,28 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT3.Htlcs;
 
-using BOLT3.Hashes;
-using BOLT8.Hashes;
-using Bolts.Constants;
+using Common.Crypto.Hashes;
+using Constants;
 using Exceptions;
+using Interfaces;
 
-public class ReceivedHtlcOutputs
+public class ReceivedHtlcOutputs : IHtlc
 {
     public Script ScriptPubKey { get; }
     public Money Amount { get; }
 
     public ReceivedHtlcOutputs(PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey, uint cltvExpiry, uint256 paymentHash, Money amount, bool optionAnchors)
     {
-        using var sha256 = new SHA256();
-        using var ripemd160 = new RIPEMD160();
+        using var sha256 = new Sha256();
 
         // Hash the revocationPubKey
         sha256.AppendData(revocationPubKey.ToBytes());
         var revocationPubKeyHash = new byte[HashConstants.SHA256_HASH_LEN];
         sha256.GetHashAndReset(revocationPubKeyHash);
-        ripemd160.AppendData(revocationPubKeyHash);
-        ripemd160.GetHashAndReset(revocationPubKeyHash);
+        revocationPubKeyHash = Ripemd160.Hash(revocationPubKeyHash);
 
         // Hash the paymentHash
-        var paymentHashRipemd160 = new byte[HashConstants.RIPEMD160_HASH_LEN];
-        ripemd160.AppendData(paymentHash.ToBytes());
-        ripemd160.GetHashAndReset(paymentHashRipemd160);
+        var paymentHashRipemd160 = Ripemd160.Hash(paymentHash.ToBytes());
 
         List<Op> ops = [
             OpcodeType.OP_DUP,
@@ -61,7 +57,6 @@ public class ReceivedHtlcOutputs
             OpcodeType.OP_ENDIF
         ];
 
-        Script script;
         if (optionAnchors)
         {
             ops.AddRange([
@@ -74,7 +69,7 @@ public class ReceivedHtlcOutputs
         // Close last IF
         ops.Add(OpcodeType.OP_ENDIF);
 
-        script = new Script(ops);
+        var script = new Script(ops);
 
         // Check if script is correct
         if (script.IsUnspendable || !script.IsValid)

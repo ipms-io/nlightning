@@ -2,6 +2,8 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT3.Factories;
 
+using Common.Managers;
+using Interfaces;
 using Transactions;
 
 public class CommitmentTransactionFactory
@@ -18,15 +20,17 @@ public class CommitmentTransactionFactory
         Money toRemoteAmount,
         uint toSelfDelay,
         ulong obscuredCommitmentNumber,
-        List<Htlc> htlcs,
+        List<IHtlc> htlcs,
         Money dustLimitSatoshis,
         FeeRate feeRatePerKw,
-        bool optionAnchors)
+        bool optionAnchors,
+        byte[] pubkey1Signature,
+        byte[] pubkey2Signature)
     {
-        var tx = Transaction.Create(Network.Main);
+        var tx = Transaction.Create(ConfigManager.Instance.Network);
 
         // Initialize the commitment transaction input and locktime
-        InitializeTransaction(tx, fundingTxId, fundingOutputIndex, obscuredCommitmentNumber);
+        InitializeTransaction(tx, fundingTxId, fundingOutputIndex, obscuredCommitmentNumber, pubkey1Signature, pubkey2Signature);
 
         // Calculate which committed HTLCs need to be trimmed
         var trimmedHtlcs = TrimmedOutputs(htlcs, dustLimitSatoshis, feeRatePerKw);
@@ -61,20 +65,20 @@ public class CommitmentTransactionFactory
         // Sort the outputs into BIP 69+CLTV order
         SortOutputs(tx);
 
-        return new CommitmentTransaction(tx);
+        return new CommitmentTransaction(optionAnchors, tx);
     }
 
-    private void InitializeTransaction(Transaction tx, uint256 fundingTxId, uint fundingOutputIndex, ulong obscuredCommitmentNumber)
+    private void InitializeTransaction(Transaction tx, uint256 fundingTxId, uint fundingOutputIndex, ulong obscuredCommitmentNumber, byte[] pubkey1Signature, byte[] pubkey2Signature)
     {
         tx.Version = 2;
+
         tx.LockTime = new LockTime((0x20 << 24) | (uint)(obscuredCommitmentNumber & 0xFFFFFF));
-        tx.Inputs.Add(new TxIn(new OutPoint(fundingTxId, fundingOutputIndex))
-        {
-            Sequence = (0x80 << 24) | (uint)((obscuredCommitmentNumber >> 24) & 0xFFFFFF)
-        });
+        var outpoint = new OutPoint(fundingTxId, fundingOutputIndex);
+        var witScript = new WitScript(OpcodeType.OP_0, Op.GetPushOp(pubkey1Signature), Op.GetPushOp(pubkey2Signature));
+        tx.Inputs.Add(outpoint, null, witScript, new Sequence(0x80 << 24) | (uint)((obscuredCommitmentNumber >> 24) & 0xFFFFFF));
     }
 
-    private List<Htlc> TrimmedOutputs(List<Htlc> htlcs, Money dustLimitSatoshis, FeeRate feeRatePerKw)
+    private List<IHtlc> TrimmedOutputs(List<IHtlc> htlcs, Money dustLimitSatoshis, FeeRate feeRatePerKw)
     {
         // Implement logic to calculate which HTLCs need to be trimmed
         // based on dust limit and fee rate.
@@ -105,7 +109,7 @@ public class CommitmentTransactionFactory
         }
     }
 
-    private void AddHtlcOutputs(Transaction tx, List<Htlc> htlcs, PubKey localPubKey, PubKey remotePubKey)
+    private void AddHtlcOutputs(Transaction tx, List<IHtlc> htlcs, PubKey localPubKey, PubKey remotePubKey)
     {
         // Implement logic to add HTLC outputs to the transaction
         // based on whether they are offered or received.
@@ -153,10 +157,12 @@ public class CommitmentTransactionFactory
 
     private void SortOutputs(Transaction tx)
     {
-        tx.Outputs = new TxOutList(tx.Outputs.OrderBy(o => o.Value)
-                                              .ThenBy(o => o.ScriptPubKey.ToHex())
-                                              .ThenBy(o => o.ScriptPubKey.IsUnspendable ? 0 : 1)
-                                              .ToList());
+        var orderedOutputs = tx.Outputs
+            .OrderBy(o => o.Value)
+            .ThenBy(o => o.ScriptPubKey.ToHex())
+            .ThenBy(o => o.ScriptPubKey.IsUnspendable ? 0 : 1);
+        tx.Outputs.Clear();
+        tx.Outputs.AddRange(orderedOutputs);
     }
 
     private Script CreateToLocalScript(PubKey localDelayedPubKey, PubKey revocationPubKey, uint toSelfDelay)
