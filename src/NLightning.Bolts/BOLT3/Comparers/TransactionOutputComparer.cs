@@ -1,4 +1,6 @@
-namespace NLightning.Bolts.BOLT3.Transactions;
+using NLightning.Bolts.BOLT3.Transactions;
+
+namespace NLightning.Bolts.BOLT3.Comparers;
 
 public class TransactionOutputComparer : IComparer<TransactionOutput>
 {
@@ -30,12 +32,7 @@ public class TransactionOutputComparer : IComparer<TransactionOutput>
         }
 
         // For HTLC outputs, compare by CLTV expiry
-        if (x.CltvExpiry != y.CltvExpiry)
-        {
-            return x.CltvExpiry.CompareTo(y.CltvExpiry);
-        }
-
-        return 0;
+        return x.CltvExpiry != y.CltvExpiry ? x.CltvExpiry.CompareTo(y.CltvExpiry) : 0;
     }
 
     private static int CompareScriptPubKey(byte[] script1, byte[] script2)

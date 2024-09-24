@@ -14,7 +14,7 @@ public class HashConstants
     internal const int SHA256_BLOCK_LEN = 64;
 
     /// <summary>
-    /// A constant specifying the size in bytes of the RIPEMD160 hash function's output.
+    /// A constant specifying the size in bytes of the Ripemd160 hash function's output.
     /// </summary>
     public const int RIPEMD160_HASH_LEN = 20;
 }

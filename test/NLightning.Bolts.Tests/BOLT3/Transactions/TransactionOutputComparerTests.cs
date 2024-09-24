@@ -1,3 +1,5 @@
+using NLightning.Bolts.BOLT3.Comparers;
+
 namespace NLightning.Bolts.Tests.BOLT3.Transactions;
 
 using Bolts.BOLT3.Transactions;

@@ -26,4 +26,8 @@
     <ProjectReference Include="..\NLightning.Common\NLightning.Common.csproj"/>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="BOLT3\Hashes\" />
+  </ItemGroup>
+
 </Project>
