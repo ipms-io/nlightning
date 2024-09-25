@@ -14,7 +14,7 @@ internal class FakeTransportServiceFactory : ITransportServiceFactory, ITestTran
 
     public virtual ITransportService CreateTransportService(bool isInitiator, byte[] s, byte[] rs, TcpClient tcpClient)
     {
-#pragma warning disable CS8603 // Possible null reference return 
+#pragma warning disable CS8603 // Possible null reference return
         return default;
 #pragma warning restore CS8603 // Possible null reference return
     }

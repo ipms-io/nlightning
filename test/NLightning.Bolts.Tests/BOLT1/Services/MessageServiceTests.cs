@@ -75,6 +75,8 @@ public class MessageServiceTests
         // Assert
         transportServiceMock.Verify(t => t.Dispose(), Times.Once());
 
-        await Assert.ThrowsAnyAsync<ObjectDisposedException>(() => messageService.SendMessageAsync(null!));
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+        await Assert.ThrowsAnyAsync<ObjectDisposedException>(() => messageService.SendMessageAsync(null));
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
     }
 }

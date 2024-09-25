@@ -9,7 +9,7 @@ using Exceptions;
 public class PingMessageTests
 {
     [Fact]
-    public async Task Given_ValidStream_When_DeserializeAsync_IsCalled_Then_ReturnsPingMessageWithCorrectPayload()
+    public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsPingMessageWithCorrectPayload()
     {
         // Arrange
         var expectedPayload = new PingPayload();
@@ -25,7 +25,7 @@ public class PingMessageTests
     }
 
     [Fact]
-    public async Task Given_InvalidStream_When_DeserializeAsync_IsCalled_Then_ThrowsMessageSerializationException()
+    public async Task Given_InvalidStream_When_DeserializeAsync_Then_ThrowsMessageSerializationException()
     {
         // Arrange
         var invalidStream = new MemoryStream(Encoding.UTF8.GetBytes("Invalid content"));

@@ -10,7 +10,7 @@ using Mock;
 public class WarningMessageTests
 {
     [Fact]
-    public async Task Given_ValidStream_When_DeserializeAsync_IsCalled_Then_ReturnsWarningMessageWithCorrectPayload()
+    public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsWarningMessageWithCorrectPayload()
     {
         // Arrange
         var expectedPayload = new ErrorPayload("Warning message!");
@@ -26,7 +26,7 @@ public class WarningMessageTests
     }
 
     [Fact]
-    public async Task Given_InvalidStreamContent_When_DeserializeAsync_IsCalled_Then_ThrowsMessageSerializationException()
+    public async Task Given_InvalidStreamContent_When_DeserializeAsync_Then_ThrowsMessageSerializationException()
     {
         // Arrange
         var invalidStream = new MemoryStream(Encoding.UTF8.GetBytes("Invalid content"));
@@ -36,7 +36,7 @@ public class WarningMessageTests
     }
 
     [Fact]
-    public async Task Given_StreamReadWarning_When_DeserializeAsync_IsCalled_Then_ThrowsIOException()
+    public async Task Given_StreamReadWarning_When_DeserializeAsync_Then_ThrowsIOException()
     {
         // Arrange
         var brokenStream = new FakeBrokenStream(); // You would need to mock or implement a stream that simulates a read error.

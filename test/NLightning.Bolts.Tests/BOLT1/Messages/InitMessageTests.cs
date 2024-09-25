@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace NLightning.Bolts.Tests.BOLT1.Messages;
 
 using Bolts.BOLT1.Messages;
@@ -9,11 +7,12 @@ using Common.Constants;
 using Common.TLVs;
 using Common.Types;
 using Exceptions;
+using Tests.Utils;
 
 public class InitMessageTests
 {
     [Fact]
-    public async Task Given_ValidStreamWithPayloadAndExtension_When_DeserializeAsync_IsCalled_Then_ReturnsInitMessageWithCorrectData()
+    public async Task Given_ValidStreamWithPayloadAndExtension_When_DeserializeAsync_Then_ReturnsInitMessageWithCorrectData()
     {
         // Arrange
         var expectedPayload = new InitPayload(new Features());
@@ -35,7 +34,7 @@ public class InitMessageTests
     }
 
     [Fact]
-    public async Task Given_ValidStreamWithOnlyPayload_When_DeserializeAsync_IsCalled_Then_ReturnsInitMessageWithNullExtension()
+    public async Task Given_ValidStreamWithOnlyPayload_When_DeserializeAsync_Then_ReturnsInitMessageWithNullExtension()
     {
         // Arrange
         var expectedPayload = new InitPayload(new Features());
@@ -51,10 +50,10 @@ public class InitMessageTests
     }
 
     [Fact]
-    public async Task Given_InvalidStreamContent_When_DeserializeAsync_IsCalled_Then_ThrowsMessageSerializationException()
+    public async Task Given_InvalidStreamContent_When_DeserializeAsync_Then_ThrowsMessageSerializationException()
     {
         // Arrange
-        var invalidStream = new MemoryStream(Encoding.UTF8.GetBytes("Invalid content"));
+        var invalidStream = new MemoryStream("Invalid content"u8.ToArray());
 
         // Act & Assert
         await Assert.ThrowsAsync<MessageSerializationException>(() => InitMessage.DeserializeAsync(invalidStream));
@@ -67,5 +66,43 @@ public class InitMessageTests
         await extension.SerializeAsync(stream);
         stream.Position = 0;
         return stream;
+    }
+
+    [Fact]
+    public async Task Given_ValidPayloadAndExtension_When_SerializeAsync_Then_WritesCorrectDataToStream()
+    {
+        // Arrange
+        var expectedExtension = new TlvStream();
+        expectedExtension.Add(new NetworksTlv([ChainConstants.MAIN]));
+        var message = new InitMessage(new InitPayload(new Features()), expectedExtension);
+        var stream = new MemoryStream();
+        var expectedBytes = "0x001000020200000202000100".ToByteArray();
+
+        // Act
+        await message.SerializeAsync(stream);
+        stream.Position = 0;
+        var result = new byte[stream.Length];
+        _ = await stream.ReadAsync(result);
+
+        // Assert
+        Assert.Equal(expectedBytes, result);
+    }
+
+    [Fact]
+    public async Task Given_ValidPayloadOnly_When_SerializeAsync_Then_WritesCorrectDataToStream()
+    {
+        // Arrange
+        var message = new InitMessage(new InitPayload(new Features()));
+        var stream = new MemoryStream();
+        var expectedBytes = "0x00100002020000020200".ToByteArray();
+
+        // Act
+        await message.SerializeAsync(stream);
+        stream.Position = 0;
+        var result = new byte[stream.Length];
+        _ = await stream.ReadAsync(result);
+
+        // Assert
+        Assert.Equal(expectedBytes, result);
     }
 }

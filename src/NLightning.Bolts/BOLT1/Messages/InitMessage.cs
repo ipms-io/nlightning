@@ -43,7 +43,7 @@ public sealed class InitMessage(InitPayload payload, TlvStream? extension = null
         }
         catch (SerializationException e)
         {
-            throw new MessageSerializationException("Error deserializing ErrorMessage", e);
+            throw new MessageSerializationException("Error deserializing InitMessage", e);
         }
     }
 }
