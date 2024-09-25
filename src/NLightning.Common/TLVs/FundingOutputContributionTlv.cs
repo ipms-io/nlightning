@@ -43,7 +43,7 @@ public class FundingOutputContributionTlv : Tlv
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized NetworksTLV.</returns>
     /// <exception cref="SerializationException">Error deserializing NetworksTLV</exception>
-    public new static async Task<FundingOutputContributionTlv> DeserializeAsync(Stream stream)
+    public static new async Task<FundingOutputContributionTlv> DeserializeAsync(Stream stream)
     {
         var tlv = await Tlv.DeserializeAsync(stream) as FundingOutputContributionTlv ?? throw new SerializationException("Invalid TLV type");
 

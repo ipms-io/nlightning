@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace NLightning.Bolts.Tests.BOLT1.Messages;
 
 using Bolts.BOLT1.Messages;
@@ -69,7 +67,7 @@ public class InitMessageTests
         stream.Position = 0;
         return stream;
     }
-    
+
     [Fact]
     public async Task Given_ValidPayloadAndExtension_When_SerializeAsync_Then_WritesCorrectDataToStream()
     {

@@ -4,9 +4,9 @@ namespace NLightning.Bolts.Tests.BOLT1.Messages;
 
 using Bolts.BOLT1.Messages;
 using Bolts.BOLT1.Payloads;
+using Common.Types;
 using Exceptions;
 using Mock;
-using Common.Types;
 using Utils;
 
 public class ErrorMessageTests

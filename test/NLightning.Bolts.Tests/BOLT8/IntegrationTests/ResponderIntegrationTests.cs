@@ -10,7 +10,6 @@ using Mock;
 using Tests.Utils;
 using Utils;
 
-
 public class ResponderIntegrationTests
 {
     private static readonly IEcdh s_dhFake = new FakeFixedKeyDh(ResponderValidKeysUtil.EphemeralPrivateKey);

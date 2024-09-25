@@ -4,7 +4,6 @@ using System.Text;
 namespace NLightning.Bolts.Tests.BOLT8.IntegrationTests;
 
 using Bolts.BOLT8.Constants;
-using Bolts.BOLT8.Primitives;
 using Bolts.BOLT8.States;
 using Common.Interfaces.Crypto;
 using Mock;
@@ -22,7 +21,7 @@ public class InitiatorIntegrationTests
         var initiator = new HandshakeState(true, InitiatorValidKeysUtil.LocalStaticPrivateKey, InitiatorValidKeysUtil.RemoteStaticPublicKey, s_dhFake);
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
 
-            // Act
+        // Act
         var (messageSize, handshakeHash, transport) = initiator.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), messageBuffer);
         var message = messageBuffer.AsSpan(0, messageSize);
 
