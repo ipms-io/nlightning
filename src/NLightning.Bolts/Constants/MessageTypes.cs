@@ -7,6 +7,7 @@ public static class MessageTypes
 {
     #region Setup & Control
     public const ushort WARNING = 1,
+                        STFU = 2,
                         INIT = 16,
                         ERROR = 17,
                         PING = 18,
