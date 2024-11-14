@@ -44,7 +44,7 @@ public static class TlvConstants
     /// Upfront Shutdown Script TLV Type
     /// </summary>
     /// <remarks>
-    /// The "Upfront Shutdown Script" is used in the OpenChannel2Message to set where the funds shoul be send on a
+    /// The "Upfront Shutdown Script" is used in the OpenChannel2Message to set where the funds should be sent on a
     /// mutual close
     /// </remarks>
     public static readonly BigSize UPFRONT_SHUTDOWN_SCRIPT = 0;

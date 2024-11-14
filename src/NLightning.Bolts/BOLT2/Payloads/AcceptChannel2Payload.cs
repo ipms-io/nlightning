@@ -8,19 +8,14 @@ using Common.Managers;
 using Interfaces;
 
 /// <summary>
-/// Represents the payload for the open_channel2 message.
+/// Represents the payload for the accept_channel2 message.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the OpenChannel2Payload class.
+/// Initializes a new instance of the AcceptChannel2Payload class.
 /// This class depends on the initialized singleton class <see cref="Common.Managers.ConfigManager"/>.
 /// </remarks>
-public class OpenChannel2Payload : IMessagePayload
+public class AcceptChannel2Payload : IMessagePayload
 {
-    /// <summary>
-    /// The chain_hash value denotes the exact blockchain that the opened channel will reside within.
-    /// </summary>
-    public ChainHash ChainHash { get; }
-
     /// <summary>
     /// The temporary_channel_id is used to identify this channel on a per-peer basis until the funding transaction
     /// is established, at which point it is replaced by the channel_id, which is derived from the funding transaction.
@@ -28,19 +23,7 @@ public class OpenChannel2Payload : IMessagePayload
     public ChannelId TemporaryChannelId { get; set; }
 
     /// <summary>
-    /// funding_feerate_perkw indicates the fee rate that the opening node will pay for the funding transaction in
-    /// satoshi per 1000-weight, as described in BOLT-3, Appendix F
-    /// </summary>
-    public uint FundingFeeRatePerKw { get; set; }
-
-    /// <summary>
-    /// commitment_feerate_perkw indicates the fee rate that will be paid for the commitment transaction in
-    /// satoshi per 1000-weight, as described in BOLT-3, Appendix F
-    /// </summary>
-    public uint CommitmentFeeRatePerKw { get; set; }
-
-    /// <summary>
-    /// funding_satoshis is the amount the sender is putting into the channel.
+    /// funding_satoshis is the amount the acceptor is putting into the channel.
     /// </summary>
     public ulong FundingSatoshis { get; set; }
 
@@ -62,6 +45,12 @@ public class OpenChannel2Payload : IMessagePayload
     public ulong HtlcMinimumMsat { get; }
 
     /// <summary>
+    /// minimum_depth is the number of blocks we consider reasonable to avoid double-spending of the funding transaction.
+    /// In case channel_type includes option_zeroconf this MUST be 0
+    /// </summary>
+    public uint MinimumDepth { get; set; }
+
+    /// <summary>
     /// to_self_delay is how long (in blocks) the other node will have to wait in case of breakdown before redeeming
     /// its own funds.
     /// </summary>
@@ -71,11 +60,6 @@ public class OpenChannel2Payload : IMessagePayload
     /// max_accepted_htlcs limits the number of outstanding HTLCs the remote node can offer.
     /// </summary>
     public ushort MaxAcceptedHtlcs { get; }
-
-    /// <summary>
-    /// locktime is the locktime for the funding transaction.
-    /// </summary>
-    public uint Locktime { get; }
 
     /// <summary>
     /// funding_pubkey is the public key in the 2-of-2 multisig script of the funding transaction output.
@@ -108,34 +92,20 @@ public class OpenChannel2Payload : IMessagePayload
     public PubKey FirstPerCommitmentPoint { get; set; }
 
     /// <summary>
-    /// second_per_commitment_point is the per-commitment point used for the first commitment transaction
-    /// </summary>
-    public PubKey SecondPerCommitmentPoint { get; set; }
-
-    /// <summary>
-    /// Only the least-significant bit of channel_flags is currently defined: announce_channel. This indicates whether
-    /// the initiator of the funding flow wishes to advertise this channel publicly to the network
-    /// </summary>
-    public ChannelFlags ChannelFlags { get; set; }
-
-    /// <summary>
     /// 
     /// </summary>
     /// <see cref="Common.TLVs.UpfrontShutdownScriptTlv"/>
-    public TlvStream? OpeningTlvs { get; set; }
+    public TlvStream? AcceptTlvs { get; set; }
 
-    public OpenChannel2Payload(ChannelId temporaryChannelId, uint fundingFeeRatePerKw, uint commitmentFeeRatePerKw, ulong fundingSatoshis, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint, PubKey secondPerCommitmentPoint, ChannelFlags channelFlags, TlvStream? openingTlvs = null)
+    public AcceptChannel2Payload(ChannelId temporaryChannelId, ulong fundingSatoshis, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint, TlvStream? acceptTlvs = null)
     {
-        ChainHash = ConfigManager.Instance.Network.ChainHash;
         DustLimitSatoshis = ConfigManager.Instance.DustLimitSatoshis;
         MaxHtlcValueInFlightMsat = ConfigManager.Instance.MaxHtlcValueInFlightMsat;
         HtlcMinimumMsat = ConfigManager.Instance.HtlcMinimumMsat;
+        MinimumDepth = ConfigManager.Instance.MinimumDepth;
         ToSelfDelay = ConfigManager.Instance.ToSelfDelay;
         MaxAcceptedHtlcs = ConfigManager.Instance.MaxAcceptedHtlcs;
-        Locktime = ConfigManager.Instance.Locktime;
         TemporaryChannelId = temporaryChannelId;
-        FundingFeeRatePerKw = fundingFeeRatePerKw;
-        CommitmentFeeRatePerKw = commitmentFeeRatePerKw;
         FundingSatoshis = fundingSatoshis;
         FundingPubKey = fundingPubKey;
         RevocationBasepoint = revocationBasepoint;
@@ -143,60 +113,48 @@ public class OpenChannel2Payload : IMessagePayload
         DelayedPaymentBasepoint = delayedPaymentBasepoint;
         HtlcBasepoint = htlcBasepoint;
         FirstPerCommitmentPoint = firstPerCommitmentPoint;
-        SecondPerCommitmentPoint = secondPerCommitmentPoint;
-        ChannelFlags = channelFlags;
-        OpeningTlvs = openingTlvs;
+        AcceptTlvs = acceptTlvs;
     }
 
-    private OpenChannel2Payload(ChainHash chainHash, ChannelId temporaryChannelId, uint fundingFeeRatePerKw, uint commitmentFeeRatePerKw, ulong fundingSatoshis, ulong dustLimitSatoshis, ulong maxHtlcValueInFlightMsat, ulong htlcMinimumMsat, ushort toSelfDelay, ushort maxAcceptedHtlcs, uint locktime, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint, PubKey secondPerCommitmentPoint, ChannelFlags channelFlags, TlvStream? openingTlvs = null)
+    private AcceptChannel2Payload(ChannelId temporaryChannelId, ulong fundingSatoshis, ulong dustLimitSatoshis, ulong maxHtlcValueInFlightMsat, ulong htlcMinimumMsat, uint minimumDepth, ushort toSelfDelay, ushort maxAcceptedHtlcs, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint, TlvStream? acceptTlvs = null)
     {
-        ChainHash = chainHash;
         TemporaryChannelId = temporaryChannelId;
-        FundingFeeRatePerKw = fundingFeeRatePerKw;
-        CommitmentFeeRatePerKw = commitmentFeeRatePerKw;
         FundingSatoshis = fundingSatoshis;
         DustLimitSatoshis = dustLimitSatoshis;
         MaxHtlcValueInFlightMsat = maxHtlcValueInFlightMsat;
         HtlcMinimumMsat = htlcMinimumMsat;
+        MinimumDepth = minimumDepth;
         ToSelfDelay = toSelfDelay;
         MaxAcceptedHtlcs = maxAcceptedHtlcs;
-        Locktime = locktime;
         FundingPubKey = fundingPubKey;
         RevocationBasepoint = revocationBasepoint;
         PaymentBasepoint = paymentBasepoint;
         DelayedPaymentBasepoint = delayedPaymentBasepoint;
         HtlcBasepoint = htlcBasepoint;
         FirstPerCommitmentPoint = firstPerCommitmentPoint;
-        SecondPerCommitmentPoint = secondPerCommitmentPoint;
-        ChannelFlags = channelFlags;
-        OpeningTlvs = openingTlvs;
+        AcceptTlvs = acceptTlvs;
     }
 
     /// <inheritdoc/>
     public async Task SerializeAsync(Stream stream)
     {
-        await ChainHash.SerializeAsync(stream);
         await TemporaryChannelId.SerializeAsync(stream);
-        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(FundingFeeRatePerKw));
-        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(CommitmentFeeRatePerKw));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(FundingSatoshis));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(DustLimitSatoshis));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(MaxHtlcValueInFlightMsat));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(HtlcMinimumMsat));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(MinimumDepth));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(ToSelfDelay));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(MaxAcceptedHtlcs));
-        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(Locktime));
         await stream.WriteAsync(FundingPubKey.ToBytes());
         await stream.WriteAsync(RevocationBasepoint.ToBytes());
         await stream.WriteAsync(PaymentBasepoint.ToBytes());
         await stream.WriteAsync(DelayedPaymentBasepoint.ToBytes());
         await stream.WriteAsync(HtlcBasepoint.ToBytes());
         await stream.WriteAsync(FirstPerCommitmentPoint.ToBytes());
-        await stream.WriteAsync(SecondPerCommitmentPoint.ToBytes());
-        await ChannelFlags.SerializeAsync(stream);
-        if (OpeningTlvs is not null)
+        if (AcceptTlvs is not null)
         {
-            await OpeningTlvs.SerializeAsync(stream);
+            await AcceptTlvs.SerializeAsync(stream);
         }
     }
 
@@ -206,21 +164,13 @@ public class OpenChannel2Payload : IMessagePayload
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized payload.</returns>
     /// <exception cref="SerializationException">Error deserializing Payload</exception>
-    public static async Task<OpenChannel2Payload> DeserializeAsync(Stream stream)
+    public static async Task<AcceptChannel2Payload> DeserializeAsync(Stream stream)
     {
         try
         {
-            var chainHash = await ChainHash.DeserializeAsync(stream);
             var temporaryChannelId = await ChannelId.DeserializeAsync(stream);
 
-            var bytes = new byte[sizeof(uint)];
-            await stream.ReadExactlyAsync(bytes);
-            var fundingFeeRatePerKw = EndianBitConverter.ToUInt32BigEndian(bytes);
-
-            await stream.ReadExactlyAsync(bytes);
-            var commitmentFeeRatePerKw = EndianBitConverter.ToUInt32BigEndian(bytes);
-
-            bytes = new byte[sizeof(ulong)];
+            var bytes = new byte[sizeof(ulong)];
             await stream.ReadExactlyAsync(bytes);
             var fundingSatoshis = EndianBitConverter.ToUInt64BigEndian(bytes);
 
@@ -233,16 +183,16 @@ public class OpenChannel2Payload : IMessagePayload
             await stream.ReadExactlyAsync(bytes);
             var htlcMinimumMsat = EndianBitConverter.ToUInt64BigEndian(bytes);
 
+            bytes = new byte[sizeof(uint)];
+            await stream.ReadExactlyAsync(bytes);
+            var minimumDepth = EndianBitConverter.ToUInt32BigEndian(bytes);
+
             bytes = new byte[sizeof(ushort)];
             await stream.ReadExactlyAsync(bytes);
             var toSelfDelay = EndianBitConverter.ToUInt16BigEndian(bytes);
 
             await stream.ReadExactlyAsync(bytes);
             var maxAcceptedHtlcs = EndianBitConverter.ToUInt16BigEndian(bytes);
-
-            bytes = new byte[sizeof(uint)];
-            await stream.ReadExactlyAsync(bytes);
-            var locktime = EndianBitConverter.ToUInt32BigEndian(bytes);
 
             bytes = new byte[33];
             await stream.ReadExactlyAsync(bytes);
@@ -263,18 +213,13 @@ public class OpenChannel2Payload : IMessagePayload
             await stream.ReadExactlyAsync(bytes);
             var firstPerCommitmentPoint = new PubKey(bytes);
 
-            await stream.ReadExactlyAsync(bytes);
-            var secondPerCommitmentPoint = new PubKey(bytes);
-
-            var channelFlags = await ChannelFlags.DeserializeAsync(stream);
-
             var openingTlvs = await TlvStream.DeserializeAsync(stream);
 
-            return new OpenChannel2Payload(chainHash, temporaryChannelId, fundingFeeRatePerKw, commitmentFeeRatePerKw, fundingSatoshis, dustLimitSatoshis, maxHtlcValueInFlightMsat, htlcMinimumMsat, toSelfDelay, maxAcceptedHtlcs, locktime, fundingPubKey, revocationBasepoint, paymentBasepoint, delayedPaymentBasepoint, htlcBasepoint, firstPerCommitmentPoint, secondPerCommitmentPoint, channelFlags, openingTlvs);
+            return new AcceptChannel2Payload(temporaryChannelId, fundingSatoshis, dustLimitSatoshis, maxHtlcValueInFlightMsat, htlcMinimumMsat, minimumDepth, toSelfDelay, maxAcceptedHtlcs, fundingPubKey, revocationBasepoint, paymentBasepoint, delayedPaymentBasepoint, htlcBasepoint, firstPerCommitmentPoint, openingTlvs);
         }
         catch (Exception e)
         {
-            throw new SerializationException("Error deserializing OpenChannel2Payload", e);
+            throw new SerializationException("Error deserializing AcceptChannel2Payload", e);
         }
     }
 }

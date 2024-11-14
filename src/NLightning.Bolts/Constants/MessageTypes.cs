@@ -21,7 +21,8 @@ public static class MessageTypes
                         FUNDING_LOCKED = 36,
                         SHUTDOWN = 38,
                         CLOSING_SIGNED = 39,
-                        OPEN_CHANNEL_2 = 64;
+                        OPEN_CHANNEL_2 = 64,
+                        ACCEPT_CHANNEL_2 = 65;
     #endregion
 
     #region Interactive Transaction Construction

@@ -52,4 +52,10 @@ public class ConfigManager
     /// Locktime is the default locktime for the funding transaction.
     /// </summary>
     public uint Locktime { get; set; }
+
+    /// <summary>
+    /// minimum_depth is the number of blocks we consider reasonable to avoid double-spending of the funding transaction.
+    /// In case channel_type includes option_zeroconf this MUST be 0
+    /// </summary>
+    public uint MinimumDepth { get; set; }
 }
