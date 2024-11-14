@@ -118,13 +118,7 @@ public class OpenChannel2Payload : IMessagePayload
     /// </summary>
     public ChannelFlags ChannelFlags { get; set; }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <see cref="Common.TLVs.UpfrontShutdownScriptTlv"/>
-    public TlvStream? OpeningTlvs { get; set; }
-
-    public OpenChannel2Payload(ChannelId temporaryChannelId, uint fundingFeeRatePerKw, uint commitmentFeeRatePerKw, ulong fundingSatoshis, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint, PubKey secondPerCommitmentPoint, ChannelFlags channelFlags, TlvStream? openingTlvs = null)
+    public OpenChannel2Payload(ChannelId temporaryChannelId, uint fundingFeeRatePerKw, uint commitmentFeeRatePerKw, ulong fundingSatoshis, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint, PubKey secondPerCommitmentPoint, ChannelFlags channelFlags)
     {
         ChainHash = ConfigManager.Instance.Network.ChainHash;
         DustLimitSatoshis = ConfigManager.Instance.DustLimitSatoshis;
@@ -145,10 +139,9 @@ public class OpenChannel2Payload : IMessagePayload
         FirstPerCommitmentPoint = firstPerCommitmentPoint;
         SecondPerCommitmentPoint = secondPerCommitmentPoint;
         ChannelFlags = channelFlags;
-        OpeningTlvs = openingTlvs;
     }
 
-    private OpenChannel2Payload(ChainHash chainHash, ChannelId temporaryChannelId, uint fundingFeeRatePerKw, uint commitmentFeeRatePerKw, ulong fundingSatoshis, ulong dustLimitSatoshis, ulong maxHtlcValueInFlightMsat, ulong htlcMinimumMsat, ushort toSelfDelay, ushort maxAcceptedHtlcs, uint locktime, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint, PubKey secondPerCommitmentPoint, ChannelFlags channelFlags, TlvStream? openingTlvs = null)
+    private OpenChannel2Payload(ChainHash chainHash, ChannelId temporaryChannelId, uint fundingFeeRatePerKw, uint commitmentFeeRatePerKw, ulong fundingSatoshis, ulong dustLimitSatoshis, ulong maxHtlcValueInFlightMsat, ulong htlcMinimumMsat, ushort toSelfDelay, ushort maxAcceptedHtlcs, uint locktime, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint, PubKey secondPerCommitmentPoint, ChannelFlags channelFlags)
     {
         ChainHash = chainHash;
         TemporaryChannelId = temporaryChannelId;
@@ -169,7 +162,6 @@ public class OpenChannel2Payload : IMessagePayload
         FirstPerCommitmentPoint = firstPerCommitmentPoint;
         SecondPerCommitmentPoint = secondPerCommitmentPoint;
         ChannelFlags = channelFlags;
-        OpeningTlvs = openingTlvs;
     }
 
     /// <inheritdoc/>
@@ -194,10 +186,6 @@ public class OpenChannel2Payload : IMessagePayload
         await stream.WriteAsync(FirstPerCommitmentPoint.ToBytes());
         await stream.WriteAsync(SecondPerCommitmentPoint.ToBytes());
         await ChannelFlags.SerializeAsync(stream);
-        if (OpeningTlvs is not null)
-        {
-            await OpeningTlvs.SerializeAsync(stream);
-        }
     }
 
     /// <summary>
@@ -268,9 +256,7 @@ public class OpenChannel2Payload : IMessagePayload
 
             var channelFlags = await ChannelFlags.DeserializeAsync(stream);
 
-            var openingTlvs = await TlvStream.DeserializeAsync(stream);
-
-            return new OpenChannel2Payload(chainHash, temporaryChannelId, fundingFeeRatePerKw, commitmentFeeRatePerKw, fundingSatoshis, dustLimitSatoshis, maxHtlcValueInFlightMsat, htlcMinimumMsat, toSelfDelay, maxAcceptedHtlcs, locktime, fundingPubKey, revocationBasepoint, paymentBasepoint, delayedPaymentBasepoint, htlcBasepoint, firstPerCommitmentPoint, secondPerCommitmentPoint, channelFlags, openingTlvs);
+            return new OpenChannel2Payload(chainHash, temporaryChannelId, fundingFeeRatePerKw, commitmentFeeRatePerKw, fundingSatoshis, dustLimitSatoshis, maxHtlcValueInFlightMsat, htlcMinimumMsat, toSelfDelay, maxAcceptedHtlcs, locktime, fundingPubKey, revocationBasepoint, paymentBasepoint, delayedPaymentBasepoint, htlcBasepoint, firstPerCommitmentPoint, secondPerCommitmentPoint, channelFlags);
         }
         catch (Exception e)
         {

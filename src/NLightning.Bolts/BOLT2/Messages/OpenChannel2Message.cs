@@ -15,7 +15,7 @@ using Payloads;
 /// The message type is 64.
 /// </remarks>
 /// <param name="payload"></param>
-public sealed class OpenChannel2Message(OpenChannel2Payload payload) : BaseMessage(MessageTypes.OPEN_CHANNEL_2, payload)
+public sealed class OpenChannel2Message(OpenChannel2Payload payload, TlvStream? extension) : BaseMessage(MessageTypes.OPEN_CHANNEL_2, payload, extension)
 {
     /// <summary>
     /// The payload of the message.
@@ -35,7 +35,10 @@ public sealed class OpenChannel2Message(OpenChannel2Payload payload) : BaseMessa
             // Deserialize payload
             var payload = await OpenChannel2Payload.DeserializeAsync(stream);
 
-            return new OpenChannel2Message(payload);
+            // Deserialize extension
+            var extension = await TlvStream.DeserializeAsync(stream);
+
+            return new OpenChannel2Message(payload, extension);
         }
         catch (SerializationException e)
         {

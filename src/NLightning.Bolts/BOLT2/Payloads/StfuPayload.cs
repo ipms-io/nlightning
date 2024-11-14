@@ -4,23 +4,17 @@ namespace NLightning.Bolts.BOLT2.Payloads;
 
 using Interfaces;
 
-public class StfuPayload : IMessagePayload
+public class StfuPayload(ChannelId channelId, bool initiator) : IMessagePayload
 {
     /// <summary>
     /// The channel_id this message refers to
     /// </summary>
-    public ChannelId ChannelId { get; set; }
+    public ChannelId ChannelId { get; set; } = channelId;
 
     /// <summary>
     /// 1 if we're sending this message, 0 if we're responding
     /// </summary>
-    public bool Initiator { get; set; }
-
-    public StfuPayload(ChannelId channelId, bool initiator)
-    {
-        ChannelId = channelId;
-        Initiator = initiator;
-    }
+    public bool Initiator { get; set; } = initiator;
 
     /// <inheritdoc/>
     public async Task SerializeAsync(Stream stream)

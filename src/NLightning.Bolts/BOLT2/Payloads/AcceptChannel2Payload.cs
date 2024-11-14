@@ -91,13 +91,7 @@ public class AcceptChannel2Payload : IMessagePayload
     /// </summary>
     public PubKey FirstPerCommitmentPoint { get; set; }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <see cref="Common.TLVs.UpfrontShutdownScriptTlv"/>
-    public TlvStream? AcceptTlvs { get; set; }
-
-    public AcceptChannel2Payload(ChannelId temporaryChannelId, ulong fundingSatoshis, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint, TlvStream? acceptTlvs = null)
+    public AcceptChannel2Payload(ChannelId temporaryChannelId, ulong fundingSatoshis, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint)
     {
         DustLimitSatoshis = ConfigManager.Instance.DustLimitSatoshis;
         MaxHtlcValueInFlightMsat = ConfigManager.Instance.MaxHtlcValueInFlightMsat;
@@ -113,10 +107,9 @@ public class AcceptChannel2Payload : IMessagePayload
         DelayedPaymentBasepoint = delayedPaymentBasepoint;
         HtlcBasepoint = htlcBasepoint;
         FirstPerCommitmentPoint = firstPerCommitmentPoint;
-        AcceptTlvs = acceptTlvs;
     }
 
-    private AcceptChannel2Payload(ChannelId temporaryChannelId, ulong fundingSatoshis, ulong dustLimitSatoshis, ulong maxHtlcValueInFlightMsat, ulong htlcMinimumMsat, uint minimumDepth, ushort toSelfDelay, ushort maxAcceptedHtlcs, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint, TlvStream? acceptTlvs = null)
+    private AcceptChannel2Payload(ChannelId temporaryChannelId, ulong fundingSatoshis, ulong dustLimitSatoshis, ulong maxHtlcValueInFlightMsat, ulong htlcMinimumMsat, uint minimumDepth, ushort toSelfDelay, ushort maxAcceptedHtlcs, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint)
     {
         TemporaryChannelId = temporaryChannelId;
         FundingSatoshis = fundingSatoshis;
@@ -132,7 +125,6 @@ public class AcceptChannel2Payload : IMessagePayload
         DelayedPaymentBasepoint = delayedPaymentBasepoint;
         HtlcBasepoint = htlcBasepoint;
         FirstPerCommitmentPoint = firstPerCommitmentPoint;
-        AcceptTlvs = acceptTlvs;
     }
 
     /// <inheritdoc/>
@@ -152,10 +144,6 @@ public class AcceptChannel2Payload : IMessagePayload
         await stream.WriteAsync(DelayedPaymentBasepoint.ToBytes());
         await stream.WriteAsync(HtlcBasepoint.ToBytes());
         await stream.WriteAsync(FirstPerCommitmentPoint.ToBytes());
-        if (AcceptTlvs is not null)
-        {
-            await AcceptTlvs.SerializeAsync(stream);
-        }
     }
 
     /// <summary>
@@ -213,9 +201,7 @@ public class AcceptChannel2Payload : IMessagePayload
             await stream.ReadExactlyAsync(bytes);
             var firstPerCommitmentPoint = new PubKey(bytes);
 
-            var openingTlvs = await TlvStream.DeserializeAsync(stream);
-
-            return new AcceptChannel2Payload(temporaryChannelId, fundingSatoshis, dustLimitSatoshis, maxHtlcValueInFlightMsat, htlcMinimumMsat, minimumDepth, toSelfDelay, maxAcceptedHtlcs, fundingPubKey, revocationBasepoint, paymentBasepoint, delayedPaymentBasepoint, htlcBasepoint, firstPerCommitmentPoint, openingTlvs);
+            return new AcceptChannel2Payload(temporaryChannelId, fundingSatoshis, dustLimitSatoshis, maxHtlcValueInFlightMsat, htlcMinimumMsat, minimumDepth, toSelfDelay, maxAcceptedHtlcs, fundingPubKey, revocationBasepoint, paymentBasepoint, delayedPaymentBasepoint, htlcBasepoint, firstPerCommitmentPoint);
         }
         catch (Exception e)
         {

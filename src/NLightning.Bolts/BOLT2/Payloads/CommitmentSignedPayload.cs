@@ -6,35 +6,33 @@ namespace NLightning.Bolts.BOLT2.Payloads;
 using Common.BitUtils;
 using Interfaces;
 
-public class CommitmentSignedPayload : IMessagePayload
+public class CommitmentSignedPayload(ChannelId channelId, ECDSASignature signature, IEnumerable<ECDSASignature> htlcSignatures) : IMessagePayload
 {
     /// <summary>
     /// The channel_id this message refers to
     /// </summary>
-    public ChannelId ChannelId { get; set; }
+    public ChannelId ChannelId { get; set; } = channelId;
 
     /// <summary>
     /// The signature for the commitment transaction
     /// </summary>
-    public ECDSASignature Signature { get; set; }
+    public ECDSASignature Signature { get; set; } = signature;
 
     /// <summary>
     /// Number of HTLCs outputs
     /// </summary>
-    public ushort NumHtlcs { get; set; }
+    public ushort NumHtlcs
+    {
+        get
+        {
+            return (ushort)HtlcSignatures.Count();
+        }
+    }
 
     /// <summary>
     /// List containing HTLCs signatures
     /// </summary>
-    public IEnumerable<ECDSASignature> HtlcSignatures { get; set; }
-
-    public CommitmentSignedPayload(ChannelId channelId, ECDSASignature signature, IEnumerable<ECDSASignature> htlcSignatures)
-    {
-        ChannelId = channelId;
-        Signature = signature;
-        NumHtlcs = (ushort)htlcSignatures.Count();
-        HtlcSignatures = htlcSignatures;
-    }
+    public IEnumerable<ECDSASignature> HtlcSignatures { get; set; } = htlcSignatures;
 
     /// <inheritdoc/>
     public async Task SerializeAsync(Stream stream)

@@ -57,7 +57,7 @@ public class AcceptChannel2MessageTests
         Assert.Equal(expectedDelayedPaymentBasepoint, result.Payload.DelayedPaymentBasepoint);
         Assert.Equal(expectedHtlcBasepoint, result.Payload.HtlcBasepoint);
         Assert.Equal(expectedFirstPerCommitmentPoint, result.Payload.FirstPerCommitmentPoint);
-        Assert.Null(result.Payload.AcceptTlvs);
+        Assert.Null(result.Extension);
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public class AcceptChannel2MessageTests
 
         var message = new AcceptChannel2Message(new AcceptChannel2Payload(channelId, FUNDING_SATOSHIS, fundingPubKey,
                                                 revocationBasepoint, paymentBasePoint, delayedPaymentBasepoint,
-                                                htlcBasepoint, firstPerCommitmentPoint));
+                                                htlcBasepoint, firstPerCommitmentPoint), null);
         var stream = new MemoryStream();
         var expectedBytes = "004100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000F424000000000000003E8000000030001000202C93CA7DCA44D2E45E3CC5419D92750F7FB3A0F180852B73A621F4051C0193A750315525220B88467A0EE3A111AE49FFDC337136EF51031CFC1C9883B7D1CBD653403A6BD98A33A52CD9D339EE20B4627AC60EC45C897E4FF182CC22ABA372C8D31C10280A3001FE999B1FE9842317CE29F71B9BB5888448A2CF5E115BFC808BA4568CE03798E7EFC8C950FCD6C9E3AF4BBAD16A26F14C838E99651F637DDD73DDC88531B0326550F5AE41511E767AFE0A9C7E20A73174875A6D1EE4E9E128CBB1FB0099F61".ToByteArray();
 

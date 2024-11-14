@@ -6,29 +6,22 @@ namespace NLightning.Bolts.BOLT2.Payloads;
 using Common.BitUtils;
 using Interfaces;
 
-public class ShutdownPayload : IMessagePayload
+public class ShutdownPayload(ChannelId channelId, Script scriptPubkey) : IMessagePayload
 {
     /// <summary>
     /// The channel_id this message refers to
     /// </summary>
-    public ChannelId ChannelId { get; set; }
+    public ChannelId ChannelId { get; set; } = channelId;
 
     /// <summary>
     /// len is the scriptpubkey length
     /// </summary>
-    public ushort ScriptPubkeyLen { get; set; }
+    public ushort ScriptPubkeyLen { get; set; } = (ushort)scriptPubkey.Length;
 
     /// <summary>
     /// The scriptpubkey to send the closing funds to
     /// </summary>
-    public Script ScriptPubkey { get; set; }
-
-    public ShutdownPayload(ChannelId channelId, Script scriptPubkey)
-    {
-        ChannelId = channelId;
-        ScriptPubkeyLen = (ushort)scriptPubkey.Length;
-        ScriptPubkey = scriptPubkey;
-    }
+    public Script ScriptPubkey { get; set; } = scriptPubkey;
 
     /// <inheritdoc/>
     public async Task SerializeAsync(Stream stream)

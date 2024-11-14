@@ -65,7 +65,7 @@ public class OpenChannel2MessageTests
         Assert.Equal(expectedFirstPerCommitmentPoint, result.Payload.FirstPerCommitmentPoint);
         Assert.Equal(expectedSecondPerCommitmentPoint, result.Payload.SecondPerCommitmentPoint);
         Assert.Equal(expectedChannelFlags, result.Payload.ChannelFlags);
-        Assert.Null(result.Payload.OpeningTlvs);
+        Assert.Null(result.Extension);
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public class OpenChannel2MessageTests
         var message = new OpenChannel2Message(new OpenChannel2Payload(channelId, FUNDING_FEERATE, COMMITMENT_FEERATE,
                                               FUNDING_SATOSHIS, fundingPubKey, revocationBasepoint, paymentBasePoint,
                                               delayedPaymentBasepoint, htlcBasepoint, firstPerCommitmentPoint,
-                                              secondPerCommitmentPoint, channelFlags));
+                                              secondPerCommitmentPoint, channelFlags), null);
         var stream = new MemoryStream();
         var expectedBytes = "00406FE28C0AB6F1B372C1A6A246AE63F74F931E8365E15A089C68D61900000000000000000000000000000000000000000000000000000000000000000000000000000003E8000007D000000000000186A0000000000000000100000000000F424000000000000003E8000100020000000102C93CA7DCA44D2E45E3CC5419D92750F7FB3A0F180852B73A621F4051C0193A750315525220B88467A0EE3A111AE49FFDC337136EF51031CFC1C9883B7D1CBD653403A6BD98A33A52CD9D339EE20B4627AC60EC45C897E4FF182CC22ABA372C8D31C10280A3001FE999B1FE9842317CE29F71B9BB5888448A2CF5E115BFC808BA4568CE03798E7EFC8C950FCD6C9E3AF4BBAD16A26F14C838E99651F637DDD73DDC88531B0326550F5AE41511E767AFE0A9C7E20A73174875A6D1EE4E9E128CBB1FB0099F6103A92B07CBAE641DCFD482825233AECC2D5012913B48040131DB3222670C2BFFCD00".ToByteArray();
 
