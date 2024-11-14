@@ -26,7 +26,7 @@ public sealed class AcceptChannel2Message(AcceptChannel2Payload payload) : BaseM
     /// Deserialize a OpenChannel2Message from a stream.
     /// </summary>
     /// <param name="stream">The stream to deserialize from.</param>
-    /// <returns>The deserialized OpenChannel2Message.</returns>
+    /// <returns>The deserialized AcceptChannel2Message.</returns>
     /// <exception cref="MessageSerializationException">Error deserializing OpenChannel2Message</exception>
     public static async Task<AcceptChannel2Message> DeserializeAsync(Stream stream)
     {

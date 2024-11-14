@@ -33,7 +33,7 @@ public class StfuMessageTests
         var invalidStream = new MemoryStream([0x00, 0x01, 0x02]);
 
         // Act & Assert
-        await Assert.ThrowsAsync<MessageSerializationException>(() => CommitmentSignedMessage.DeserializeAsync(invalidStream));
+        await Assert.ThrowsAsync<MessageSerializationException>(() => StfuMessage.DeserializeAsync(invalidStream));
     }
 
     [Fact]

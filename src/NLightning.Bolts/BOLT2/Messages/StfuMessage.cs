@@ -27,8 +27,8 @@ public sealed class StfuMessage(StfuPayload payload) : BaseMessage(MessageTypes.
     /// Deserialize a StfuMessage from a stream.
     /// </summary>
     /// <param name="stream">The stream to deserialize from.</param>
-    /// <returns>The deserialized CommitmentSignedMessage.</returns>
-    /// <exception cref="MessageSerializationException">Error deserializing CommitmentSignedMessage</exception>
+    /// <returns>The deserialized StfuMessage.</returns>
+    /// <exception cref="MessageSerializationException">Error deserializing StfuMessage</exception>
     public static async Task<StfuMessage> DeserializeAsync(Stream stream)
     {
         try
