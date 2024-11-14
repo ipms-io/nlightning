@@ -35,7 +35,7 @@ public readonly struct ChainHash
     /// </summary>
     /// <param name="other">The chain hash to compare to.</param>
     /// <returns>True if the chain hashes are equal, otherwise false.</returns>
-    public readonly bool Equals(ChainHash other)
+    private readonly bool Equals(ChainHash other)
     {
         return _value.SequenceEqual(other._value);
     }
@@ -67,5 +67,17 @@ public readonly struct ChainHash
     public static bool operator !=(ChainHash left, ChainHash right)
     {
         return !(left == right);
+    }
+
+    public ValueTask SerializeAsync(Stream stream)
+    {
+        return stream.WriteAsync(_value);
+    }
+
+    public static async Task<ChainHash> DeserializeAsync(Stream stream)
+    {
+        var buffer = new byte[LENGTH];
+        await stream.ReadExactlyAsync(buffer);
+        return new ChainHash(buffer);
     }
 }

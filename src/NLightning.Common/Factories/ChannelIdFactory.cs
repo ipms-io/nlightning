@@ -1,9 +1,11 @@
-namespace NLightning.Bolts.BOLT2.Factories;
+namespace NLightning.Common.Factories;
 
 using Common.Crypto.Hashes;
+using Types;
 
 public static class ChannelIdFactory
 {
+    [Obsolete("Method is deprecated because we've only implemented V2 Channels", true)]
     public static ChannelId CreateV1(Span<byte> fundingTxId, ushort fundingOutputIndex)
     {
         if (fundingTxId.Length != 32)

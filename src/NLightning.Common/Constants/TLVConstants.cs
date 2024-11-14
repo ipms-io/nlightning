@@ -27,7 +27,8 @@ public static class TlvConstants
     /// Require confirmed inputs TLV type.
     /// </summary>
     /// <remarks>
-    /// The require confirmed inputs TLV type is used in the TxInitRbfMessage to communicate if the node requires confirmed inputs.
+    /// The "Require Confirmed Inputs" TLV type is used in the TxInitRbfMessage and OpenChannel2Message to communicate
+    /// if the node requires confirmed inputs.
     /// </remarks>
     public static readonly BigSize REQUIRE_CONFIRMED_INPUTS = 2;
 
@@ -38,4 +39,21 @@ public static class TlvConstants
     /// The remote address TLV type is used in the InitMessage to communicate the remote address of the node.
     /// </remarks>
     public static readonly BigSize REMOTE_ADDRESS = 3;
+
+    /// <summary>
+    /// Upfront Shutdown Script TLV Type
+    /// </summary>
+    /// <remarks>
+    /// The "Upfront Shutdown Script" is used in the OpenChannel2Message to set where the funds shoul be send on a
+    /// mutual close
+    /// </remarks>
+    public static readonly BigSize UPFRONT_SHUTDOWN_SCRIPT = 0;
+
+    /// <summary>
+    /// Channel Type TLV Type
+    /// </summary>
+    /// <remarks>
+    /// The "Channel Type" is used in the OpenChannel2Message to set the channel type being oppened
+    /// </remarks>
+    public static readonly BigSize CHANNEL_TYPE = 1;
 }

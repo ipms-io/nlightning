@@ -15,7 +15,6 @@ using Payloads;
 /// The message type is 74.
 /// </remarks>
 /// <param name="payload">The tx_abort payload.</param>
-/// <param name="extension">The TLV extension.</param>
 public sealed class TxAbortMessage(TxAbortPayload payload) : BaseMessage(MessageTypes.TX_ABORT, payload)
 {
     /// <inheritdoc/>

@@ -9,10 +9,9 @@ using Interfaces;
 /// Represents the payload for the tx_abort message.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="TxAbortPayload"/> class.
+/// Initializes a new instance of the TxAbortPayload class.
 /// </remarks>
 /// <param name="channelId">The channel ID.</param>
-/// <param name="length">The data length.</param>
 /// <param name="data">The data.</param>
 public class TxAbortPayload(ChannelId channelId, byte[] data) : IMessagePayload
 {

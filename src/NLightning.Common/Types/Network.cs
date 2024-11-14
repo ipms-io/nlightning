@@ -11,6 +11,20 @@ public readonly struct Network(string name)
 
     public string Name { get; } = name;
 
+    public ChainHash ChainHash
+    {
+        get
+        {
+            return Name switch
+            {
+                NetworkConstants.MAINNET => ChainConstants.MAIN,
+                NetworkConstants.TESTNET => ChainConstants.TESTNET,
+                NetworkConstants.REGTEST => ChainConstants.REGTEST,
+                _ => throw new Exception("Chain not supported.")
+            };
+        }
+    }
+
     public override string ToString() => Name;
 
     #region Implicit Conversions
