@@ -168,14 +168,14 @@ public static class MessageFactory
     /// Create a TxInitRbf message.
     /// </summary>
     /// <param name="channelId">The channel id.</param>
-    /// <param name="txId">The transaction id.</param>
+    /// <param name="locktime">The locktime.</param>
+    /// <param name="feerate">The feerate</param>
+    /// <param name="fundingOutputContrubution">The output contribution.</param>
+    /// <param name="requireConfirmedInputs">How many confirmed inputs we need.</param>
     /// <returns>The TxInitRbf message.</returns>
     /// <seealso cref="TxInitRbfMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="TxInitRbfPayload"/>
-    /// <seealso cref="TLVStream"/>
-    /// <seealso cref="FundingOutputContrubutionTLV"/>
-    /// <seealso cref="RequiredConfirmedInputsTLV"/>
     public static IMessage CreateTxInitRbfMessage(ChannelId channelId, uint locktime, uint feerate, long fundingOutputContrubution, bool requireConfirmedInputs)
     {
         var extension = new TlvStream();
@@ -194,13 +194,15 @@ public static class MessageFactory
     /// Create a TxAckRbf message.
     /// </summary>
     /// <param name="channelId">The channel id.</param>
+    /// <param name="fundingOutputContrubution">The output contribution.</param>
+    /// <param name="requireConfirmedInputs">How many confirmed inputs we need.</param>
     /// <returns>The TxAckRbf message.</returns>
     /// <seealso cref="TxAckRbfMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="TxAckRbfPayload"/>
-    /// <seealso cref="TLVStream"/>
-    /// <seealso cref="FundingOutputContrubutionTLV"/>
-    /// <seealso cref="RequiredConfirmedInputsTLV"/>
+    /// <seealso cref="TlvStream"/>
+    /// <seealso cref="FundingOutputContributionTlv"/>
+    /// <seealso cref="RequiredConfirmedInputsTlv"/>
     public static IMessage CreateTxAckRbfMessage(ChannelId channelId, long fundingOutputContrubution, bool requireConfirmedInputs)
     {
         var extension = new TlvStream();

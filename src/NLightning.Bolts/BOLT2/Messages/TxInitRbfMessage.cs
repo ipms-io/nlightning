@@ -18,7 +18,9 @@ using Payloads;
 /// <param name="extension">The TLV extension.</param>
 public sealed class TxInitRbfMessage(TxInitRbfPayload payload, TlvStream extension) : BaseMessage(MessageTypes.TX_INIT_RBF, payload, extension)
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// The payload of the message.
+    /// </summary>
     public new TxInitRbfPayload Payload { get => (TxInitRbfPayload)base.Payload; }
 
     /// <summary>

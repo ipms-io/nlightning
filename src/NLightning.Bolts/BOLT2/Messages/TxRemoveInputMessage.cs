@@ -17,7 +17,9 @@ using Payloads;
 /// <param name="payload">The tx_remove_input payload.</param>
 public sealed class TxRemoveInputMessage(TxRemoveInputPayload payload) : BaseMessage(MessageTypes.TX_REMOVE_INPUT, payload)
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// The payload of the message.
+    /// </summary>
     public new TxRemoveInputPayload Payload { get => (TxRemoveInputPayload)base.Payload; }
 
     /// <summary>

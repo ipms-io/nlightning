@@ -17,7 +17,9 @@ using Payloads;
 /// <param name="payload">The tx_complete payload.</param>
 public sealed class TxCompleteMessage(TxCompletePayload payload) : BaseMessage(MessageTypes.TX_COMPLETE, payload)
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// The payload of the message.
+    /// </summary>
     public new TxCompletePayload Payload { get => (TxCompletePayload)base.Payload; }
 
     /// <summary>

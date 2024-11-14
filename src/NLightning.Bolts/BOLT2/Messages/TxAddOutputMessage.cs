@@ -17,7 +17,9 @@ using Payloads;
 /// <param name="payload">The tx_add_output payload.</param>
 public sealed class TxAddOutputMessage(TxAddOutputPayload payload) : BaseMessage(MessageTypes.TX_ADD_OUTPUT, payload)
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// The payload of the message.
+    /// </summary>
     public new TxAddOutputPayload Payload { get => (TxAddOutputPayload)base.Payload; }
 
     /// <summary>

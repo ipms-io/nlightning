@@ -17,7 +17,9 @@ using Payloads;
 /// <param name="payload">The tx_abort payload.</param>
 public sealed class TxAbortMessage(TxAbortPayload payload) : BaseMessage(MessageTypes.TX_ABORT, payload)
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// The payload of the message.
+    /// </summary>
     public new TxAbortPayload Payload { get => (TxAbortPayload)base.Payload; }
 
     /// <summary>

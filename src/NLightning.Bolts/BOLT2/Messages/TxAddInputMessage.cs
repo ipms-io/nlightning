@@ -17,7 +17,9 @@ using Payloads;
 /// <param name="payload">The tx_add_input payload.</param>
 public sealed class TxAddInputMessage(TxAddInputPayload payload) : BaseMessage(MessageTypes.TX_ADD_INPUT, payload)
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// The payload of the message.
+    /// </summary>
     public new TxAddInputPayload Payload { get => (TxAddInputPayload)base.Payload; }
 
     /// <summary>

@@ -17,7 +17,9 @@ using Payloads;
 /// <param name="payload">The tx_remove_output payload.</param>
 public sealed class TxRemoveOutputMessage(TxRemoveOutputPayload payload) : BaseMessage(MessageTypes.TX_REMOVE_OUTPUT, payload)
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// The payload of the message.
+    /// </summary>
     public new TxRemoveOutputPayload Payload { get => (TxRemoveOutputPayload)base.Payload; }
 
     /// <summary>

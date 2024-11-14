@@ -7,7 +7,7 @@ using Common.Constants;
 using Common.TLVs;
 using Common.Types;
 using Exceptions;
-using Tests.Utils;
+using Utils;
 
 public class InitMessageTests
 {

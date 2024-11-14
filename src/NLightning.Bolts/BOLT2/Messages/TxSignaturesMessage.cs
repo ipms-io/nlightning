@@ -17,7 +17,9 @@ using Payloads;
 /// <param name="payload">The tx_signatures payload.</param>
 public sealed class TxSignaturesMessage(TxSignaturesPayload payload) : BaseMessage(MessageTypes.TX_SIGNATURES, payload)
 {
-    /// <inheritdoc/>
+    /// <summary>
+    /// The payload of the message.
+    /// </summary>
     public new TxSignaturesPayload Payload { get => (TxSignaturesPayload)base.Payload; }
 
     /// <summary>

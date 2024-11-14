@@ -20,7 +20,6 @@ using Interfaces;
 /// <param name="feerate">The feerate.</param>
 /// <seealso cref="Messages.TxInitRbfMessage"/>
 /// <seealso cref="Common.Types.ChannelId"/>
-/// <seealso cref="Common.Types.TLVStream"/>
 public class TxInitRbfPayload(ChannelId channelId, uint locktime, uint feerate) : IMessagePayload
 {
     /// <summary>

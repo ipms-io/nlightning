@@ -26,7 +26,12 @@ public class FundingOutputContributionTlv : Tlv
         Satoshis = satoshis;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Serialize the TLV to a stream
+    /// </summary>
+    /// <param name="stream">The stream to write to</param>
+    /// <returns>A task that represents the asynchronous operation</returns>
+    /// <exception cref="SerializationException">Error serializing TLV or any of it's parts</exception>
     public new async Task SerializeAsync(Stream stream)
     {
         var satoshiBytes = EndianBitConverter.GetBytesBigEndian(Satoshis);
