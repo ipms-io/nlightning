@@ -56,4 +56,12 @@ public static class TlvConstants
     /// The "Channel Type" is used in the OpenChannel2Message to set the channel type being oppened
     /// </remarks>
     public static readonly BigSize CHANNEL_TYPE = 1;
+
+    /// <summary>
+    /// Fee Range TLV Type
+    /// </summary>
+    /// <remarks>
+    /// The "Fee Range" is used in the ClosingSignedMessage to set the acceptable fee range
+    /// </remarks>
+    public static readonly BigSize FEE_RANGE = 1;
 }
