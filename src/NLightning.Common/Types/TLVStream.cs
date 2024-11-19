@@ -15,12 +15,30 @@ public sealed class TlvStream
     /// <param name="tlv">The TLV to add</param>
     public void Add(Tlv tlv)
     {
-        if (_tlvs.ContainsKey(tlv.Type))
+        if (!_tlvs.TryAdd(tlv.Type, tlv))
         {
             throw new ArgumentException($"A TLV with type {tlv.Type} already exists.");
         }
+    }
 
-        _tlvs[tlv.Type] = tlv;
+    /// <summary>
+    /// Add a series of TLV to the stream
+    /// </summary>
+    /// <param name="tlvs">The TLVs to add</param>
+    public void Add(params Tlv?[] tlvs)
+    {
+        foreach (var tlv in tlvs)
+        {
+            if (tlv is null)
+            {
+                continue;
+            }
+
+            if (!_tlvs.TryAdd(tlv.Type, tlv))
+            {
+                throw new ArgumentException($"A TLV with type {tlv.Type} already exists.");
+            }
+        }
     }
 
     /// <summary>

@@ -7,63 +7,45 @@ using Constants;
 using Types;
 
 /// <summary>
-/// Funding Output Contribution TLV.
+/// Upfront Shutdown Script TLV.
 /// </summary>
 /// <remarks>
-/// The funding output contribution TLV is used in the TxInitRbfMessage to communicate the funding output contribution in satoshis.
+/// The upfront shutdown script TLV is used in the AcceptChannel2Message to communicate the script to be used when the
+/// channel is being closed.
 /// </remarks>
 public class UpfrontShutdownScriptTlv : Tlv
 {
     /// <summary>
-    /// The amount being contributed in satoshis
+    /// The shutdown script to be used when closing the channel
     /// </summary>
-    public Script? ShutdownScriptPubkey { get; private set; }
+    public Script ShutdownScriptPubkey { get; }
 
-    public UpfrontShutdownScriptTlv() : base(TlvConstants.UPFRONT_SHUTDOWN_SCRIPT)
-    { }
     public UpfrontShutdownScriptTlv(Script shutdownScriptPubkey) : base(TlvConstants.UPFRONT_SHUTDOWN_SCRIPT)
     {
         ShutdownScriptPubkey = shutdownScriptPubkey;
+
+        Value = shutdownScriptPubkey.ToBytes();
+        Length = Value.Length;
     }
 
     /// <summary>
-    /// Serialize the TLV to a stream
+    /// Cast UpfrontShutdownScriptTlv from a Tlv.
     /// </summary>
-    /// <param name="stream">The stream to write to</param>
-    /// <returns>A task that represents the asynchronous operation</returns>
-    /// <exception cref="SerializationException">Error serializing TLV or any of it's parts</exception>
-    public new async Task SerializeAsync(Stream stream)
+    /// <param name="tlv">The tlv to cast from.</param>
+    /// <returns>The cast UpfrontShutdownScriptTlv.</returns>
+    /// <exception cref="SerializationException">Error casting UpfrontShutdownScriptTlv</exception>
+    public static UpfrontShutdownScriptTlv FromTlv(Tlv tlv)
     {
-        var scriptBytes = ShutdownScriptPubkey?.ToBytes() ?? throw new NullReferenceException("ShutdownScriptPubkey was null");
-
-        Length = scriptBytes.Length;
-        Value = scriptBytes;
-
-        await base.SerializeAsync(stream);
-    }
-
-    /// <summary>
-    /// Deserialize a UpfrontShutdownScriptTlv from a stream.
-    /// </summary>
-    /// <param name="stream">The stream to deserialize from.</param>
-    /// <returns>The deserialized UpfrontShutdownScriptTlv.</returns>
-    /// <exception cref="SerializationException">Error deserializing UpfrontShutdownScriptTlv</exception>
-    public static new async Task<UpfrontShutdownScriptTlv> DeserializeAsync(Stream stream)
-    {
-        var tlv = await Tlv.DeserializeAsync(stream) as UpfrontShutdownScriptTlv ?? throw new SerializationException("Invalid TLV type");
-
         if (tlv.Type != TlvConstants.UPFRONT_SHUTDOWN_SCRIPT)
         {
-            throw new SerializationException("Invalid TLV type");
+            throw new InvalidCastException("Invalid TLV type");
         }
 
         if (tlv.Length == 0)
         {
-            throw new SerializationException("Invalid length");
+            throw new InvalidCastException("Invalid length");
         }
 
-        tlv.ShutdownScriptPubkey = new Script(tlv.Value);
-
-        return tlv;
+        return new UpfrontShutdownScriptTlv(new Script(tlv.Value));
     }
 }

@@ -14,12 +14,9 @@ public class TxAckRbfMessageTests
     {
         // Arrange
         var expectedChannelId = ChannelId.Zero;
-        var extension = new TlvStream();
         var expectedTlv = new FundingOutputContributionTlv(10);
-        extension.Add(expectedTlv);
-        var expectedTlv2 = new RequiredConfirmedInputsTlv();
-        extension.Add(expectedTlv2);
-        var stream = new MemoryStream("0x000000000000000000000000000000000000000000000000000000000000000000000200".ToByteArray());
+        var expectedTlv2 = new RequireConfirmedInputsTlv();
+        var stream = new MemoryStream("00000000000000000000000000000000000000000000000000000000000000000008000000000000000A0200".ToByteArray());
 
         // Act
         var message = await TxAckRbfMessage.DeserializeAsync(stream);
@@ -49,14 +46,9 @@ public class TxAckRbfMessageTests
     {
         // Arrange
         var channelId = ChannelId.Zero;
-        var extension = new TlvStream();
-        var tlv = new FundingOutputContributionTlv(10);
-        extension.Add(tlv);
-        var tlv2 = new RequiredConfirmedInputsTlv();
-        extension.Add(tlv2);
-        var message = new TxAckRbfMessage(new TxAckRbfPayload(channelId), extension);
+        var message = new TxAckRbfMessage(new TxAckRbfPayload(channelId), new FundingOutputContributionTlv(10), new RequireConfirmedInputsTlv());
         var stream = new MemoryStream();
-        var expectedBytes = "0x0049000000000000000000000000000000000000000000000000000000000000000000000200".ToByteArray();
+        var expectedBytes = "004900000000000000000000000000000000000000000000000000000000000000000008000000000000000A0200".ToByteArray();
 
         // Act
         await message.SerializeAsync(stream);

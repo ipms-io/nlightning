@@ -1,8 +1,10 @@
 using System.Runtime.Serialization;
+using NLightning.Common.Constants;
 
 namespace NLightning.Bolts.BOLT1.Messages;
 
 using Base;
+using Common.TLVs;
 using Constants;
 using Exceptions;
 using Payloads;
@@ -14,14 +16,25 @@ using Payloads;
 /// The init message is used to communicate the features of the node.
 /// The message type is 16.
 /// </remarks>
-/// <param name="payload">The init payload.</param>
-/// <param name="extension">The TLV extension.</param>
-public sealed class InitMessage(InitPayload payload, TlvStream? extension = null) : BaseMessage(MessageTypes.INIT, payload, extension)
+public sealed class InitMessage : BaseMessage
 {
     /// <summary>
     /// The payload of the message.
     /// </summary>
     public new InitPayload Payload { get => (InitPayload)base.Payload; }
+
+    public NetworksTlv? Networks { get; }
+
+    public InitMessage(InitPayload payload, NetworksTlv? networks = null) : base(MessageTypes.INIT, payload)
+    {
+        Networks = networks;
+
+        if (networks is not null)
+        {
+            Extension = new TlvStream();
+            Extension.Add(networks);
+        }
+    }
 
     /// <summary>
     /// Deserialize an InitMessage from a stream.
@@ -38,8 +51,16 @@ public sealed class InitMessage(InitPayload payload, TlvStream? extension = null
 
             // Deserialize extension if available
             var extension = await TlvStream.DeserializeAsync(stream);
+            if (extension is null)
+            {
+                return new InitMessage(payload);
+            }
 
-            return new InitMessage(payload, extension);
+            var networks = extension.TryGetTlv(TlvConstants.NETWORKS, out var networksTlv)
+                ? NetworksTlv.FromTlv(networksTlv!)
+                : null;
+
+            return new InitMessage(payload, networks);
         }
         catch (SerializationException e)
         {

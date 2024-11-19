@@ -4,6 +4,8 @@ namespace NLightning.Bolts.BOLT2.Messages;
 
 using Base;
 using Bolts.Constants;
+using Common.Constants;
+using Common.TLVs;
 using Exceptions;
 using Payloads;
 
@@ -14,14 +16,28 @@ using Payloads;
 /// The tx_init_rbf message initiates a replacement of the transaction after it's been completed.
 /// The message type is 72.
 /// </remarks>
-/// <param name="payload">The tx_init_rbf payload.</param>
-/// <param name="extension">The TLV extension.</param>
-public sealed class TxInitRbfMessage(TxInitRbfPayload payload, TlvStream extension) : BaseMessage(MessageTypes.TX_INIT_RBF, payload, extension)
+public sealed class TxInitRbfMessage : BaseMessage
 {
     /// <summary>
     /// The payload of the message.
     /// </summary>
     public new TxInitRbfPayload Payload { get => (TxInitRbfPayload)base.Payload; }
+
+    public FundingOutputContributionTlv? FundingOutputContribution { get; }
+    public RequireConfirmedInputsTlv? RequireConfirmedInputs { get; }
+
+    public TxInitRbfMessage(TxInitRbfPayload payload, FundingOutputContributionTlv? fundingOutputContribution = null, RequireConfirmedInputsTlv? requireConfirmedInputs = null)
+        : base(MessageTypes.TX_INIT_RBF, payload)
+    {
+        FundingOutputContribution = fundingOutputContribution;
+        RequireConfirmedInputs = requireConfirmedInputs;
+
+        if (FundingOutputContribution is not null || RequireConfirmedInputs is not null)
+        {
+            Extension = new TlvStream();
+            Extension.Add(FundingOutputContribution, RequireConfirmedInputs);
+        }
+    }
 
     /// <summary>
     /// Deserialize a TxInitRbfMessage from a stream.
@@ -37,9 +53,21 @@ public sealed class TxInitRbfMessage(TxInitRbfPayload payload, TlvStream extensi
             var payload = await TxInitRbfPayload.DeserializeAsync(stream);
 
             // Deserialize extension
-            var extension = await TlvStream.DeserializeAsync(stream) ?? throw new SerializationException("Required extension is missing");
+            var extension = await TlvStream.DeserializeAsync(stream);
+            if (extension is null)
+            {
+                return new TxInitRbfMessage(payload);
+            }
 
-            return new TxInitRbfMessage(payload, extension);
+            var channelType = extension.TryGetTlv(TlvConstants.FUNDING_OUTPUT_CONTRIBUTION, out var channelTypeTlv)
+                ? FundingOutputContributionTlv.FromTlv(channelTypeTlv!)
+                : null;
+
+            var requireConfirmedInputs = extension.TryGetTlv(TlvConstants.REQUIRE_CONFIRMED_INPUTS, out var requireConfirmedInputsTlv)
+                ? RequireConfirmedInputsTlv.FromTlv(requireConfirmedInputsTlv!)
+                : null;
+
+            return new TxInitRbfMessage(payload, channelType, requireConfirmedInputs);
         }
         catch (SerializationException e)
         {

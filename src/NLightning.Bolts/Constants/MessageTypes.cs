@@ -17,9 +17,9 @@ public static class MessageTypes
     #region Channel
     public const ushort OPEN_CHANNEL = 32,   // NOT IMPLEMENTED
                         ACCEPT_CHANNEL = 33, // NOT IMPLEMENTED
-                        FUNDING_CREATED = 34,
-                        FUNDING_SIGNED = 35,
-                        FUNDING_LOCKED = 36,
+                        FUNDING_CREATED = 34, // NOT IMPLEMENTED
+                        FUNDING_SIGNED = 35, // NOT IMPLEMENTED
+                        FUNDING_LOCKED = 36, // NOT IMPLEMENTED
                         SHUTDOWN = 38,
                         CLOSING_SIGNED = 39,
                         OPEN_CHANNEL_2 = 64,

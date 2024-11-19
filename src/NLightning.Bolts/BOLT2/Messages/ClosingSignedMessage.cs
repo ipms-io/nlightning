@@ -16,7 +16,6 @@ using Payloads;
 /// The closing_signed message is after shutdown is complete and there are no pending HTLCs.
 /// The message type is 39.
 /// </remarks>
-/// <param name="payload"></param>
 public sealed class ClosingSignedMessage : BaseMessage
 {
     /// <summary>
@@ -24,7 +23,7 @@ public sealed class ClosingSignedMessage : BaseMessage
     /// </summary>
     public new ClosingSignedPayload Payload { get => (ClosingSignedPayload)base.Payload; }
 
-    public FeeRangeTlv FeeRange { get; set; }
+    public FeeRangeTlv FeeRange { get; }
 
     public ClosingSignedMessage(ClosingSignedPayload payload, FeeRangeTlv feeRange) : base(MessageTypes.CLOSING_SIGNED, payload)
     {
@@ -48,12 +47,12 @@ public sealed class ClosingSignedMessage : BaseMessage
 
             // Deserialize extension
             var extension = await TlvStream.DeserializeAsync(stream) ?? throw new SerializationException("Required extension is missing");
-            if (!extension.TryGetTlv(TlvConstants.FEE_RANGE, out var tlv))
+            if (!extension.TryGetTlv(TlvConstants.FEE_RANGE, out var feeRangeTlv))
             {
                 throw new SerializationException("Required extension is missing");
             }
 
-            return new ClosingSignedMessage(payload, new FeeRangeTlv(tlv ?? throw new SerializationException("Required extension is missing")));
+            return new ClosingSignedMessage(payload, FeeRangeTlv.FromTlv(feeRangeTlv!));
         }
         catch (SerializationException e)
         {

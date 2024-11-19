@@ -346,18 +346,15 @@ public sealed class NodeOptions
     /// <remarks>
     /// If there are no ChainHashes, Mainnet is used as default.
     /// </remarks>
-    internal TlvStream GetInitExtension()
+    internal NetworksTlv GetInitTlvs()
     {
-        var extension = new TlvStream();
-
         // If there are no ChainHashes, use Mainnet as default
         if (!ChainHashes.Any())
         {
             ChainHashes = [ChainConstants.MAIN];
         }
 
-        var networks = new NetworksTlv(ChainHashes);
-        extension.Add(networks);
+        return new NetworksTlv(ChainHashes);
 
         // TODO: Review this when implementing BOLT7
         // // If RemoteAddress is set, add it to the extension
@@ -365,8 +362,6 @@ public sealed class NodeOptions
         // {
         //     extension.Add(new(new BigSize(3), RemoteAddress.GetAddressBytes()));
         // }
-
-        return extension;
     }
 
     /// <summary>

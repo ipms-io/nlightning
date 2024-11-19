@@ -1,5 +1,3 @@
-using System.Runtime.Serialization;
-
 namespace NLightning.Common.TLVs;
 
 using BitUtils;
@@ -24,24 +22,6 @@ public class FeeRangeTlv : Tlv
     /// </summary>
     public ulong MaxFeeSatoshis { get; private set; }
 
-    public FeeRangeTlv(Tlv tlv) : base(TlvConstants.FEE_RANGE)
-    {
-        if (tlv.Type != TlvConstants.FEE_RANGE)
-        {
-            throw new Exception("Invalid TLV type");
-        }
-
-        if (tlv.Length != sizeof(ulong) * 2) // 2 long (128 bits) is 16 bytes
-        {
-            throw new Exception("Invalid length");
-        }
-
-        Length = tlv.Length;
-        Value = tlv.Value;
-        MinFeeSatoshis = EndianBitConverter.ToUInt64BigEndian(Value[..sizeof(ulong)]);
-        MaxFeeSatoshis = EndianBitConverter.ToUInt64BigEndian(Value[sizeof(ulong)..]);
-    }
-
     public FeeRangeTlv(ulong minFeeSatoshis, ulong maxFeeSatoshis) : base(TlvConstants.FEE_RANGE)
     {
         MinFeeSatoshis = minFeeSatoshis;
@@ -57,15 +37,26 @@ public class FeeRangeTlv : Tlv
     }
 
     /// <summary>
-    /// Deserialize a FeeRangeTlv from a stream.
+    /// Cast FeeRangeTlv from a Tlv.
     /// </summary>
-    /// <param name="stream">The stream to deserialize from.</param>
-    /// <returns>The deserialized FeeRangeTlv.</returns>
-    /// <exception cref="SerializationException">Error deserializing FeeRangeTlv</exception>
-    public static new async Task<FeeRangeTlv> DeserializeAsync(Stream stream)
+    /// <param name="tlv">The tlv to cast from.</param>
+    /// <returns>The cast FeeRangeTlv.</returns>
+    /// <exception cref="InvalidCastException">Error casting FeeRangeTlv</exception>
+    public static FeeRangeTlv FromTlv(Tlv tlv)
     {
-        var tlv = await Tlv.DeserializeAsync(stream);
+        if (tlv.Type != TlvConstants.FEE_RANGE)
+        {
+            throw new InvalidCastException("Invalid TLV type");
+        }
 
-        return new FeeRangeTlv(tlv);
+        if (tlv.Length != sizeof(ulong) * 2) // 2 long (128 bits) is 16 bytes
+        {
+            throw new InvalidCastException("Invalid length");
+        }
+
+        var minFeeSatoshis = EndianBitConverter.ToUInt64BigEndian(tlv.Value[..sizeof(ulong)]);
+        var maxFeeSatoshis = EndianBitConverter.ToUInt64BigEndian(tlv.Value[sizeof(ulong)..]);
+
+        return new FeeRangeTlv(minFeeSatoshis, maxFeeSatoshis);
     }
 }

@@ -116,8 +116,7 @@ public class PeerTests
         var disconnectEventRaised = false;
         var features = _nodeOptions.GetNodeFeatures();
         features.SetFeature(Feature.GOSSIP_QUERIES, true);
-        var extension = _nodeOptions.GetInitExtension();
-        var initMessage = new InitMessage(new InitPayload(features), extension);
+        var initMessage = new InitMessage(new InitPayload(features), _nodeOptions.GetInitTlvs());
 
         _mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
 

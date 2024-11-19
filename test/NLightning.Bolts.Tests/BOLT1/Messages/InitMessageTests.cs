@@ -72,11 +72,9 @@ public class InitMessageTests
     public async Task Given_ValidPayloadAndExtension_When_SerializeAsync_Then_WritesCorrectDataToStream()
     {
         // Arrange
-        var expectedExtension = new TlvStream();
-        expectedExtension.Add(new NetworksTlv([ChainConstants.MAIN]));
-        var message = new InitMessage(new InitPayload(new Features()), expectedExtension);
+        var message = new InitMessage(new InitPayload(new Features()), new NetworksTlv([ChainConstants.MAIN]));
         var stream = new MemoryStream();
-        var expectedBytes = "0x001000020200000202000100".ToByteArray();
+        var expectedBytes = "0010000202000002020001206FE28C0AB6F1B372C1A6A246AE63F74F931E8365E15A089C68D6190000000000".ToByteArray();
 
         // Act
         await message.SerializeAsync(stream);

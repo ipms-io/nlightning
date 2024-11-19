@@ -4,6 +4,8 @@ namespace NLightning.Bolts.BOLT2.Messages;
 
 using Base;
 using Bolts.Constants;
+using Common.Constants;
+using Common.TLVs;
 using Exceptions;
 using Payloads;
 
@@ -14,13 +16,30 @@ using Payloads;
 /// The open_channel2 message is sent to another peer in order to start the channel negotiation.
 /// The message type is 64.
 /// </remarks>
-/// <param name="payload"></param>
-public sealed class OpenChannel2Message(OpenChannel2Payload payload, TlvStream? extension) : BaseMessage(MessageTypes.OPEN_CHANNEL_2, payload, extension)
+public sealed class OpenChannel2Message : BaseMessage
 {
     /// <summary>
     /// The payload of the message.
     /// </summary>
     public new OpenChannel2Payload Payload { get => (OpenChannel2Payload)base.Payload; }
+
+    public UpfrontShutdownScriptTlv? UpfrontShutdownScript { get; }
+    public ChannelTypeTlv? ChannelType { get; }
+    public RequireConfirmedInputsTlv? RequireConfirmedInputs { get; }
+
+    public OpenChannel2Message(OpenChannel2Payload payload, UpfrontShutdownScriptTlv? upfrontShutdownScript = null, ChannelTypeTlv? channelType = null, RequireConfirmedInputsTlv? requireConfirmedInputs = null)
+        : base(MessageTypes.OPEN_CHANNEL_2, payload)
+    {
+        UpfrontShutdownScript = upfrontShutdownScript;
+        ChannelType = channelType;
+        RequireConfirmedInputs = requireConfirmedInputs;
+
+        if (UpfrontShutdownScript is not null || ChannelType is not null || RequireConfirmedInputs is not null)
+        {
+            Extension = new TlvStream();
+            Extension.Add(UpfrontShutdownScript, ChannelType, RequireConfirmedInputs);
+        }
+    }
 
     /// <summary>
     /// Deserialize a OpenChannel2Message from a stream.
@@ -37,8 +56,24 @@ public sealed class OpenChannel2Message(OpenChannel2Payload payload, TlvStream? 
 
             // Deserialize extension
             var extension = await TlvStream.DeserializeAsync(stream);
+            if (extension is null)
+            {
+                return new OpenChannel2Message(payload);
+            }
 
-            return new OpenChannel2Message(payload, extension);
+            var upfrontShutdownScript = extension.TryGetTlv(TlvConstants.UPFRONT_SHUTDOWN_SCRIPT, out var upfrontShutdownScriptTlv)
+                ? UpfrontShutdownScriptTlv.FromTlv(upfrontShutdownScriptTlv!)
+                : null;
+
+            var channelType = extension.TryGetTlv(TlvConstants.CHANNEL_TYPE, out var channelTypeTlv)
+                ? ChannelTypeTlv.FromTlv(channelTypeTlv!)
+                : null;
+
+            var requireConfirmedInputs = extension.TryGetTlv(TlvConstants.REQUIRE_CONFIRMED_INPUTS, out var requireConfirmedInputsTlv)
+                ? RequireConfirmedInputsTlv.FromTlv(requireConfirmedInputsTlv!)
+                : null;
+
+            return new OpenChannel2Message(payload, upfrontShutdownScript, channelType, requireConfirmedInputs);
         }
         catch (SerializationException e)
         {

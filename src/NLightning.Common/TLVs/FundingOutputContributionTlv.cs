@@ -17,53 +17,34 @@ public class FundingOutputContributionTlv : Tlv
     /// <summary>
     /// The amount being contributed in satoshis
     /// </summary>
-    public long Satoshis { get; private set; }
+    public long Satoshis { get; }
 
-    public FundingOutputContributionTlv() : base(TlvConstants.FUNDING_OUTPUT_CONTRIBUTION)
-    { }
     public FundingOutputContributionTlv(long satoshis) : base(TlvConstants.FUNDING_OUTPUT_CONTRIBUTION)
     {
         Satoshis = satoshis;
-    }
 
-    /// <summary>
-    /// Serialize the TLV to a stream
-    /// </summary>
-    /// <param name="stream">The stream to write to</param>
-    /// <returns>A task that represents the asynchronous operation</returns>
-    /// <exception cref="SerializationException">Error serializing TLV or any of it's parts</exception>
-    public new async Task SerializeAsync(Stream stream)
-    {
-        var satoshiBytes = EndianBitConverter.GetBytesBigEndian(Satoshis);
-
-        Length = satoshiBytes.Length;
-        Value = satoshiBytes;
-
-        await base.SerializeAsync(stream);
+        Value = EndianBitConverter.GetBytesBigEndian(Satoshis);
+        Length = Value.Length;
     }
 
     /// <summary>
     /// Deserialize a NetworksTLV from a stream.
     /// </summary>
-    /// <param name="stream">The stream to deserialize from.</param>
+    /// <param name="tlv">The stream to deserialize from.</param>
     /// <returns>The deserialized NetworksTLV.</returns>
     /// <exception cref="SerializationException">Error deserializing NetworksTLV</exception>
-    public static new async Task<FundingOutputContributionTlv> DeserializeAsync(Stream stream)
+    public static FundingOutputContributionTlv FromTlv(Tlv tlv)
     {
-        var tlv = await Tlv.DeserializeAsync(stream) as FundingOutputContributionTlv ?? throw new SerializationException("Invalid TLV type");
-
         if (tlv.Type != TlvConstants.FUNDING_OUTPUT_CONTRIBUTION)
         {
-            throw new SerializationException("Invalid TLV type");
+            throw new InvalidCastException("Invalid TLV type");
         }
 
         if (tlv.Length != 8) // long (64 bits) is 8 bytes
         {
-            throw new SerializationException("Invalid length");
+            throw new InvalidCastException("Invalid length");
         }
 
-        tlv.Satoshis = EndianBitConverter.ToInt64BigEndian(tlv.Value);
-
-        return tlv;
+        return new FundingOutputContributionTlv(EndianBitConverter.ToInt64BigEndian(tlv.Value));
     }
 }
