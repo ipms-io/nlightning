@@ -599,6 +599,29 @@ public static class MessageFactory
 
         return new UpdateFailMalformedHtlcMessage(payload);
     }
+
+    /// <summary>
+    /// Create a ChannelReestablish message.
+    /// </summary>
+    /// <param name="channelId">The channel id.</param>
+    /// <param name="nextCommitmentNumber">The next commitment number.</param>
+    /// <param name="nextRevocationNumber">The next revocation number.</param>
+    /// <param name="yourLastPerCommitmentSecret">The peer last per commitment secret.</param>
+    /// <param name="myCurrentPerCommitmentPoint">Our current per commitment point.</param>
+    /// <returns>The ChannelReestablish message.</returns>
+    /// <seealso cref="ChannelReestablishMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="ChannelReestablishPayload"/>
+    public static IMessage CreateChannelReestablishMessage(ChannelId channelId, ulong nextCommitmentNumber,
+                                                                ulong nextRevocationNumber,
+                                                                ReadOnlyMemory<byte> yourLastPerCommitmentSecret,
+                                                                PubKey myCurrentPerCommitmentPoint)
+    {
+        var payload = new ChannelReestablishPayload(channelId, nextCommitmentNumber, nextRevocationNumber,
+                                                    yourLastPerCommitmentSecret, myCurrentPerCommitmentPoint);
+
+        return new ChannelReestablishMessage(payload);
+    }
     #endregion
 
     /// <summary>
@@ -643,6 +666,7 @@ public static class MessageFactory
             MessageTypes.REVOKE_AND_ACK => await RevokeAndAckMessage.DeserializeAsync(stream),                          // 133 -> 0x85
             MessageTypes.UPDATE_FEE => await UpdateFeeMessage.DeserializeAsync(stream),                                 // 134 -> 0x86
             MessageTypes.UPDATE_FAIL_MALFORMED_HTLC => await UpdateFailMalformedHtlcMessage.DeserializeAsync(stream),   // 135 -> 0x87
+            MessageTypes.CHANNEL_REESTABLISH => await ChannelReestablishMessage.DeserializeAsync(stream),               // 136 -> 0x88
 
             MessageTypes.OPEN_CHANNEL => throw new InvalidMessageException("You must use OpenChannel2 flow"),
             MessageTypes.ACCEPT_CHANNEL => throw new InvalidMessageException("You must use OpenChannel2 flow"),

@@ -80,4 +80,12 @@ public static class TlvConstants
     /// The "Blinded Path" is used in the UpdateAddHtlcMessage
     /// </remarks>
     public static readonly BigSize BLINDED_PATH = 0;
+
+    /// <summary>
+    /// Next Funding TLV Type
+    /// </summary>
+    /// <remarks>
+    /// The "Next Funding" is used in the ChannelReestablishMessage
+    /// </remarks>
+    public static readonly BigSize NEXT_FUNDING = 0;
 }
