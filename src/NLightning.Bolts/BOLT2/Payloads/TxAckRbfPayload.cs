@@ -7,7 +7,7 @@ using Interfaces;
 /// Represents the payload for the tx_ack_rbf message.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="TxAckRbfPayload"/> class.
+/// Initializes a new instance of the TxAckRbfPayload class.
 /// </remarks>
 /// <param name="channelId">The channel ID.</param>
 public class TxAckRbfPayload(ChannelId channelId) : IMessagePayload

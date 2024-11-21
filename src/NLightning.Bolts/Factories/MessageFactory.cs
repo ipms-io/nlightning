@@ -326,6 +326,27 @@ public static class MessageFactory
 
     #region Channel Messages
     /// <summary>
+    /// Create a ChannelReady message.
+    /// </summary>
+    /// <param name="channelId">The channel id.</param>
+    /// <param name="secondPerCommitmentPoint">The second per commitment point.</param>
+    /// <param name="shortChannelId">The channel's shortChannelId.</param>
+    /// <returns>The ChannelReady message.</returns>
+    /// <seealso cref="ChannelReadyMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="PubKey"/>
+    /// <seealso cref="ShortChannelId"/>
+    /// <seealso cref="ChannelReadyPayload"/>
+    public static IMessage CreateChannelReadyMessage(ChannelId channelId, PubKey secondPerCommitmentPoint,
+                                                     ShortChannelId? shortChannelId = null)
+    {
+        var payload = new ChannelReadyPayload(channelId, secondPerCommitmentPoint);
+
+        return new ChannelReadyMessage(payload,
+                                       shortChannelId is null ? null : new ShortChannelIdTlv(shortChannelId.Value));
+    }
+
+    /// <summary>
     /// Create a Shutdown message.
     /// </summary>
     /// <param name="channelId">The channel id.</param>
@@ -495,6 +516,7 @@ public static class MessageFactory
             MessageTypes.ERROR => await ErrorMessage.DeserializeAsync(stream),                          // 17  -> 0x11
             MessageTypes.PING => await PingMessage.DeserializeAsync(stream),                            // 18  -> 0x12
             MessageTypes.PONG => await PongMessage.DeserializeAsync(stream),                            // 19  -> 0x13
+            MessageTypes.CHANNEL_READY => await ChannelReadyMessage.DeserializeAsync(stream),           // 36  -> 0x24
             MessageTypes.SHUTDOWN => await ShutdownMessage.DeserializeAsync(stream),                    // 38  -> 0x26
             MessageTypes.CLOSING_SIGNED => await ClosingSignedMessage.DeserializeAsync(stream),         // 39  -> 0x27
             MessageTypes.OPEN_CHANNEL_2 => await OpenChannel2Message.DeserializeAsync(stream),          // 64  -> 0x40
@@ -508,7 +530,13 @@ public static class MessageFactory
             MessageTypes.TX_INIT_RBF => await TxInitRbfMessage.DeserializeAsync(stream),                // 72  -> 0x48
             MessageTypes.TX_ACK_RBF => await TxAckRbfMessage.DeserializeAsync(stream),                  // 73  -> 0x49
             MessageTypes.TX_ABORT => await TxAbortMessage.DeserializeAsync(stream),                     // 74  -> 0x4A
+            MessageTypes.UPDATE_ADD_HTLC => await UpdateAddHtlcMessage.DeserializeAsync(stream),        // 128 -> 0x80
             MessageTypes.COMMITMENT_SIGNED => await CommitmentSignedMessage.DeserializeAsync(stream),   // 132 -> 0x84
+
+            MessageTypes.OPEN_CHANNEL => throw new InvalidMessageException("You must use OpenChannel2 flow"),
+            MessageTypes.ACCEPT_CHANNEL => throw new InvalidMessageException("You must use OpenChannel2 flow"),
+            MessageTypes.FUNDING_CREATED => throw new InvalidMessageException("You must use OpenChannel2 flow"),
+            MessageTypes.FUNDING_SIGNED => throw new InvalidMessageException("You must use OpenChannel2 flow"),
 
             _ => throw new InvalidMessageException("Unknown message type"),
         };

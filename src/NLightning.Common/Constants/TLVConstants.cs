@@ -72,4 +72,12 @@ public static class TlvConstants
     /// The "Short Channel ID" is used in the ChannelReadyMessage
     /// </remarks>
     public static readonly BigSize SHORT_CHANNEL_ID = 1;
+
+    /// <summary>
+    /// Blinded Path TLV Type
+    /// </summary>
+    /// <remarks>
+    /// The "Blinded Path" is used in the UpdateAddHtlcMessage
+    /// </remarks>
+    public static readonly BigSize BLINDED_PATH = 0;
 }
