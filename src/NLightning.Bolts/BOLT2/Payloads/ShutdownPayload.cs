@@ -17,17 +17,17 @@ public class ShutdownPayload(ChannelId channelId, Script scriptPubkey) : IMessag
     /// <summary>
     /// The channel_id this message refers to
     /// </summary>
-    public ChannelId ChannelId { get; set; } = channelId;
+    public ChannelId ChannelId { get; } = channelId;
 
     /// <summary>
     /// len is the scriptpubkey length
     /// </summary>
-    public ushort ScriptPubkeyLen { get; set; } = (ushort)scriptPubkey.Length;
+    public ushort ScriptPubkeyLen { get; } = (ushort)scriptPubkey.Length;
 
     /// <summary>
     /// The scriptpubkey to send the closing funds to
     /// </summary>
-    public Script ScriptPubkey { get; set; } = scriptPubkey;
+    public Script ScriptPubkey { get; } = scriptPubkey;
 
     /// <inheritdoc/>
     public async Task SerializeAsync(Stream stream)

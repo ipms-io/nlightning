@@ -45,6 +45,7 @@ public static class MessageTypes
                         COMMITMENT_SIGNED = 132,
                         REVOKE_AND_ACK = 133,
                         UPDATE_FEE = 134,
+                        UPDATE_FAIL_MALFORMED_HTLC = 135,
                         CHANNEL_REESTABLISH = 136;
     #endregion
 

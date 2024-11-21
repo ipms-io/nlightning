@@ -477,6 +477,60 @@ public static class MessageFactory
 
     #region Commitment
     /// <summary>
+    /// Create a UpdateAddHtlc message.
+    /// </summary>
+    /// <param name="channelId">The channel id.</param>
+    /// <param name="id">The htlc id.</param>
+    /// <param name="amountMsat">The amount for this htlc.</param>
+    /// <param name="paymentHash">The htlc payment hash.</param>
+    /// <param name="cltvExpiry">The cltv expiry.</param>
+    /// <param name="onionRoutingPacket">The onion routing packet.</param>
+    /// <returns>The UpdateAddHtlc message.</returns>
+    /// <seealso cref="UpdateAddHtlcMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="UpdateAddHtlcPayload"/>
+    public static IMessage CreateUpdateAddHtlcMessage(ChannelId channelId, ulong id, ulong amountMsat, ReadOnlyMemory<byte> paymentHash, uint cltvExpiry, ReadOnlyMemory<byte>? onionRoutingPacket = null)
+    {
+        var payload = new UpdateAddHtlcPayload(channelId, id, amountMsat, paymentHash, cltvExpiry, onionRoutingPacket);
+
+        return new UpdateAddHtlcMessage(payload);
+    }
+
+    /// <summary>
+    /// Create a UpdateFulfillHtlc message.
+    /// </summary>
+    /// <param name="channelId">The channel id.</param>
+    /// <param name="id">The htlc id.</param>
+    /// <param name="preimage">The preimage for this htlc.</param>
+    /// <returns>The UpdateFulfillHtlc message.</returns>
+    /// <seealso cref="UpdateFulfillHtlcMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="UpdateFulfillHtlcPayload"/>
+    public static IMessage CreateUpdateFulfillHtlcMessage(ChannelId channelId, ulong id, ReadOnlyMemory<byte> preimage)
+    {
+        var payload = new UpdateFulfillHtlcPayload(channelId, id, preimage);
+
+        return new UpdateFulfillHtlcMessage(payload);
+    }
+
+    /// <summary>
+    /// Create a UpdateFailHtlc message.
+    /// </summary>
+    /// <param name="channelId">The channel id.</param>
+    /// <param name="id">The htlc id.</param>
+    /// <param name="reason">The reason for failure.</param>
+    /// <returns>The UpdateFailHtlc message.</returns>
+    /// <seealso cref="UpdateFailHtlcMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="UpdateFailHtlcPayload"/>
+    public static IMessage CreateUpdateFailHtlcMessage(ChannelId channelId, ulong id, ReadOnlyMemory<byte> reason)
+    {
+        var payload = new UpdateFailHtlcPayload(channelId, id, reason);
+
+        return new UpdateFailHtlcMessage(payload);
+    }
+
+    /// <summary>
     /// Create a CommitmentSigned message.
     /// </summary>
     /// <param name="channelId">The channel id.</param>
@@ -492,6 +546,24 @@ public static class MessageFactory
         var payload = new CommitmentSignedPayload(channelId, signature, htlcSignatures);
 
         return new CommitmentSignedMessage(payload);
+    }
+
+    /// <summary>
+    /// Create a UpdateFailMalformedHtlc message.
+    /// </summary>
+    /// <param name="channelId">The channel id.</param>
+    /// <param name="id">The htlc id.</param>
+    /// <param name="sha256OfOnion">The sha256OfOnion for this htlc.</param>
+    /// <param name="failureCode">The failureCode.</param>
+    /// <returns>The UpdateFailMalformedHtlc message.</returns>
+    /// <seealso cref="UpdateFailMalformedHtlcMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="UpdateFailMalformedHtlcPayload"/>
+    public static IMessage CreateUpdateFailMalformedHtlcMessage(ChannelId channelId, ulong id, ReadOnlyMemory<byte> sha256OfOnion, ushort failureCode)
+    {
+        var payload = new UpdateFailMalformedHtlcPayload(channelId, id, sha256OfOnion, failureCode);
+
+        return new UpdateFailMalformedHtlcMessage(payload);
     }
     #endregion
 
@@ -511,27 +583,30 @@ public static class MessageFactory
         // Deserialize message based on type
         return type switch
         {
-            MessageTypes.WARNING => await WarningMessage.DeserializeAsync(stream),                      // 01  -> 0x01
-            MessageTypes.INIT => await InitMessage.DeserializeAsync(stream),                            // 16  -> 0x10
-            MessageTypes.ERROR => await ErrorMessage.DeserializeAsync(stream),                          // 17  -> 0x11
-            MessageTypes.PING => await PingMessage.DeserializeAsync(stream),                            // 18  -> 0x12
-            MessageTypes.PONG => await PongMessage.DeserializeAsync(stream),                            // 19  -> 0x13
-            MessageTypes.CHANNEL_READY => await ChannelReadyMessage.DeserializeAsync(stream),           // 36  -> 0x24
-            MessageTypes.SHUTDOWN => await ShutdownMessage.DeserializeAsync(stream),                    // 38  -> 0x26
-            MessageTypes.CLOSING_SIGNED => await ClosingSignedMessage.DeserializeAsync(stream),         // 39  -> 0x27
-            MessageTypes.OPEN_CHANNEL_2 => await OpenChannel2Message.DeserializeAsync(stream),          // 64  -> 0x40
-            MessageTypes.ACCEPT_CHANNEL_2 => await AcceptChannel2Message.DeserializeAsync(stream),      // 65  -> 0x41
-            MessageTypes.TX_ADD_INPUT => await TxAddInputMessage.DeserializeAsync(stream),              // 66  -> 0x42
-            MessageTypes.TX_ADD_OUTPUT => await TxAddOutputMessage.DeserializeAsync(stream),            // 67  -> 0x43
-            MessageTypes.TX_REMOVE_INPUT => await TxRemoveInputMessage.DeserializeAsync(stream),        // 68  -> 0x44
-            MessageTypes.TX_REMOVE_OUTPUT => await TxRemoveOutputMessage.DeserializeAsync(stream),      // 69  -> 0x45
-            MessageTypes.TX_COMPLETE => await TxCompleteMessage.DeserializeAsync(stream),               // 70  -> 0x46
-            MessageTypes.TX_SIGNATURES => await TxSignaturesMessage.DeserializeAsync(stream),           // 71  -> 0x47
-            MessageTypes.TX_INIT_RBF => await TxInitRbfMessage.DeserializeAsync(stream),                // 72  -> 0x48
-            MessageTypes.TX_ACK_RBF => await TxAckRbfMessage.DeserializeAsync(stream),                  // 73  -> 0x49
-            MessageTypes.TX_ABORT => await TxAbortMessage.DeserializeAsync(stream),                     // 74  -> 0x4A
-            MessageTypes.UPDATE_ADD_HTLC => await UpdateAddHtlcMessage.DeserializeAsync(stream),        // 128 -> 0x80
-            MessageTypes.COMMITMENT_SIGNED => await CommitmentSignedMessage.DeserializeAsync(stream),   // 132 -> 0x84
+            MessageTypes.WARNING => await WarningMessage.DeserializeAsync(stream),                                      // 01  -> 0x01
+            MessageTypes.INIT => await InitMessage.DeserializeAsync(stream),                                            // 16  -> 0x10
+            MessageTypes.ERROR => await ErrorMessage.DeserializeAsync(stream),                                          // 17  -> 0x11
+            MessageTypes.PING => await PingMessage.DeserializeAsync(stream),                                            // 18  -> 0x12
+            MessageTypes.PONG => await PongMessage.DeserializeAsync(stream),                                            // 19  -> 0x13
+            MessageTypes.CHANNEL_READY => await ChannelReadyMessage.DeserializeAsync(stream),                           // 36  -> 0x24
+            MessageTypes.SHUTDOWN => await ShutdownMessage.DeserializeAsync(stream),                                    // 38  -> 0x26
+            MessageTypes.CLOSING_SIGNED => await ClosingSignedMessage.DeserializeAsync(stream),                         // 39  -> 0x27
+            MessageTypes.OPEN_CHANNEL_2 => await OpenChannel2Message.DeserializeAsync(stream),                          // 64  -> 0x40
+            MessageTypes.ACCEPT_CHANNEL_2 => await AcceptChannel2Message.DeserializeAsync(stream),                      // 65  -> 0x41
+            MessageTypes.TX_ADD_INPUT => await TxAddInputMessage.DeserializeAsync(stream),                              // 66  -> 0x42
+            MessageTypes.TX_ADD_OUTPUT => await TxAddOutputMessage.DeserializeAsync(stream),                            // 67  -> 0x43
+            MessageTypes.TX_REMOVE_INPUT => await TxRemoveInputMessage.DeserializeAsync(stream),                        // 68  -> 0x44
+            MessageTypes.TX_REMOVE_OUTPUT => await TxRemoveOutputMessage.DeserializeAsync(stream),                      // 69  -> 0x45
+            MessageTypes.TX_COMPLETE => await TxCompleteMessage.DeserializeAsync(stream),                               // 70  -> 0x46
+            MessageTypes.TX_SIGNATURES => await TxSignaturesMessage.DeserializeAsync(stream),                           // 71  -> 0x47
+            MessageTypes.TX_INIT_RBF => await TxInitRbfMessage.DeserializeAsync(stream),                                // 72  -> 0x48
+            MessageTypes.TX_ACK_RBF => await TxAckRbfMessage.DeserializeAsync(stream),                                  // 73  -> 0x49
+            MessageTypes.TX_ABORT => await TxAbortMessage.DeserializeAsync(stream),                                     // 74  -> 0x4A
+            MessageTypes.UPDATE_ADD_HTLC => await UpdateAddHtlcMessage.DeserializeAsync(stream),                        // 128 -> 0x80
+            MessageTypes.UPDATE_FULFILL_HTLC => await UpdateFulfillHtlcMessage.DeserializeAsync(stream),                // 130 -> 0x82
+            MessageTypes.UPDATE_FAIL_HTLC => await UpdateFailHtlcMessage.DeserializeAsync(stream),                      // 131 -> 0x83
+            MessageTypes.COMMITMENT_SIGNED => await CommitmentSignedMessage.DeserializeAsync(stream),                   // 132 -> 0x84
+            MessageTypes.UPDATE_FAIL_MALFORMED_HTLC => await UpdateFailMalformedHtlcMessage.DeserializeAsync(stream),   // 135 -> 0x87
 
             MessageTypes.OPEN_CHANNEL => throw new InvalidMessageException("You must use OpenChannel2 flow"),
             MessageTypes.ACCEPT_CHANNEL => throw new InvalidMessageException("You must use OpenChannel2 flow"),

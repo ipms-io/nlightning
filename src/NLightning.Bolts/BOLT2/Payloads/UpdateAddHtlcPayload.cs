@@ -87,16 +87,14 @@ public class UpdateAddHtlcPayload(ChannelId channelId, ulong id, ulong amountMsa
             await stream.ReadExactlyAsync(buffer);
             var cltvExpiry = EndianBitConverter.ToUInt32BigEndian(buffer);
 
-            var onionRoutingPacketList = new List<byte>();
-            while (stream.Position + 1366 <= stream.Length)
+            byte[]? onionRoutingPacket = null;
+            if (stream.Position + 1366 <= stream.Length)
             {
-                buffer = new byte[1366];
-                await stream.ReadExactlyAsync(buffer);
-                onionRoutingPacketList.AddRange(buffer);
+                onionRoutingPacket = new byte[1366];
+                await stream.ReadExactlyAsync(onionRoutingPacket);
             }
 
-            return new UpdateAddHtlcPayload(channelId, id, amountMsat, paymentHash, cltvExpiry,
-                                            onionRoutingPacketList.Count > 0 ? onionRoutingPacketList.ToArray() : null);
+            return new UpdateAddHtlcPayload(channelId, id, amountMsat, paymentHash, cltvExpiry, onionRoutingPacket);
         }
         catch (Exception e)
         {
