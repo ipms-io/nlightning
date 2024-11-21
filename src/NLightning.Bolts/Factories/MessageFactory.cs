@@ -549,6 +549,40 @@ public static class MessageFactory
     }
 
     /// <summary>
+    /// Create a RevokeAndAck message.
+    /// </summary>
+    /// <param name="channelId">The channel id.</param>
+    /// <param name="perCommitmentSecret">The secret for the commitment transaction.</param>
+    /// <param name="nextPerCommitmentPoint">The next per commitment point.</param>
+    /// <returns>The RevokeAndAck message.</returns>
+    /// <seealso cref="RevokeAndAckMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="ECDSASignature"/>
+    /// <seealso cref="RevokeAndAckPayload"/>
+    public static IMessage CreateCommitmentSignedMessage(ChannelId channelId, ReadOnlyMemory<byte> perCommitmentSecret, PubKey nextPerCommitmentPoint)
+    {
+        var payload = new RevokeAndAckPayload(channelId, perCommitmentSecret, nextPerCommitmentPoint);
+
+        return new RevokeAndAckMessage(payload);
+    }
+
+    /// <summary>
+    /// Create a UpdateFee message.
+    /// </summary>
+    /// <param name="channelId">The channel id.</param>
+    /// <param name="feeratePerKw">The fee rate for the commitment transaction.</param>
+    /// <returns>The UpdateFee message.</returns>
+    /// <seealso cref="UpdateFeeMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="UpdateFeePayload"/>
+    public static IMessage CreateUpdateFeeMessage(ChannelId channelId, uint feeratePerKw)
+    {
+        var payload = new UpdateFeePayload(channelId, feeratePerKw);
+
+        return new UpdateFeeMessage(payload);
+    }
+
+    /// <summary>
     /// Create a UpdateFailMalformedHtlc message.
     /// </summary>
     /// <param name="channelId">The channel id.</param>
@@ -606,6 +640,8 @@ public static class MessageFactory
             MessageTypes.UPDATE_FULFILL_HTLC => await UpdateFulfillHtlcMessage.DeserializeAsync(stream),                // 130 -> 0x82
             MessageTypes.UPDATE_FAIL_HTLC => await UpdateFailHtlcMessage.DeserializeAsync(stream),                      // 131 -> 0x83
             MessageTypes.COMMITMENT_SIGNED => await CommitmentSignedMessage.DeserializeAsync(stream),                   // 132 -> 0x84
+            MessageTypes.REVOKE_AND_ACK => await RevokeAndAckMessage.DeserializeAsync(stream),                          // 133 -> 0x85
+            MessageTypes.UPDATE_FEE => await UpdateFeeMessage.DeserializeAsync(stream),                                 // 134 -> 0x86
             MessageTypes.UPDATE_FAIL_MALFORMED_HTLC => await UpdateFailMalformedHtlcMessage.DeserializeAsync(stream),   // 135 -> 0x87
 
             MessageTypes.OPEN_CHANNEL => throw new InvalidMessageException("You must use OpenChannel2 flow"),
