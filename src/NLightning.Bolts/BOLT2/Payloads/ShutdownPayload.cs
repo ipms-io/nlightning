@@ -49,9 +49,9 @@ public class ShutdownPayload(ChannelId channelId, Script scriptPubkey) : IMessag
         {
             var channelId = await ChannelId.DeserializeAsync(stream);
 
-            var bytes = new byte[sizeof(ushort)];
-            await stream.ReadExactlyAsync(bytes);
-            var len = EndianBitConverter.ToUInt16BigEndian(bytes);
+            var buffer = new byte[sizeof(ushort)];
+            await stream.ReadExactlyAsync(buffer);
+            var len = EndianBitConverter.ToUInt16BigEndian(buffer);
 
             var scriptPubkeyBytes = new byte[len];
             await stream.ReadExactlyAsync(scriptPubkeyBytes);
