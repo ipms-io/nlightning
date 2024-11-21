@@ -23,16 +23,16 @@ public sealed class InitMessage : BaseMessage
     /// </summary>
     public new InitPayload Payload { get => (InitPayload)base.Payload; }
 
-    public NetworksTlv? Networks { get; }
+    public NetworksTlv? NetworksTlv { get; }
 
-    public InitMessage(InitPayload payload, NetworksTlv? networks = null) : base(MessageTypes.INIT, payload)
+    public InitMessage(InitPayload payload, NetworksTlv? networksTlv = null) : base(MessageTypes.INIT, payload)
     {
-        Networks = networks;
+        NetworksTlv = networksTlv;
 
-        if (networks is not null)
+        if (networksTlv is not null)
         {
             Extension = new TlvStream();
-            Extension.Add(networks);
+            Extension.Add(networksTlv);
         }
     }
 
@@ -56,11 +56,11 @@ public sealed class InitMessage : BaseMessage
                 return new InitMessage(payload);
             }
 
-            var networks = extension.TryGetTlv(TlvConstants.NETWORKS, out var networksTlv)
-                ? NetworksTlv.FromTlv(networksTlv!)
+            var networksTlv = extension.TryGetTlv(TlvConstants.NETWORKS, out var tlv)
+                ? NetworksTlv.FromTlv(tlv!)
                 : null;
 
-            return new InitMessage(payload, networks);
+            return new InitMessage(payload, networksTlv);
         }
         catch (SerializationException e)
         {

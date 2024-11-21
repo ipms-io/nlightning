@@ -1,7 +1,6 @@
-using System.Runtime.Serialization;
-
 namespace NLightning.Bolts.BOLT2.Payloads;
 
+using Exceptions;
 using Interfaces;
 
 /// <summary>
@@ -31,7 +30,7 @@ public class TxCompletePayload(ChannelId channelId) : IMessagePayload
     /// </summary>
     /// <param name="stream">The stream to read from.</param>
     /// <returns>The deserialized TxCompletePayload.</returns>
-    /// <exception cref="SerializationException">Error deserializing Payload.</exception>
+    /// <exception cref="PayloadSerializationException">Error deserializing Payload.</exception>
     public static async Task<TxCompletePayload> DeserializeAsync(Stream stream)
     {
         try
@@ -41,7 +40,7 @@ public class TxCompletePayload(ChannelId channelId) : IMessagePayload
         }
         catch (Exception e)
         {
-            throw new SerializationException("Error deserializing TxCompletePayload", e);
+            throw new PayloadSerializationException("Error deserializing TxCompletePayload", e);
         }
     }
 }

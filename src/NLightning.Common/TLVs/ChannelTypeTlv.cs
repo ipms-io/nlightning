@@ -12,7 +12,7 @@ using Types;
 public class ChannelTypeTlv : Tlv
 {
     /// <summary>
-    /// The shutdown script to be used when closing the channel
+    /// The channel type
     /// </summary>
     public byte[] ChannelType { get; }
 

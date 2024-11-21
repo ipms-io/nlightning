@@ -26,29 +26,29 @@ public sealed class AcceptChannel2Message : BaseMessage
     /// <summary>
     /// Optional UpfrontShutdownScriptTlv
     /// </summary>
-    public UpfrontShutdownScriptTlv? UpfrontShutdownScript { get; }
+    public UpfrontShutdownScriptTlv? UpfrontShutdownScriptTlv { get; }
 
     /// <summary>
     /// Optional ChannelTypeTlv
     /// </summary>
-    public ChannelTypeTlv? ChannelType { get; }
+    public ChannelTypeTlv? ChannelTypeTlv { get; }
 
     /// <summary>
     /// Optional RequireConfirmedInputsTlv
     /// </summary>
-    public RequireConfirmedInputsTlv? RequireConfirmedInputs { get; }
+    public RequireConfirmedInputsTlv? RequireConfirmedInputsTlv { get; }
 
-    public AcceptChannel2Message(AcceptChannel2Payload payload, UpfrontShutdownScriptTlv? upfrontShutdownScript = null, ChannelTypeTlv? channelType = null, RequireConfirmedInputsTlv? requireConfirmedInputs = null)
+    public AcceptChannel2Message(AcceptChannel2Payload payload, UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv = null, ChannelTypeTlv? channelTypeTlv = null, RequireConfirmedInputsTlv? requireConfirmedInputsTlv = null)
         : base(MessageTypes.ACCEPT_CHANNEL_2, payload)
     {
-        UpfrontShutdownScript = upfrontShutdownScript;
-        ChannelType = channelType;
-        RequireConfirmedInputs = requireConfirmedInputs;
+        UpfrontShutdownScriptTlv = upfrontShutdownScriptTlv;
+        ChannelTypeTlv = channelTypeTlv;
+        RequireConfirmedInputsTlv = requireConfirmedInputsTlv;
 
-        if (UpfrontShutdownScript is not null || ChannelType is not null || RequireConfirmedInputs is not null)
+        if (UpfrontShutdownScriptTlv is not null || ChannelTypeTlv is not null || RequireConfirmedInputsTlv is not null)
         {
             Extension = new TlvStream();
-            Extension.Add(UpfrontShutdownScript, ChannelType, RequireConfirmedInputs);
+            Extension.Add(UpfrontShutdownScriptTlv, ChannelTypeTlv, RequireConfirmedInputsTlv);
         }
     }
 
@@ -72,19 +72,19 @@ public sealed class AcceptChannel2Message : BaseMessage
                 return new AcceptChannel2Message(payload);
             }
 
-            var upfrontShutdownScript = extension.TryGetTlv(TlvConstants.UPFRONT_SHUTDOWN_SCRIPT, out var upfrontShutdownScriptTlv)
-                ? UpfrontShutdownScriptTlv.FromTlv(upfrontShutdownScriptTlv!)
+            var upfrontShutdownScriptTlv = extension.TryGetTlv(TlvConstants.UPFRONT_SHUTDOWN_SCRIPT, out var tlv)
+                ? UpfrontShutdownScriptTlv.FromTlv(tlv!)
                 : null;
 
-            var channelType = extension.TryGetTlv(TlvConstants.CHANNEL_TYPE, out var channelTypeTlv)
-                ? ChannelTypeTlv.FromTlv(channelTypeTlv!)
+            var channelTypeTlv = extension.TryGetTlv(TlvConstants.CHANNEL_TYPE, out tlv)
+                ? ChannelTypeTlv.FromTlv(tlv!)
                 : null;
 
-            var requireConfirmedInputs = extension.TryGetTlv(TlvConstants.REQUIRE_CONFIRMED_INPUTS, out var requireConfirmedInputsTlv)
-                ? RequireConfirmedInputsTlv.FromTlv(requireConfirmedInputsTlv!)
+            var requireConfirmedInputsTlv = extension.TryGetTlv(TlvConstants.REQUIRE_CONFIRMED_INPUTS, out tlv)
+                ? RequireConfirmedInputsTlv.FromTlv(tlv!)
                 : null;
 
-            return new AcceptChannel2Message(payload, upfrontShutdownScript, channelType, requireConfirmedInputs);
+            return new AcceptChannel2Message(payload, upfrontShutdownScriptTlv, channelTypeTlv, requireConfirmedInputsTlv);
         }
         catch (SerializationException e)
         {

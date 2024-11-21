@@ -18,12 +18,12 @@ public class Tlv(BigSize type, BigSize length, byte[] value) : IEquatable<Tlv>
     /// <summary>
     /// The length of the value
     /// </summary>
-    public BigSize Length { get; set; } = length;
+    public BigSize Length { get; internal set; } = length;
 
     /// <summary>
     /// The value
     /// </summary>
-    public byte[] Value { get; set; } = value;
+    public byte[] Value { get; internal set; } = value;
 
     /// <summary>
     /// Create a new TLV

@@ -1,9 +1,8 @@
-using System.Runtime.Serialization;
-
 namespace NLightning.Bolts.BOLT2.Payloads;
 
 using Common.BitUtils;
 using Common.Types;
+using Exceptions;
 using Interfaces;
 
 /// <summary>
@@ -40,7 +39,7 @@ public class TxRemoveInputPayload(ChannelId channelId, ulong serialId) : IMessag
     /// </summary>
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized TxRemoveInputPayload.</returns>
-    /// <exception cref="SerializationException">Error deserializing Payload</exception>
+    /// <exception cref="PayloadSerializationException">Error deserializing Payload</exception>
     public static async Task<TxRemoveInputPayload> DeserializeAsync(Stream stream)
     {
         try
@@ -55,7 +54,7 @@ public class TxRemoveInputPayload(ChannelId channelId, ulong serialId) : IMessag
         }
         catch (Exception e)
         {
-            throw new SerializationException("Error deserializing TxRemoveInputPayload", e);
+            throw new PayloadSerializationException("Error deserializing TxRemoveInputPayload", e);
         }
     }
 }

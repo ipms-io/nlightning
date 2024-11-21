@@ -1,11 +1,17 @@
-using System.Runtime.Serialization;
 using NBitcoin;
 
 namespace NLightning.Bolts.BOLT2.Payloads;
 
 using Common.BitUtils;
+using Exceptions;
 using Interfaces;
 
+/// <summary>
+/// Represents the payload for the shutdown message.
+/// </summary>
+/// <remarks>
+/// Initializes a new instance of the ShutdownPayload class.
+/// </remarks>
 public class ShutdownPayload(ChannelId channelId, Script scriptPubkey) : IMessagePayload
 {
     /// <summary>
@@ -36,7 +42,7 @@ public class ShutdownPayload(ChannelId channelId, Script scriptPubkey) : IMessag
     /// </summary>
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized payload.</returns>
-    /// <exception cref="SerializationException">Error deserializing Payload</exception>
+    /// <exception cref="PayloadSerializationException">Error deserializing Payload</exception>
     public static async Task<ShutdownPayload> DeserializeAsync(Stream stream)
     {
         try
@@ -55,7 +61,7 @@ public class ShutdownPayload(ChannelId channelId, Script scriptPubkey) : IMessag
         }
         catch (Exception e)
         {
-            throw new SerializationException("Error deserializing ShutdownPayload", e);
+            throw new PayloadSerializationException("Error deserializing ShutdownPayload", e);
         }
     }
 }

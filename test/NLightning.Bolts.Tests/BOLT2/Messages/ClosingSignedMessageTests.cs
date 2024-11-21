@@ -11,6 +11,7 @@ using Utils;
 
 public class ClosingSignedMessageTests
 {
+    #region Deserialize
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsClosingSignedMessage()
     {
@@ -32,22 +33,25 @@ public class ClosingSignedMessageTests
         Assert.Equal(expectedChannelId, message.Payload.ChannelId);
         Assert.Equal(EXPECTED_FEE_SATOSHIS, message.Payload.FeeSatoshis);
         Assert.Equal(expectedSignatureBytes, message.Payload.Signature.ToCompact().ToArray());
-        Assert.Equal(EXPECTED_MIN_FEE, message.FeeRange.MinFeeSatoshis);
-        Assert.Equal(EXPECTED_MAX_FEE, message.FeeRange.MaxFeeSatoshis);
+        Assert.NotNull(message.Extension);
+        Assert.Equal(EXPECTED_MIN_FEE, message.FeeRangeTlv.MinFeeSatoshis);
+        Assert.Equal(EXPECTED_MAX_FEE, message.FeeRangeTlv.MaxFeeSatoshis);
     }
 
     [Fact]
     public async Task Given_InvalidStreamContent_When_DeserializeAsync_Then_ThrowsMessageSerializationException()
     {
         // Arrange
-        var invalidStream = new MemoryStream([0x00, 0x01, 0x02]);
+        var invalidStream = new MemoryStream("000000000000000000000000000000000000000000000000000000000000000000000000000000024737AF4C6314905296FD31D3610BD638F92C8A3687D0C6D845E3B9EF4957670733A30A9A81F924CD9F73F46805D0FB60D7C293FB2D8100DD3FA92B10934A73200110".ToByteArray());
 
         // Act & Assert
         await Assert.ThrowsAsync<MessageSerializationException>(() => ClosingSignedMessage.DeserializeAsync(invalidStream));
     }
+    #endregion
 
+    #region Serialize
     [Fact]
-    public async Task Given_GivenValidPayload_When_SerializeAsync_Then_WritesCorrectDataToStream()
+    public async Task Given_ValidPayload_When_SerializeAsync_Then_WritesCorrectDataToStream()
     {
         // Arrange
         var channelId = ChannelId.Zero;
@@ -68,4 +72,5 @@ public class ClosingSignedMessageTests
         // Assert
         Assert.Equal(expectedBytes, result);
     }
+    #endregion
 }

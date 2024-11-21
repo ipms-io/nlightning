@@ -1,9 +1,9 @@
-using System.Runtime.Serialization;
 using NBitcoin.Crypto;
 
 namespace NLightning.Bolts.BOLT2.Payloads;
 
 using Common.BitUtils;
+using Exceptions;
 using Interfaces;
 
 /// <summary>
@@ -49,7 +49,7 @@ public class ClosingSignedPayload : IMessagePayload
     /// </summary>
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized payload.</returns>
-    /// <exception cref="SerializationException">Error deserializing Payload</exception>
+    /// <exception cref="PayloadSerializationException">Error deserializing Payload</exception>
     public static async Task<ClosingSignedPayload> DeserializeAsync(Stream stream)
     {
         try
@@ -71,7 +71,7 @@ public class ClosingSignedPayload : IMessagePayload
         }
         catch (Exception e)
         {
-            throw new SerializationException("Error deserializing ClosingSignedPayload", e);
+            throw new PayloadSerializationException("Error deserializing ClosingSignedPayload", e);
         }
     }
 }

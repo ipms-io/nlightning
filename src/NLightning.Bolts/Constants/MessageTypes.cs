@@ -19,7 +19,7 @@ public static class MessageTypes
                         ACCEPT_CHANNEL = 33, // NOT IMPLEMENTED
                         FUNDING_CREATED = 34, // NOT IMPLEMENTED
                         FUNDING_SIGNED = 35, // NOT IMPLEMENTED
-                        FUNDING_LOCKED = 36, // NOT IMPLEMENTED
+                        CHANNEL_READY = 36,
                         SHUTDOWN = 38,
                         CLOSING_SIGNED = 39,
                         OPEN_CHANNEL_2 = 64,

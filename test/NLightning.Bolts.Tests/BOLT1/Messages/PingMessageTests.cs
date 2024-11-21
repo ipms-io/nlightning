@@ -1,10 +1,9 @@
-using System.Text;
+using NLightning.Bolts.Tests.Utils;
 
 namespace NLightning.Bolts.Tests.BOLT1.Messages;
 
 using Bolts.BOLT1.Messages;
 using Bolts.BOLT1.Payloads;
-using Exceptions;
 
 public class PingMessageTests
 {
@@ -12,8 +11,13 @@ public class PingMessageTests
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsPingMessageWithCorrectPayload()
     {
         // Arrange
-        var expectedPayload = new PingPayload();
-        var stream = await Helpers.CreateStreamFromPayloadAsync(expectedPayload);
+        var expectedPayload = new PingPayload
+        {
+            BytesLength = 1,
+            Ignored = new byte[2],
+            NumPongBytes = 3
+        };
+        var stream = new MemoryStream("000300010000".ToByteArray());
 
         // Act
         var pingMessage = await PingMessage.DeserializeAsync(stream);
@@ -25,12 +29,25 @@ public class PingMessageTests
     }
 
     [Fact]
-    public async Task Given_InvalidStream_When_DeserializeAsync_Then_ThrowsMessageSerializationException()
+    public async Task Given_ValidPayload_When_SerializeAsync_Then_WritesCorrectDataToStream()
     {
         // Arrange
-        var invalidStream = new MemoryStream(Encoding.UTF8.GetBytes("Invalid content"));
+        var message = new PingMessage(new PingPayload
+        {
+            BytesLength = 1,
+            Ignored = new byte[2],
+            NumPongBytes = 3
+        });
+        var stream = new MemoryStream();
+        var expectedBytes = "0012000300010000".ToByteArray();
 
-        // Act & Assert
-        await Assert.ThrowsAsync<MessageSerializationException>(() => PingMessage.DeserializeAsync(invalidStream));
+        // Act
+        await message.SerializeAsync(stream);
+        stream.Position = 0;
+        var result = new byte[stream.Length];
+        _ = await stream.ReadAsync(result);
+
+        // Assert
+        Assert.Equal(expectedBytes, result);
     }
 }

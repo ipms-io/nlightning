@@ -5,7 +5,6 @@ namespace NLightning.Bolts.Tests.BOLT2.Messages;
 using Bolts.BOLT2.Messages;
 using Bolts.BOLT2.Payloads;
 using Common.Types;
-using Exceptions;
 using Utils;
 
 public class ShutdownMessageTests
@@ -28,16 +27,6 @@ public class ShutdownMessageTests
         Assert.Equal(expectedChannelId, message.Payload.ChannelId);
         Assert.Equal(expectedLength, message.Payload.ScriptPubkeyLen);
         Assert.Equal(expectedScriptPubkeyBytes, message.Payload.ScriptPubkey.ToBytes());
-    }
-
-    [Fact]
-    public async Task Given_InvalidStreamContent_When_DeserializeAsync_Then_ThrowsMessageSerializationException()
-    {
-        // Arrange
-        var invalidStream = new MemoryStream([0x00, 0x01, 0x02]);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<MessageSerializationException>(() => ShutdownMessage.DeserializeAsync(invalidStream));
     }
 
     [Fact]

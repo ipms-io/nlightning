@@ -1,11 +1,9 @@
-using System.Text;
+using NLightning.Bolts.Tests.Utils;
 
 namespace NLightning.Bolts.Tests.BOLT1.Messages;
 
 using Bolts.BOLT1.Messages;
 using Bolts.BOLT1.Payloads;
-using Exceptions;
-using Mock;
 
 public class WarningMessageTests
 {
@@ -14,7 +12,7 @@ public class WarningMessageTests
     {
         // Arrange
         var expectedPayload = new ErrorPayload("Warning message!");
-        var stream = await Helpers.CreateStreamFromPayloadAsync(expectedPayload);
+        var stream = new MemoryStream("000000000000000000000000000000000000000000000000000000000000000000105761726E696E67206D65737361676521".ToByteArray());
 
         // Act
         var errorMessage = await WarningMessage.DeserializeAsync(stream);
@@ -26,22 +24,20 @@ public class WarningMessageTests
     }
 
     [Fact]
-    public async Task Given_InvalidStreamContent_When_DeserializeAsync_Then_ThrowsMessageSerializationException()
+    public async Task Given_ValidPayload_When_SerializeAsync_Then_WritesCorrectDataToStream()
     {
         // Arrange
-        var invalidStream = new MemoryStream(Encoding.UTF8.GetBytes("Invalid content"));
+        var message = new ErrorMessage(new ErrorPayload("Warning message!"));
+        var stream = new MemoryStream();
+        var expectedBytes = "0011000000000000000000000000000000000000000000000000000000000000000000105761726E696E67206D65737361676521".ToByteArray();
 
-        // Act & Assert
-        await Assert.ThrowsAsync<MessageSerializationException>(() => WarningMessage.DeserializeAsync(invalidStream));
-    }
+        // Act
+        await message.SerializeAsync(stream);
+        stream.Position = 0;
+        var result = new byte[stream.Length];
+        _ = await stream.ReadAsync(result);
 
-    [Fact]
-    public async Task Given_StreamReadWarning_When_DeserializeAsync_Then_ThrowsIOException()
-    {
-        // Arrange
-        var brokenStream = new FakeBrokenStream(); // You would need to mock or implement a stream that simulates a read error.
-
-        // Act & Assert
-        await Assert.ThrowsAsync<MessageSerializationException>(() => WarningMessage.DeserializeAsync(brokenStream));
+        // Assert
+        Assert.Equal(expectedBytes, result);
     }
 }

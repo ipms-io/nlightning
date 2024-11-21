@@ -1,9 +1,14 @@
-using System.Runtime.Serialization;
-
 namespace NLightning.Bolts.BOLT2.Payloads;
 
+using Exceptions;
 using Interfaces;
 
+/// <summary>
+/// Represents the payload for the stfu message.
+/// </summary>
+/// <remarks>
+/// Initializes a new instance of the StfuPayload class.
+/// </remarks>
 public class StfuPayload(ChannelId channelId, bool initiator) : IMessagePayload
 {
     /// <summary>
@@ -28,7 +33,7 @@ public class StfuPayload(ChannelId channelId, bool initiator) : IMessagePayload
     /// </summary>
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized payload.</returns>
-    /// <exception cref="SerializationException">Error deserializing Payload</exception>
+    /// <exception cref="PayloadSerializationException">Error deserializing Payload</exception>
     public static async Task<StfuPayload> DeserializeAsync(Stream stream)
     {
         try
@@ -42,7 +47,7 @@ public class StfuPayload(ChannelId channelId, bool initiator) : IMessagePayload
         }
         catch (Exception e)
         {
-            throw new SerializationException("Error deserializing StfuPayload", e);
+            throw new PayloadSerializationException("Error deserializing StfuPayload", e);
         }
     }
 }

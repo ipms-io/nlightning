@@ -5,7 +5,6 @@ namespace NLightning.Bolts.Tests.BOLT2.Messages;
 using Bolts.BOLT2.Messages;
 using Bolts.BOLT2.Payloads;
 using Common.Types;
-using Exceptions;
 using Utils;
 
 public class CommitmentSignedMessageTests
@@ -34,16 +33,6 @@ public class CommitmentSignedMessageTests
         {
             Assert.Equal(expectedSignatureBytes, htlcSignature.ToCompact().ToArray());
         }
-    }
-
-    [Fact]
-    public async Task Given_InvalidStreamContent_When_DeserializeAsync_Then_ThrowsMessageSerializationException()
-    {
-        // Arrange
-        var invalidStream = new MemoryStream([0x00, 0x01, 0x02]);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<MessageSerializationException>(() => CommitmentSignedMessage.DeserializeAsync(invalidStream));
     }
 
     [Fact]

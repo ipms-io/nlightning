@@ -1,8 +1,7 @@
-using System.Runtime.Serialization;
-
 namespace NLightning.Bolts.BOLT2.Payloads;
 
 using Common.BitUtils;
+using Exceptions;
 using Interfaces;
 
 /// <summary>
@@ -13,7 +12,7 @@ using Interfaces;
 /// </remarks>
 /// 
 /// <remarks>
-/// Initializes a new instance of the <see cref="TxInitRbfPayload"/> class.
+/// Initializes a new instance of the TxInitRbfPayload class.
 /// </remarks>
 /// <param name="channelId">The channel ID.</param>
 /// <param name="locktime">The locktime.</param>
@@ -50,7 +49,7 @@ public class TxInitRbfPayload(ChannelId channelId, uint locktime, uint feerate) 
     /// </summary>
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized payload.</returns>
-    /// <exception cref="SerializationException">Error deserializing Payload</exception>
+    /// <exception cref="PayloadSerializationException">Error deserializing Payload</exception>
     public static async Task<TxInitRbfPayload> DeserializeAsync(Stream stream)
     {
         try
@@ -69,7 +68,7 @@ public class TxInitRbfPayload(ChannelId channelId, uint locktime, uint feerate) 
         }
         catch (Exception e)
         {
-            throw new SerializationException("Error deserializing TxInitRbfPayload", e);
+            throw new PayloadSerializationException("Error deserializing TxInitRbfPayload", e);
         }
     }
 }

@@ -1,11 +1,17 @@
-using System.Runtime.Serialization;
 using NBitcoin.Crypto;
 
 namespace NLightning.Bolts.BOLT2.Payloads;
 
 using Common.BitUtils;
+using Exceptions;
 using Interfaces;
 
+/// <summary>
+/// Represents the payload for the commitment_signed message.
+/// </summary>
+/// <remarks>
+/// Initializes a new instance of the CommitmentSignedPayload class.
+/// </remarks>
 public class CommitmentSignedPayload(ChannelId channelId, ECDSASignature signature, IEnumerable<ECDSASignature> htlcSignatures) : IMessagePayload
 {
     /// <summary>
@@ -51,7 +57,7 @@ public class CommitmentSignedPayload(ChannelId channelId, ECDSASignature signatu
     /// </summary>
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized payload.</returns>
-    /// <exception cref="SerializationException">Error deserializing Payload</exception>
+    /// <exception cref="PayloadSerializationException">Error deserializing Payload</exception>
     public static async Task<CommitmentSignedPayload> DeserializeAsync(Stream stream)
     {
         try
@@ -86,7 +92,7 @@ public class CommitmentSignedPayload(ChannelId channelId, ECDSASignature signatu
         }
         catch (Exception e)
         {
-            throw new SerializationException("Error deserializing CommitmentSignedPayload", e);
+            throw new PayloadSerializationException("Error deserializing CommitmentSignedPayload", e);
         }
     }
 }

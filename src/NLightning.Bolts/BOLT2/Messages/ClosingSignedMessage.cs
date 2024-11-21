@@ -23,13 +23,13 @@ public sealed class ClosingSignedMessage : BaseMessage
     /// </summary>
     public new ClosingSignedPayload Payload { get => (ClosingSignedPayload)base.Payload; }
 
-    public FeeRangeTlv FeeRange { get; }
+    public FeeRangeTlv FeeRangeTlv { get; }
 
-    public ClosingSignedMessage(ClosingSignedPayload payload, FeeRangeTlv feeRange) : base(MessageTypes.CLOSING_SIGNED, payload)
+    public ClosingSignedMessage(ClosingSignedPayload payload, FeeRangeTlv feeRangeTlv) : base(MessageTypes.CLOSING_SIGNED, payload)
     {
-        FeeRange = feeRange;
+        FeeRangeTlv = feeRangeTlv;
         Extension = new TlvStream();
-        Extension.Add(feeRange);
+        Extension.Add(feeRangeTlv);
     }
 
     /// <summary>

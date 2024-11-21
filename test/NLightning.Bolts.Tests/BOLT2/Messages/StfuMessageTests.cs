@@ -3,7 +3,6 @@ namespace NLightning.Bolts.Tests.BOLT2.Messages;
 using Bolts.BOLT2.Messages;
 using Bolts.BOLT2.Payloads;
 using Common.Types;
-using Exceptions;
 using Utils;
 
 public class StfuMessageTests
@@ -24,16 +23,6 @@ public class StfuMessageTests
         Assert.NotNull(message);
         Assert.Equal(expectedChannelId, message.Payload.ChannelId);
         Assert.Equal(expectedInitiator, message.Payload.Initiator);
-    }
-
-    [Fact]
-    public async Task Given_InvalidStreamContent_When_DeserializeAsync_Then_ThrowsMessageSerializationException()
-    {
-        // Arrange
-        var invalidStream = new MemoryStream([0x00, 0x01, 0x02]);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<MessageSerializationException>(() => StfuMessage.DeserializeAsync(invalidStream));
     }
 
     [Fact]

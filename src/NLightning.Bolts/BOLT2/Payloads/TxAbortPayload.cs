@@ -1,8 +1,7 @@
-using System.Runtime.Serialization;
-
 namespace NLightning.Bolts.BOLT2.Payloads;
 
 using Common.BitUtils;
+using Exceptions;
 using Interfaces;
 
 /// <summary>
@@ -38,7 +37,7 @@ public class TxAbortPayload(ChannelId channelId, byte[] data) : IMessagePayload
     /// </summary>
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized payload.</returns>
-    /// <exception cref="SerializationException">Error deserializing Payload</exception>
+    /// <exception cref="PayloadSerializationException">Error deserializing Payload</exception>
     public static async Task<TxAbortPayload> DeserializeAsync(Stream stream)
     {
         try
@@ -56,7 +55,7 @@ public class TxAbortPayload(ChannelId channelId, byte[] data) : IMessagePayload
         }
         catch (Exception e)
         {
-            throw new SerializationException("Error deserializing TxAbortPayload", e);
+            throw new PayloadSerializationException("Error deserializing TxAbortPayload", e);
         }
     }
 }

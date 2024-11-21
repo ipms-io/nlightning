@@ -19,7 +19,7 @@ public class InitMessageTests
         var expectedExtension = new TlvStream();
         var expectedTlv = new NetworksTlv([ChainConstants.MAIN]);
         expectedExtension.Add(expectedTlv);
-        var stream = await CreateStreamFromPayloadAndExtensionAsync(expectedPayload, expectedExtension);
+        var stream = new MemoryStream("000202000002020001206FE28C0AB6F1B372C1A6A246AE63F74F931E8365E15A089C68D6190000000000".ToByteArray());
 
         // Act
         var initMessage = await InitMessage.DeserializeAsync(stream);
@@ -38,7 +38,7 @@ public class InitMessageTests
     {
         // Arrange
         var expectedPayload = new InitPayload(new Features());
-        var stream = await Helpers.CreateStreamFromPayloadAsync(expectedPayload);
+        var stream = new MemoryStream("0002020000020200".ToByteArray());
 
         // Act
         var initMessage = await InitMessage.DeserializeAsync(stream);
@@ -53,19 +53,10 @@ public class InitMessageTests
     public async Task Given_InvalidStreamContent_When_DeserializeAsync_Then_ThrowsMessageSerializationException()
     {
         // Arrange
-        var invalidStream = new MemoryStream("Invalid content"u8.ToArray());
+        var invalidStream = new MemoryStream("00020200000202000102".ToByteArray());
 
         // Act & Assert
         await Assert.ThrowsAsync<MessageSerializationException>(() => InitMessage.DeserializeAsync(invalidStream));
-    }
-
-    private static async Task<Stream> CreateStreamFromPayloadAndExtensionAsync(InitPayload payload, TlvStream extension)
-    {
-        var stream = new MemoryStream();
-        await payload.SerializeAsync(stream);
-        await extension.SerializeAsync(stream);
-        stream.Position = 0;
-        return stream;
     }
 
     [Fact]
@@ -92,7 +83,7 @@ public class InitMessageTests
         // Arrange
         var message = new InitMessage(new InitPayload(new Features()));
         var stream = new MemoryStream();
-        var expectedBytes = "0x00100002020000020200".ToByteArray();
+        var expectedBytes = "00100002020000020200".ToByteArray();
 
         // Act
         await message.SerializeAsync(stream);

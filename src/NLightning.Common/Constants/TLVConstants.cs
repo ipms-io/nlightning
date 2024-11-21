@@ -64,4 +64,12 @@ public static class TlvConstants
     /// The "Fee Range" is used in the ClosingSignedMessage to set the acceptable fee range
     /// </remarks>
     public static readonly BigSize FEE_RANGE = 1;
+
+    /// <summary>
+    /// Short Channel ID TLV Type
+    /// </summary>
+    /// <remarks>
+    /// The "Short Channel ID" is used in the ChannelReadyMessage
+    /// </remarks>
+    public static readonly BigSize SHORT_CHANNEL_ID = 1;
 }

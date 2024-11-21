@@ -23,19 +23,19 @@ public sealed class TxAckRbfMessage : BaseMessage
     /// </summary>
     public new TxAckRbfPayload Payload { get => (TxAckRbfPayload)base.Payload; }
 
-    public FundingOutputContributionTlv? FundingOutputContribution { get; }
-    public RequireConfirmedInputsTlv? RequireConfirmedInputs { get; }
+    public FundingOutputContributionTlv? FundingOutputContributionTlv { get; }
+    public RequireConfirmedInputsTlv? RequireConfirmedInputsTlv { get; }
 
-    public TxAckRbfMessage(TxAckRbfPayload payload, FundingOutputContributionTlv? fundingOutputContribution = null, RequireConfirmedInputsTlv? requireConfirmedInputs = null)
+    public TxAckRbfMessage(TxAckRbfPayload payload, FundingOutputContributionTlv? fundingOutputContributionTlv = null, RequireConfirmedInputsTlv? requireConfirmedInputsTlv = null)
         : base(MessageTypes.TX_ACK_RBF, payload)
     {
-        FundingOutputContribution = fundingOutputContribution;
-        RequireConfirmedInputs = requireConfirmedInputs;
+        FundingOutputContributionTlv = fundingOutputContributionTlv;
+        RequireConfirmedInputsTlv = requireConfirmedInputsTlv;
 
-        if (FundingOutputContribution is not null || RequireConfirmedInputs is not null)
+        if (FundingOutputContributionTlv is not null || RequireConfirmedInputsTlv is not null)
         {
             Extension = new TlvStream();
-            Extension.Add(FundingOutputContribution, RequireConfirmedInputs);
+            Extension.Add(FundingOutputContributionTlv, RequireConfirmedInputsTlv);
         }
     }
 
@@ -59,15 +59,15 @@ public sealed class TxAckRbfMessage : BaseMessage
                 return new TxAckRbfMessage(payload);
             }
 
-            var channelType = extension.TryGetTlv(TlvConstants.FUNDING_OUTPUT_CONTRIBUTION, out var channelTypeTlv)
-                ? FundingOutputContributionTlv.FromTlv(channelTypeTlv!)
+            var channelTypeTlv = extension.TryGetTlv(TlvConstants.FUNDING_OUTPUT_CONTRIBUTION, out var tlv)
+                ? FundingOutputContributionTlv.FromTlv(tlv!)
                 : null;
 
-            var requireConfirmedInputs = extension.TryGetTlv(TlvConstants.REQUIRE_CONFIRMED_INPUTS, out var requireConfirmedInputsTlv)
-                ? RequireConfirmedInputsTlv.FromTlv(requireConfirmedInputsTlv!)
+            var requireConfirmedInputsTlv = extension.TryGetTlv(TlvConstants.REQUIRE_CONFIRMED_INPUTS, out tlv)
+                ? RequireConfirmedInputsTlv.FromTlv(tlv!)
                 : null;
 
-            return new TxAckRbfMessage(payload, channelType, requireConfirmedInputs);
+            return new TxAckRbfMessage(payload, channelTypeTlv, requireConfirmedInputsTlv);
         }
         catch (SerializationException e)
         {

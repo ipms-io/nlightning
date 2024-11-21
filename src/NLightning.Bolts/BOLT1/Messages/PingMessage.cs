@@ -21,7 +21,7 @@ public sealed class PingMessage() : BaseMessage(MessageTypes.PING, new PingPaylo
     /// </summary>
     public new PingPayload Payload => (PingPayload)base.Payload;
 
-    private PingMessage(PingPayload payload) : this()
+    internal PingMessage(PingPayload payload) : this()
     {
         base.Payload = payload;
     }

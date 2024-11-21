@@ -105,10 +105,10 @@ public class ResponderIntegrationTests
     }
 
     [Theory]
-    [InlineData("0x00036360e856310ce5d294e8be33fc807077dc56ac80d95d9cd4ddbd21325eff73f70df6086551151f58b8afe6c195782c", "Noise message must be equal to 50 bytes in length.")]
-    [InlineData("0x01036360e856310ce5d294e8be33fc807077dc56ac80d95d9cd4ddbd21325eff73f70df6086551151f58b8afe6c195782c6a", "Invalid handshake version.")]
-    [InlineData("0x00046360e856310ce5d294e8be33fc807077dc56ac80d95d9cd4ddbd21325eff73f70df6086551151f58b8afe6c195782c6a", "Invalid public key")]
-    [InlineData("0x00036360e856310ce5d294e8be33fc807077dc56ac80d95d9cd4ddbd21325eff73f70df6086551151f58b8afe6c195782c6b", "Decryption failed.")]
+    [InlineData("00036360e856310ce5d294e8be33fc807077dc56ac80d95d9cd4ddbd21325eff73f70df6086551151f58b8afe6c195782c", "Noise message must be equal to 50 bytes in length.")]
+    [InlineData("01036360e856310ce5d294e8be33fc807077dc56ac80d95d9cd4ddbd21325eff73f70df6086551151f58b8afe6c195782c6a", "Invalid handshake version.")]
+    [InlineData("00046360e856310ce5d294e8be33fc807077dc56ac80d95d9cd4ddbd21325eff73f70df6086551151f58b8afe6c195782c6a", "Invalid public key")]
+    [InlineData("00036360e856310ce5d294e8be33fc807077dc56ac80d95d9cd4ddbd21325eff73f70df6086551151f58b8afe6c195782c6b", "Decryption failed.")]
     public void Given_InvalidActOneMessage_When_ResponderReadsActOne_Then_Throws(string actOneInput, string exceptionMessage)
     {
         // Arrange
@@ -123,10 +123,10 @@ public class ResponderIntegrationTests
     }
 
     [Theory]
-    [InlineData("0x00b9e3a702e93e3a9948c2ed6e5fd7590a6e1c3a0344cfc9d5b57357049aa22355361aa02e55a8fc28fef5bd6d71ad0c38228dc68b1c466263b47fdf31e560e139", "Noise message must be equal to 66 bytes in length.")]
-    [InlineData("0x00c9e3a702e93e3a9948c2ed6e5fd7590a6e1c3a0344cfc9d5b57357049aa22355361aa02e55a8fc28fef5bd6d71ad0c38228dc68b1c466263b47fdf31e560e139ba", "Decryption failed.")]
-    [InlineData("0x00bfe3a702e93e3a9948c2ed6e5fd7590a6e1c3a0344cfc9d5b57357049aa2235536ad09a8ee351870c2bb7f78b754a26c6cef79a98d25139c856d7efd252c2ae73c", "Invalid public key")]
-    [InlineData("0x00b9e3a702e93e3a9948c2ed6e5fd7590a6e1c3a0344cfc9d5b57357049aa22355361aa02e55a8fc28fef5bd6d71ad0c38228dc68b1c466263b47fdf31e560e139bb", "Decryption failed.")]
+    [InlineData("00b9e3a702e93e3a9948c2ed6e5fd7590a6e1c3a0344cfc9d5b57357049aa22355361aa02e55a8fc28fef5bd6d71ad0c38228dc68b1c466263b47fdf31e560e139", "Noise message must be equal to 66 bytes in length.")]
+    [InlineData("00c9e3a702e93e3a9948c2ed6e5fd7590a6e1c3a0344cfc9d5b57357049aa22355361aa02e55a8fc28fef5bd6d71ad0c38228dc68b1c466263b47fdf31e560e139ba", "Decryption failed.")]
+    [InlineData("00bfe3a702e93e3a9948c2ed6e5fd7590a6e1c3a0344cfc9d5b57357049aa2235536ad09a8ee351870c2bb7f78b754a26c6cef79a98d25139c856d7efd252c2ae73c", "Invalid public key")]
+    [InlineData("00b9e3a702e93e3a9948c2ed6e5fd7590a6e1c3a0344cfc9d5b57357049aa22355361aa02e55a8fc28fef5bd6d71ad0c38228dc68b1c466263b47fdf31e560e139bb", "Decryption failed.")]
     public void Given_InvalidActThreeMessage_When_ResponderReadsActThree_Then_Throws(string actOneInput, string exceptionMessage)
     {
         // Arrange

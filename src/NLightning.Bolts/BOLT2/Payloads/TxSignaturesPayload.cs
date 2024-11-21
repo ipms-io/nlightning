@@ -1,8 +1,7 @@
-using System.Runtime.Serialization;
-
 namespace NLightning.Bolts.BOLT2.Payloads;
 
 using Common.BitUtils;
+using Exceptions;
 using Interfaces;
 
 /// <summary>
@@ -68,7 +67,7 @@ public class TxSignaturesPayload : IMessagePayload
     /// </summary>
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized TxSignaturesPayload.</returns>
-    /// <exception cref="SerializationException">Error deserializing Payload</exception>
+    /// <exception cref="PayloadSerializationException">Error deserializing Payload</exception>
     public static async Task<TxSignaturesPayload> DeserializeAsync(Stream stream)
     {
         try
@@ -92,7 +91,7 @@ public class TxSignaturesPayload : IMessagePayload
         }
         catch (Exception e)
         {
-            throw new SerializationException("Error deserializing TxSignaturesPayload", e);
+            throw new PayloadSerializationException("Error deserializing TxSignaturesPayload", e);
         }
     }
 }

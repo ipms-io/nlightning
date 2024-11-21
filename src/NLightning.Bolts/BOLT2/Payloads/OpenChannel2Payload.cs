@@ -1,10 +1,10 @@
-using System.Runtime.Serialization;
 using NBitcoin;
 
 namespace NLightning.Bolts.BOLT2.Payloads;
 
 using Common.BitUtils;
 using Common.Managers;
+using Exceptions;
 using Interfaces;
 
 /// <summary>
@@ -193,7 +193,7 @@ public class OpenChannel2Payload : IMessagePayload
     /// </summary>
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized payload.</returns>
-    /// <exception cref="SerializationException">Error deserializing Payload</exception>
+    /// <exception cref="PayloadSerializationException">Error deserializing Payload</exception>
     public static async Task<OpenChannel2Payload> DeserializeAsync(Stream stream)
     {
         try
@@ -260,7 +260,7 @@ public class OpenChannel2Payload : IMessagePayload
         }
         catch (Exception e)
         {
-            throw new SerializationException("Error deserializing OpenChannel2Payload", e);
+            throw new PayloadSerializationException("Error deserializing OpenChannel2Payload", e);
         }
     }
 }
