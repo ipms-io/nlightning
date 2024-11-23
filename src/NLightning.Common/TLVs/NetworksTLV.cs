@@ -1,5 +1,3 @@
-using System.Runtime.Serialization;
-
 namespace NLightning.Common.TLVs;
 
 using Constants;
@@ -21,55 +19,37 @@ public class NetworksTlv : Tlv
     /// </remarks>
     public IEnumerable<ChainHash>? ChainHashes { get; private set; }
 
-    public NetworksTlv() : base(TlvConstants.NETWORKS)
-    { }
     public NetworksTlv(IEnumerable<ChainHash> chainHashes) : base(TlvConstants.NETWORKS)
     {
-        ChainHashes = chainHashes;
-    }
+        ChainHashes = chainHashes.ToList();
 
-    /// <summary>
-    /// Serialize the TLV to a stream
-    /// </summary>
-    /// <param name="stream">The stream to write to</param>
-    /// <returns>A task that represents the asynchronous operation</returns>
-    /// <exception cref="SerializationException">Error serializing TLV or any of it's parts</exception>
-    public new async Task SerializeAsync(Stream stream)
-    {
-        if (ChainHashes != null)
+        Value = new byte[ChainHash.LENGTH * ChainHashes.Count()];
+
+        for (var i = 0; i < ChainHashes.Count(); i++)
         {
-            using var bufferStream = new MemoryStream();
-
-            foreach (var chainHash in ChainHashes)
-            {
-                await bufferStream.WriteAsync(chainHash);
-            }
-
-            Length = bufferStream.Length;
-            Value = bufferStream.ToArray();
+            byte[] chainHash = ChainHashes.ElementAt(i);
+            chainHash.CopyTo(Value, i * ChainHash.LENGTH);
         }
 
-        await base.SerializeAsync(stream);
+        Length = Value.Length;
     }
 
     /// <summary>
-    /// Deserialize a NetworksTLV from a stream.
+    /// Cast a NetworksTLV from a Tlv.
     /// </summary>
-    /// <param name="stream">The stream to deserialize from.</param>
-    /// <returns>The deserialized NetworksTLV.</returns>
-    /// <exception cref="SerializationException">Error deserializing NetworksTLV</exception>
-    public static new async Task<NetworksTlv> DeserializeAsync(Stream stream)
+    /// <param name="tlv">The tlv to cast from.</param>
+    /// <returns>The cast NetworksTLV.</returns>
+    /// <exception cref="InvalidCastException">Error casting NetworksTLV</exception>
+    public static NetworksTlv FromTlv(Tlv tlv)
     {
-        var tlv = await Tlv.DeserializeAsync(stream) as NetworksTlv ?? throw new SerializationException("Invalid TLV type");
-
         if (tlv.Type != TlvConstants.NETWORKS)
         {
-            throw new SerializationException("Invalid TLV type");
+            throw new InvalidCastException("Invalid TLV type");
         }
 
         if (tlv.Length % ChainHash.LENGTH != 0)
         {
-            throw new SerializationException("Invalid length");
+            throw new InvalidCastException("Invalid length");
         }
 
         var chainHashes = new List<ChainHash>();
@@ -78,8 +58,7 @@ public class NetworksTlv : Tlv
         {
             chainHashes.Add(tlv.Value[i..(i + ChainHash.LENGTH)]);
         }
-        tlv.ChainHashes = chainHashes;
 
-        return tlv;
+        return new NetworksTlv(chainHashes);
     }
 }

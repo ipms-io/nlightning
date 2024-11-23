@@ -39,7 +39,6 @@ public class BlazorCryptoProviderInitializer : BlazorTestBase
         Assert.NotNull(Page);
         await Page.GotoAsync("about:blank", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle }); // Make sure page is fresh
         var console = new List<string>();
-        ;
         Page.Console += ConsoleListener;
 
         // Act

@@ -1,9 +1,8 @@
-using System.Runtime.Serialization;
-
 namespace NLightning.Bolts.BOLT1.Payloads;
 
 using BOLT9;
 using Bolts.Interfaces;
+using Exceptions;
 
 /// <summary>
 /// The init payload.
@@ -33,7 +32,7 @@ public class InitPayload(Features features) : IMessagePayload
     /// </summary>
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized InitPayload.</returns>
-    /// <exception cref="SerializationException">Error deserializing Payload</exception>
+    /// <exception cref="PayloadSerializationException">Error deserializing Payload</exception>
     public static async Task<InitPayload> DeserializeAsync(Stream stream)
     {
         try
@@ -46,7 +45,7 @@ public class InitPayload(Features features) : IMessagePayload
         }
         catch (Exception e)
         {
-            throw new SerializationException("Error deserializing InitPayload", e);
+            throw new PayloadSerializationException("Error deserializing InitPayload", e);
         }
     }
 }

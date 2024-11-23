@@ -1,8 +1,10 @@
 using System.Runtime.Serialization;
+using NLightning.Common.Constants;
 
 namespace NLightning.Bolts.BOLT1.Messages;
 
 using Base;
+using Common.TLVs;
 using Constants;
 using Exceptions;
 using Payloads;
@@ -14,14 +16,25 @@ using Payloads;
 /// The init message is used to communicate the features of the node.
 /// The message type is 16.
 /// </remarks>
-/// <param name="payload">The init payload.</param>
-/// <param name="extension">The TLV extension.</param>
-public sealed class InitMessage(InitPayload payload, TlvStream? extension = null) : BaseMessage(MessageTypes.INIT, payload, extension)
+public sealed class InitMessage : BaseMessage
 {
     /// <summary>
     /// The payload of the message.
     /// </summary>
     public new InitPayload Payload { get => (InitPayload)base.Payload; }
+
+    public NetworksTlv? NetworksTlv { get; }
+
+    public InitMessage(InitPayload payload, NetworksTlv? networksTlv = null) : base(MessageTypes.INIT, payload)
+    {
+        NetworksTlv = networksTlv;
+
+        if (networksTlv is not null)
+        {
+            Extension = new TlvStream();
+            Extension.Add(networksTlv);
+        }
+    }
 
     /// <summary>
     /// Deserialize an InitMessage from a stream.
@@ -38,12 +51,20 @@ public sealed class InitMessage(InitPayload payload, TlvStream? extension = null
 
             // Deserialize extension if available
             var extension = await TlvStream.DeserializeAsync(stream);
+            if (extension is null)
+            {
+                return new InitMessage(payload);
+            }
 
-            return new InitMessage(payload, extension);
+            var networksTlv = extension.TryGetTlv(TlvConstants.NETWORKS, out var tlv)
+                ? NetworksTlv.FromTlv(tlv!)
+                : null;
+
+            return new InitMessage(payload, networksTlv);
         }
         catch (SerializationException e)
         {
-            throw new MessageSerializationException("Error deserializing ErrorMessage", e);
+            throw new MessageSerializationException("Error deserializing InitMessage", e);
         }
     }
 }

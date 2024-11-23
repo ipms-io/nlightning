@@ -1,9 +1,8 @@
-using System.Runtime.Serialization;
-
 namespace NLightning.Bolts.BOLT1.Payloads;
 
 using Bolts.Interfaces;
 using Common.BitUtils;
+using Exceptions;
 
 /// <summary>
 /// Represents a Pong payload.
@@ -37,7 +36,7 @@ public class PongPayload(ushort bytesLen) : IMessagePayload
     /// </summary>
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized PongPayload.</returns>
-    /// <exception cref="SerializationException">Error deserializing Payload</exception>
+    /// <exception cref="PayloadSerializationException">Error deserializing Payload</exception>
     public static async Task<PongPayload> DeserializeAsync(Stream stream)
     {
         try
@@ -56,7 +55,7 @@ public class PongPayload(ushort bytesLen) : IMessagePayload
         }
         catch (Exception e)
         {
-            throw new SerializationException("Error deserializing PongPayload", e);
+            throw new PayloadSerializationException("Error deserializing PongPayload", e);
         }
     }
 }

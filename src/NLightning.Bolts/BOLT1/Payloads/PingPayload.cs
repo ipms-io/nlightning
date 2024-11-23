@@ -1,9 +1,8 @@
-using System.Runtime.Serialization;
-
 namespace NLightning.Bolts.BOLT1.Payloads;
 
 using Bolts.Interfaces;
 using Common.BitUtils;
+using Exceptions;
 
 /// <summary>
 /// The ping payload.
@@ -22,17 +21,17 @@ public class PingPayload : IMessagePayload
     /// <summary>
     /// The number of bytes to send in the pong message.
     /// </summary>
-    public ushort NumPongBytes { get; private set; }
+    public ushort NumPongBytes { get; internal init; }
 
     /// <summary>
     /// The number of bytes to ignore.
     /// </summary>
-    public ushort BytesLength { get; private set; }
+    public ushort BytesLength { get; internal init; }
 
     /// <summary>
     /// The ignored bytes.
     /// </summary>
-    public byte[] Ignored { get; private set; }
+    public byte[] Ignored { get; internal init; }
 
     public PingPayload()
     {
@@ -55,7 +54,7 @@ public class PingPayload : IMessagePayload
     /// </summary>
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized PingPayload.</returns>
-    /// <exception cref="SerializationException">Error deserializing Payload</exception>
+    /// <exception cref="PayloadSerializationException">Error deserializing Payload</exception>
     public static async Task<PingPayload> DeserializeAsync(Stream stream)
     {
         try
@@ -79,7 +78,7 @@ public class PingPayload : IMessagePayload
         }
         catch (Exception e)
         {
-            throw new SerializationException("Error deserializing PingPayload", e);
+            throw new PayloadSerializationException("Error deserializing PingPayload", e);
         }
     }
 }

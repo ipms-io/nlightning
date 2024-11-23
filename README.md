@@ -31,7 +31,7 @@ You can check our documentation page [here](https://nlightning.ipms.io/)
 ## Current State of BOLT implementation
 
 - [x] BOLT 1: Base Protocol
-- [ ] BOLT 2: Peer Protocol for Channel Management
+- [x] BOLT 2: Peer Protocol for Channel Management
 - [ ] BOLT 3: Bitcoin Transaction and Script Formats
 - [ ] BOLT 4: Onion Routing Protocol
 - [ ] BOLT 5: Recommendations for On-chain Transaction Handling

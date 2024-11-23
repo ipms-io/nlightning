@@ -7,6 +7,7 @@ public static class MessageTypes
 {
     #region Setup & Control
     public const ushort WARNING = 1,
+                        STFU = 2,
                         INIT = 16,
                         ERROR = 17,
                         PING = 18,
@@ -14,13 +15,27 @@ public static class MessageTypes
     #endregion
 
     #region Channel
-    public const ushort OPEN_CHANNEL = 32,
-                        ACCEPT_CHANNEL = 33,
-                        FUNDING_CREATED = 34,
-                        FUNDING_SIGNED = 35,
-                        FUNDING_LOCKED = 36,
+    public const ushort OPEN_CHANNEL = 32,   // NOT IMPLEMENTED
+                        ACCEPT_CHANNEL = 33, // NOT IMPLEMENTED
+                        FUNDING_CREATED = 34, // NOT IMPLEMENTED
+                        FUNDING_SIGNED = 35, // NOT IMPLEMENTED
+                        CHANNEL_READY = 36,
                         SHUTDOWN = 38,
-                        CLOSING_SIGNED = 39;
+                        CLOSING_SIGNED = 39,
+                        OPEN_CHANNEL_2 = 64,
+                        ACCEPT_CHANNEL_2 = 65;
+    #endregion
+
+    #region Interactive Transaction Construction
+    public const ushort TX_ADD_INPUT = 66,
+                        TX_ADD_OUTPUT = 67,
+                        TX_REMOVE_INPUT = 68,
+                        TX_REMOVE_OUTPUT = 69,
+                        TX_COMPLETE = 70,
+                        TX_SIGNATURES = 71,
+                        TX_INIT_RBF = 72,
+                        TX_ACK_RBF = 73,
+                        TX_ABORT = 74;
     #endregion
 
     #region Commitment
@@ -30,6 +45,7 @@ public static class MessageTypes
                         COMMITMENT_SIGNED = 132,
                         REVOKE_AND_ACK = 133,
                         UPDATE_FEE = 134,
+                        UPDATE_FAIL_MALFORMED_HTLC = 135,
                         CHANNEL_REESTABLISH = 136;
     #endregion
 

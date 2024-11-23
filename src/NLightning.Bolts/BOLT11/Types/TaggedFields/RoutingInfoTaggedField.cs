@@ -38,7 +38,7 @@ internal sealed class RoutingInfoTaggedField : ITaggedField
         foreach (var routingInfo in Value)
         {
             bitWriter.WriteBits(routingInfo.PubKey.ToBytes(), 264);
-            bitWriter.WriteBits(routingInfo.ShortChannelId.ToByteArray(), 64);
+            bitWriter.WriteBits(routingInfo.ShortChannelId, 64);
             bitWriter.WriteInt32AsBits(routingInfo.FeeBaseMsat, 32);
             bitWriter.WriteInt32AsBits(routingInfo.FeeProportionalMillionths, 32);
             bitWriter.WriteInt16AsBits(routingInfo.CltvExpiryDelta, 16);

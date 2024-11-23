@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <Compile Include="..\NLightning.Common\BitUtils\*.cs" LinkBase="Common\BitUtils"/>
+    <Compile Include="..\NLightning.Common\Constants\ChainConstants.cs" LinkBase="Common\Constants"/>
     <Compile Include="..\NLightning.Common\Constants\CryptoConstants.cs" LinkBase="Common\Constants"/>
     <Compile Include="..\NLightning.Common\Constants\NetworkConstants.cs" LinkBase="Common\Constants"/>
     <Compile Include="..\NLightning.Common\Crypto\Ciphers\*.cs" LinkBase="Common\Crypto\Ciphers"/>
@@ -46,6 +47,7 @@
     <Compile Include="..\NLightning.Common\Factories\Crypto\CryptoFactory.cs" LinkBase="Common\Factories"/>
     <Compile Include="..\NLightning.Common\Interfaces\Crypto\*.cs" LinkBase="Common\Interfaces"/>
     <Compile Include="..\NLightning.Common\Managers\*.cs" LinkBase="Common\Managers"/>
+    <Compile Include="..\NLightning.Common\Types\ChainHash.cs" LinkBase="Common\Types"/>
     <Compile Include="..\NLightning.Common\Types\Network.cs" LinkBase="Common\Types"/>
     <Compile Include="..\NLightning.Common\Types\ShortChannelId.cs" LinkBase="Common\Types"/>
     <Compile Include="..\NLightning.Bolts\BOLT9\**\*.cs" LinkBase="Bolts\BOLT9"/>

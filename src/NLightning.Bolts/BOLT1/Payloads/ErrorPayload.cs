@@ -1,10 +1,10 @@
-using System.Runtime.Serialization;
 using System.Text;
 
 namespace NLightning.Bolts.BOLT1.Payloads;
 
 using Bolts.Interfaces;
 using Common.BitUtils;
+using Exceptions;
 
 /// <summary>
 /// Represents an error payload.
@@ -61,7 +61,7 @@ public class ErrorPayload(byte[] data) : IMessagePayload
     /// </summary>
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized ErrorPayload.</returns>
-    /// <exception cref="SerializationException">Error deserializing Payload</exception>
+    /// <exception cref="PayloadSerializationException">Error deserializing Payload</exception>
     public static async Task<ErrorPayload> DeserializeAsync(Stream stream)
     {
         try
@@ -79,7 +79,7 @@ public class ErrorPayload(byte[] data) : IMessagePayload
         }
         catch (Exception e)
         {
-            throw new SerializationException("Error deserializing ErrorPayload", e);
+            throw new PayloadSerializationException("Error deserializing ErrorPayload", e);
         }
     }
 }
