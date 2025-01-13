@@ -1,15 +1,21 @@
-using NLightning.Bolts.BOLT3.Transactions;
-
 namespace NLightning.Bolts.BOLT3.Comparers;
+
+using Transactions;
 
 public class TransactionOutputComparer : IComparer<TransactionOutput>
 {
     public int Compare(TransactionOutput? x, TransactionOutput? y)
     {
-        // Deal with nulls
-        if (x == null && y == null) return 0;
-        if (x == null) return -1;
-        if (y == null) return 1;
+        switch ((x, y))
+        {
+            // Deal with nulls
+            case (null, null):
+                return 0;
+            case (null, not null):
+                return -1;
+            case (not null, null):
+                return 1;
+        }
 
         // Compare by value (satoshis)
         var valueComparison = x.Value.CompareTo(y.Value);

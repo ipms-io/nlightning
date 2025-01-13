@@ -1,9 +1,9 @@
 using NBitcoin;
+using NLightning.Bolts.Constants;
 
 namespace NLightning.Bolts.BOLT3.Htlcs;
 
 using Common.Crypto.Hashes;
-using Constants;
 using Exceptions;
 using Interfaces;
 
