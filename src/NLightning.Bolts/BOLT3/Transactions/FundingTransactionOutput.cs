@@ -7,7 +7,7 @@ namespace NLightning.Bolts.BOLT3.Transactions;
 /// </summary>
 public class FundingTransactionOutput
 {
-    public byte[] FundingScriptPubKey { get; }
+    public Script FundingScriptPubKey { get; }
     public ulong Value { get; }
 
     /// <summary>
@@ -18,17 +18,11 @@ public class FundingTransactionOutput
     /// <param name="value">The value of the output in satoshis.</param>
     public FundingTransactionOutput(PubKey pubkey1, PubKey pubkey2, ulong value)
     {
-        Script redeemScript;
-        if (pubkey1.CompareTo(pubkey2) < 0)
-        {
-            redeemScript = Create2Of2MultiSigRedeemScript(pubkey1, pubkey2);
-        }
-        else
-        {
-            redeemScript = Create2Of2MultiSigRedeemScript(pubkey2, pubkey1);
-        }
+        var redeemScript = pubkey1.CompareTo(pubkey2) < 0
+            ? Create2Of2MultiSigRedeemScript(pubkey1, pubkey2)
+            : Create2Of2MultiSigRedeemScript(pubkey2, pubkey1);
 
-        FundingScriptPubKey = PayToWitScriptHashTemplate.Instance.GenerateScriptPubKey(redeemScript.WitHash).ToBytes();
+        FundingScriptPubKey = PayToWitScriptHashTemplate.Instance.GenerateScriptPubKey(redeemScript.WitHash);
         Value = value;
     }
 

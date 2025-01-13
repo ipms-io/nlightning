@@ -1,4 +1,5 @@
 using NBitcoin;
+using NLightning.Bolts.BOLT3.Constants;
 using NLightning.Common.Managers;
 
 namespace NLightning.Bolts.BOLT3.Transactions;
@@ -32,7 +33,6 @@ public class CommitmentTransaction
     /// <param name="toSelfDelay">The to_self_delay in blocks.</param>
     /// <param name="obscuredCommitmentNumber">The obscured commitment number.</param>
     public CommitmentTransaction(
-        bool isOptionAnchorOutputs,
         uint256 fundingTxId,
         uint fundingOutputIndex,
         PubKey localPubKey,
@@ -46,13 +46,13 @@ public class CommitmentTransaction
         byte[] pubkey1Signature,
         byte[] pubkey2Signature)
     {
-        _isOptionAnchorOutputs = isOptionAnchorOutputs;
+        _isOptionAnchorOutputs = ConfigManager.Instance.IsOptionAnchorOutput;
         Transaction = CreateTransaction(fundingTxId, fundingOutputIndex, localPubKey, remotePubKey, localDelayedPubKey, revocationPubKey, toLocalAmount, toRemoteAmount, toSelfDelay, obscuredCommitmentNumber, pubkey1Signature, pubkey2Signature);
     }
 
-    public CommitmentTransaction(bool isOptionAnchorOutputs, Transaction tx)
+    public CommitmentTransaction(Transaction tx)
     {
-        _isOptionAnchorOutputs = isOptionAnchorOutputs;
+        _isOptionAnchorOutputs = ConfigManager.Instance.IsOptionAnchorOutput;
         Transaction = tx;
     }
 
@@ -73,13 +73,14 @@ public class CommitmentTransaction
         var tx = Transaction.Create(ConfigManager.Instance.Network);
 
         // Set version and locktime
-        tx.Version = 2;
+        tx.Version = TransactionConstants.COMMITMENT_TRANSACTION_VERSION;
         tx.LockTime = new LockTime((0x20 << 24) | (uint)(obscuredCommitmentNumber & 0xFFFFFF));
 
         // Add the funding input
         var outpoint = new OutPoint(fundingTxId, fundingOutputIndex);
         var witScript = new WitScript(OpcodeType.OP_0, Op.GetPushOp(pubkey1Signature), Op.GetPushOp(pubkey2Signature));
-        tx.Inputs.Add(outpoint, null, witScript, new Sequence(0x80 << 24) | (uint)((obscuredCommitmentNumber >> 24) & 0xFFFFFF));
+        var sequence = new Sequence(0x80 << 24) | (uint)((obscuredCommitmentNumber >> 24) & 0xFFFFFF);
+        tx.Inputs.Add(outpoint, null, witScript, sequence);
 
         // to_local output
         if (toLocalAmount >= new Money((long)546)) // Dust limit in satoshis
@@ -95,16 +96,18 @@ public class CommitmentTransaction
             tx.Outputs.Add(new TxOut(toRemoteAmount, toRemoteScript.WitHash));
         }
 
-        if (_isOptionAnchorOutputs)
+        if (!_isOptionAnchorOutputs)
         {
-            // Local anchor output
-            var localAnchorScript = CreateAnchorScript(localPubKey);
-            tx.Outputs.Add(new TxOut(new Money((long)330), localAnchorScript.WitHash));
-
-            // Remote anchor output
-            var remoteAnchorScript = CreateAnchorScript(remotePubKey);
-            tx.Outputs.Add(new TxOut(new Money((long)330), remoteAnchorScript.WitHash));
+            return tx;
         }
+
+        // Local anchor output
+        var localAnchorScript = CreateAnchorScript(localPubKey);
+        tx.Outputs.Add(new TxOut(new Money((long)330), localAnchorScript.WitHash));
+
+        // Remote anchor output
+        var remoteAnchorScript = CreateAnchorScript(remotePubKey);
+        tx.Outputs.Add(new TxOut(new Money((long)330), remoteAnchorScript.WitHash));
 
         return tx;
     }
@@ -166,7 +169,7 @@ public class CommitmentTransaction
             */
             return new Script(
                 Op.GetPushOp(remotePubKey.ToBytes()),
-                OpcodeType.OP_CHECKSIG,
+                OpcodeType.OP_CHECKSIGVERIFY,
                 OpcodeType.OP_1,
                 OpcodeType.OP_CHECKSEQUENCEVERIFY
             );

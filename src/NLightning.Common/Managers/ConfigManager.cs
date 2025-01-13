@@ -58,4 +58,6 @@ public class ConfigManager
     /// In case channel_type includes option_zeroconf this MUST be 0
     /// </summary>
     public uint MinimumDepth { get; set; }
+
+    public bool IsOptionAnchorOutput { get; set; }
 }

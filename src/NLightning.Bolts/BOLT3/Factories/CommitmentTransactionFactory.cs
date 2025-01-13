@@ -65,7 +65,7 @@ public class CommitmentTransactionFactory
         // Sort the outputs into BIP 69+CLTV order
         SortOutputs(tx);
 
-        return new CommitmentTransaction(optionAnchors, tx);
+        return null;//new CommitmentTransaction(optionAnchors, tx);
     }
 
     private void InitializeTransaction(Transaction tx, uint256 fundingTxId, uint fundingOutputIndex, ulong obscuredCommitmentNumber, byte[] pubkey1Signature, byte[] pubkey2Signature)
