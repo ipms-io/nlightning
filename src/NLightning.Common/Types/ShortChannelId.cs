@@ -48,6 +48,13 @@ public readonly struct ShortChannelId
         OUTPUT_INDEX = (ushort)((value[6] << 8) | value[7]);
     }
 
+    public ShortChannelId(ulong channelId) : this(
+        (uint)((channelId >> 40) & 0xFFFFFF), // BLOCK_HEIGHT
+        (uint)((channelId >> 16) & 0xFFFF),   // TRANSACTION_INDEX
+        (ushort)(channelId & 0xFF)            // OUTPUT_INDEX
+    )
+    { }
+
     public ValueTask SerializeAsync(Stream stream)
     {
         return stream.WriteAsync(_value);
@@ -76,12 +83,12 @@ public readonly struct ShortChannelId
     }
 
     #region Overrides
-    public override readonly string ToString()
+    public override string ToString()
     {
         return $"{BLOCK_HEIGHT}x{TRANSACTION_INDEX}x{OUTPUT_INDEX}";
     }
 
-    public override readonly bool Equals(object? obj)
+    public override bool Equals(object? obj)
     {
         if (obj is ShortChannelId other)
         {
@@ -91,14 +98,14 @@ public readonly struct ShortChannelId
         return false;
     }
 
-    public readonly bool Equals(ShortChannelId other)
+    public bool Equals(ShortChannelId other)
     {
         return BLOCK_HEIGHT == other.BLOCK_HEIGHT &&
                TRANSACTION_INDEX == other.TRANSACTION_INDEX &&
                OUTPUT_INDEX == other.OUTPUT_INDEX;
     }
 
-    public override readonly int GetHashCode()
+    public override int GetHashCode()
     {
         return HashCode.Combine(BLOCK_HEIGHT, TRANSACTION_INDEX, OUTPUT_INDEX);
     }
@@ -109,6 +116,7 @@ public readonly struct ShortChannelId
     public static implicit operator ShortChannelId(byte[] value) => new(value);
     public static implicit operator ReadOnlySpan<byte>(ShortChannelId s) => s._value;
     public static implicit operator ShortChannelId(Span<byte> value) => new(value.ToArray());
+    public static implicit operator ShortChannelId(ulong value) => new(value);
 
     public static bool operator ==(ShortChannelId left, ShortChannelId right)
     {
