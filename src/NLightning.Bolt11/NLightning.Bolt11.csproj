@@ -98,11 +98,11 @@
   <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' And '$(PublishAot)' != 'true' And !$(Configuration.Contains('.Wasm')) And !$(Configuration.Contains('.Native'))">
     <Compile Include="..\NLightning.Common\Crypto\Providers\Libsodium\*.cs" LinkBase="Common\Crypto\Providers\Libsodium"/>
 
-    <PackageReference Include="libsodium" Version="1.0.19"/>
+    <PackageReference Include="libsodium" Version="1.0.20.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NBitcoin" Version="7.0.37"/>
+    <PackageReference Include="NBitcoin" Version="7.0.50" />
   </ItemGroup>
 
   <ItemGroup>

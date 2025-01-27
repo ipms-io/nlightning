@@ -32,26 +32,17 @@ internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> loca
         if (_steps == 2)
         {
             _steps--;
-            if (IsInitiator)
-            {
-                return InitiatorWriteActOne(outMessage);
-            }
-            else
-            {
-                return ResponderReadActOneAndWriteActTwo(inMessage, outMessage);
-            }
+            return IsInitiator
+                ? InitiatorWriteActOne(outMessage)
+                : ResponderReadActOneAndWriteActTwo(inMessage, outMessage);
         }
-        else if (_steps == 1)
+
+        if (_steps == 1)
         {
             _steps--;
-            if (IsInitiator)
-            {
-                return InitiatorReadActTwoAndWriteActThree(inMessage, outMessage);
-            }
-            else
-            {
-                return ResponderReadActThree(inMessage);
-            }
+            return IsInitiator
+                ? InitiatorReadActTwoAndWriteActThree(inMessage, outMessage)
+                : ResponderReadActThree(inMessage);
         }
 
         throw new InvalidOperationException("There's no more steps to complete");
@@ -125,7 +116,5 @@ internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> loca
     public void Dispose()
     {
         _handshakeState.Dispose();
-        handshakeState?.Dispose();
-        Transport?.Dispose();
     }
 }

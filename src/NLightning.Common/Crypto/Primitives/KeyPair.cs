@@ -7,23 +7,13 @@ namespace NLightning.Common.Crypto.Primitives;
 /// </summary>
 internal sealed class KeyPair : IDisposable
 {
-    private readonly Key _privateKey;
-    private readonly PubKey _publicKey;
-    private bool _disposed;
-
     /// <summary>
     /// Gets the private key.
     /// </summary>
     /// <exception cref="ObjectDisposedException">
     /// Thrown if the current instance has already been disposed.
     /// </exception>
-    public Key PrivateKey
-    {
-        get
-        {
-            return _privateKey;
-        }
-    }
+    public Key PrivateKey { get; }
 
     /// <summary>
     /// Gets the public key.
@@ -31,13 +21,7 @@ internal sealed class KeyPair : IDisposable
     /// <exception cref="ObjectDisposedException">
     /// Thrown if the current instance has already been disposed.
     /// </exception>
-    public PubKey PublicKey
-    {
-        get
-        {
-            return _publicKey;
-        }
-    }
+    public PubKey PublicKey { get; }
 
     /// <summary>
     /// Gets the public key bytes.
@@ -49,7 +33,7 @@ internal sealed class KeyPair : IDisposable
     {
         get
         {
-            return _publicKey.ToBytes();
+            return PublicKey.ToBytes();
         }
     }
 
@@ -62,8 +46,8 @@ internal sealed class KeyPair : IDisposable
     /// </exception>
     internal KeyPair(Key privateKey)
     {
-        _privateKey = privateKey;
-        _publicKey = privateKey.PubKey;
+        PrivateKey = privateKey;
+        PublicKey = privateKey.PubKey;
     }
 
     /// <summary>
@@ -71,9 +55,6 @@ internal sealed class KeyPair : IDisposable
     /// </summary>
     public void Dispose()
     {
-        if (!_disposed)
-        {
-            _disposed = true;
-        }
+        PrivateKey.Dispose();
     }
 }
