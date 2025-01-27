@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 
 namespace NLightning.Common.Crypto.Ciphers;
 
+using Common.Interfaces.Crypto;
 using Constants;
 using Factories.Crypto;
 
@@ -13,8 +14,15 @@ using Factories.Crypto;
 /// AEAD_CHACHA20_POLY1305 from <see href="https://tools.ietf.org/html/rfc7539">RFC 7539</see>.
 /// The 96-bit nonce is formed by encoding 32 bits of zeros followed by little-endian encoding of n.
 /// </summary>
-public sealed class ChaCha20Poly1305
+public sealed class ChaCha20Poly1305 : IDisposable
 {
+    private readonly ICryptoProvider _cryptoProvider;
+
+    public ChaCha20Poly1305()
+    {
+        _cryptoProvider = CryptoFactory.GetCryptoProvider();
+    }
+
     /// <summary>
     /// Encrypts plaintext using the cipher key of 32 bytes and an 8-byte unsigned integer publicNonce which must be
     /// unique for the key. Writes the result into ciphertext parameter and returns the number of bytes written.
@@ -30,9 +38,8 @@ public sealed class ChaCha20Poly1305
         Span<byte> nonce = stackalloc byte[CryptoConstants.CHACHA20_POLY1305_NONCE_LEN];
         BinaryPrimitives.WriteUInt64LittleEndian(nonce[4..], publicNonce);
 
-        using var cryptoProvider = CryptoFactory.GetCryptoProvider();
-        var result = cryptoProvider.AeadChacha20Poly1305IetfEncrypt(key, nonce, null, authenticationData, plaintext,
-                                                                    ciphertext, out var length);
+        var result = _cryptoProvider.AeadChacha20Poly1305IetfEncrypt(key, nonce, null, authenticationData, plaintext,
+                                                                     ciphertext, out var length);
 
         if (result != 0)
         {
@@ -58,9 +65,8 @@ public sealed class ChaCha20Poly1305
         Span<byte> nonce = stackalloc byte[CryptoConstants.CHACHA20_POLY1305_NONCE_LEN];
         BinaryPrimitives.WriteUInt64LittleEndian(nonce[4..], publicNonce);
 
-        using var cryptoProvider = CryptoFactory.GetCryptoProvider();
-        var result = cryptoProvider.AeadChacha20Poly1305IetfDecrypt(key, nonce, null, authenticationData,
-                                                                    ciphertext, plaintext, out var length);
+        var result = _cryptoProvider.AeadChacha20Poly1305IetfDecrypt(key, nonce, null, authenticationData,
+                                                                     ciphertext, plaintext, out var length);
 
         if (result != 0)
         {
@@ -69,5 +75,10 @@ public sealed class ChaCha20Poly1305
 
         Debug.Assert(length == ciphertext.Length - CryptoConstants.CHACHA20_POLY1305_TAG_LEN);
         return (int)length;
+    }
+
+    public void Dispose()
+    {
+        _cryptoProvider.Dispose();
     }
 }

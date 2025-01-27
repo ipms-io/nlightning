@@ -44,7 +44,15 @@ public sealed class PeerService(NodeOptions nodeOptions, ITransportServiceFactor
 
         // Create and Initialize the transport service
         var transportService = transportServiceFactory.CreateTransportService(true, nodeOptions.KeyPair.PrivateKey.ToBytes(), peerAddress.PubKey.ToBytes(), tcpClient);
-        await transportService.InitializeAsync(nodeOptions.NetworkTimeout);
+
+        try
+        {
+            await transportService.InitializeAsync(nodeOptions.NetworkTimeout);
+        }
+        catch (Exception ex)
+        {
+            throw new ConnectionException($"Error connecting to peer {peerAddress.Host}:{peerAddress.Port}", ex);
+        }
 
         var peer = new Peer(nodeOptions, messageServiceFactory.CreateMessageService(transportService), pingPongServiceFactory.CreatePingPongService(nodeOptions.NetworkTimeout), false);
         peer.DisconnectEvent += (_, _) =>

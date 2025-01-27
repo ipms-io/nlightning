@@ -89,7 +89,7 @@ internal sealed class HandshakeState : IHandshakeState
             throw new InvalidOperationException("Cannot call WriteMessage after the handshake has already been completed.");
         }
 
-        var overhead = _messagePatterns.Peek().Overhead(CryptoConstants.PUBKEY_LEN, _state.HasKey());
+        var overhead = _messagePatterns.Peek().Overhead(CryptoConstants.PUBKEY_LEN, _state.HasKeys());
         var ciphertextSize = payload.Length + overhead;
 
         if (ciphertextSize > ProtocolConstants.MAX_MESSAGE_LENGTH)
@@ -155,7 +155,7 @@ internal sealed class HandshakeState : IHandshakeState
             throw new InvalidOperationException("Cannot call WriteMessage after the handshake has already been completed.");
         }
 
-        var overhead = _messagePatterns.Peek().Overhead(CryptoConstants.PUBKEY_LEN, _state.HasKey());
+        var overhead = _messagePatterns.Peek().Overhead(CryptoConstants.PUBKEY_LEN, _state.HasKeys());
         var plaintextSize = message.Length - overhead;
 
         if (message.Length > ProtocolConstants.MAX_MESSAGE_LENGTH)
@@ -285,7 +285,7 @@ internal sealed class HandshakeState : IHandshakeState
         }
         message = message[1..];
 
-        var length = _state.HasKey() ? CryptoConstants.PUBKEY_LEN + CryptoConstants.CHACHA20_POLY1305_TAG_LEN : CryptoConstants.PUBKEY_LEN;
+        var length = _state.HasKeys() ? CryptoConstants.PUBKEY_LEN + CryptoConstants.CHACHA20_POLY1305_TAG_LEN : CryptoConstants.PUBKEY_LEN;
         var temp = message[..length];
 
         _rs = new byte[CryptoConstants.PUBKEY_LEN];
@@ -343,8 +343,8 @@ internal sealed class HandshakeState : IHandshakeState
     private void Clear()
     {
         _state.Dispose();
-        _s.Dispose();
         _e?.Dispose();
+        _s.Dispose();
     }
 
     private enum Role
@@ -355,8 +355,7 @@ internal sealed class HandshakeState : IHandshakeState
 
     public void Dispose()
     {
-        _state.Dispose();
-        _s.Dispose();
-        _e?.Dispose();
+        Clear();
+        GC.SuppressFinalize(this);
     }
 }

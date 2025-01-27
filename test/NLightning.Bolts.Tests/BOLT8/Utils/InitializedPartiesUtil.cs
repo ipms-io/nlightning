@@ -6,14 +6,15 @@ namespace NLightning.Bolts.Tests.BOLT8.Utils;
 using Bolts.BOLT8.Constants;
 using Bolts.BOLT8.Primitives;
 using Bolts.BOLT8.States;
+using Common.Crypto.Primitives;
 using Mock;
 
 internal sealed class InitializedPartiesUtil
 {
     public Transport InitiatorTransport { get; }
     public Transport ResponderTransport { get; }
-    public byte[] InitiatorSk { get; }
-    public byte[] InitiatorRk { get; }
+    public SecureMemory InitiatorSk { get; }
+    public SecureMemory InitiatorRk { get; }
 
     public InitializedPartiesUtil()
     {
@@ -51,9 +52,9 @@ internal sealed class InitializedPartiesUtil
 
         // Get sk
         var c1 = ((CipherState?)InitiatorTransport.GetType().GetField("_sendingKey", flags)?.GetValue(InitiatorTransport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new NullReferenceException("_sendingKey");
-        InitiatorSk = ((byte[]?)c1.GetType().GetField("_k", flags)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new NullReferenceException("_sendingKey._k");
+        InitiatorSk = ((SecureMemory?)c1.GetType().GetField("_k", flags)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new NullReferenceException("_sendingKey._k");
         // Get rk
         var c2 = ((CipherState?)InitiatorTransport.GetType().GetField("_receivingKey", flags)?.GetValue(InitiatorTransport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new NullReferenceException("_receivingKey");
-        InitiatorRk = ((byte[]?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new NullReferenceException("_receivingKey._k");
+        InitiatorRk = ((SecureMemory?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new NullReferenceException("_receivingKey._k");
     }
 }

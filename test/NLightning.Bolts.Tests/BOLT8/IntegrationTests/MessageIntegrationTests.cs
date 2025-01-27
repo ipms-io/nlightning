@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace NLightning.Bolts.Tests.BOLT8.IntegrationTests;
 
 using Bolts.BOLT8.Constants;
@@ -14,10 +12,10 @@ public class MessageIntegrationTests
         var initializedParties = new InitializedPartiesUtil();
 
         // Make sure keys match
-        Assert.Equal(ValidMessagesUtil.InitiatorSk, initializedParties.InitiatorSk);
-        Assert.Equal(ValidMessagesUtil.InitiatorRk, initializedParties.InitiatorRk);
+        Assert.Equal(((Span<byte>)ValidMessagesUtil.InitiatorSk).ToArray(), ((Span<byte>)initializedParties.InitiatorSk).ToArray());
+        Assert.Equal(((Span<byte>)ValidMessagesUtil.InitiatorRk).ToArray(), ((Span<byte>)initializedParties.InitiatorRk).ToArray());
 
-        var message = Encoding.ASCII.GetBytes("hello");
+        var message = "hello"u8.ToArray();
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
         var receivedMessageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
 
@@ -25,11 +23,11 @@ public class MessageIntegrationTests
         {
             // Act
             var messageSize = initializedParties.InitiatorTransport.WriteMessage(message, messageBuffer);
-            var receivedMessageLenght = initializedParties.ResponderTransport.ReadMessageLength(messageBuffer.AsSpan(0, 18));
+            var receivedMessageLength = initializedParties.ResponderTransport.ReadMessageLength(messageBuffer.AsSpan(0, 18));
 
-            Assert.Equal(18 + receivedMessageLenght, messageSize);
+            Assert.Equal(18 + receivedMessageLength, messageSize);
 
-            var receivedMessageSize = initializedParties.ResponderTransport.ReadMessagePayload(messageBuffer.AsSpan(18, receivedMessageLenght), receivedMessageBuffer);
+            var receivedMessageSize = initializedParties.ResponderTransport.ReadMessagePayload(messageBuffer.AsSpan(18, receivedMessageLength), receivedMessageBuffer);
 
             // Assert
             Assert.Equal(message, receivedMessageBuffer[..receivedMessageSize]);

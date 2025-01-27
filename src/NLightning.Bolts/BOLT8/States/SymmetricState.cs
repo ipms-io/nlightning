@@ -1,10 +1,11 @@
-using System.Diagnostics;
-
 namespace NLightning.Bolts.BOLT8.States;
 
 using Common.Constants;
 using Common.Crypto.Functions;
 using Common.Crypto.Hashes;
+using Common.Crypto.Primitives;
+using Common.Factories.Crypto;
+using Common.Interfaces.Crypto;
 
 /// <summary>
 /// A SymmetricState object contains a CipherState plus ck (a chaining
@@ -12,10 +13,11 @@ using Common.Crypto.Hashes;
 /// </summary>
 internal sealed class SymmetricState : IDisposable
 {
+    private readonly ICryptoProvider _cryptoProvider;
     private readonly Sha256 _sha256 = new();
     private readonly Hkdf _hkdf = new();
     private readonly CipherState _state = new();
-    private readonly byte[] _ck;
+    private readonly SecureMemory _ck;
     private readonly byte[] _h;
 
     /// <summary>
@@ -24,7 +26,8 @@ internal sealed class SymmetricState : IDisposable
     /// </summary>
     public SymmetricState(ReadOnlySpan<byte> protocolName)
     {
-        _ck = new byte[CryptoConstants.SHA256_HASH_LEN];
+        _cryptoProvider = CryptoFactory.GetCryptoProvider();
+        _ck = new SecureMemory(CryptoConstants.SHA256_HASH_LEN);
         _h = new byte[CryptoConstants.SHA256_HASH_LEN];
 
         if (protocolName.Length <= CryptoConstants.SHA256_HASH_LEN)
@@ -37,7 +40,7 @@ internal sealed class SymmetricState : IDisposable
             _sha256.GetHashAndReset(_h);
         }
 
-        Array.Copy(_h, _ck, CryptoConstants.SHA256_HASH_LEN);
+        _h.CopyTo(_ck);
     }
 
     /// <summary>
@@ -48,7 +51,10 @@ internal sealed class SymmetricState : IDisposable
     public void MixKey(ReadOnlySpan<byte> inputKeyMaterial)
     {
         var length = inputKeyMaterial.Length;
-        Debug.Assert(length is 0 or CryptoConstants.PRIVKEY_LEN);
+        if (length != 0 && length != CryptoConstants.PRIVKEY_LEN)
+        {
+            throw new ArgumentOutOfRangeException(nameof(inputKeyMaterial), $"Length should be either 0 or {CryptoConstants.PRIVKEY_LEN}");
+        }
 
         Span<byte> output = stackalloc byte[2 * CryptoConstants.SHA256_HASH_LEN];
         _hkdf.ExtractAndExpand2(_ck, inputKeyMaterial, output);
@@ -56,7 +62,7 @@ internal sealed class SymmetricState : IDisposable
         output[..CryptoConstants.SHA256_HASH_LEN].CopyTo(_ck);
 
         var tempK = output.Slice(CryptoConstants.SHA256_HASH_LEN, CryptoConstants.PRIVKEY_LEN);
-        _state.InitializeKey(tempK);
+        _state.InitializeKeyAndChainingKey(tempK, _ck);
     }
 
     /// <summary>
@@ -78,7 +84,10 @@ internal sealed class SymmetricState : IDisposable
     public void MixKeyAndHash(ReadOnlySpan<byte> inputKeyMaterial)
     {
         var length = inputKeyMaterial.Length;
-        Debug.Assert(length is 0 or CryptoConstants.PRIVKEY_LEN);
+        if (length != 0 && length != CryptoConstants.PRIVKEY_LEN)
+        {
+            throw new ArgumentOutOfRangeException(nameof(inputKeyMaterial), $"Length should be either 0 or {CryptoConstants.PRIVKEY_LEN}");
+        }
 
         Span<byte> output = stackalloc byte[3 * CryptoConstants.SHA256_HASH_LEN];
         _hkdf.ExtractAndExpand3(_ck, inputKeyMaterial, output);
@@ -89,7 +98,7 @@ internal sealed class SymmetricState : IDisposable
         var tempK = output.Slice(2 * CryptoConstants.SHA256_HASH_LEN, CryptoConstants.PRIVKEY_LEN);
 
         MixHash(tempH);
-        _state.InitializeKey(tempK);
+        _state.InitializeKeyAndChainingKey(tempK, _ck);
     }
 
     /// <summary>
@@ -146,17 +155,19 @@ internal sealed class SymmetricState : IDisposable
     }
 
     /// <summary>
-    /// Returns true if k is non-empty, false otherwise.
+    /// Returns true if k and ck are non-empty, false otherwise.
     /// </summary>
-    public bool HasKey()
+    public bool HasKeys()
     {
-        return _state.HasKey();
+        return _state.HasKeys();
     }
 
     public void Dispose()
     {
-
-        _sha256.Dispose();
+        _ck.Dispose();
         _state.Dispose();
+        _hkdf.Dispose();
+        _sha256.Dispose();
+        _cryptoProvider.Dispose();
     }
 }

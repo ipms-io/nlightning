@@ -5,6 +5,7 @@ namespace NLightning.Bolts.Tests.BOLT8.IntegrationTests;
 
 using Bolts.BOLT8.Constants;
 using Bolts.BOLT8.States;
+using Common.Crypto.Primitives;
 using Common.Interfaces.Crypto;
 using Mock;
 using Tests.Utils;
@@ -95,13 +96,13 @@ public class ResponderIntegrationTests
         // Act
         // Get rk
         var c1 = ((CipherState?)transport.GetType().GetField("_sendingKey", FLAGS)?.GetValue(transport) ?? throw new MissingFieldException("_sendingKey")) ?? throw new NullReferenceException("_sendingKey");
-        var rk = ((byte[]?)c1.GetType().GetField("_k", FLAGS)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new NullReferenceException("_sendingKey._k");
+        var rk = ((SecureMemory?)c1.GetType().GetField("_k", FLAGS)?.GetValue(c1) ?? throw new MissingFieldException("_sendingKey._k")) ?? throw new NullReferenceException("_sendingKey._k");
         // Get sk
         var c2 = ((CipherState?)transport.GetType().GetField("_receivingKey", FLAGS)?.GetValue(transport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new NullReferenceException("_receivingKey");
-        var sk = ((byte[]?)c2.GetType().GetField("_k", FLAGS)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new NullReferenceException("_receivingKey._k");
+        var sk = ((SecureMemory?)c2.GetType().GetField("_k", FLAGS)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new NullReferenceException("_receivingKey._k");
 
-        Assert.Equal(ResponderValidKeysUtil.OutputRk, rk);
-        Assert.Equal(ResponderValidKeysUtil.OutputSk, sk);
+        Assert.Equal(((Span<byte>)ResponderValidKeysUtil.OutputRk).ToArray(), ((Span<byte>)rk).ToArray());
+        Assert.Equal(((Span<byte>)ResponderValidKeysUtil.OutputSk).ToArray(), ((Span<byte>)sk).ToArray());
     }
 
     [Theory]

@@ -356,7 +356,7 @@ public partial class Invoice
         Network = ConfigManager.Instance.Network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        Signature = new CompactSignature(-1, new byte[64]);
+        Signature = new CompactSignature(0, new byte[64]);
 
         // Set Required Fields
         PaymentHash = paymentHash;
@@ -381,7 +381,7 @@ public partial class Invoice
         Network = ConfigManager.Instance.Network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        Signature = new CompactSignature(-1, new byte[64]);
+        Signature = new CompactSignature(0, new byte[64]);
 
         // Set Required Fields
         PaymentHash = paymentHash;
@@ -405,7 +405,7 @@ public partial class Invoice
         Network = network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        Signature = new CompactSignature(-1, new byte[64]);
+        Signature = new CompactSignature(0, new byte[64]);
     }
 
     /// <summary>

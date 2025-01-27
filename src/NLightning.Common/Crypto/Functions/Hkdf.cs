@@ -4,6 +4,7 @@ namespace NLightning.Common.Crypto.Functions;
 
 using Constants;
 using Hashes;
+using Primitives;
 
 /// <summary>
 /// HMAC-based Extract-and-Expand Key Derivation Function, defined in
@@ -23,7 +24,7 @@ internal sealed class Hkdf : IDisposable
     /// either zero bytes, 32 bytes, or DhLen bytes. Writes a
     /// byte sequences of length 2 * HashLen into output parameter.
     /// </summary>
-    public void ExtractAndExpand2(ReadOnlySpan<byte> chainingKey, ReadOnlySpan<byte> inputKeyMaterial, Span<byte> output)
+    public void ExtractAndExpand2(SecureMemory chainingKey, ReadOnlySpan<byte> inputKeyMaterial, Span<byte> output)
     {
         Debug.Assert(chainingKey.Length == CryptoConstants.SHA256_HASH_LEN);
         Debug.Assert(output.Length == 2 * CryptoConstants.SHA256_HASH_LEN);
@@ -44,7 +45,7 @@ internal sealed class Hkdf : IDisposable
     /// either zero bytes, 32 bytes, or DhLen bytes. Writes a
     /// byte sequences of length 3 * HashLen into output parameter.
     /// </summary>
-    public void ExtractAndExpand3(ReadOnlySpan<byte> chainingKey, ReadOnlySpan<byte> inputKeyMaterial, Span<byte> output)
+    public void ExtractAndExpand3(SecureMemory chainingKey, ReadOnlySpan<byte> inputKeyMaterial, Span<byte> output)
     {
         Debug.Assert(chainingKey.Length == CryptoConstants.SHA256_HASH_LEN);
         Debug.Assert(output.Length == 3 * CryptoConstants.SHA256_HASH_LEN);

@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using NLightning.Bolts.Exceptions;
 
 namespace NLightning.Bolts.BOLT8.Primitives;
 
@@ -57,7 +57,12 @@ internal sealed class Transport : ITransport
 
         // Decrypt the payload length from the message buffer
         var l = new byte[2];
-        var lcLen = ReadMessagePart(lc, l); // TODO: Check lcLen == 2
+        // Bytes read should always be 2
+        if (ReadMessagePart(lc, l) != 2)
+        {
+            throw new ConnectionException("Message Length was invalid.");
+        }
+
         if (BitConverter.IsLittleEndian)
         {
             Array.Reverse(l);
@@ -101,7 +106,10 @@ internal sealed class Transport : ITransport
         }
 
         var cipher = _initiator ? _sendingKey : _receivingKey;
-        Debug.Assert(cipher.HasKey());
+        if (!cipher.HasKeys())
+        {
+            throw new InvalidOperationException("Cipher is missing keys.");
+        }
 
         return cipher.Encrypt(payload, messageBuffer);
     }
@@ -127,14 +135,12 @@ internal sealed class Transport : ITransport
     /// </exception>
     private int ReadMessagePart(ReadOnlySpan<byte> message, Span<byte> payloadBuffer)
     {
-        if (message.Length > ProtocolConstants.MAX_MESSAGE_LENGTH)
+        switch (message.Length)
         {
-            throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MAX_MESSAGE_LENGTH} bytes in length.");
-        }
-
-        if (message.Length < CryptoConstants.CHACHA20_POLY1305_TAG_LEN)
-        {
-            throw new ArgumentException($"Noise message must be greater than or equal to {CryptoConstants.CHACHA20_POLY1305_TAG_LEN} bytes in length.");
+            case > ProtocolConstants.MAX_MESSAGE_LENGTH:
+                throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MAX_MESSAGE_LENGTH} bytes in length.");
+            case < CryptoConstants.CHACHA20_POLY1305_TAG_LEN:
+                throw new ArgumentException($"Noise message must be greater than or equal to {CryptoConstants.CHACHA20_POLY1305_TAG_LEN} bytes in length.");
         }
 
         if (message.Length - CryptoConstants.CHACHA20_POLY1305_TAG_LEN > payloadBuffer.Length)
@@ -143,7 +149,10 @@ internal sealed class Transport : ITransport
         }
 
         var cipher = _initiator ? _receivingKey : _sendingKey;
-        Debug.Assert(cipher.HasKey());
+        if (!cipher.HasKeys())
+        {
+            throw new InvalidOperationException("Cipher is missing keys.");
+        }
 
         return cipher.Decrypt(message, payloadBuffer);
     }
