@@ -17,6 +17,8 @@ public class FeaturesTests
     {
         // Arrange
         var features = new Features();
+        var eventRaised = false;
+        features.Changed += (_, _) => eventRaised = true;
 
         // Act
         features.SetFeature(feature, isCompulsory);
@@ -26,6 +28,7 @@ public class FeaturesTests
         Assert.False(features.IsFeatureSet(feature, !isCompulsory));
         Assert.False(features.IsFeatureSet(Feature.OPTION_PAYMENT_METADATA, isCompulsory));
         Assert.False(features.IsFeatureSet(Feature.OPTION_PAYMENT_METADATA, !isCompulsory));
+        Assert.True(eventRaised);
     }
 
     [Theory]
@@ -39,6 +42,8 @@ public class FeaturesTests
     {
         // Arrange
         var features = new Features();
+        var eventRaised = false;
+        features.Changed += (_, _) => eventRaised = true;
         features.SetFeature(Feature.OPTION_PAYMENT_METADATA, isCompulsory);
         features.SetFeature(feature, isCompulsory);
 
@@ -50,6 +55,7 @@ public class FeaturesTests
         Assert.False(features.IsFeatureSet(feature, !isCompulsory));
         Assert.True(features.IsFeatureSet(Feature.OPTION_PAYMENT_METADATA, isCompulsory));
         Assert.False(features.IsFeatureSet(Feature.OPTION_PAYMENT_METADATA, !isCompulsory));
+        Assert.True(eventRaised);
     }
 
     [Theory]
@@ -63,6 +69,8 @@ public class FeaturesTests
     {
         // Arrange
         var features = new Features();
+        var eventRaised = false;
+        features.Changed += (_, _) => eventRaised = true;
 
         // Act
         features.SetFeature(feature, isCompulsory);
@@ -70,6 +78,7 @@ public class FeaturesTests
         // Assert
         Assert.True(features.IsFeatureSet(feature, isCompulsory));
         Assert.True(features.IsFeatureSet(dependsOn, isCompulsory));
+        Assert.True(eventRaised);
     }
 
     [Theory]
@@ -83,6 +92,8 @@ public class FeaturesTests
     {
         // Arrange
         var features = new Features();
+        var eventRaised = false;
+        features.Changed += (_, _) => eventRaised = true;
         features.SetFeature(dependent, isCompulsory);
 
         // Act
@@ -91,6 +102,7 @@ public class FeaturesTests
         // Assert
         Assert.False(features.IsFeatureSet(feature, isCompulsory));
         Assert.False(features.IsFeatureSet(dependent, isCompulsory));
+        Assert.True(eventRaised);
     }
 
     [Fact]
@@ -98,12 +110,15 @@ public class FeaturesTests
     {
         // Arrange
         var features = new Features();
+        var eventRaised = false;
+        features.Changed += (_, _) => eventRaised = true;
 
         // Act
         features.SetFeature(42, true);
 
         // Assert
         Assert.True(features.IsFeatureSet(42, false));
+        Assert.True(eventRaised);
     }
     #endregion
 

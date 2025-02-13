@@ -1,13 +1,13 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using NBitcoin;
-using NLightning.Common.Crypto.Hashes;
 
 namespace NLightning.Bolts.BOLT11;
 
 using BOLT9;
 using Common.BitUtils;
 using Common.Constants;
+using Common.Crypto.Hashes;
 using Common.Managers;
 using Common.Types;
 using Constants;
@@ -124,6 +124,7 @@ public partial class Invoice
             if (value != null)
             {
                 _taggedFields.Add(new RoutingInfoTaggedField(value));
+                value.Changed += OnTaggedFieldsChanged;
             }
         }
     }
@@ -148,6 +149,7 @@ public partial class Invoice
             if (value != null)
             {
                 _taggedFields.Add(new FeaturesTaggedField(value));
+                value.Changed += OnTaggedFieldsChanged;
             }
         }
     }
@@ -338,7 +340,6 @@ public partial class Invoice
     #endregion
 
     #region Constructors
-
     /// <summary>
     /// The base constructor for the invoice
     /// </summary>
@@ -362,6 +363,8 @@ public partial class Invoice
         PaymentHash = paymentHash;
         PaymentSecret = paymentSecret;
         Description = description;
+
+        _taggedFields.Changed += OnTaggedFieldsChanged;
     }
 
     /// <summary>
@@ -387,6 +390,8 @@ public partial class Invoice
         PaymentHash = paymentHash;
         PaymentSecret = paymentSecret;
         DescriptionHash = descriptionHash;
+
+        _taggedFields.Changed += OnTaggedFieldsChanged;
     }
 
     /// <summary>
@@ -406,6 +411,8 @@ public partial class Invoice
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Signature = new CompactSignature(0, new byte[64]);
+
+        _taggedFields.Changed += OnTaggedFieldsChanged;
     }
 
     /// <summary>
@@ -432,6 +439,8 @@ public partial class Invoice
         Timestamp = timestamp;
         _taggedFields = taggedFields;
         Signature = signature;
+
+        _taggedFields.Changed += OnTaggedFieldsChanged;
     }
     #endregion
 
@@ -447,9 +456,9 @@ public partial class Invoice
     /// The invoice is created with the given amount of satoshis, a description, the payment hash and the payment secret.
     /// </remarks>
     /// <returns>The invoice</returns>
-    public static Invoice InSatoshis(long amountSats, string description, uint256 paymentHash, uint256 paymentSecret)
+    public static Invoice InSatoshis(ulong amountSats, string description, uint256 paymentHash, uint256 paymentSecret)
     {
-        return new Invoice((ulong)amountSats * 1_000, description, paymentHash, paymentSecret);
+        return new Invoice(amountSats * 1_000, description, paymentHash, paymentSecret);
     }
 
     /// <summary>
@@ -463,9 +472,9 @@ public partial class Invoice
     /// The invoice is created with the given amount of satoshis, a description hash, the payment hash and the payment secret.
     /// </remarks>
     /// <returns>The invoice</returns>
-    public static Invoice InSatoshis(long amountSats, uint256 descriptionHash, uint256 paymentHash, uint256 paymentSecret)
+    public static Invoice InSatoshis(ulong amountSats, uint256 descriptionHash, uint256 paymentHash, uint256 paymentSecret)
     {
-        return new Invoice((ulong)amountSats * 1_000, descriptionHash, paymentHash, paymentSecret);
+        return new Invoice(amountSats * 1_000, descriptionHash, paymentHash, paymentSecret);
     }
 
     /// <summary>
@@ -729,6 +738,11 @@ public partial class Invoice
         }
 
         return network;
+    }
+
+    private void OnTaggedFieldsChanged(object? sender, EventArgs args)
+    {
+        _invoiceString = null;
     }
     #endregion
 }

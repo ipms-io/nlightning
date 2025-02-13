@@ -11,7 +11,7 @@ using Types;
 /// </remarks>
 public class RequireConfirmedInputsTlv() : Tlv(TlvConstants.REQUIRE_CONFIRMED_INPUTS)
 {
-    public static RequireConfirmedInputsTlv? FromTlv(Tlv tlv)
+    public static RequireConfirmedInputsTlv FromTlv(Tlv tlv)
     {
         if (tlv.Type != TlvConstants.REQUIRE_CONFIRMED_INPUTS)
         {
