@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.2.3
+
+Fix Invoice.TaggedFields' Collection item update behavior
+
+### Added
+
+- Added `EventHandler` on `TaggedFieldList`, `RoutingInfoCollection`, and `Features` to inform subscribers upon changes in the collection;
+
+### Changed
+
+- `Invoice` subscribes to changes on new `Changed` events from contained Lists;
+
+## v0.2.2
+
+Set `CheckForOverflowUnderflow` to false when package is wasm (Blazor)
+
+### Added
+
+- Added `<CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>` under
+  `<PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">`
+  on `.csproj` file;
+
+## v0.2.1
+
+Fix Assembly name for blazor package
+
+### Added
+
+- Added `<AssemblyName>NLightning.Bolt11.Blazor</AssemblyName>` under
+  `<PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">`
+  on `.csproj` file;
+
 ## v0.2.0
 
 Add WebAssembly capabilities
