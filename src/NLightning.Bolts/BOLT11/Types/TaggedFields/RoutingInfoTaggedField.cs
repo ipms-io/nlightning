@@ -19,7 +19,7 @@ internal sealed class RoutingInfoTaggedField : ITaggedField
 {
     public TaggedFieldTypes Type => TaggedFieldTypes.ROUTING_INFO;
     internal RoutingInfoCollection Value { get; }
-    public short Length { get; }
+    public short Length { get; private set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DescriptionHashTaggedField"/> class.
@@ -29,6 +29,8 @@ internal sealed class RoutingInfoTaggedField : ITaggedField
     {
         Value = value;
         Length = (short)((value.Count * TaggedFieldConstants.ROUTING_INFO_LENGTH + value.Count * 2) / 5);
+
+        Value.Changed += OnRoutingInfoCollectionChanged;
     }
 
     /// <inheritdoc/>
@@ -118,5 +120,10 @@ internal sealed class RoutingInfoTaggedField : ITaggedField
         }
 
         return new RoutingInfoTaggedField(routingInfos);
+    }
+
+    private void OnRoutingInfoCollectionChanged(object? sender, EventArgs e)
+    {
+        Length = (short)((Value.Count * TaggedFieldConstants.ROUTING_INFO_LENGTH + Value.Count * 2) / 5);
     }
 }

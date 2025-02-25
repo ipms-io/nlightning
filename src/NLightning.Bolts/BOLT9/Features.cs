@@ -18,13 +18,13 @@ public class Features
     private static readonly Dictionary<Feature, Feature[]> s_featureDependencies = new()
     {
         // This   \/                          Depends on this \/
-        { Feature.GOSSIP_QUERIES_EX,            new[] { Feature.GOSSIP_QUERIES } },
-        { Feature.PAYMENT_SECRET,              new[] { Feature.VAR_ONION_OPTIN } },
-        { Feature.BASIC_MPP,                   new[] { Feature.PAYMENT_SECRET } },
-        { Feature.OPTION_ANCHOR_OUTPUTS,        new[] { Feature.OPTION_STATIC_REMOTE_KEY } },
-        { Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX, new[] { Feature.OPTION_STATIC_REMOTE_KEY } },
-        { Feature.OPTION_ROUTE_BLINDING,        new[] { Feature.VAR_ONION_OPTIN } },
-        { Feature.OPTION_ZEROCONF,             new[] { Feature.OPTION_SCID_ALIAS } },
+        { Feature.GOSSIP_QUERIES_EX,               [Feature.GOSSIP_QUERIES] },
+        { Feature.PAYMENT_SECRET,                  [Feature.VAR_ONION_OPTIN] },
+        { Feature.BASIC_MPP,                       [Feature.PAYMENT_SECRET] },
+        { Feature.OPTION_ANCHOR_OUTPUTS,           [Feature.OPTION_STATIC_REMOTE_KEY] },
+        { Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX, [Feature.OPTION_STATIC_REMOTE_KEY] },
+        { Feature.OPTION_ROUTE_BLINDING,           [Feature.VAR_ONION_OPTIN] },
+        { Feature.OPTION_ZEROCONF,                 [Feature.OPTION_SCID_ALIAS] },
     };
 
     private BitArray _featureFlags;
@@ -41,6 +41,8 @@ public class Features
         // Always set the compulsory bit of var_onion_optin
         SetFeature(Feature.VAR_ONION_OPTIN, false);
     }
+
+    public event EventHandler? Changed;
 
     /// <summary>
     /// Gets the position of the last index of one in the BitArray and add 1 because arrays starts at 0.
@@ -108,6 +110,8 @@ public class Features
         }
 
         _featureFlags.Set(bitPosition, isSet);
+
+        OnChanged();
     }
 
     /// <summary>
@@ -470,5 +474,10 @@ public class Features
         }
 
         return true;
+    }
+
+    private void OnChanged()
+    {
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 }

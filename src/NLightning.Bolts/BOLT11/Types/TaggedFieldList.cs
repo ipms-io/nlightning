@@ -12,6 +12,9 @@ using Interfaces;
 /// </summary>
 internal class TaggedFieldList : List<ITaggedField>
 {
+    private bool _shouldInvokeChangedEvent = true;
+    public event EventHandler? Changed;
+
     /// <summary>
     /// Add a tagged field to the list
     /// </summary>
@@ -33,6 +36,10 @@ internal class TaggedFieldList : List<ITaggedField>
                 throw new ArgumentException($"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
             default:
                 base.Add(taggedField);
+                if (_shouldInvokeChangedEvent)
+                {
+                    OnChanged();
+                }
                 break;
         }
     }
@@ -43,10 +50,49 @@ internal class TaggedFieldList : List<ITaggedField>
     /// <param name="taggedFields">The tagged fields to add</param>
     internal new void AddRange(IEnumerable<ITaggedField> taggedFields)
     {
+        _shouldInvokeChangedEvent = false;
+
         foreach (var taggedField in taggedFields)
         {
             Add(taggedField);
         }
+
+        _shouldInvokeChangedEvent = true;
+        OnChanged();
+    }
+
+    internal new bool Remove(ITaggedField item)
+    {
+        if (!base.Remove(item))
+        {
+            return false;
+        }
+
+        OnChanged();
+        return true;
+    }
+
+    internal new void RemoveAt(int index)
+    {
+        base.RemoveAt(index);
+        OnChanged();
+    }
+
+    internal new int RemoveAll(Predicate<ITaggedField> match)
+    {
+        var removed = base.RemoveAll(match);
+        if (removed > 0)
+        {
+            OnChanged();
+        }
+
+        return removed;
+    }
+
+    internal new void RemoveRange(int index, int count)
+    {
+        base.RemoveRange(index, count);
+        OnChanged();
     }
 
     /// <summary>
@@ -189,5 +235,10 @@ internal class TaggedFieldList : List<ITaggedField>
         return taggedFields.Count == 0
             ? null
             : taggedFields.Cast<T>().ToList();
+    }
+
+    private void OnChanged()
+    {
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 }

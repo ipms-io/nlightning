@@ -13,6 +13,7 @@ using Common.Types;
 using Exceptions;
 using static Utils.TestUtils;
 
+[Collection("secure-key-manager")]
 public class InvoiceIntegrationTests
 {
     private static readonly PubKey s_expectedPayeePubkey = new PubKey("03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad");
@@ -118,10 +119,6 @@ public class InvoiceIntegrationTests
     public void Given_ValidDecodedInvoice_When_Encoding_Then_InvoiceStringIsCorrect()
     {
         // Arrange
-        const string HEX_PRIVATE_KEY = "e126f68f7eafcc8b74f54d269fe206be715000f94dac067d1c04a8ca3b2db734";
-        var privateKeyBytes = NBitcoin.DataEncoders.Encoders.Hex.DecodeData(HEX_PRIVATE_KEY);
-        SecureKeyManager.Initialize(privateKeyBytes);
-
         // ConfigManager.Instance.Network = Network.MAIN_NET;
         // var a = new Invoice(0, "", uint256.One, uint256.One);
         // var b = a.Encode();
