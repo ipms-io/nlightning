@@ -2,7 +2,7 @@
 
 As we venture into the development of NLightning, our mission is to create a high-performance, secure, and easy-to-use
 Lightning Network implementation in C#. This project not only aims to contribute to the scalability and adoption of
-Bitcoin but also seeks to provide developers with a reliable toolset for building innovative applications on top of the
+Bitcoin also seeks to provide developers with a reliable toolset for building innovative applications on top of the
 Lightning Network.
 
 However, this journey is not without its challenges. Development, testing, and maintenance require significant resources
@@ -26,12 +26,12 @@ supporter of open-source innovation, your contribution is immensely appreciated.
 
 If you find this project useful, consider supporting us:
 
-- **LNBits Store** (set amounts): [Donate Here](https://t.ly/3E_Nd)
-- **LNURL** (donate any amount): [Donate Here](https://t.ly/WHHC_)
-- **LNAddress**: `nlightning@lnbits.casa21.space`
+- ~~**LNBits Store** (set amounts): [Donate Here](https://t.ly/3E_Nd)~~ (DEPRECATED)
+- ~~**LNURL** (donate any amount): [Donate Here](https://t.ly/WHHC_)~~ (DEPRECATED)
+- **LNAddress**: `nlightning@ipms.io`
 - **Bitcoin on-chain address**: `bc1pgtdj7qtdfrate2hhnt5lecayvgafhmpu6t250dg7d0sdrwtwcnkq8usux8`
 
-Every donation, no matter the size, makes a difference and is deeply appreciated. Together, we can make NLightning a
+No matter the size, every donation makes a difference and is deeply appreciated. Together, we can make NLightning a
 cornerstone of the Lightning Network ecosystem.
 
 Thank you for your support and belief in our project.
