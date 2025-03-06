@@ -33,7 +33,7 @@ public class MinFinalCltvExpiryTaggedFieldTests
     {
         // Arrange
         var taggedField = new MinFinalCltvExpiryTaggedField(expiry);
-        using var bitWriter = new BitWriter(taggedField.Length * 5);
+        var bitWriter = new BitWriter(taggedField.Length * 5);
 
         // Act
         taggedField.WriteToBitWriter(bitWriter);
@@ -53,7 +53,7 @@ public class MinFinalCltvExpiryTaggedFieldTests
     public void FromBitReader_CreatesCorrectlyFromBitReader(byte[] expectedMetadata, short bitLength, byte[] bytes)
     {
         // Arrange
-        using var bitReader = new BitReader(bytes);
+        var bitReader = new BitReader(bytes);
 
         // Act
         var taggedField = MetadataTaggedField.FromBitReader(bitReader, bitLength);
@@ -67,7 +67,7 @@ public class MinFinalCltvExpiryTaggedFieldTests
     {
         // Arrange
         var buffer = new byte[50];
-        using var bitReader = new BitReader(buffer);
+        var bitReader = new BitReader(buffer);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => MetadataTaggedField.FromBitReader(bitReader, 0));

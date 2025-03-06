@@ -42,7 +42,7 @@ public class FeaturesTaggedFieldTests
             features.SetFeature(featureBit, true);
         }
         var taggedField = new FeaturesTaggedField(features);
-        using var bitWriter = new BitWriter(taggedField.Length * 5);
+        var bitWriter = new BitWriter(taggedField.Length * 5);
 
         // Act
         taggedField.WriteToBitWriter(bitWriter);
@@ -60,7 +60,7 @@ public class FeaturesTaggedFieldTests
     public void FromBitReader_CreatesCorrectlyFromBitReader(byte[] featureBits, short bitLength, byte[] bytes)
     {
         // Arrange
-        using var bitReader = new BitReader(bytes);
+        var bitReader = new BitReader(bytes);
 
         // Act
         var taggedField = FeaturesTaggedField.FromBitReader(bitReader, bitLength);
@@ -77,7 +77,7 @@ public class FeaturesTaggedFieldTests
     {
         // Arrange
         var buffer = new byte[50];
-        using var bitReader = new BitReader(buffer);
+        var bitReader = new BitReader(buffer);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => FeaturesTaggedField.FromBitReader(bitReader, 0));

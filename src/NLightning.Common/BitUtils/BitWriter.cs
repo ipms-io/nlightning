@@ -1,89 +1,88 @@
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace NLightning.Common.BitUtils;
 
-public unsafe class BitWriter : IDisposable
+public class BitWriter
 {
     private int _bitOffset;
-
-    private byte* _buffer;
-    private GCHandle _handle;
-    private byte[] _managedBuffer;
+    private byte[] _buffer;
 
     public int TotalBits { get; private set; }
 
     public BitWriter(int totalBits)
     {
-        var totalBytes = (totalBits + 7) / 8;
-        _managedBuffer = new byte[totalBytes];
-        _handle = GCHandle.Alloc(_managedBuffer, GCHandleType.Pinned);
-        _buffer = (byte*)_handle.AddrOfPinnedObject();
+        if (totalBits < 0)
+            throw new ArgumentOutOfRangeException(nameof(totalBits), "Must be >= 0.");
+
         TotalBits = totalBits;
+        var totalBytes = (totalBits + 7) / 8;
+        _buffer = new byte[totalBytes];
     }
 
     public void GrowByBits(int additionalBits)
     {
         var requiredBits = _bitOffset + additionalBits;
-        var requiredBytes = (requiredBits + 7) / 8;
-        if (requiredBytes <= _managedBuffer.Length)
+        if (requiredBits <= TotalBits)
         {
             return;
         }
 
-        var newCapacity = Math.Max(_managedBuffer.Length * 2, requiredBytes);
-        Array.Resize(ref _managedBuffer, newCapacity);
-        _handle.Free();
-        _handle = GCHandle.Alloc(_managedBuffer, GCHandleType.Pinned);
-        _buffer = (byte*)_handle.AddrOfPinnedObject();
+        var newTotalBits = Math.Max(TotalBits * 2, requiredBits);
+        var newByteCount = (newTotalBits + 7) / 8;
+
+        Array.Resize(ref _buffer, newByteCount);
         TotalBits = requiredBits;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void WriteBits(ReadOnlySpan<byte> value, int bitLength)
     {
-        // copy bytes from value 
-        fixed (byte* p = value)
-        {
-            WriteBits(p, 0, bitLength);
-        }
+        WriteBits(value, 0, bitLength);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void WriteBits(ReadOnlySpan<byte> value, int valueOffset, int bitLength)
     {
-        // copy bytes from value 
-        fixed (byte* p = value)
+        if (_bitOffset + bitLength > TotalBits)
         {
-            WriteBits(p, valueOffset, bitLength);
+            throw new InvalidOperationException($"Not enough bits to write {bitLength}. Offset={_bitOffset}, capacity={TotalBits}.");
         }
-    }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteBits(byte* value, int valueOffset, int bitLength)
-    {
         var byteOffset = _bitOffset / 8;
-        var shift = (int)((uint)_bitOffset % 8);
+        var shift = _bitOffset % 8;
+
+        var bytesNeeded = (bitLength + 7) / 8;
 
         if (shift == 0)
         {
-            // copy bytes from value 
-            Unsafe.CopyBlock(_buffer + byteOffset, value + valueOffset, (uint)(bitLength / 8 + (bitLength % 8 == 0 ? 0 : 1)));
+            for (var i = 0; i < bytesNeeded; i++)
+            {
+                byte b = 0;
+                if (valueOffset + i < value.Length)
+                    b = value[valueOffset + i];
 
-            _bitOffset += bitLength;
-
-            return;
+                _buffer[byteOffset + i] = b;
+            }
         }
-
-        var bytesToWrite = bitLength / 8 + (shift > 0 ? 1 : 0);
-        for (var i = 0; i < bytesToWrite; i++)
+        else
         {
-            var left = (byte)((value[valueOffset + i] >> shift) & 0xFF);
-            var right = (byte)((value[valueOffset + i] << (8 - shift)) & 0xFF);
+            for (var i = 0; i < bytesNeeded; i++)
+            {
+                byte current = 0;
+                if (valueOffset + i < value.Length)
+                    current = value[valueOffset + i];
 
-            _buffer[byteOffset + i] |= left;
-            _buffer[byteOffset + i + 1] = right;
+                var left = (byte)(current >> shift);
+                _buffer[byteOffset + i] |= left;
+
+                var nextIndex = byteOffset + i + 1;
+
+                if (nextIndex >= _buffer.Length) continue;
+
+                var right = (byte)(current << (8 - shift));
+                _buffer[nextIndex] |= right;
+            }
         }
 
         _bitOffset += bitLength;
@@ -98,14 +97,15 @@ public unsafe class BitWriter : IDisposable
 
         var byteIndex = _bitOffset / 8;
         var bitIndex = _bitOffset % 8;
+        var shift = 7 - bitIndex;
 
         if (bit)
         {
-            _buffer[byteIndex] |= (byte)(1 << (7 - bitIndex));
+            _buffer[byteIndex] |= (byte)(1 << shift);
         }
         else
         {
-            _buffer[byteIndex] &= (byte)~(1 << (7 - bitIndex));
+            _buffer[byteIndex] &= (byte)~(1 << shift);
         }
 
         _bitOffset++;
@@ -113,20 +113,34 @@ public unsafe class BitWriter : IDisposable
 
     public void WriteByteAsBits(byte value, int bits)
     {
-        var mask = (1 >> bits) - 1;
-        var bytes = new[] { (byte)((value << (sizeof(byte) * 8 - bits)) & mask) };
+        const byte BYTE_BIT_SIZE = sizeof(byte) * 8;
+        if (bits is < 1 or > BYTE_BIT_SIZE)
+            throw new ArgumentOutOfRangeException(nameof(bits), $"must be between 1 and {BYTE_BIT_SIZE}.");
+
+        var masked = value & (byte)((1 << bits) - 1);
+        var shifted = (byte)(masked << (BYTE_BIT_SIZE - bits));
+
+        Span<byte> bytes = stackalloc byte[sizeof(byte)];
+        bytes[0] = shifted;
+
         WriteBits(bytes, bits);
     }
 
     public void WriteInt16AsBits(short value, int bits, bool bigEndian = true)
     {
-        var bytes = new byte[sizeof(short)];
-        var mask = (1 >> bits) - 1;
-        BinaryPrimitives.WriteInt16LittleEndian(bytes, (short)((value << (sizeof(short) * 8 - bits)) & mask));
+        const byte SHORT_BIT_SIZE = sizeof(short) * 8;
+        if (bits is < 1 or > SHORT_BIT_SIZE)
+            throw new ArgumentOutOfRangeException(nameof(bits), $"must be between 1 and {SHORT_BIT_SIZE}.");
+
+        var masked = value & (short)((1 >> bits) - 1);
+        var shifted = (short)(masked << (SHORT_BIT_SIZE - bits));
+
+        Span<byte> bytes = stackalloc byte[sizeof(short)];
+        BinaryPrimitives.WriteInt16LittleEndian(bytes, shifted);
 
         if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
         {
-            Array.Reverse(bytes);
+            bytes.Reverse();
         }
 
         WriteBits(bytes, bits);
@@ -134,13 +148,19 @@ public unsafe class BitWriter : IDisposable
 
     public void WriteUInt16AsBits(ushort value, int bits, bool bigEndian = true)
     {
-        var bytes = new byte[sizeof(ushort)];
-        var mask = (1 >> bits) - 1;
-        BinaryPrimitives.WriteUInt16LittleEndian(bytes, (ushort)((value << (sizeof(ushort) * 8 - bits)) & mask));
+        const byte USHORT_BIT_SIZE = sizeof(ushort) * 8;
+        if (bits is < 1 or > USHORT_BIT_SIZE)
+            throw new ArgumentOutOfRangeException(nameof(bits), $"must be between 1 and {USHORT_BIT_SIZE}.");
+
+        var masked = value & (ushort)((1 << bits) - 1);
+        var shifted = (ushort)(masked << (USHORT_BIT_SIZE - bits));
+
+        Span<byte> bytes = stackalloc byte[sizeof(ushort)];
+        BinaryPrimitives.WriteUInt16LittleEndian(bytes, shifted);
 
         if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
         {
-            Array.Reverse(bytes);
+            bytes.Reverse();
         }
 
         WriteBits(bytes, bits);
@@ -148,13 +168,19 @@ public unsafe class BitWriter : IDisposable
 
     public void WriteInt32AsBits(int value, int bits, bool bigEndian = true)
     {
-        var bytes = new byte[sizeof(int)];
-        var mask = bits != 32 ? (1 >> bits) - 1 : -1;
-        BinaryPrimitives.WriteInt32LittleEndian(bytes, (value << (sizeof(int) * 8 - bits)) & mask);
+        const byte INT_BIT_SIZE = sizeof(int) * 8;
+        if (bits is < 1 or > INT_BIT_SIZE)
+            throw new ArgumentOutOfRangeException(nameof(bits), $"must be between 1 and {INT_BIT_SIZE}.");
+
+        var masked = value & (int)((1L << bits) - 1);
+        var shifted = masked << (INT_BIT_SIZE - bits);
+
+        Span<byte> bytes = stackalloc byte[sizeof(int)];
+        BinaryPrimitives.WriteInt32LittleEndian(bytes, shifted);
 
         if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
         {
-            Array.Reverse(bytes);
+            bytes.Reverse();
         }
 
         WriteBits(bytes, bits);
@@ -162,12 +188,19 @@ public unsafe class BitWriter : IDisposable
 
     public void WriteInt64AsBits(long value, int bits, bool bigEndian = true)
     {
-        var bytes = new byte[sizeof(long)];
-        BinaryPrimitives.WriteInt64LittleEndian(bytes, value << (sizeof(long) * 8 - bits));
+        const byte LONG_BIT_SIZE = sizeof(long) * 8;
+        if (bits is < 1 or > LONG_BIT_SIZE)
+            throw new ArgumentOutOfRangeException(nameof(bits), $"must be between 1 and {LONG_BIT_SIZE}.");
+
+        var masked = value & (long)((1UL << bits) - 1);
+        var shifted = masked << (LONG_BIT_SIZE - bits);
+
+        Span<byte> bytes = stackalloc byte[sizeof(long)];
+        BinaryPrimitives.WriteInt64LittleEndian(bytes, shifted);
 
         if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
         {
-            Array.Reverse(bytes);
+            bytes.Reverse();
         }
 
         WriteBits(bytes, bits);
@@ -192,26 +225,5 @@ public unsafe class BitWriter : IDisposable
         }
 
         return bytes;
-    }
-
-    private void ReleaseUnmanagedResources()
-    {
-        if (_handle.IsAllocated)
-        {
-            _handle.Free();
-        }
-
-        _buffer = null;
-    }
-
-    public void Dispose()
-    {
-        ReleaseUnmanagedResources();
-        GC.SuppressFinalize(this);
-    }
-
-    ~BitWriter()
-    {
-        ReleaseUnmanagedResources();
     }
 }
