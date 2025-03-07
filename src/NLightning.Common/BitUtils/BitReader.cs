@@ -1,73 +1,60 @@
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace NLightning.Common.BitUtils;
 
-public unsafe class BitReader : IDisposable
+public class BitReader(byte[] buffer)
 {
+    private readonly byte[] _buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
+    private readonly int _totalBits = buffer.Length * 8;
+
     private int _bitOffset;
-    private byte* _buffer;
-    private GCHandle _handle;
-
-    private readonly int _totalBits;
-
-    public BitReader(byte[] buffer)
-    {
-        _handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-        _buffer = (byte*)_handle.AddrOfPinnedObject();
-        _totalBits = buffer.Length * 8;
-    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int ReadBits(Span<byte> value, int bitLength)
     {
-        // copy bytes to value 
-        fixed (byte* p = value)
-        {
-            return ReadBits(p, 0, bitLength);
-        }
+        return ReadBits(value, 0, bitLength);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int ReadBits(Span<byte> value, int valueOffset, int bitLength)
+    private int ReadBits(Span<byte> value, int valueOffset, int bitLength)
     {
-        // copy bytes to value 
-        fixed (byte* p = value)
+        if (_bitOffset + bitLength > _totalBits)
         {
-            return ReadBits(p, valueOffset, bitLength);
+            throw new InvalidOperationException($"Not enough bits left to read. Requested {bitLength}, but only {_totalBits - _bitOffset} remain.");
         }
-    }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int ReadBits(byte* value, int valueOffset, int bitLength)
-    {
         var byteOffset = _bitOffset / 8;
         var shift = (int)((uint)_bitOffset % 8);
 
         if (shift == 0)
         {
             // copy bytes to value 
-            Unsafe.CopyBlock(value + valueOffset, _buffer + byteOffset, (uint)(bitLength / 8 + (bitLength % 8 == 0 ? 0 : 1)));
+            _buffer.AsSpan(byteOffset, bitLength / 8 + (bitLength % 8 == 0 ? 0 : 1)).CopyTo(value[valueOffset..]);
 
             // mask extra bits 
             if (bitLength % 8 != 0)
             {
                 value[valueOffset + bitLength / 8] &= (byte)(0xFF << (8 - bitLength % 8));
             }
-
-            _bitOffset += bitLength;
-
-            return bitLength;
         }
-
-        var bytesToRead = bitLength / 8 + (shift > 0 ? 1 : 0);
-        for (var i = 0; i < bytesToRead; i++)
+        else
         {
-            var left = (byte)(_buffer[byteOffset + i] << shift);
-            var right = (byte)((_buffer[byteOffset + i + 1] & (i == bytesToRead - 1 ? 0xFF << (8 - bitLength % 8) : 0xFF)) >> (8 - shift));
+            var bytesToRead = bitLength / 8 + (shift > 0 ? 0 : -1);
+            var maxBytesToRead = value.Length - 1 - valueOffset;
+            if (bytesToRead > maxBytesToRead)
+            {
+                bytesToRead = maxBytesToRead;
+            }
 
-            value[valueOffset + i] = (byte)(left | right);
+            for (var i = 0; i <= bytesToRead; i++)
+            {
+                var left = (byte)(_buffer[byteOffset + i] << shift);
+                var right = (byte)((_buffer[byteOffset + i + 1] &
+                                    (i == bytesToRead + 1 ? 0xFF << (8 - bitLength % 8) : 0xFF)) >> (8 - shift));
+
+                value[valueOffset + i] = (byte)(left | right);
+            }
         }
 
         _bitOffset += bitLength;
@@ -163,27 +150,11 @@ public unsafe class BitReader : IDisposable
 
     public void SkipBits(int v)
     {
-        _bitOffset += v;
-    }
-
-    private void ReleaseUnmanagedResources()
-    {
-        if (_handle.IsAllocated)
+        if (_bitOffset + v > _totalBits)
         {
-            _handle.Free();
+            throw new InvalidOperationException($"Cannot skip {v} bits, only {_totalBits - _bitOffset} remain.");
         }
 
-        _buffer = null;
-    }
-
-    public void Dispose()
-    {
-        ReleaseUnmanagedResources();
-        GC.SuppressFinalize(this);
-    }
-
-    ~BitReader()
-    {
-        ReleaseUnmanagedResources();
+        _bitOffset += v;
     }
 }

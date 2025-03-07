@@ -104,7 +104,7 @@ public class InvoiceIntegrationTests
     [InlineData("Specified argument was out of the range of valid values", "lnbc1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdpl2pkx2ctnv5sxxmmwwd5kgetjypeh2ursdae8g6na6hlh")]
     [InlineData("Invalid amount format in invoice", "lnbc2500x1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq5xysxxatsyp3k7enxv4jsxqzpusp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygs9qrsgqrrzc4cvfue4zp3hggxp47ag7xnrlr8vgcmkjxk3j5jqethnumgkpqp23z9jclu3v0a7e0aruz366e9wqdykw6dxhdzcjjhldxq0w6wgqcnu43j")]
     [InlineData("Invalid pico amount in invoice", "lnbc2500000001p1pvjluezpp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqdq5xysxxatsyp3k7enxv4jsxqzpusp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygs9qrsgq0lzc236j96a95uv0m3umg28gclm5lqxtqqwk32uuk4k6673k6n5kfvx3d2h8s295fad45fdhmusm8sjudfhlf6dcsxmfvkeywmjdkxcp99202x")]
-    public void Given_InvalidInvoiceString_When_Decoding_Then_ExceptionIsThrown(string errorMessage, string invoiceString)
+    public void Given_InvalidInvoiceString_When_Decoding_Then_ExceptionIsThrown(string errorMessage, string? invoiceString)
     {
         // Arrange
         ConfigManager.Instance.Network = NBitcoin.Network.Main;
@@ -119,10 +119,6 @@ public class InvoiceIntegrationTests
     public void Given_ValidDecodedInvoice_When_Encoding_Then_InvoiceStringIsCorrect()
     {
         // Arrange
-        // ConfigManager.Instance.Network = Network.MAIN_NET;
-        // var a = new Invoice(0, "", uint256.One, uint256.One);
-        // var b = a.Encode();
-
         var testInvoices = ReadTestInvoices("BOLT11/Invoices/ValidInvoices.txt");
 
         foreach (var testInvoice in testInvoices)
@@ -177,13 +173,13 @@ public class InvoiceIntegrationTests
             var invoiceString = invoice.Encode();
 
             // Assert
-            Assert.Equal(testInvoice.INVOICE_STRING.ToLowerInvariant(), invoiceString);
+            Assert.Equal(testInvoice.INVOICE_STRING?.ToLowerInvariant(), invoiceString);
         }
     }
 
-    private class TestInvoice(string invoiceString)
+    private class TestInvoice(string? invoiceString)
     {
-        public readonly string INVOICE_STRING = invoiceString;
+        public readonly string? INVOICE_STRING = invoiceString;
         public Network? ExpectedNetwork;
         public ulong? ExpectedAmountMilliSats;
         public long? ExpectedTimestamp;

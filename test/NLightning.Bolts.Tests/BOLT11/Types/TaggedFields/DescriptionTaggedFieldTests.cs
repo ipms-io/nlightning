@@ -33,7 +33,7 @@ public class DescriptionTaggedFieldTests
     {
         // Arrange
         var taggedField = new DescriptionTaggedField(value);
-        using var bitWriter = new BitWriter(taggedField.Length * 5);
+        var bitWriter = new BitWriter(taggedField.Length * 5);
 
         // Act
         taggedField.WriteToBitWriter(bitWriter);
@@ -53,7 +53,7 @@ public class DescriptionTaggedFieldTests
     public void FromBitReader_CreatesCorrectlyFromBitReader(string expectedValue, short bitLength, byte[] bytes)
     {
         // Arrange
-        using var bitReader = new BitReader(bytes);
+        var bitReader = new BitReader(bytes);
 
         // Act
         var taggedField = DescriptionTaggedField.FromBitReader(bitReader, bitLength);
@@ -67,7 +67,7 @@ public class DescriptionTaggedFieldTests
     {
         // Arrange
         var buffer = new byte[50];
-        using var bitReader = new BitReader(buffer);
+        var bitReader = new BitReader(buffer);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => DescriptionTaggedField.FromBitReader(bitReader, -1));

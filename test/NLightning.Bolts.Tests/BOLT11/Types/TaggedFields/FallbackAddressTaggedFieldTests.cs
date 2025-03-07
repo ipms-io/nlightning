@@ -40,7 +40,7 @@ public class FallbackAddressTaggedFieldTests
         var network = Network.Main;
         var bitcoinAddress = BitcoinAddress.Create(address, network);
         var taggedField = new FallbackAddressTaggedField(bitcoinAddress);
-        using var bitWriter = new BitWriter(taggedField.Length * 5);
+        var bitWriter = new BitWriter(taggedField.Length * 5);
 
         // Act
         taggedField.WriteToBitWriter(bitWriter);
@@ -60,7 +60,7 @@ public class FallbackAddressTaggedFieldTests
     {
         // Arrange
         ConfigManager.Instance.Network = Common.Types.Network.MAIN_NET;
-        using var bitReader = new BitReader(bytes);
+        var bitReader = new BitReader(bytes);
 
         // Act
         var taggedField = FallbackAddressTaggedField.FromBitReader(bitReader, bitLength);
@@ -86,7 +86,7 @@ public class FallbackAddressTaggedFieldTests
     {
         // Arrange
         var invalidData = new byte[] { 255, 0x00, 0x00, 0x00 };
-        using var bitReader = new BitReader(invalidData);
+        var bitReader = new BitReader(invalidData);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => FallbackAddressTaggedField.FromBitReader(bitReader, 4));

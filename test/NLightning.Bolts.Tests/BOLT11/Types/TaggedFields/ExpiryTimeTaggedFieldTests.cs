@@ -33,7 +33,7 @@ public class ExpiryTimeTaggedFieldTests
     {
         // Arrange
         var taggedField = new ExpiryTimeTaggedField(value);
-        using var bitWriter = new BitWriter(taggedField.Length * 5);
+        var bitWriter = new BitWriter(taggedField.Length * 5);
 
         // Act
         taggedField.WriteToBitWriter(bitWriter);
@@ -53,7 +53,7 @@ public class ExpiryTimeTaggedFieldTests
     public void FromBitReader_CreatesCorrectlyFromBitReader(int expectedValue, short bitLength, byte[] bytes)
     {
         // Arrange
-        using var bitReader = new BitReader(bytes);
+        var bitReader = new BitReader(bytes);
 
         // Act
         var taggedField = ExpiryTimeTaggedField.FromBitReader(bitReader, bitLength);
@@ -67,7 +67,7 @@ public class ExpiryTimeTaggedFieldTests
     {
         // Arrange
         var buffer = new byte[50];
-        using var bitReader = new BitReader(buffer);
+        var bitReader = new BitReader(buffer);
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => ExpiryTimeTaggedField.FromBitReader(bitReader, 0));

@@ -485,6 +485,9 @@ public partial class Invoice
     /// <exception cref="InvoiceSerializationException">If something goes wrong in the decoding process</exception>
     public static Invoice Decode(string invoiceString)
     {
+        if (string.IsNullOrWhiteSpace(invoiceString))
+            throw new InvoiceSerializationException("Invoice string was empty");
+
         try
         {
             Bech32Encoder.DecodeLightningInvoice(invoiceString, out var data, out var signature, out var hrp);
@@ -493,7 +496,7 @@ public partial class Invoice
             var amount = ConvertHumanReadableToMilliSatoshis(hrp);
 
             // Initialize the BitReader buffer
-            using var bitReader = new BitReader(data);
+            var bitReader = new BitReader(data);
 
             var timestamp = bitReader.ReadInt64FromBits(35);
 
@@ -533,7 +536,7 @@ public partial class Invoice
             var sizeInBits = 35 + (_taggedFields.CalculateSizeInBits() * 5) + (_taggedFields.Count * 15);
 
             // Initialize the BitWriter buffer
-            using var bitWriter = new BitWriter(sizeInBits);
+            var bitWriter = new BitWriter(sizeInBits);
 
             // Write the timestamp
             bitWriter.WriteInt64AsBits(Timestamp, 35);
@@ -728,7 +731,7 @@ public partial class Invoice
         return key.SignCompact(nBitcoinHash, false);
     }
 
-    private static Network GetNetwork(string invoiceString)
+    private static Network GetNetwork(string? invoiceString)
     {
         if (!s_supportedNetworks.TryGetValue(invoiceString.Substring(2, 4), out var network)
             && !s_supportedNetworks.TryGetValue(invoiceString.Substring(2, 3), out network)
