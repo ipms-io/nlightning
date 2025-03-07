@@ -485,6 +485,9 @@ public partial class Invoice
     /// <exception cref="InvoiceSerializationException">If something goes wrong in the decoding process</exception>
     public static Invoice Decode(string invoiceString)
     {
+        if (string.IsNullOrWhiteSpace(invoiceString))
+            throw new InvoiceSerializationException("Invoice string was empty");
+
         try
         {
             Bech32Encoder.DecodeLightningInvoice(invoiceString, out var data, out var signature, out var hrp);

@@ -219,6 +219,17 @@ public class InvoiceTests
     }
 
     [Fact]
+    public void Given_EmptyString_When_DecodeCalled_Then_InvoiceSerializationExceptionIsThrown()
+    {
+        // Given
+        var invalidInvoice = string.Empty;
+
+        // When / Then
+        var ex = Assert.Throws<InvoiceSerializationException>(() => Invoice.Decode(invalidInvoice));
+        Assert.Contains("Invoice string was empty", ex.Message);
+    }
+
+    [Fact]
     public void Given_InvalidInvoiceString_When_DecodeCalled_Then_InvoiceSerializationExceptionIsThrown()
     {
         // Given

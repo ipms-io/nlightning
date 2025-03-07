@@ -22,7 +22,12 @@
     <InvoiceComponent Invoice="@_decodedInvoice"/>
     } else if (_errors.Count > 0)
     {
-        
+        <ul class="list-group">
+            @foreach (var error in _errors)
+            {
+            <li class="list-group-item list-group-item-danger">@error</li>
+            }
+        </ul>
     }
     else
     {
@@ -66,9 +71,11 @@
             // Handle decoding errors, for example, showing an error message
             Console.WriteLine("Error decoding invoice: " + ex.Message);
             _errors.Add(ex.Message);
-            if (ex.InnerException != null)
+            var newEx = ex.InnerException;
+            while (newEx is not null)
             {
-                _errors.Add(ex.InnerException.Message);
+                _errors.Add(newEx.Message);
+                newEx = newEx.InnerException;
             }
         }
     }
