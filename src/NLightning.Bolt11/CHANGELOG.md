@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.2.4
+
+Update `BitReader` and `BitWriter` to be fully managed
+
+## Changed
+
+- Dropped `unsafe` modifier from `BitReader` and `BitWriter`
+- Refactored `BitReader` and `BitWriter` to use managed objects
+
 ## v0.2.3
 
 Fix Invoice.TaggedFields' Collection item update behavior
