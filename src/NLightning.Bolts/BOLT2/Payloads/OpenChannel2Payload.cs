@@ -121,7 +121,7 @@ public class OpenChannel2Payload : IMessagePayload
     public OpenChannel2Payload(ChannelId temporaryChannelId, uint fundingFeeRatePerKw, uint commitmentFeeRatePerKw, ulong fundingSatoshis, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint, PubKey secondPerCommitmentPoint, ChannelFlags channelFlags)
     {
         ChainHash = ConfigManager.Instance.Network.ChainHash;
-        DustLimitSatoshis = ConfigManager.Instance.DustLimitSatoshis;
+        DustLimitSatoshis = ConfigManager.Instance.DustLimitAmountSats;
         MaxHtlcValueInFlightMsat = ConfigManager.Instance.MaxHtlcValueInFlightMsat;
         HtlcMinimumMsat = ConfigManager.Instance.HtlcMinimumMsat;
         ToSelfDelay = ConfigManager.Instance.ToSelfDelay;

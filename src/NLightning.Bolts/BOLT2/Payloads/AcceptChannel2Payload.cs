@@ -93,7 +93,7 @@ public class AcceptChannel2Payload : IMessagePayload
 
     public AcceptChannel2Payload(ChannelId temporaryChannelId, ulong fundingSatoshis, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint)
     {
-        DustLimitSatoshis = ConfigManager.Instance.DustLimitSatoshis;
+        DustLimitSatoshis = ConfigManager.Instance.DustLimitAmountSats;
         MaxHtlcValueInFlightMsat = ConfigManager.Instance.MaxHtlcValueInFlightMsat;
         HtlcMinimumMsat = ConfigManager.Instance.HtlcMinimumMsat;
         MinimumDepth = ConfigManager.Instance.MinimumDepth;

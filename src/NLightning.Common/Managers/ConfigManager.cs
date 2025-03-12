@@ -1,3 +1,5 @@
+using NBitcoin;
+
 namespace NLightning.Common.Managers;
 
 using Types;
@@ -18,12 +20,17 @@ public class ConfigManager
     public Network Network { get; set; }
 
     /// <summary>
-    /// DustLimitSatoshis is the threshold below which outputs should not be generated for this node's commitment or
+    /// DustLimitAmountSats is the threshold below which outputs should not be generated for this node's commitment or
     /// HTLC transactions (i.e. HTLCs below this amount plus HTLC transaction fees are not enforceable on-chain).
     /// This reflects the reality that tiny outputs are not considered standard transactions and will not propagate
     /// through the Bitcoin network.
     /// </summary>
-    public ulong DustLimitSatoshis { get; set; }
+    public ulong DustLimitAmountSats { get; set; } = 546;
+    public Money DustLimitAmountMoney => new (DustLimitAmountSats);
+    
+    
+    public ulong AnchorAmountSats { get; set; } = 330;
+    public Money AnchorAmountMoney => new (AnchorAmountSats);
 
     /// <summary>
     /// MaxHtlcValueInFlightMsat is a cap on total value of outstanding HTLCs offered by the remote node, which allows
@@ -59,5 +66,18 @@ public class ConfigManager
     /// </summary>
     public uint MinimumDepth { get; set; }
 
+    /// <summary>
+    /// is_option_anchor_outputs is a boolean indicating whether the node supports option_anchor_outputs.
+    /// </summary>
     public bool IsOptionAnchorOutput { get; set; }
+
+    /// <summary>
+    /// is_option_simple_close is a boolean indicating whether the node supports option_simple_close.
+    /// </summary>
+    public bool IsOptionSimpleClose => true;
+    
+    /// <summary>
+    /// default_cltv_expiry is the default CLTV expiry for HTLC outputs.
+    /// </summary>
+    public ulong DefaultCltvExpiry { get; set; }
 }

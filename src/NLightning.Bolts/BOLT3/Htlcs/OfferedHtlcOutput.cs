@@ -70,7 +70,7 @@ public class OfferedHtlcOutputs : IHtlc
         // Check if script is correct
         if (script.IsUnspendable || !script.IsValid)
         {
-            throw new InvalidScriptException("Script is either 'invalid' or 'unspendable'.");
+            throw new InvalidScriptException("ScriptPubKey is either 'invalid' or 'unspendable'.");
         }
 
         ScriptPubKey = PayToWitScriptHashTemplate.Instance.GenerateScriptPubKey(script.WitHash);

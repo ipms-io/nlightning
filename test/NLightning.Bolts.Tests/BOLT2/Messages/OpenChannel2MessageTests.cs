@@ -14,7 +14,7 @@ public class OpenChannel2MessageTests
 {
     public OpenChannel2MessageTests()
     {
-        ConfigManager.Instance.DustLimitSatoshis = 1;
+        ConfigManager.Instance.DustLimitAmountSats = 1;
         ConfigManager.Instance.ToSelfDelay = 1;
         ConfigManager.Instance.HtlcMinimumMsat = 1000;
         ConfigManager.Instance.MaxHtlcValueInFlightMsat = 1000000;
@@ -53,7 +53,7 @@ public class OpenChannel2MessageTests
         Assert.Equal(EXPECTED_FUNDING_FEERATE, result.Payload.FundingFeeRatePerKw);
         Assert.Equal(EXPECTED_COMMITMENT_FEERATE, result.Payload.CommitmentFeeRatePerKw);
         Assert.Equal(EXPECTED_FUNDING_SATOSHIS, result.Payload.FundingSatoshis);
-        Assert.Equal(ConfigManager.Instance.DustLimitSatoshis, result.Payload.DustLimitSatoshis);
+        Assert.Equal(ConfigManager.Instance.DustLimitAmountSats, result.Payload.DustLimitSatoshis);
         Assert.Equal(ConfigManager.Instance.MaxHtlcValueInFlightMsat, result.Payload.MaxHtlcValueInFlightMsat);
         Assert.Equal(ConfigManager.Instance.HtlcMinimumMsat, result.Payload.HtlcMinimumMsat);
         Assert.Equal(ConfigManager.Instance.ToSelfDelay, result.Payload.ToSelfDelay);
@@ -101,7 +101,7 @@ public class OpenChannel2MessageTests
         Assert.Equal(EXPECTED_FUNDING_FEERATE, result.Payload.FundingFeeRatePerKw);
         Assert.Equal(EXPECTED_COMMITMENT_FEERATE, result.Payload.CommitmentFeeRatePerKw);
         Assert.Equal(EXPECTED_FUNDING_SATOSHIS, result.Payload.FundingSatoshis);
-        Assert.Equal(ConfigManager.Instance.DustLimitSatoshis, result.Payload.DustLimitSatoshis);
+        Assert.Equal(ConfigManager.Instance.DustLimitAmountSats, result.Payload.DustLimitSatoshis);
         Assert.Equal(ConfigManager.Instance.MaxHtlcValueInFlightMsat, result.Payload.MaxHtlcValueInFlightMsat);
         Assert.Equal(ConfigManager.Instance.HtlcMinimumMsat, result.Payload.HtlcMinimumMsat);
         Assert.Equal(ConfigManager.Instance.ToSelfDelay, result.Payload.ToSelfDelay);

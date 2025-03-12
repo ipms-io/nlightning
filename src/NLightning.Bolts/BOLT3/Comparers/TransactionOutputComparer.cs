@@ -1,10 +1,12 @@
 namespace NLightning.Bolts.BOLT3.Comparers;
 
-using Transactions;
+using Outputs;
 
-public class TransactionOutputComparer : IComparer<TransactionOutput>
+public class TransactionOutputComparer : IComparer<OutputBase>
 {
-    public int Compare(TransactionOutput? x, TransactionOutput? y)
+    public static TransactionOutputComparer Instance { get; } = new TransactionOutputComparer();
+    
+    public int Compare(OutputBase? x, OutputBase? y)
     {
         switch ((x, y))
         {
@@ -18,14 +20,14 @@ public class TransactionOutputComparer : IComparer<TransactionOutput>
         }
 
         // Compare by value (satoshis)
-        var valueComparison = x.Value.CompareTo(y.Value);
+        var valueComparison = x.AmountSats.CompareTo(y.AmountSats);
         if (valueComparison != 0)
         {
             return valueComparison;
         }
 
         // Compare by scriptPubKey lexicographically
-        var scriptComparison = CompareScriptPubKey(x.ScriptPubKey, y.ScriptPubKey);
+        var scriptComparison = CompareScriptPubKey(x.ScriptPubKey.ToBytes(), y.ScriptPubKey.ToBytes());
         if (scriptComparison != 0)
         {
             return scriptComparison;
@@ -38,10 +40,15 @@ public class TransactionOutputComparer : IComparer<TransactionOutput>
         }
 
         // For HTLC outputs, compare by CLTV expiry
-        return x.CltvExpiry != y.CltvExpiry ? x.CltvExpiry.CompareTo(y.CltvExpiry) : 0;
+        if (x is OfferedHtlcOutput xHtlc && y is OfferedHtlcOutput yHtlc)
+        {
+            return xHtlc.CltvExpiry != yHtlc.CltvExpiry ? xHtlc.CltvExpiry.CompareTo(yHtlc.CltvExpiry) : 0;
+        }
+
+        return 0;
     }
 
-    private static int CompareScriptPubKey(byte[] script1, byte[] script2)
+    private static int CompareScriptPubKey(ReadOnlySpan<byte> script1, ReadOnlySpan<byte> script2)
     {
         var length = Math.Min(script1.Length, script2.Length);
         for (var i = 0; i < length; i++)

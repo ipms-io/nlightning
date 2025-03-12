@@ -1,182 +1,126 @@
-using NBitcoin;
-
-namespace NLightning.Bolts.BOLT3.Factories;
-
-using Common.Managers;
-using Interfaces;
-using Transactions;
-
-public class CommitmentTransactionFactory
-{
-    public CommitmentTransaction CreateCommitmentTransaction(
-        uint256 fundingTxId,
-        uint fundingOutputIndex,
-        Money fundingAmount,
-        PubKey localPubKey,
-        PubKey remotePubKey,
-        PubKey localDelayedPubKey,
-        PubKey revocationPubKey,
-        Money toLocalAmount,
-        Money toRemoteAmount,
-        uint toSelfDelay,
-        ulong obscuredCommitmentNumber,
-        List<IHtlc> htlcs,
-        Money dustLimitSatoshis,
-        FeeRate feeRatePerKw,
-        bool optionAnchors,
-        byte[] pubkey1Signature,
-        byte[] pubkey2Signature)
-    {
-        var tx = Transaction.Create(ConfigManager.Instance.Network);
-
-        // Initialize the commitment transaction input and locktime
-        InitializeTransaction(tx, fundingTxId, fundingOutputIndex, obscuredCommitmentNumber, pubkey1Signature, pubkey2Signature);
-
-        // Calculate which committed HTLCs need to be trimmed
-        var trimmedHtlcs = TrimmedOutputs(htlcs, dustLimitSatoshis, feeRatePerKw);
-
-        // Calculate the base commitment transaction fee
-        var baseFee = CalculateBaseFee(feeRatePerKw, trimmedHtlcs.Count);
-
-        // Adjust amounts for fees and anchors
-        AdjustAmountsForFees(ref toLocalAmount, ref toRemoteAmount, baseFee, optionAnchors);
-
-        // Add HTLC outputs
-        AddHtlcOutputs(tx, trimmedHtlcs, localPubKey, remotePubKey);
-
-        // Add to_local output
-        if (toLocalAmount >= dustLimitSatoshis)
-        {
-            AddToLocalOutput(tx, toLocalAmount, localDelayedPubKey, revocationPubKey, toSelfDelay);
-        }
-
-        // Add to_remote output
-        if (toRemoteAmount >= dustLimitSatoshis)
-        {
-            AddToRemoteOutput(tx, toRemoteAmount, remotePubKey, optionAnchors);
-        }
-
-        // Add anchor outputs if option_anchors applies
-        if (optionAnchors)
-        {
-            AddAnchorOutputs(tx, toLocalAmount, toRemoteAmount, trimmedHtlcs.Count, localPubKey, remotePubKey);
-        }
-
-        // Sort the outputs into BIP 69+CLTV order
-        SortOutputs(tx);
-
-        return null;//new CommitmentTransaction(optionAnchors, tx);
-    }
-
-    private void InitializeTransaction(Transaction tx, uint256 fundingTxId, uint fundingOutputIndex, ulong obscuredCommitmentNumber, byte[] pubkey1Signature, byte[] pubkey2Signature)
-    {
-        tx.Version = 2;
-
-        tx.LockTime = new LockTime((0x20 << 24) | (uint)(obscuredCommitmentNumber & 0xFFFFFF));
-        var outpoint = new OutPoint(fundingTxId, fundingOutputIndex);
-        var witScript = new WitScript(OpcodeType.OP_0, Op.GetPushOp(pubkey1Signature), Op.GetPushOp(pubkey2Signature));
-        tx.Inputs.Add(outpoint, null, witScript, new Sequence(0x80 << 24) | (uint)((obscuredCommitmentNumber >> 24) & 0xFFFFFF));
-    }
-
-    private List<IHtlc> TrimmedOutputs(List<IHtlc> htlcs, Money dustLimitSatoshis, FeeRate feeRatePerKw)
-    {
-        // Implement logic to calculate which HTLCs need to be trimmed
-        // based on dust limit and fee rate.
-        return htlcs; // Placeholder for actual implementation
-    }
-
-    private Money CalculateBaseFee(FeeRate feeRatePerKw, int numHtlcs)
-    {
-        // Implement logic to calculate the base fee for the transaction.
-        return Money.Satoshis(1000); // Placeholder for actual implementation
-    }
-
-    private void AdjustAmountsForFees(ref Money toLocalAmount, ref Money toRemoteAmount, Money baseFee, bool optionAnchors)
-    {
-        var totalFee = baseFee;
-        if (optionAnchors)
-        {
-            totalFee += Money.Satoshis(660); // Two anchors of 330 sat each
-        }
-
-        if (toLocalAmount >= toRemoteAmount)
-        {
-            toLocalAmount -= totalFee;
-        }
-        else
-        {
-            toRemoteAmount -= totalFee;
-        }
-    }
-
-    private void AddHtlcOutputs(Transaction tx, List<IHtlc> htlcs, PubKey localPubKey, PubKey remotePubKey)
-    {
-        // Implement logic to add HTLC outputs to the transaction
-        // based on whether they are offered or received.
-    }
-
-    private void AddToLocalOutput(Transaction tx, Money toLocalAmount, PubKey localDelayedPubKey, PubKey revocationPubKey, uint toSelfDelay)
-    {
-        var toLocalScript = CreateToLocalScript(localDelayedPubKey, revocationPubKey, toSelfDelay);
-        tx.Outputs.Add(new TxOut(toLocalAmount, toLocalScript.WitHash));
-    }
-
-    private void AddToRemoteOutput(Transaction tx, Money toRemoteAmount, PubKey remotePubKey, bool optionAnchors)
-    {
-        Script toRemoteScript;
-        if (optionAnchors)
-        {
-            toRemoteScript = new Script(
-                Op.GetPushOp(remotePubKey.ToBytes()),
-                OpcodeType.OP_CHECKSIG,
-                OpcodeType.OP_1,
-                OpcodeType.OP_CHECKSEQUENCEVERIFY
-            );
-        }
-        else
-        {
-            toRemoteScript = remotePubKey.Hash.ScriptPubKey;
-        }
-        tx.Outputs.Add(new TxOut(toRemoteAmount, toRemoteScript.WitHash));
-    }
-
-    private void AddAnchorOutputs(Transaction tx, Money toLocalAmount, Money toRemoteAmount, int numHtlcs, PubKey localPubKey, PubKey remotePubKey)
-    {
-        var anchorAmount = Money.Satoshis(330);
-
-        if (toLocalAmount >= Money.Zero || numHtlcs > 0)
-        {
-            tx.Outputs.Add(new TxOut(anchorAmount, localPubKey.ScriptPubKey));
-        }
-
-        if (toRemoteAmount >= Money.Zero || numHtlcs > 0)
-        {
-            tx.Outputs.Add(new TxOut(anchorAmount, remotePubKey.ScriptPubKey));
-        }
-    }
-
-    private void SortOutputs(Transaction tx)
-    {
-        var orderedOutputs = tx.Outputs
-            .OrderBy(o => o.Value)
-            .ThenBy(o => o.ScriptPubKey.ToHex())
-            .ThenBy(o => o.ScriptPubKey.IsUnspendable ? 0 : 1);
-        tx.Outputs.Clear();
-        tx.Outputs.AddRange(orderedOutputs);
-    }
-
-    private Script CreateToLocalScript(PubKey localDelayedPubKey, PubKey revocationPubKey, uint toSelfDelay)
-    {
-        return new Script(
-            OpcodeType.OP_IF,
-            Op.GetPushOp(revocationPubKey.ToBytes()),
-            OpcodeType.OP_ELSE,
-            Op.GetPushOp(toSelfDelay),
-            OpcodeType.OP_CHECKSEQUENCEVERIFY,
-            OpcodeType.OP_DROP,
-            Op.GetPushOp(localDelayedPubKey.ToBytes()),
-            OpcodeType.OP_ENDIF,
-            OpcodeType.OP_CHECKSIG
-        );
-    }
-}
+// using NBitcoin;
+// using NLightning.Bolts.BOLT3.Enums;
+// using NLightning.Bolts.BOLT3.Services;
+// using NLightning.Bolts.BOLT3.Transactions;
+//
+// public class CommitmentTransactionFactory
+//     {
+//         private readonly FeeService _feeService;
+//         private readonly DustService _dustService;
+//
+//         public CommitmentTransactionFactory(FeeService feeService, DustService dustService)
+//         {
+//             _feeService = feeService;
+//             _dustService = dustService;
+//         }
+//
+//         public Transaction CreateCommitmentTransaction(
+//             uint256 txId,
+//             int outputIndex,
+//             LockTime lockTime,
+//             ulong dustLimitSatoshis,
+//             ulong feeratePerKw,
+//             ulong toLocalAmount,
+//             ulong toRemoteAmount,
+//             List<Htlc> htlcs,
+//             bool optionAnchors)
+//         {
+//             var transaction = new CommitmentTransaction()
+//             {
+//                 Version = 2,
+//                 LockTime = lockTime
+//             };
+//
+//             transaction.Inputs.Add(new TxIn(new OutPoint(txId, outputIndex)));
+//
+//             // Calculate the base commitment transaction fee
+//             int numUntrimmedHtlcs = htlcs.Count(htlc => !IsHtlcTrimmed(htlc, dustLimitSatoshis, feeratePerKw));
+//             ulong baseFee = _feeService.CalculateCommitmentTransactionFee(feeratePerKw, numUntrimmedHtlcs, optionAnchors);
+//
+//             // Adjust the amounts due to each peer
+//             if (toLocalAmount > toRemoteAmount)
+//             {
+//                 toLocalAmount -= baseFee;
+//                 if (optionAnchors)
+//                 {
+//                     toLocalAmount -= 2 * 330; // Subtract anchor fees
+//                 }
+//             }
+//             else
+//             {
+//                 toRemoteAmount -= baseFee;
+//                 if (optionAnchors)
+//                 {
+//                     toRemoteAmount -= 2 * 330; // Subtract anchor fees
+//                 }
+//             }
+//
+//             // Add HTLC outputs
+//             foreach (var htlc in htlcs)
+//             {
+//                 if (!IsHtlcTrimmed(htlc, dustLimitSatoshis, feeratePerKw))
+//                 {
+//                     var htlcOutput = CreateHtlcOutput(htlc);
+//                     transaction.Outputs.Add(htlcOutput);
+//                 }
+//             }
+//
+//             // Add to_local output if necessary
+//             if (toLocalAmount >= dustLimitSatoshis)
+//             {
+//                 var toLocalOutput = new TxOut((Money)toLocalAmount, new Script()); // Use appropriate script
+//                 transaction.Outputs.Add(toLocalOutput);
+//             }
+//
+//             // Add to_remote output if necessary
+//             if (toRemoteAmount >= dustLimitSatoshis)
+//             {
+//                 var toRemoteOutput = new TxOut((Money)toRemoteAmount, new Script()); // Use appropriate script
+//                 transaction.Outputs.Add(toRemoteOutput);
+//             }
+//
+//             // Add anchor outputs if necessary
+//             if (optionAnchors)
+//             {
+//                 if (toLocalAmount >= dustLimitSatoshis || numUntrimmedHtlcs > 0)
+//                 {
+//                     var toLocalAnchorOutput = new TxOut((Money)330, new Script()); // Use appropriate script
+//                     transaction.Outputs.Add(toLocalAnchorOutput);
+//                 }
+//                 if (toRemoteAmount >= dustLimitSatoshis || numUntrimmedHtlcs > 0)
+//                 {
+//                     var toRemoteAnchorOutput = new TxOut((Money)330, new Script()); // Use appropriate script
+//                     transaction.Outputs.Add(toRemoteAnchorOutput);
+//                 }
+//             }
+//
+//             // Sort outputs into BIP 69+CLTV order (details omitted for brevity)
+//             SortOutputs(transaction.Outputs);
+//
+//             return transaction;
+//         }
+//
+//         private bool IsHtlcTrimmed(Htlc htlc, ulong dustLimitSatoshis, ulong feeratePerKw)
+//         {
+//             var fee = htlc.Type == HtlcType.OFFERED ? _feeService.CalculateHtlcTimeoutTransactionFee(feeratePerKw, false)
+//                                                     : _feeService.CalculateHtlcSuccessTransactionFee(feeratePerKw, false);
+//             return htlc.AmountSatoshis < dustLimitSatoshis + fee;
+//         }
+//
+//         private TxOut CreateHtlcOutput(Htlc htlc)
+//         {
+//             // Create and return an HTLC output based on the htlc details (details omitted for brevity)
+//             return new TxOut((Money)htlc.AmountSatoshis, new Script());
+//         }
+//
+//         private void SortOutputs(TxOutList outputs)
+//         {
+//             // Sort the outputs based on BIP 69+CLTV order (details omitted for brevity)
+//         }
+//     }
+//
+//     public class Htlc
+//     {
+//         public ulong AmountSatoshis { get; set; }
+//         public HtlcType Type { get; set; }
+//     }

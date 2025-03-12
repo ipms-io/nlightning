@@ -42,12 +42,12 @@ public class TxAddOutputPayload : IMessagePayload
     /// <param name="serialId">The serial id.</param>
     /// <param name="sats">The sats amount.</param>
     /// <param name="script">The spending script.</param>
-    /// <exception cref="ArgumentException">Script length is out of bounds.</exception>
+    /// <exception cref="ArgumentException">ScriptPubKey length is out of bounds.</exception>
     public TxAddOutputPayload(ChannelId channelId, ulong serialId, ulong sats, byte[] script)
     {
         if (script.Length > ushort.MaxValue)
         {
-            throw new ArgumentException($"Script length must be less than or equal to {ushort.MaxValue} bytes", nameof(script));
+            throw new ArgumentException($"ScriptPubKey length must be less than or equal to {ushort.MaxValue} bytes", nameof(script));
         }
 
         ChannelId = channelId;

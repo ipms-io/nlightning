@@ -28,7 +28,7 @@ public class UpdateAddHtlcPayload(ChannelId channelId, ulong id, ulong amountMsa
     public ulong Id { get; } = id;
 
     /// <summary>
-    /// Amount offered for this Htlc
+    /// AmountSats offered for this Htlc
     /// </summary>
     public ulong AmountMsats { get; } = amountMsat;
 
