@@ -12,7 +12,7 @@ public abstract class OutputBase
     /// <summary>
     /// Gets the amount of the output in satoshis.
     /// </summary>
-    public ulong? AmountSats { get; set; }
+    public ulong AmountSats { get; set; }
 
     /// <summary>
     /// Gets the scriptPubKey of the output.
@@ -33,9 +33,6 @@ public abstract class OutputBase
     /// <returns>TxOut object.</returns>
     public TxOut ToTxOut()
     {
-        if (AmountSats is null or 0)
-            throw new InvalidOperationException("AmountSats cannot be null or zero.");
-
         return new TxOut((Money)AmountSats, ScriptPubKey);
     }
 

@@ -4,5 +4,5 @@ public static class TransactionConstants
 {
     public const uint COMMITMENT_TRANSACTION_VERSION = 2;
     public const uint HTLC_TRANSACTION_VERSION = 2;
-    public const int FUNDING_TRANSACTION_VERSION = 2;
+    public const uint FUNDING_TRANSACTION_VERSION = 2;
 }

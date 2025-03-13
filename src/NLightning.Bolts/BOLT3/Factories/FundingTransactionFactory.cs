@@ -17,11 +17,11 @@ public class FundingTransactionFactory
     public Transaction CreateFundingTransactionAsync(PubKey localFundingPubKey, PubKey remoteFundingPubKey,
                                                             ulong fundingSatoshis, Script changeScript,
                                                             Coin[] coins,
-                                                            params Key[] keys)
+                                                            params BitcoinSecret[] secrets)
     {
         var fundingTx = new FundingTransaction(localFundingPubKey, remoteFundingPubKey, fundingSatoshis, changeScript,
                                                coins);
 
-        return fundingTx.SignAndFinalizeTransaction(_feeCalculator, keys);
+        return fundingTx.GetSignedTransaction(_feeCalculator, secrets);
     }
 }

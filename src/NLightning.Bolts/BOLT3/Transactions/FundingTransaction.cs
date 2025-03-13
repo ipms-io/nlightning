@@ -1,19 +1,17 @@
 using NBitcoin;
-using NLightning.Bolts.BOLT3.Constants;
 
 namespace NLightning.Bolts.BOLT3.Transactions;
 
 using Calculators;
 using Common.Managers;
+using Constants;
 using Outputs;
 
 /// <summary>
 /// Represents a funding transaction.
 /// </summary>
-public class FundingTransaction
+public class FundingTransaction : BaseTransaction
 {
-    private readonly Transaction _transaction;
-    private readonly List<Coin> _coins;
     private readonly ulong _fundingAmountSats;
 
     public FundingOutput FundingOutput { get; }
@@ -28,7 +26,7 @@ public class FundingTransaction
     /// <param name="changeScript">The script for the change output.</param>
     /// <param name="coins">The coins to be used in the transaction.</param>
     internal FundingTransaction(PubKey pubkey1, PubKey pubkey2, ulong amountSats, Script changeScript,
-                                params Coin[] coins)
+                                params Coin[] coins) : base(TransactionConstants.FUNDING_TRANSACTION_VERSION, coins)
     {
         ArgumentNullException.ThrowIfNull(pubkey1);
         ArgumentNullException.ThrowIfNull(pubkey2);
@@ -40,41 +38,53 @@ public class FundingTransaction
             throw new ArgumentException("Funding amount must be greater than zero.");
 
         _fundingAmountSats = amountSats;
-        _coins = coins.ToList();
-        _transaction = Transaction.Create(ConfigManager.Instance.Network);
-        _transaction.Version = TransactionConstants.FUNDING_TRANSACTION_VERSION;
-        _transaction.Inputs.AddRange(_coins.Select(c => new TxIn(c.Outpoint)));
 
         // Create the funding and change output
         FundingOutput = new FundingOutput(pubkey1, pubkey2, amountSats);
-        ChangeOutput = new ChangeOutput(changeScript, 0);
+        ChangeOutput = new ChangeOutput(changeScript);
+
+        AddOutput(FundingOutput);
+        AddOutput(ChangeOutput);
     }
 
-    internal Transaction SignAndFinalizeTransaction(FeeCalculator feeCalculator, params Key[] keys)
+    internal Transaction GetSignedTransaction(FeeCalculator feeCalculator, params BitcoinSecret[] secrets)
     {
+        SignAndFinalizeTransaction(feeCalculator, secrets);
+
+        // Remove the old change output (zero value)
+        RemoveOutput(ChangeOutput);
+
+        // Check if change is needed
+        var changeAmount = TotalInputAmount - TotalOutputAmount - CalculatedFee;
+        if (changeAmount < (long)ConfigManager.Instance.DustLimitAmountSats)
+        {
+            return FinalizedTransaction;
+        }
+
+        // Add the new one
+        ChangeOutput.AmountSats = (ulong)changeAmount;
+        AddOutput(ChangeOutput);
+
+        // Get the newest transaction
+        return FinalizedTransaction;
+
+        /*
         // Get total input amount
-        var totalInputAmount = _coins.Sum(c => c.Amount.Satoshi);
+        var totalInputAmount = COINS.Sum(c => c.Amount.Satoshi);
 
         // Check if output amount is greater than input amount
         if (_fundingAmountSats >= (ulong)totalInputAmount)
             throw new InvalidOperationException("Output amount cannot exceed input amount + fees.");
 
-        // Calculate script length sum for existing outputs and inputs
-        var changeScriptLength = ChangeOutput.ScriptPubKey.ToBytes().Length;
-        var changeMinValue = (changeScriptLength + FeeCalculator.SEGWIT_OUTPUT_BASE_SIZE)
-                             * (long)feeCalculator.GetCurrentEstimatedFeePerKw()
-                             / 1000;
-
         // Sign all inputs
-        _transaction.Sign(keys.Select(k => new BitcoinSecret(k, ConfigManager.Instance.Network)),
-                          _coins.Select(c => c as ICoin));
+        var signedTx = SignTransaction(secrets);
 
         // Calculate signature/witness size
         var witnessSize = 0;
         var inputSize = 0;
-        foreach (var input in _transaction.Inputs)
+        foreach (var input in signedTx.Inputs)
         {
-            var coin = _coins.SingleOrDefault(c => c.Outpoint == input.PrevOut);
+            var coin = COINS.SingleOrDefault(c => c.Outpoint == input.PrevOut);
             switch (coin)
             {
                 case null:
@@ -90,11 +100,11 @@ public class FundingTransaction
         }
 
         // Calculate fee
-        var fee = feeCalculator.CalculateFundingTransactionFee(inputSize, 1, changeScriptLength, witnessSize);
+        var fee = feeCalculator.CalculateFundingTransactionFee(inputSize, 1, ChangeOutput.ScriptPubKey.ToBytes().Length, witnessSize);
 
         // Get change amount and check if it's dust
         var changeAmount = totalInputAmount - (long)_fundingAmountSats - (long)fee;
-        if (changeAmount < 0 || changeAmount < changeMinValue)
+        if (changeAmount < 0 || changeAmount < (long)ConfigManager.Instance.DustLimitAmountSats)
         {
             // TODO: Log warning about dust output
         }
@@ -105,20 +115,21 @@ public class FundingTransaction
 
             if (FundingOutput.CompareTo(ChangeOutput) < 0)
             {
-                _transaction.Outputs.Add(FundingOutput.ToTxOut());
-                _transaction.Outputs.Add(ChangeOutput.ToTxOut());
+                TRANSACTION.Outputs.Add(FundingOutput.ToTxOut());
+                TRANSACTION.Outputs.Add(ChangeOutput.ToTxOut());
             }
             else
             {
-                _transaction.Outputs.Add(ChangeOutput.ToTxOut());
-                _transaction.Outputs.Add(FundingOutput.ToTxOut());
+                TRANSACTION.Outputs.Add(ChangeOutput.ToTxOut());
+                TRANSACTION.Outputs.Add(FundingOutput.ToTxOut());
             }
         }
 
         // Check if the transaction is valid
-        if (_transaction.Check() != TransactionCheckResult.Success)
+        if (TRANSACTION.Check() != TransactionCheckResult.Success)
             throw new InvalidOperationException("Transaction is not valid.");
 
-        return _transaction;
+        return TRANSACTION;
+        */
     }
 }

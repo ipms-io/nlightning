@@ -1,7 +1,10 @@
 // using NBitcoin;
-// using NLightning.Bolts.BOLT3.Enums;
-// using NLightning.Bolts.BOLT3.Services;
-// using NLightning.Bolts.BOLT3.Transactions;
+//
+// namespace NLightning.Bolts.BOLT3.Factories;
+//
+// using Enums;
+// using Services;
+// using Transactions;
 //
 // public class CommitmentTransactionFactory
 //     {

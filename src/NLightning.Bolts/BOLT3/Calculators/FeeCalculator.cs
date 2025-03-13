@@ -21,7 +21,6 @@ public class FeeCalculator
 
     private readonly IFeeService _feeService;
 
-    // ReSharper disable InconsistentNaming
     public const int SEGWIT_OUTPUT_BASE_SIZE = 9;  // value(8) + var_int(1)
     public const int SEGWIT_INPUT_SIZE = 41;  // prevout(36) + var_int(1) + empty script_sig(0) + sequence(4)
 
