@@ -16,7 +16,7 @@ public class ToRemoteOutput : OutputBase
     {
         RemotePubKey = remotePubKey;
     }
-    
+
     private static Script GenerateToRemoteScript(PubKey remotePubKey)
     {
         if (ConfigManager.Instance.IsOptionAnchorOutput)

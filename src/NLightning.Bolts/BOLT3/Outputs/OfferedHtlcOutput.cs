@@ -16,7 +16,7 @@ public class OfferedHtlcOutput : OutputBase
     public PubKey LocalHtlcPubKey { get; }
     public ReadOnlyMemory<byte> PaymentHash { get; set; }
     public ulong CltvExpiry { get; }
-    
+
     public OfferedHtlcOutput(PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey, ReadOnlyMemory<byte> paymentHash, ulong amountSats, ulong? cltvExpiry = null)
         : base(GenerateToRemoteHtlcScript(revocationPubKey, remoteHtlcPubKey, localHtlcPubKey, paymentHash), amountSats)
     {
@@ -36,7 +36,7 @@ public class OfferedHtlcOutput : OutputBase
         var revocationPubKeyHashRipemd160 = Ripemd160.Hash(revocationPubKeySha256Hash);
 
         var paymentHashRipemd160 = Ripemd160.Hash(paymentHash.Span);
-        
+
         var baseScript = new Script(
             OpcodeType.OP_DUP,
             OpcodeType.OP_HASH160,

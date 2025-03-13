@@ -26,7 +26,7 @@ public class ReceivedHtlcOutput : OutputBase
         PaymentHash = paymentHash;
         CltvExpiry = cltvExpiry ?? ConfigManager.Instance.DefaultCltvExpiry;
     }
-    
+
     private static Script GenerateToLocalHtlcScript(PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey, ReadOnlyMemory<byte> paymentHash, ulong cltvExpiry)
     {
         using var sha256 = new Sha256();
@@ -36,7 +36,7 @@ public class ReceivedHtlcOutput : OutputBase
         var revocationPubKeyHashRipemd160 = Ripemd160.Hash(revocationPubKeySha256Hash);
 
         var paymentHashRipemd160 = Ripemd160.Hash(paymentHash.Span);
-        
+
         var baseScript = new Script(
             OpcodeType.OP_DUP,
             OpcodeType.OP_HASH160,

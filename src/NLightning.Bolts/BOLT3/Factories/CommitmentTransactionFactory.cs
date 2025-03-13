@@ -5,10 +5,10 @@
 //
 // public class CommitmentTransactionFactory
 //     {
-//         private readonly FeeService _feeService;
+//         private readonly FeeCalculator _feeService;
 //         private readonly DustService _dustService;
 //
-//         public CommitmentTransactionFactory(FeeService feeService, DustService dustService)
+//         public CommitmentTransactionFactory(FeeCalculator feeService, DustService dustService)
 //         {
 //             _feeService = feeService;
 //             _dustService = dustService;

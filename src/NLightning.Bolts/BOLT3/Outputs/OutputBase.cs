@@ -2,6 +2,8 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT3.Outputs;
 
+using Comparers;
+
 /// <summary>
 /// Represents a transaction output.
 /// </summary>
@@ -10,31 +12,32 @@ public abstract class OutputBase
     /// <summary>
     /// Gets the amount of the output in satoshis.
     /// </summary>
-    public ulong AmountSats { get; }
+    public ulong? AmountSats { get; set; }
 
     /// <summary>
     /// Gets the scriptPubKey of the output.
     /// </summary>
     public Script ScriptPubKey { get; }
 
-    /// <summary>
-    /// Gets the witness stack for Segwit outputs.
-    /// </summary>
-    public List<ReadOnlyMemory<byte>> WitnessStack { get; }
-    
-    protected OutputBase(Script scriptPubKey, ulong amountSats, List<ReadOnlyMemory<byte>>? witnessStack = null)
+    protected OutputBase(Script scriptPubKey, ulong amountSats)
     {
+        ArgumentNullException.ThrowIfNull(scriptPubKey);
+
         AmountSats = amountSats;
         ScriptPubKey = scriptPubKey;
-        WitnessStack = witnessStack ?? [];
     }
-    
+
     /// <summary>
     /// Converts the output to a NBitcoin.TxOut.
     /// </summary>
     /// <returns>TxOut object.</returns>
     public TxOut ToTxOut()
     {
+        if (AmountSats is null or 0)
+            throw new InvalidOperationException("AmountSats cannot be null or zero.");
+
         return new TxOut((Money)AmountSats, ScriptPubKey);
     }
+
+    public int CompareTo(OutputBase? other) => other is null ? 1 : TransactionOutputComparer.Instance.Compare(this, other);
 }

@@ -24,7 +24,7 @@ public class ToAnchorOutput : OutputBase
     {
         return new ToAnchorOutput(remoteFundingPubKey, (ulong)txOut.Value.Satoshi);
     }
-    
+
     private static Script GenerateAnchorScript(PubKey pubKey)
     {
         /* The following script can be read as:

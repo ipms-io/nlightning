@@ -5,10 +5,10 @@ using Outputs;
 public class TransactionOutputComparer : IComparer<OutputBase>
 {
     public static TransactionOutputComparer Instance { get; } = new TransactionOutputComparer();
-    
+
     public int Compare(OutputBase? x, OutputBase? y)
     {
-        switch ((x, y))
+        switch (x, y)
         {
             // Deal with nulls
             case (null, null):
@@ -20,7 +20,20 @@ public class TransactionOutputComparer : IComparer<OutputBase>
         }
 
         // Compare by value (satoshis)
-        var valueComparison = x.AmountSats.CompareTo(y.AmountSats);
+        var valueComparison = 0;
+        switch (x.AmountSats, y.AmountSats)
+        {
+            // Deal with nulls
+            case (null, not null):
+                valueComparison = -1;
+                break;
+            case (not null, null):
+                valueComparison = 1;
+                break;
+            case (not null, not null):
+                valueComparison = x.AmountSats.Value.CompareTo(y.AmountSats);
+                break;
+        }
         if (valueComparison != 0)
         {
             return valueComparison;

@@ -1,16 +1,16 @@
 using NBitcoin;
-using NLightning.Bolts.BOLT3.Comparers;
 
 namespace NLightning.Bolts.BOLT3.Transactions;
 
 using Common.Managers;
+using Comparers;
 using Constants;
 using Outputs;
 
 /// <summary>
 /// Represents a commitment transaction.
 /// </summary>
-public class CommitmentTransaction: Transaction
+public class CommitmentTransaction : Transaction
 {
     private readonly IList<OutputBase> _outputList = [];
     private readonly IList<OfferedHtlcOutput> _offeredHtlcOutputs = [];
@@ -19,7 +19,7 @@ public class CommitmentTransaction: Transaction
     public PubKey LocalPubKey { get; }
     public ToLocalOutput ToLocalOutput => _outputList[0] as ToLocalOutput ?? throw new InvalidCastException("Output 0 was not type ToLocalOutput");
     public ToRemoteOutput ToRemoteOutput => _outputList[1] as ToRemoteOutput ?? throw new InvalidCastException("Output 1 was not type ToRemoteOutput");
-    public ToAnchorOutput? LocalAnchorOutput => ConfigManager.Instance.IsOptionAnchorOutput 
+    public ToAnchorOutput? LocalAnchorOutput => ConfigManager.Instance.IsOptionAnchorOutput
         ? _outputList[2] as ToAnchorOutput ?? throw new InvalidCastException("Output 2 was not type ToAnchorOutput")
         : null;
     public ToAnchorOutput? RemoteAnchorOutput => ConfigManager.Instance.IsOptionAnchorOutput
@@ -50,11 +50,11 @@ public class CommitmentTransaction: Transaction
         Money toRemoteAmount,
         uint toSelfDelay,
         ulong obscuredCommitmentNumber)
-        // byte[] pubkey1Signature,
-        // byte[] pubkey2Signature)
+    // byte[] pubkey1Signature,
+    // byte[] pubkey2Signature)
     {
         LocalPubKey = localPubKey;
-        
+
         // Set version and locktime
         Version = TransactionConstants.COMMITMENT_TRANSACTION_VERSION;
         LockTime = new LockTime((0x20 << 24) | (uint)(obscuredCommitmentNumber & 0xFFFFFF));
@@ -106,10 +106,10 @@ public class CommitmentTransaction: Transaction
         // Add output to lists
         _offeredHtlcOutputs.Add(offeredHtlcOutput);
         _outputList.Add(offeredHtlcOutput);
-        
+
         // Clear TxOuts
         Outputs.Clear();
-        
+
         // Add ordered outputs
         Outputs.AddRange(
             _outputList.OrderBy(htlc => htlc, TransactionOutputComparer.Instance)
@@ -121,10 +121,10 @@ public class CommitmentTransaction: Transaction
     {
         _receivedHtlcOutputs.Add(receivedHtlcOutput);
         _outputList.Add(receivedHtlcOutput);
-        
+
         // Clear TxOuts
         Outputs.Clear();
-        
+
         // Add ordered outputs
         Outputs.AddRange(
             _outputList.OrderBy(htlc => htlc, TransactionOutputComparer.Instance)

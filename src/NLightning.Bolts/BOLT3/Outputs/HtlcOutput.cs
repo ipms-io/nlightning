@@ -7,7 +7,7 @@ public class HtlcOutput : OutputBase
     public PubKey RevocationPubKey { get; }
     public PubKey LocalDelayedPubKey { get; }
     public ulong ToSelfDelay { get; }
-    
+
     public HtlcOutput(PubKey revocationPubKey, PubKey localDelayedPubKey, ulong toSelfDelay, ulong amountSats)
         : base(GenerateHtlcOutputScript(revocationPubKey, localDelayedPubKey, toSelfDelay), amountSats)
     {
@@ -15,7 +15,7 @@ public class HtlcOutput : OutputBase
         LocalDelayedPubKey = localDelayedPubKey;
         ToSelfDelay = toSelfDelay;
     }
-    
+
     private static Script GenerateHtlcOutputScript(PubKey revocationPubKey, PubKey localDelayedPubKey, ulong toSelfDelay)
     {
         return new Script(

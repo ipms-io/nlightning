@@ -6,18 +6,18 @@ public class ClosingTransaction : Transaction
 {
     public ulong CloserOutputAmountSatoshis { get; }
     public ulong CloseeOutputAmountSatoshis { get; }
-    
+
     public ClosingTransaction(OutPoint outPoint, ulong closerAmountSatoshis, ulong closeeAmountSatoshis, Script closerScriptPubKey, Script closeeScriptPubKey, ulong feeSatoshis)
     {
         Version = 2;
         LockTime = 0; // TODO: Find out correct lockTime
-        
+
         Inputs.Add(new TxIn
         {
             PrevOut = outPoint,
             Sequence = 0xFFFFFFFD
         });
-        
+
         CloserOutputAmountSatoshis = CalculateOutputAmount(closerAmountSatoshis, closerScriptPubKey, feeSatoshis);
         Outputs.Add(new TxOut((Money)CloserOutputAmountSatoshis, closerScriptPubKey));
 

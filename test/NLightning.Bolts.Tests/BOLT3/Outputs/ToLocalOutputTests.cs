@@ -10,7 +10,7 @@ public class ToLocalOutputTests
     private readonly PubKey _revocationPubKey = new("0212a140cd0c6539d07cd08dfe09984dec3251ea808b892efeac3ede9402bf2b19");
     private const uint TO_SELF_DELAY = 144;
     private const ulong AMOUNT_SATS = 1000;
-    
+
     [Fact]
     public void Given_ValidParameters_When_CreatingToLocalOutput_Then_ShouldCreateSuccessfully()
     {

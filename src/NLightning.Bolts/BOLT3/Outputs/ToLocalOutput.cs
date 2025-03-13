@@ -18,7 +18,7 @@ public class ToLocalOutput : OutputBase
         RevocationPubKey = revocationPubKey;
         ToSelfDelay = toSelfDelay;
     }
-    
+
     private static Script GenerateToLocalScript(PubKey localDelayedPubKey, PubKey revocationPubKey, uint toSelfDelay)
     {
         /* The following script can be read as:
