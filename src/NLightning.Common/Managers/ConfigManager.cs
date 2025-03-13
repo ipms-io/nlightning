@@ -17,7 +17,7 @@ public class ConfigManager
     /// <summary>
     /// Network in which this node will be running
     /// </summary>
-    public Network Network { get; set; }
+    public Network Network { get; set; } = Network.MAIN_NET;
 
     /// <summary>
     /// DustLimitAmountSats is the threshold below which outputs should not be generated for this node's commitment or
@@ -26,11 +26,10 @@ public class ConfigManager
     /// through the Bitcoin network.
     /// </summary>
     public ulong DustLimitAmountSats { get; set; } = 546;
-    public Money DustLimitAmountMoney => new (DustLimitAmountSats);
-    
-    
+    public Money DustLimitAmountMoney => new(DustLimitAmountSats);
+
     public ulong AnchorAmountSats { get; set; } = 330;
-    public Money AnchorAmountMoney => new (AnchorAmountSats);
+    public Money AnchorAmountMoney => new(AnchorAmountSats);
 
     /// <summary>
     /// MaxHtlcValueInFlightMsat is a cap on total value of outstanding HTLCs offered by the remote node, which allows
@@ -75,9 +74,20 @@ public class ConfigManager
     /// is_option_simple_close is a boolean indicating whether the node supports option_simple_close.
     /// </summary>
     public bool IsOptionSimpleClose => true;
-    
+
     /// <summary>
     /// default_cltv_expiry is the default CLTV expiry for HTLC outputs.
     /// </summary>
     public ulong DefaultCltvExpiry { get; set; }
+
+    #region Fee Estimation
+    public string FeeEstimationUrl { get; set; } = "https://mempool.space/api/v1/fees/recommended";
+    public string FeeEstimationMethod { get; set; } = "GET";
+    public string FeeEstimationBody { get; set; } = string.Empty;
+    public string FeeEstimationContentType { get; set; } = "application/json";
+    public string PreferredFeeRate { get; set; } = "fastestFee";
+    public string FeeRateMultiplier { get; set; } = "1000";
+    public string FeeEstimationCacheFile { get; set; } = "fee_estimation_cache.json";
+    public string FeeEstimationCacheExpiration { get; set; } = "5m"; // 5 minutes
+    #endregion
 }

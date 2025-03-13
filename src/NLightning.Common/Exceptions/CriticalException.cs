@@ -6,6 +6,8 @@ namespace NLightning.Common.Exceptions;
 /// <remarks>
 /// A critical exception is an exception that should not be caught and should terminate the application.
 /// </remarks>
-public class CriticalException(string message) : Exception(message)
+public class CriticalException : Exception
 {
+    public CriticalException(string message) : base(message) { }
+    public CriticalException(string message, Exception innerException) : base(message, innerException) { }
 }
