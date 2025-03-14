@@ -41,3 +41,24 @@ Console.WriteLine(invoice.AmountSats);
 Console.WriteLine(invoice.PaymentHash);
 Console.WriteLine("A list with all the props can be found at: https://nlightning.ipms.io/api/NLightning.Bolts.BOLT11.Invoice.html#properties");
 ```
+
+### Configuration
+Before working with BOLT11 invoices, you might need to set up some configuration values.
+Two important static helper classes are used in this process:
+
+#### SecureKeyManager
+This class is responsible for securely managing cryptographic keys.
+It needs to be initialized before using any functionality that relies on key security.
+
+```csharp
+// Initialize SecureKeyManager with the virtual node key
+SecureKeyManager.Initialize(virtualNodeKey.ToBytes());
+```
+
+#### ConfigManager
+This class handles application-wide configuration settings, including selecting the appropriate Lightning Network.
+
+```csharp
+// Set the network configuration
+ConfigManager.Instance.Network = NLightning.Common.Types.Network.REG_TEST;
+```
