@@ -12,6 +12,8 @@
     href: bolt11/quickstart.md
   - name: Webassembly/Blazor
     href: bolt11/webassembly.md
+- name: Static Helper Classes
+  href: static-helper-classes.md
 - name: Versioning Policy
   href: versioning.md
 - name: Contributing
