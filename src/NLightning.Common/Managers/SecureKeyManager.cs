@@ -4,11 +4,23 @@ namespace NLightning.Common.Managers;
 
 using Common.Factories.Crypto;
 
+/// <summary>
+/// Manages a securely stored private key using protected memory allocation.
+/// This class ensures that the private key remains inaccessible from regular memory
+/// and is securely wiped when no longer needed.
+/// </summary>
 public static class SecureKeyManager
 {
     private static IntPtr s_securePrivateKeyPtr;
     private static ulong s_privateKeyLength;
 
+    /// <summary>
+    /// Initializes the secure key manager with a private key.
+    /// </summary>
+    /// <param name="privateKey">The private key to store in secure memory.</param>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if the key is already initialized or if memory locking fails.
+    /// </exception>
     public static void Initialize(byte[] privateKey)
     {
         if (s_securePrivateKeyPtr == IntPtr.Zero)
@@ -38,6 +50,11 @@ public static class SecureKeyManager
         }
     }
 
+    /// <summary>
+    /// Retrieves the private key stored in secure memory.
+    /// </summary>
+    /// <returns>The private key as a byte array.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the key is not initialized.</exception>
     public static byte[] GetPrivateKey()
     {
         if (s_securePrivateKeyPtr == IntPtr.Zero)
@@ -49,6 +66,9 @@ public static class SecureKeyManager
         return privateKey;
     }
 
+    /// <summary>
+    /// Releases the private key from secure memory and wipes its contents.
+    /// </summary>
     public static void Dispose()
     {
         if (s_securePrivateKeyPtr == IntPtr.Zero)
