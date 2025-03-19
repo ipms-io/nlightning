@@ -12,12 +12,13 @@ public static class WeightConstants
 
     public const int P2PKH_INTPUT_WEIGHT = 148; // At Least
     public const int P2SH_INTPUT_WEIGHT = 148; // At Least
-    public const int P2WPKH_INTPUT_WEIGHT = 67; // At Least
+    public const int P2WPKH_INTPUT_WEIGHT = 41; // At Least
     public const int P2WSH_INTPUT_WEIGHT = P2WPKH_INTPUT_WEIGHT;
     public const int P2UNKOWN_S_INTPUT_WEIGHT = P2WPKH_INTPUT_WEIGHT;
     // ReSharper enable InconsistentNaming
 
     public const int WITNESS_HEADER = 2; // flag, marker
+    public const int MULTISIG_WITNESS_WEIGHT = 222; // 1 byte for each signature
 
     public const int HTLC_OUTPUT_WEIGHT = P2WSH_OUTPUT_WEIGHT;
     public const int ANCHOR_OUTPUT_WEIGHT = P2WSH_OUTPUT_WEIGHT;

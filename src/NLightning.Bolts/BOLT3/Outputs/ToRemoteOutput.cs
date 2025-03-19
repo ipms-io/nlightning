@@ -7,8 +7,12 @@ using Common.Managers;
 /// <summary>
 /// Represents a to_remote output in a commitment transaction.
 /// </summary>
-public class ToRemoteOutput : OutputBase
+public class ToRemoteOutput : BaseOutput
 {
+    public override ScriptType ScriptType => ConfigManager.Instance.IsOptionAnchorOutput
+        ? ScriptType.P2WSH
+        : ScriptType.P2WPKH;
+
     public PubKey RemotePubKey { get; }
 
     public ToRemoteOutput(PubKey remotePubKey, LightningMoney amountSats)
@@ -39,7 +43,7 @@ public class ToRemoteOutput : OutputBase
             );
         }
 
-        // If we don't require anchor outputs, we can just return the remotePubKey
+        // If we don't require anchor outputs, we'll return a P2WPKH redeemScript
         return remotePubKey.WitHash.ScriptPubKey;
     }
 }

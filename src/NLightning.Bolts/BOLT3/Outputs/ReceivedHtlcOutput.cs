@@ -9,8 +9,10 @@ using Common.Managers;
 /// <summary>
 /// Represents a received HTLC output in a commitment transaction.
 /// </summary>
-public class ReceivedHtlcOutput : OutputBase
+public class ReceivedHtlcOutput : BaseOutput
 {
+    public override ScriptType ScriptType => ScriptType.P2WSH;
+
     public PubKey RevocationPubKey { get; }
     public PubKey RemoteHtlcPubKey { get; }
     public PubKey LocalHtlcPubKey { get; }

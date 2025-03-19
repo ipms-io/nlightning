@@ -2,8 +2,10 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT3.Outputs;
 
-public class HtlcOutput : OutputBase
+public class HtlcOutput : BaseOutput
 {
+    public override ScriptType ScriptType => ScriptType.P2WSH;
+
     public PubKey RevocationPubKey { get; }
     public PubKey LocalDelayedPubKey { get; }
     public ulong ToSelfDelay { get; }

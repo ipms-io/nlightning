@@ -1,4 +1,5 @@
 using NBitcoin;
+using NBitcoin.Crypto;
 
 namespace NLightning.Bolts.BOLT3.Transactions;
 
@@ -18,7 +19,6 @@ public class CommitmentTransaction : BaseTransaction
     private readonly IList<ReceivedHtlcOutput> _receivedHtlcOutputs = [];
     private readonly LightningMoney _toFunderAmount;
 
-    public PubKey LocalPubKey { get; }
     public ToLocalOutput? ToLocalOutput { get; }
     public ToRemoteOutput? ToRemoteOutput { get; }
     public ToAnchorOutput? LocalAnchorOutput { get; }
@@ -30,8 +30,8 @@ public class CommitmentTransaction : BaseTransaction
     /// Initializes a new instance of the <see cref="CommitmentTransaction"/> class.
     /// </summary>
     /// <param name="fundingCoin">The funding coin.</param>
-    /// <param name="localPubKey">The local public key.</param>
-    /// <param name="remotePubKey">The remote public key.</param>
+    /// <param name="localPaymentBasepoint">The local public key.</param>
+    /// <param name="remotePaymentBasepoint">The remote public key.</param>
     /// <param name="localDelayedPubKey">The local delayed public key.</param>
     /// <param name="revocationPubKey">The revocation public key.</param>
     /// <param name="toLocalAmount">The amount for the to_local output in satoshis.</param>
@@ -39,13 +39,14 @@ public class CommitmentTransaction : BaseTransaction
     /// <param name="toSelfDelay">The to_self_delay in blocks.</param>
     /// <param name="commitmentNumber">The commitment number object.</param>
     /// <param name="isChannelFunder">Indicates if the local node is the channel funder.</param>
-    internal CommitmentTransaction(Coin fundingCoin, PubKey localPubKey, PubKey remotePubKey, PubKey localDelayedPubKey,
-                                   PubKey revocationPubKey, LightningMoney toLocalAmount, LightningMoney toRemoteAmount,
-                                   uint toSelfDelay, CommitmentNumber commitmentNumber, bool isChannelFunder)
+    internal CommitmentTransaction(Coin fundingCoin, PubKey localPaymentBasepoint, PubKey remotePaymentBasepoint,
+                                   PubKey localDelayedPubKey, PubKey revocationPubKey, LightningMoney toLocalAmount,
+                                   LightningMoney toRemoteAmount, uint toSelfDelay, CommitmentNumber commitmentNumber,
+                                   bool isChannelFunder)
         : base(TransactionConstants.COMMITMENT_TRANSACTION_VERSION, (fundingCoin, commitmentNumber.CalculateSequence()))
     {
-        ArgumentNullException.ThrowIfNull(localPubKey);
-        ArgumentNullException.ThrowIfNull(remotePubKey);
+        ArgumentNullException.ThrowIfNull(localPaymentBasepoint);
+        ArgumentNullException.ThrowIfNull(remotePaymentBasepoint);
         ArgumentNullException.ThrowIfNull(localDelayedPubKey);
         ArgumentNullException.ThrowIfNull(revocationPubKey);
 
@@ -55,7 +56,6 @@ public class CommitmentTransaction : BaseTransaction
         }
 
         _isChannelFunder = isChannelFunder;
-        LocalPubKey = localPubKey;
         CommitmentNumber = commitmentNumber;
 
         // Set locktime
@@ -80,7 +80,6 @@ public class CommitmentTransaction : BaseTransaction
         // to_local output
         if (toLocalAmount >= ConfigManager.Instance.DustLimitAmountMoney) // Dust limit in satoshis
         {
-            ;
             ToLocalOutput = new ToLocalOutput(localDelayedPubKey, revocationPubKey, toSelfDelay, localAmount);
             AddOutput(ToLocalOutput);
         }
@@ -88,7 +87,7 @@ public class CommitmentTransaction : BaseTransaction
         // to_remote output
         if (toRemoteAmount >= ConfigManager.Instance.DustLimitAmountMoney) // Dust limit in satoshis
         {
-            ToRemoteOutput = new ToRemoteOutput(remotePubKey, remoteAmount);
+            ToRemoteOutput = new ToRemoteOutput(remotePaymentBasepoint, remoteAmount);
             AddOutput(ToRemoteOutput);
         }
 
@@ -98,11 +97,11 @@ public class CommitmentTransaction : BaseTransaction
         }
 
         // Local anchor output
-        LocalAnchorOutput = new ToAnchorOutput(localPubKey, ConfigManager.Instance.AnchorAmountSats);
+        LocalAnchorOutput = new ToAnchorOutput(localPaymentBasepoint, ConfigManager.Instance.AnchorAmountSats);
         AddOutput(LocalAnchorOutput);
 
         // Remote anchor output
-        RemoteAnchorOutput = new ToAnchorOutput(remotePubKey, ConfigManager.Instance.AnchorAmountSats);
+        RemoteAnchorOutput = new ToAnchorOutput(remotePaymentBasepoint, ConfigManager.Instance.AnchorAmountSats);
         AddOutput(RemoteAnchorOutput);
     }
 
@@ -175,5 +174,11 @@ public class CommitmentTransaction : BaseTransaction
     {
         _receivedHtlcOutputs.Add(receivedHtlcOutput);
         AddOutput(receivedHtlcOutput);
+    }
+
+    public void AppendRemoteSignatureAndSign(ECDSASignature remoteSignature, PubKey remotePubKey)
+    {
+        AppendRemoteSignatureToTransaction(new TransactionSignature(remoteSignature), remotePubKey);
+        SignTransactionWithExistingKeys();
     }
 }

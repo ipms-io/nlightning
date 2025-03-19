@@ -2,11 +2,11 @@ namespace NLightning.Bolts.BOLT3.Comparers;
 
 using Outputs;
 
-public class TransactionOutputComparer : IComparer<OutputBase>
+public class TransactionOutputComparer : IComparer<BaseOutput>
 {
     public static TransactionOutputComparer Instance { get; } = new TransactionOutputComparer();
 
-    public int Compare(OutputBase? x, OutputBase? y)
+    public int Compare(BaseOutput? x, BaseOutput? y)
     {
         switch (x, y)
         {

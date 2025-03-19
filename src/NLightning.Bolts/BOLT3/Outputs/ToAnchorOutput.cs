@@ -5,8 +5,10 @@ namespace NLightning.Bolts.BOLT3.Outputs;
 /// <summary>
 /// Represents a to_local_anchor/to_remote_anchor output in a commitment transaction.
 /// </summary>
-public class ToAnchorOutput : OutputBase
+public class ToAnchorOutput : BaseOutput
 {
+    public override ScriptType ScriptType { get; } // Get correct type
+
     public PubKey RemoteFundingPubKey { get; set; }
 
     public ToAnchorOutput(PubKey remoteFundingPubKey, LightningMoney amountSats)

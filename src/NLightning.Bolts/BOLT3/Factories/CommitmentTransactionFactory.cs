@@ -15,17 +15,19 @@ public class CommitmentTransactionFactory
         _feeCalculator = feeCalculator;
     }
 
-    public CommitmentTransaction CreateCommitmentTransaction(Coin fundingCoin, PubKey localPubKey, PubKey remotePubKey,
-                                                   PubKey localDelayedPubKey, PubKey revocationPubKey,
-                                                   LightningMoney toLocalAmount, LightningMoney toRemoteAmount,
-                                                   uint toSelfDelay, CommitmentNumber commitmentNumber,
-                                                   bool isChannelFunder, params BitcoinSecret[] secrets)
+    public CommitmentTransaction CreateCommitmentTransaction(Coin fundingCoin, PubKey localPaymentBasepoint,
+                                                             PubKey remotePaymentBasepoint, PubKey localDelayedPubKey,
+                                                             PubKey revocationPubKey, LightningMoney toLocalAmount,
+                                                             LightningMoney toRemoteAmount, uint toSelfDelay,
+                                                             CommitmentNumber commitmentNumber, bool isChannelFunder,
+                                                             params BitcoinSecret[] secrets)
     {
         // var fundingScriptPubKey = 
 
-        var commitmentTransaction = new CommitmentTransaction(fundingCoin, localPubKey, remotePubKey, localDelayedPubKey,
-                                                     revocationPubKey, toLocalAmount, toRemoteAmount, toSelfDelay,
-                                                     commitmentNumber, isChannelFunder);
+        var commitmentTransaction = new CommitmentTransaction(fundingCoin, localPaymentBasepoint, remotePaymentBasepoint,
+                                                              localDelayedPubKey, revocationPubKey, toLocalAmount,
+                                                              toRemoteAmount, toSelfDelay, commitmentNumber,
+                                                              isChannelFunder);
 
         commitmentTransaction.SignTransaction(_feeCalculator, secrets);
 

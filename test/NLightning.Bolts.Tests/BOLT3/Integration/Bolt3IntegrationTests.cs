@@ -72,8 +72,8 @@ public class Bolt3IntegrationTests
 
         // Create commitment transaction for Node A
         var commitmentTransacion = _commitmentTransactionFactory.CreateCommitmentTransaction(fundingOutput.ToCoin(),
-                                                                                             AppendixCVectors.NODE_A_FUNDING_PUBKEY,
-                                                                                             AppendixCVectors.NODE_B_FUNDING_PUBKEY,
+                                                                                             AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+                                                                                             AppendixCVectors.NODE_B_PAYMENT_BASEPOINT,
                                                                                              AppendixCVectors.NODE_A_DELAYED_PUBKEY,
                                                                                              AppendixCVectors.NODE_A_REVOCATION_PUBKEY,
                                                                                              AppendixCVectors.TO_LOCAL_MSAT,
@@ -83,23 +83,13 @@ public class Bolt3IntegrationTests
                                                                                              new BitcoinSecret(
                                                                                                  AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                                                                  ConfigManager.Instance.Network));
+        // Add remote signature
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, fundingOutput.RemotePubKey);
+
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Validate commitment transaction outputs
-        Assert.Equal(2, finalCommitmentTx.Outputs.Count);
-        Assert.Equal(AppendixCVectors.EXPECTED_TO_LOCAL_WIT_SCRIPT_1, commitmentTransacion.ToLocalOutput?.RedeemScript.ToBytes());
-        // 02 000000 01     bef67e4e2fb9ddeeb3461973cd4c62abb35050b1add772995b820b584a488489 000000004b00483045022100b01341632124319594cb1e3c01c752f6b487158f1bc1e6ae6ae433470b4d4bb9022055732fb6b26acd47558b0dcadd10a8023b2cf2bc90a98a70d7b8caa121c653fe010038b02b8002c0c62d000000000022002077abe0c6e4735b7a9858dc82bb7ec4e6889532e356607095f5ba685b58a7f9abd1a06a00000000002200204adb4e2f00643db396dd120d4e7dc17625f5f2c11a40d857accc862d6b7dd80e3e195220
-        // 02 00000000 0101 bef67e4e2fb9ddeeb3461973cd4c62abb35050b1add772995b820b584a488489 000000000038b02b8002c0c62d0000000000160014cc1b07838e387deacd0e5232e1e8b49f4c29e48454a56a00000000002200204adb4e2f00643db396dd120d4e7dc17625f5f2c11a40d857accc862d6b7dd80e04004730440220616210b2cc4d3afb601013c373bbd8aac54febd9f15400379a8cb65ce7deca60022034236c010991beb7ff770510561ae8dc885b8d38d1947248c38f2ae05564714201483045022100c3127b33dcc741dd6b05b1e63cbd1a9a7d816f37af9b6756fa2376b056f032370220408b96279808fe57eb7e463710804cdf4f108388bc5cf722d8c848d2c7f9f3b001475221023da092f6980e58d2c037173180e9a465476026ee50f96695963e8efe436f54eb21030e9f7b623d2ccc7c9bd44d66d5ce21ce504c0acf6385a132cec6d3c39fa711c152ae3e195220
-        // Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_1, finalCommitmentTx);
-
-        // Validate the initial commitment transaction for Node A
-        // - Ensure the transaction adheres to BOLT 3 specifications.
-
-        // Initial Commitment Transaction Construction for Node B
-        // - Construct the initial commitment transaction for Node B.
-
-        // Validate the initial commitment transaction for Node B
-        // - Ensure the transaction adheres to BOLT 3 specifications.
+        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_1.ToBytes(), finalCommitmentTx.ToBytes());
 
         // Simulate adding HTLCs
         // - Add HTLCs to the channel.

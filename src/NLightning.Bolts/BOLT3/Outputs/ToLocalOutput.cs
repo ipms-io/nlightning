@@ -5,8 +5,10 @@ namespace NLightning.Bolts.BOLT3.Outputs;
 /// <summary>
 /// Represents a to_local output in a commitment transaction.
 /// </summary>
-public class ToLocalOutput : OutputBase
+public class ToLocalOutput : BaseOutput
 {
+    public override ScriptType ScriptType => ScriptType.P2WSH;
+
     public PubKey LocalDelayedPubKey { get; }
     public PubKey RevocationPubKey { get; }
     public uint ToSelfDelay { get; }

@@ -1,4 +1,5 @@
 using NBitcoin;
+using NBitcoin.Crypto;
 
 namespace NLightning.Bolts.Tests.BOLT3.Integration;
 
@@ -17,8 +18,9 @@ public static class AppendixCVectors
 
     public static readonly PubKey NODE_B_PAYMENT_BASEPOINT = new("032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e668680991");
     public static readonly PubKey NODE_B_HTLC_BASEPOINT = NODE_B_PAYMENT_BASEPOINT;
-    public static readonly PubKey NODE_B_FUNDING_PUBKEY = new("032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e668680991");
+    public static readonly PubKey NODE_B_FUNDING_PUBKEY = new("030e9f7b623d2ccc7c9bd44d66d5ce21ce504c0acf6385a132cec6d3c39fa711c1");
     public static readonly PubKey NODE_B_HTLC_PUBKEY = new("0394854aa6eab5b2a8122cc726e9dded053a2184d88256816826d6231c068d4a5b");
+    public static readonly ECDSASignature NODE_B_SIGNATURE = new(Convert.FromHexString("3045022100c3127b33dcc741dd6b05b1e63cbd1a9a7d816f37af9b6756fa2376b056f032370220408b96279808fe57eb7e463710804cdf4f108388bc5cf722d8c848d2c7f9f3b0"));
 
     public static readonly LightningMoney TO_LOCAL_MSAT = 7000000000UL;
     public static readonly LightningMoney TO_REMOTE_MSAT = 3000000000UL;

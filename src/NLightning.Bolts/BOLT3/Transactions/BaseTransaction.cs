@@ -1,5 +1,4 @@
 using NBitcoin;
-using Network = NBitcoin.Network;
 
 namespace NLightning.Bolts.BOLT3.Transactions;
 
@@ -12,14 +11,14 @@ using Outputs;
 public abstract class BaseTransaction
 {
     private Transaction _transaction;
-    private readonly TransactionBuilder _builder = ((Network)ConfigManager.Instance.Network).CreateTransactionBuilder();
+    private readonly TransactionBuilder _builder = ((NBitcoin.Network)ConfigManager.Instance.Network).CreateTransactionBuilder();
 
     private readonly SigHash _sigHash = ConfigManager.Instance.IsOptionAnchorOutput
         ? SigHash.Single | SigHash.AnyoneCanPay
         : SigHash.All;
-    private readonly List<Coin> _coins = [];
+    private readonly List<(Coin, Sequence)> _coins = [];
 
-    protected readonly List<OutputBase> OUTPUTS = [];
+    protected readonly List<BaseOutput> OUTPUTS = [];
 
     public uint256 TxId { get; private set; } = uint256.Zero;
 
@@ -28,11 +27,11 @@ public abstract class BaseTransaction
 
     protected BaseTransaction(uint version, params Coin[] coins)
     {
-        _coins = coins.ToList();
+        _coins = coins.Select(c => (c, Sequence.Final)).ToList();
 
         _transaction = Transaction.Create(ConfigManager.Instance.Network);
         _transaction.Version = version;
-        _transaction.Inputs.AddRange(_coins.Select(c => new TxIn(c.Outpoint)));
+        _transaction.Inputs.AddRange(_coins.Select(c => new TxIn(c.Item1.Outpoint)));
         _builder.SetSigningOptions(_sigHash, false);
         _builder.DustPrevention = false;
         _builder.SetVersion(version);
@@ -46,9 +45,9 @@ public abstract class BaseTransaction
         _builder.DustPrevention = false;
         _builder.SetVersion(version);
 
-        foreach (var (coin, sequence) in coins)
+        _coins.AddRange(coins);
+        foreach (var (coin, sequence) in _coins)
         {
-            _coins.Add(coin);
             _transaction.Inputs.Add(coin.Outpoint, null, null, sequence);
         }
     }
@@ -85,7 +84,27 @@ public abstract class BaseTransaction
         Finalized = true;
     }
 
-    protected LightningMoney TotalInputAmount => _coins.Sum(c => (LightningMoney)c.Amount);
+    protected void AppendRemoteSignatureToTransaction(ITransactionSignature remoteSignature, PubKey remotePubKey)
+    {
+        _builder.AddKnownSignature(remotePubKey, remoteSignature, _transaction.Inputs[0].PrevOut);
+    }
+
+    protected void SignTransactionWithExistingKeys()
+    {
+        // if (Finalized)
+        // {
+        //     // Remove signature from inputs
+        //     _transaction.Inputs.Clear();
+        //     foreach (var (coin, sequence) in _coins)
+        //     {
+        //         _transaction.Inputs.Add(coin.Outpoint, null, null, sequence);
+        //     }
+        // }
+
+        _transaction = _builder.SignTransactionInPlace(_transaction);
+    }
+
+    protected LightningMoney TotalInputAmount => _coins.Sum(c => (LightningMoney)c.Item1.Amount);
 
     protected LightningMoney TotalOutputAmount => OUTPUTS.Sum(o => o.Amount);
 
@@ -97,13 +116,16 @@ public abstract class BaseTransaction
         {
             // Remove signature from inputs
             _transaction.Inputs.Clear();
-            _transaction.Inputs.AddRange(_coins.Select(c => new TxIn(c.Outpoint)));
+            foreach (var (coin, sequence) in _coins)
+            {
+                _transaction.Inputs.Add(coin.Outpoint, null, null, sequence);
+            }
         }
         else
         {
             // Add our keys
             _builder.AddKeys(secrets);
-            _builder.AddCoins(_coins);
+            _builder.AddCoins(_coins.Select(c => c.Item1));
         }
 
         _transaction = _builder.SignTransactionInPlace(_transaction);
@@ -163,10 +185,17 @@ public abstract class BaseTransaction
     private int CalculateInputWeight()
     {
         var inputWeight = 0;
+        var mustAddWitnessHeader = false;
 
-        foreach (var coin in _coins)
+        foreach (var (coin, _) in _coins)
         {
             var input = _transaction.Inputs.SingleOrDefault(i => i.PrevOut == coin.Outpoint) ?? throw new NullReferenceException("Input not found in transaction.");
+
+            if (input.WitScript.PushCount > 0)
+            {
+                mustAddWitnessHeader = true;
+            }
+
             if (coin.ScriptPubKey.IsScriptType(ScriptType.P2PKH))
             {
                 inputWeight += 4 * Math.Max(WeightConstants.P2PKH_INTPUT_WEIGHT, input.ToBytes().Length);
@@ -184,13 +213,18 @@ public abstract class BaseTransaction
             else if (coin.ScriptPubKey.IsScriptType(ScriptType.P2WSH))
             {
                 inputWeight += 4 * Math.Max(WeightConstants.P2WSH_INTPUT_WEIGHT, input.ToBytes().Length);
-                inputWeight += input.WitScript.ToBytes().Length;
+                inputWeight += Math.Max(WeightConstants.MULTISIG_WITNESS_WEIGHT, input.WitScript.ToBytes().Length);
             }
             else
             {
                 inputWeight += 4 * Math.Max(WeightConstants.P2UNKOWN_S_INTPUT_WEIGHT, input.ToBytes().Length);
                 inputWeight += input.WitScript.ToBytes().Length;
             }
+        }
+
+        if (mustAddWitnessHeader)
+        {
+            inputWeight += WeightConstants.WITNESS_HEADER;
         }
 
         return inputWeight;
@@ -215,28 +249,28 @@ public abstract class BaseTransaction
     {
         ArgumentNullException.ThrowIfNull(coin);
 
-        _coins.Add(coin);
-        _transaction.Inputs.Add(new TxIn(coin.Outpoint));
+        _coins.Add((coin, Sequence.Final));
+        _transaction.Inputs.Add(coin.Outpoint, null, null, Sequence.Final);
     }
     #endregion
 
     #region Output Management
-    protected int AddOutput(OutputBase output)
+    protected int AddOutput(BaseOutput baseOutput)
     {
-        ArgumentNullException.ThrowIfNull(output);
+        ArgumentNullException.ThrowIfNull(baseOutput);
 
-        OUTPUTS.Add(output);
+        OUTPUTS.Add(baseOutput);
 
         OrderOutputs();
 
-        return OUTPUTS.IndexOf(output);
+        return OUTPUTS.IndexOf(baseOutput);
     }
 
-    protected void AddOutputRange(IEnumerable<OutputBase> outputs)
+    protected void AddOutputRange(IEnumerable<BaseOutput> outputs)
     {
         ArgumentNullException.ThrowIfNull(outputs);
 
-        var outputBases = outputs as OutputBase[] ?? outputs.ToArray();
+        var outputBases = outputs as BaseOutput[] ?? outputs.ToArray();
         if (outputBases.Length == 0)
             return;
 
@@ -249,11 +283,11 @@ public abstract class BaseTransaction
         OrderOutputs();
     }
 
-    protected void RemoveOutput(OutputBase output)
+    protected void RemoveOutput(BaseOutput baseOutput)
     {
-        ArgumentNullException.ThrowIfNull(output);
+        ArgumentNullException.ThrowIfNull(baseOutput);
 
-        OUTPUTS.Remove(output);
+        OUTPUTS.Remove(baseOutput);
         OrderOutputs();
     }
 
