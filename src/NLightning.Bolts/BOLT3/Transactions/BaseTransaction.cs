@@ -91,22 +91,12 @@ public abstract class BaseTransaction
 
     protected void SignTransactionWithExistingKeys()
     {
-        // if (Finalized)
-        // {
-        //     // Remove signature from inputs
-        //     _transaction.Inputs.Clear();
-        //     foreach (var (coin, sequence) in _coins)
-        //     {
-        //         _transaction.Inputs.Add(coin.Outpoint, null, null, sequence);
-        //     }
-        // }
-
         _transaction = _builder.SignTransactionInPlace(_transaction);
     }
 
     protected LightningMoney TotalInputAmount => _coins.Sum(c => (LightningMoney)c.Item1.Amount);
 
-    protected LightningMoney TotalOutputAmount => OUTPUTS.Sum(o => o.Amount);
+    protected LightningMoney TotalOutputAmount => OUTPUTS.Sum(o => o.AmountMilliSats);
 
     private void SignTransaction(params BitcoinSecret[] secrets)
     {

@@ -19,8 +19,8 @@ public class OfferedHtlcOutput : BaseOutput
     public ReadOnlyMemory<byte> PaymentHash { get; set; }
     public ulong CltvExpiry { get; }
 
-    public OfferedHtlcOutput(PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey, ReadOnlyMemory<byte> paymentHash, LightningMoney amountSats, ulong? cltvExpiry = null)
-        : base(GenerateToRemoteHtlcScript(revocationPubKey, remoteHtlcPubKey, localHtlcPubKey, paymentHash), amountSats)
+    public OfferedHtlcOutput(PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey, ReadOnlyMemory<byte> paymentHash, LightningMoney amountMilliSats, ulong? cltvExpiry = null)
+        : base(GenerateToRemoteHtlcScript(revocationPubKey, remoteHtlcPubKey, localHtlcPubKey, paymentHash), amountMilliSats)
     {
         RevocationPubKey = revocationPubKey;
         RemoteHtlcPubKey = remoteHtlcPubKey;

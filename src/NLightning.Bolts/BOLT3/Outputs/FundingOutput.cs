@@ -9,8 +9,8 @@ public class FundingOutput : BaseOutput
     public PubKey LocalPubKey { get; }
     public PubKey RemotePubKey { get; }
 
-    public FundingOutput(PubKey localPubKey, PubKey remotePubKey, LightningMoney amountSats)
-        : base(CreateMultisigScript(localPubKey, remotePubKey), amountSats)
+    public FundingOutput(PubKey localPubKey, PubKey remotePubKey, LightningMoney amountMilliSats)
+        : base(CreateMultisigScript(localPubKey, remotePubKey), amountMilliSats)
     {
         ArgumentNullException.ThrowIfNull(localPubKey);
         ArgumentNullException.ThrowIfNull(remotePubKey);
@@ -18,7 +18,7 @@ public class FundingOutput : BaseOutput
         if (localPubKey == remotePubKey)
             throw new ArgumentException("Public keys must be different.");
 
-        if (amountSats.IsZero)
+        if (amountMilliSats.IsZero)
             throw new ArgumentException("Funding amount must be greater than zero.");
 
         LocalPubKey = localPubKey;

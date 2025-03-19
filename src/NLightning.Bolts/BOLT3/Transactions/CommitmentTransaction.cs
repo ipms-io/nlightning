@@ -117,7 +117,7 @@ public class CommitmentTransaction : BaseTransaction
             if (toFunderAmount >= ConfigManager.Instance.DustLimitAmountSats)
             {
                 // Set amount
-                ToLocalOutput.Amount = toFunderAmount;
+                ToLocalOutput.AmountMilliSats = toFunderAmount;
 
                 // Add the new output
                 ToLocalOutput.Index = (uint)AddOutput(ToLocalOutput);
@@ -131,7 +131,7 @@ public class CommitmentTransaction : BaseTransaction
             if (toFunderAmount >= ConfigManager.Instance.DustLimitAmountSats)
             {
                 // Set amount
-                ToRemoteOutput.Amount = toFunderAmount;
+                ToRemoteOutput.AmountMilliSats = toFunderAmount;
 
                 // Add the new output
                 ToRemoteOutput.Index = (uint)AddOutput(ToRemoteOutput);

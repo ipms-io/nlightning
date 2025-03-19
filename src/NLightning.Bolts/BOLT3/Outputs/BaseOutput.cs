@@ -12,7 +12,7 @@ public abstract class BaseOutput
     /// <summary>
     /// Gets the amount of the output in satoshis.
     /// </summary>
-    public LightningMoney Amount { get; set; }
+    public LightningMoney AmountMilliSats { get; set; }
 
     /// <summary>
     /// Gets the scriptPubKey of the output.
@@ -30,22 +30,22 @@ public abstract class BaseOutput
 
     public abstract ScriptType ScriptType { get; }
 
-    protected BaseOutput(Script redeemScript, Script scriptPubKey, LightningMoney amount)
+    protected BaseOutput(Script redeemScript, Script scriptPubKey, LightningMoney amountMilliSats)
     {
         ArgumentNullException.ThrowIfNull(redeemScript);
         ArgumentNullException.ThrowIfNull(scriptPubKey);
-        ArgumentNullException.ThrowIfNull(amount);
+        ArgumentNullException.ThrowIfNull(amountMilliSats);
 
-        Amount = amount;
+        AmountMilliSats = amountMilliSats;
         RedeemScript = redeemScript;
         ScriptPubKey = scriptPubKey;
     }
-    protected BaseOutput(Script redeemScript, LightningMoney amount)
+    protected BaseOutput(Script redeemScript, LightningMoney amountMilliSats)
     {
         ArgumentNullException.ThrowIfNull(redeemScript);
-        ArgumentNullException.ThrowIfNull(amount);
-        // 0 77abe0c6e4735b7a9858dc82bb7ec4e6889532e356607095f5ba685b58a7f9ab
-        Amount = amount;
+        ArgumentNullException.ThrowIfNull(amountMilliSats);
+
+        AmountMilliSats = amountMilliSats;
         RedeemScript = redeemScript;
         ScriptPubKey = ScriptType switch
         {
@@ -65,7 +65,7 @@ public abstract class BaseOutput
     /// <returns>TxOut object.</returns>
     public TxOut ToTxOut()
     {
-        return new TxOut((Money)Amount, ScriptPubKey);
+        return new TxOut((Money)AmountMilliSats, ScriptPubKey);
     }
 
     public virtual ScriptCoin ToCoin()
@@ -73,10 +73,10 @@ public abstract class BaseOutput
         if (TxId is null || TxId == uint256.Zero || TxId == uint256.One)
             throw new InvalidOperationException("Transaction ID is not set. Sign the transaction first.");
 
-        if (Amount.IsZero)
+        if (AmountMilliSats.IsZero)
             throw new InvalidOperationException("You can't spend a zero amount output.");
 
-        return new ScriptCoin(TxId, Index, Amount, ScriptPubKey, RedeemScript);
+        return new ScriptCoin(TxId, Index, AmountMilliSats, ScriptPubKey, RedeemScript);
     }
 
     public int CompareTo(BaseOutput? other) => other is null ? 1 : TransactionOutputComparer.Instance.Compare(this, other);

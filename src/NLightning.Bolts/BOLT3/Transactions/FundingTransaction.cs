@@ -83,7 +83,7 @@ public class FundingTransaction : BaseTransaction
         if (hasChange)
         {
             // Add the new one
-            ChangeOutput.Amount = changeAmount;
+            ChangeOutput.AmountMilliSats = changeAmount;
             changeIndex = (uint)AddOutput(ChangeOutput);
         }
 

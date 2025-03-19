@@ -57,8 +57,8 @@ public class Bolt3IntegrationTests
         Assert.Equal(AppendixBVectors.EXPECTED_TX.ToBytes(), finalFundingTx.ToBytes());
 
         // Verify output amounts
-        Assert.Equal(AppendixBVectors.EXPECTED_CHANGE_SATOSHIS.Satoshi, fundingTransaction.ChangeOutput.Amount.Satoshi);
-        Assert.Equal(AppendixBVectors.FUNDING_SATOSHIS.Satoshi, fundingTransaction.FundingOutput.Amount.Satoshi);
+        Assert.Equal(AppendixBVectors.EXPECTED_CHANGE_SATOSHIS.Satoshi, fundingTransaction.ChangeOutput.AmountMilliSats.Satoshi);
+        Assert.Equal(AppendixBVectors.FUNDING_SATOSHIS.Satoshi, fundingTransaction.FundingOutput.AmountMilliSats.Satoshi);
 
         Assert.Equal(AppendixBVectors.EXPECTED_TX_ID, finalFundingTx.GetHash());
 
