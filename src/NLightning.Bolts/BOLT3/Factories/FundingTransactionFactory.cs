@@ -14,14 +14,27 @@ public class FundingTransactionFactory
         _feeCalculator = feeCalculator;
     }
 
-    public Transaction CreateFundingTransactionAsync(PubKey localFundingPubKey, PubKey remoteFundingPubKey,
-                                                            ulong fundingSatoshis, Script changeScript,
-                                                            Coin[] coins,
-                                                            params BitcoinSecret[] secrets)
+    public FundingTransaction CreateFundingTransaction(PubKey localFundingPubKey, PubKey remoteFundingPubKey,
+                                                LightningMoney fundingSatoshis, Script changeScript, Coin[] coins,
+                                                params BitcoinSecret[] secrets)
     {
         var fundingTx = new FundingTransaction(localFundingPubKey, remoteFundingPubKey, fundingSatoshis, changeScript,
                                                coins);
 
-        return fundingTx.GetSignedTransaction(_feeCalculator, secrets);
+        fundingTx.SignTransaction(_feeCalculator, secrets);
+
+        return fundingTx;
+    }
+
+    public FundingTransaction CreateFundingTransaction(PubKey localFundingPubKey, PubKey remoteFundingPubKey,
+                                                       LightningMoney fundingSatoshis, Script redeemScript,
+                                                       Script changeScript, Coin[] coins, params BitcoinSecret[] secrets)
+    {
+        var fundingTx = new FundingTransaction(localFundingPubKey, remoteFundingPubKey, fundingSatoshis, redeemScript,
+                                               changeScript, coins);
+
+        fundingTx.SignTransaction(_feeCalculator, secrets);
+
+        return fundingTx;
     }
 }

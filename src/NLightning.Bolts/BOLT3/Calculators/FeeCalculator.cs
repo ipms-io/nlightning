@@ -29,7 +29,7 @@ public class FeeCalculator
         _feeService = feeService;
     }
 
-    public ulong GetCurrentEstimatedFeePerKw()
+    public LightningMoney GetCurrentEstimatedFeePerKw()
     {
         return _feeService.GetCachedFeeRatePerKw();
     }

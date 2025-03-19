@@ -12,7 +12,7 @@ using Outputs;
 /// </summary>
 public class FundingTransaction : BaseTransaction
 {
-    private readonly ulong _fundingAmountSats;
+    private readonly LightningMoney _fundingAmountSats;
 
     public FundingOutput FundingOutput { get; }
     public ChangeOutput ChangeOutput { get; }
@@ -25,7 +25,7 @@ public class FundingTransaction : BaseTransaction
     /// <param name="amountSats">The amount of the output in satoshis.</param>
     /// <param name="changeScript">The script for the change output.</param>
     /// <param name="coins">The coins to be used in the transaction.</param>
-    internal FundingTransaction(PubKey pubkey1, PubKey pubkey2, ulong amountSats, Script changeScript,
+    internal FundingTransaction(PubKey pubkey1, PubKey pubkey2, LightningMoney amountSats, Script changeScript,
                                 params Coin[] coins) : base(TransactionConstants.FUNDING_TRANSACTION_VERSION, coins)
     {
         ArgumentNullException.ThrowIfNull(pubkey1);
@@ -34,7 +34,7 @@ public class FundingTransaction : BaseTransaction
         if (pubkey1 == pubkey2)
             throw new ArgumentException("Public keys must be different.");
 
-        if (amountSats == 0)
+        if (amountSats.IsZero)
             throw new ArgumentException("Funding amount must be greater than zero.");
 
         _fundingAmountSats = amountSats;
@@ -46,8 +46,30 @@ public class FundingTransaction : BaseTransaction
         AddOutput(FundingOutput);
         AddOutput(ChangeOutput);
     }
+    internal FundingTransaction(PubKey pubkey1, PubKey pubkey2, LightningMoney amountSats, Script redeemScript,
+                                Script changeScript, params Coin[] coins)
+        : base(TransactionConstants.FUNDING_TRANSACTION_VERSION, coins)
+    {
+        ArgumentNullException.ThrowIfNull(pubkey1);
+        ArgumentNullException.ThrowIfNull(pubkey2);
 
-    internal Transaction GetSignedTransaction(FeeCalculator feeCalculator, params BitcoinSecret[] secrets)
+        if (pubkey1 == pubkey2)
+            throw new ArgumentException("Public keys must be different.");
+
+        if (amountSats.IsZero)
+            throw new ArgumentException("Funding amount must be greater than zero.");
+
+        _fundingAmountSats = amountSats;
+
+        // Create the funding and change output
+        FundingOutput = new FundingOutput(pubkey1, pubkey2, amountSats);
+        ChangeOutput = new ChangeOutput(redeemScript, changeScript);
+
+        AddOutput(FundingOutput);
+        AddOutput(ChangeOutput);
+    }
+
+    internal void SignTransaction(FeeCalculator feeCalculator, params BitcoinSecret[] secrets)
     {
         SignAndFinalizeTransaction(feeCalculator, secrets);
 
@@ -56,80 +78,36 @@ public class FundingTransaction : BaseTransaction
 
         // Check if change is needed
         var changeAmount = TotalInputAmount - TotalOutputAmount - CalculatedFee;
-        if (changeAmount < (long)ConfigManager.Instance.DustLimitAmountSats)
+        var changeIndex = 0U;
+        var hasChange = changeAmount >= ConfigManager.Instance.DustLimitAmountSats;
+        if (hasChange)
+        {
+            // Add the new one
+            ChangeOutput.Amount = changeAmount;
+            changeIndex = (uint)AddOutput(ChangeOutput);
+        }
+
+        SignAndFinalizeTransaction(feeCalculator, secrets);
+
+        // Set funding output fields
+        FundingOutput.TxId = TxId;
+        FundingOutput.Index = changeIndex == 0 ? 1U : 0;
+
+        if (hasChange)
+        {
+            // Set change output fields
+            ChangeOutput.TxId = TxId;
+            ChangeOutput.Index = changeIndex;
+        }
+    }
+
+    public Transaction GetSignedTransaction()
+    {
+        if (Finalized)
         {
             return FinalizedTransaction;
         }
 
-        // Add the new one
-        ChangeOutput.AmountSats = (ulong)changeAmount;
-        AddOutput(ChangeOutput);
-
-        // Get the newest transaction
-        return FinalizedTransaction;
-
-        /*
-        // Get total input amount
-        var totalInputAmount = COINS.Sum(c => c.Amount.Satoshi);
-
-        // Check if output amount is greater than input amount
-        if (_fundingAmountSats >= (ulong)totalInputAmount)
-            throw new InvalidOperationException("Output amount cannot exceed input amount + fees.");
-
-        // Sign all inputs
-        var signedTx = SignTransaction(secrets);
-
-        // Calculate signature/witness size
-        var witnessSize = 0;
-        var inputSize = 0;
-        foreach (var input in signedTx.Inputs)
-        {
-            var coin = COINS.SingleOrDefault(c => c.Outpoint == input.PrevOut);
-            switch (coin)
-            {
-                case null:
-                    throw new NullReferenceException("Can't find coin for a input.");
-                case ScriptCoin:
-                    witnessSize += input.WitScript.ToBytes().Length;
-                    inputSize += FeeCalculator.SEGWIT_INPUT_SIZE;
-                    break;
-                default:
-                    inputSize += input.ToBytes().Length;
-                    break;
-            }
-        }
-
-        // Calculate fee
-        var fee = feeCalculator.CalculateFundingTransactionFee(inputSize, 1, ChangeOutput.ScriptPubKey.ToBytes().Length, witnessSize);
-
-        // Get change amount and check if it's dust
-        var changeAmount = totalInputAmount - (long)_fundingAmountSats - (long)fee;
-        if (changeAmount < 0 || changeAmount < (long)ConfigManager.Instance.DustLimitAmountSats)
-        {
-            // TODO: Log warning about dust output
-        }
-        else
-        {
-            // Update change output amount
-            ChangeOutput.AmountSats = (ulong)changeAmount;
-
-            if (FundingOutput.CompareTo(ChangeOutput) < 0)
-            {
-                TRANSACTION.Outputs.Add(FundingOutput.ToTxOut());
-                TRANSACTION.Outputs.Add(ChangeOutput.ToTxOut());
-            }
-            else
-            {
-                TRANSACTION.Outputs.Add(ChangeOutput.ToTxOut());
-                TRANSACTION.Outputs.Add(FundingOutput.ToTxOut());
-            }
-        }
-
-        // Check if the transaction is valid
-        if (TRANSACTION.Check() != TransactionCheckResult.Success)
-            throw new InvalidOperationException("Transaction is not valid.");
-
-        return TRANSACTION;
-        */
+        throw new InvalidOperationException("You have to sign and finalize the transaction first.");
     }
 }

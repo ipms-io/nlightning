@@ -11,7 +11,7 @@ public class ToRemoteOutput : OutputBase
 {
     public PubKey RemotePubKey { get; }
 
-    public ToRemoteOutput(PubKey remotePubKey, ulong amountSats)
+    public ToRemoteOutput(PubKey remotePubKey, LightningMoney amountSats)
         : base(GenerateToRemoteScript(remotePubKey), amountSats)
     {
         RemotePubKey = remotePubKey;

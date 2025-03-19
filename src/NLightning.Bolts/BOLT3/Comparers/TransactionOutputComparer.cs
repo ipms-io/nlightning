@@ -20,7 +20,7 @@ public class TransactionOutputComparer : IComparer<OutputBase>
         }
 
         // Compare by value (satoshis)
-        var valueComparison = x.AmountSats.CompareTo(y.AmountSats);
+        var valueComparison = x.Amount.CompareTo(y.Amount);
         if (valueComparison != 0)
         {
             return valueComparison;

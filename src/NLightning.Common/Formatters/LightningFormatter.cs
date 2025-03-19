@@ -19,7 +19,7 @@ public class LightningFormatter : IFormatProvider, ICustomFormatter
         {
             return string.Empty;
         }
-        
+
         var i = 0;
         if (int.TryParse(format.AsSpan(i, 1), out var decPos))
         {

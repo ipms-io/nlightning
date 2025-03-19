@@ -1,5 +1,3 @@
-using NBitcoin;
-
 namespace NLightning.Common.Managers;
 
 using Types;
@@ -26,10 +24,10 @@ public class ConfigManager
     /// through the Bitcoin network.
     /// </summary>
     public ulong DustLimitAmountSats { get; set; } = 546;
-    public Money DustLimitAmountMoney => new(DustLimitAmountSats);
+    public LightningMoney DustLimitAmountMoney => new(DustLimitAmountSats);
 
     public ulong AnchorAmountSats { get; set; } = 330;
-    public Money AnchorAmountMoney => new(AnchorAmountSats);
+    public LightningMoney AnchorAmountMoney => new(AnchorAmountSats);
 
     /// <summary>
     /// MaxHtlcValueInFlightMsat is a cap on total value of outstanding HTLCs offered by the remote node, which allows
@@ -68,7 +66,7 @@ public class ConfigManager
     /// <summary>
     /// is_option_anchor_outputs is a boolean indicating whether the node supports option_anchor_outputs.
     /// </summary>
-    public bool IsOptionAnchorOutput { get; set; }
+    public bool IsOptionAnchorOutput { get; set; } = true;
 
     /// <summary>
     /// is_option_simple_close is a boolean indicating whether the node supports option_simple_close.

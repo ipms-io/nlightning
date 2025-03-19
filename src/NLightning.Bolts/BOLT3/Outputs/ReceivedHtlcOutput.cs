@@ -17,7 +17,7 @@ public class ReceivedHtlcOutput : OutputBase
     public ReadOnlyMemory<byte> PaymentHash { get; set; }
     public ulong CltvExpiry { get; }
 
-    public ReceivedHtlcOutput(PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey, ReadOnlyMemory<byte> paymentHash, ulong amountSats, ulong? cltvExpiry = null)
+    public ReceivedHtlcOutput(PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey, ReadOnlyMemory<byte> paymentHash, LightningMoney amountSats, ulong? cltvExpiry = null)
         : base(GenerateToLocalHtlcScript(revocationPubKey, remoteHtlcPubKey, localHtlcPubKey, paymentHash, cltvExpiry ?? ConfigManager.Instance.DefaultCltvExpiry), amountSats)
     {
         RevocationPubKey = revocationPubKey;

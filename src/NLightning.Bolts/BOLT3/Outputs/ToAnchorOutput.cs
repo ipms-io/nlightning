@@ -8,7 +8,8 @@ namespace NLightning.Bolts.BOLT3.Outputs;
 public class ToAnchorOutput : OutputBase
 {
     public PubKey RemoteFundingPubKey { get; set; }
-    public ToAnchorOutput(PubKey remoteFundingPubKey, ulong amountSats)
+
+    public ToAnchorOutput(PubKey remoteFundingPubKey, LightningMoney amountSats)
         : base(GenerateAnchorScript(remoteFundingPubKey), amountSats)
     {
         RemoteFundingPubKey = remoteFundingPubKey;

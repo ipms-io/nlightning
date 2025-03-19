@@ -14,7 +14,7 @@ public class FeeService : IFeeService, IDisposable
     private static readonly TimeSpan s_defaultCacheExpiration = TimeSpan.FromMinutes(5);
 
     private static DateTime s_lastFetchTime = DateTime.MinValue;
-    private static ulong s_cachedFeeRate;
+    private static LightningMoney s_cachedFeeRate = LightningMoney.Zero;
     private static Task? s_backgroundTask;
     private static CancellationTokenSource? s_cts;
 
@@ -73,7 +73,7 @@ public class FeeService : IFeeService, IDisposable
         }
     }
 
-    public async Task<ulong> GetFeeRatePerKwAsync(CancellationToken cancellationToken = default)
+    public async Task<LightningMoney> GetFeeRatePerKwAsync(CancellationToken cancellationToken = default)
     {
         if (IsCacheValid())
         {
@@ -86,7 +86,7 @@ public class FeeService : IFeeService, IDisposable
         return s_cachedFeeRate;
     }
 
-    public ulong GetCachedFeeRatePerKw()
+    public LightningMoney GetCachedFeeRatePerKw()
     {
         return s_cachedFeeRate;
     }
@@ -96,7 +96,7 @@ public class FeeService : IFeeService, IDisposable
         try
         {
             var feeRate = await FetchFeeRateFromApiAsync(cancellationToken);
-            s_cachedFeeRate = feeRate;
+            s_cachedFeeRate.Satoshi = feeRate;
             s_lastFetchTime = DateTime.UtcNow;
             await SaveToFileAsync(cancellationToken);
         }
@@ -113,7 +113,7 @@ public class FeeService : IFeeService, IDisposable
         s_cts?.Dispose();
     }
 
-    private async Task<ulong> FetchFeeRateFromApiAsync(CancellationToken cancellationToken)
+    private async Task<long> FetchFeeRateFromApiAsync(CancellationToken cancellationToken)
     {
         HttpResponseMessage response;
 
@@ -153,7 +153,7 @@ public class FeeService : IFeeService, IDisposable
         // Apply the multiplier to convert to sat/kw
         if (decimal.TryParse(ConfigManager.Instance.FeeRateMultiplier, out var multiplier))
         {
-            return (ulong)(feeRate * multiplier);
+            return (long)(feeRate * multiplier);
         }
 
         throw new InvalidOperationException($"Could not extract {ConfigManager.Instance.PreferredFeeRate} from API response.");
@@ -232,7 +232,7 @@ public class FeeService : IFeeService, IDisposable
 
     private bool IsCacheValid()
     {
-        return s_cachedFeeRate > 0 && DateTime.UtcNow.Subtract(s_lastFetchTime).CompareTo(_cacheTimeExpiration) <= 0;
+        return !s_cachedFeeRate.IsZero && DateTime.UtcNow.Subtract(s_lastFetchTime).CompareTo(_cacheTimeExpiration) <= 0;
     }
 
     private static TimeSpan ParseCacheTime(string cacheTime)

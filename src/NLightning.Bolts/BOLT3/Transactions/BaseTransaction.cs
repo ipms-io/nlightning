@@ -1,33 +1,66 @@
 using NBitcoin;
-using NLightning.Bolts.BOLT3.Calculators;
-using NLightning.Bolts.BOLT3.Constants;
+using Network = NBitcoin.Network;
 
 namespace NLightning.Bolts.BOLT3.Transactions;
 
+using Calculators;
 using Common.Managers;
 using Comparers;
+using Constants;
 using Outputs;
 
 public abstract class BaseTransaction
 {
-    private readonly Transaction _transaction;
+    private Transaction _transaction;
+    private readonly TransactionBuilder _builder = ((Network)ConfigManager.Instance.Network).CreateTransactionBuilder();
 
-    protected readonly List<Coin> COINS;
+    private readonly SigHash _sigHash = ConfigManager.Instance.IsOptionAnchorOutput
+        ? SigHash.Single | SigHash.AnyoneCanPay
+        : SigHash.All;
+    private readonly List<Coin> _coins = [];
+
     protected readonly List<OutputBase> OUTPUTS = [];
 
-    protected long CalculatedFee { get; private set; }
+    public uint256 TxId { get; private set; } = uint256.Zero;
+
+    protected LightningMoney CalculatedFee { get; } = LightningMoney.Zero;
     protected bool Finalized { get; private set; }
 
     protected BaseTransaction(uint version, params Coin[] coins)
     {
-        COINS = coins.ToList();
-        _transaction = Transaction.Create(ConfigManager.Instance.Network);
+        _coins = coins.ToList();
 
+        _transaction = Transaction.Create(ConfigManager.Instance.Network);
         _transaction.Version = version;
-        _transaction.Inputs.AddRange(COINS.Select(c => new TxIn(c.Outpoint)));
+        _transaction.Inputs.AddRange(_coins.Select(c => new TxIn(c.Outpoint)));
+        _builder.SetSigningOptions(_sigHash, false);
+        _builder.DustPrevention = false;
+        _builder.SetVersion(version);
+    }
+
+    protected BaseTransaction(uint version, params (Coin, Sequence)[] coins)
+    {
+        _transaction = Transaction.Create(ConfigManager.Instance.Network);
+        _transaction.Version = version;
+        _builder.SetSigningOptions(_sigHash, false);
+        _builder.DustPrevention = false;
+        _builder.SetVersion(version);
+
+        foreach (var (coin, sequence) in coins)
+        {
+            _coins.Add(coin);
+            _transaction.Inputs.Add(coin.Outpoint, null, null, sequence);
+        }
     }
 
     protected Transaction FinalizedTransaction => Finalized ? _transaction : throw new Exception("Transaction not finalized.");
+
+    protected void SetLockTime(LockTime lockTime)
+    {
+        ArgumentNullException.ThrowIfNull(lockTime);
+
+        _transaction.LockTime = lockTime;
+    }
 
     protected void SignAndFinalizeTransaction(FeeCalculator feeCalculator, params BitcoinSecret[] secrets)
     {
@@ -47,25 +80,39 @@ public abstract class BaseTransaction
         if (!CheckTransactionAmounts(CalculatedFee))
             throw new InvalidOperationException("Output amount cannot exceed input amount.");
 
+        TxId = _transaction.GetHash();
+
         Finalized = true;
     }
 
-    protected long TotalInputAmount => COINS.Sum(c => c.Amount.Satoshi);
+    protected LightningMoney TotalInputAmount => _coins.Sum(c => (LightningMoney)c.Amount);
 
-    protected long TotalOutputAmount => OUTPUTS.Sum(o => (long)o.AmountSats);
+    protected LightningMoney TotalOutputAmount => OUTPUTS.Sum(o => o.Amount);
 
     private void SignTransaction(params BitcoinSecret[] secrets)
     {
         ArgumentNullException.ThrowIfNull(secrets);
 
-        // Sign all inputs
-        _transaction.Sign(secrets, COINS);
+        if (Finalized)
+        {
+            // Remove signature from inputs
+            _transaction.Inputs.Clear();
+            _transaction.Inputs.AddRange(_coins.Select(c => new TxIn(c.Outpoint)));
+        }
+        else
+        {
+            // Add our keys
+            _builder.AddKeys(secrets);
+            _builder.AddCoins(_coins);
+        }
+
+        _transaction = _builder.SignTransactionInPlace(_transaction);
     }
 
-    private bool CheckTransactionAmounts(long fees = 0)
+    private bool CheckTransactionAmounts(LightningMoney? fees = null)
     {
         // Check if output amount is greater than input amount
-        return TotalOutputAmount + fees < TotalInputAmount;
+        return TotalOutputAmount + (fees ?? LightningMoney.Zero) <= TotalInputAmount;
     }
 
     private int CalculateOutputWeight()
@@ -117,7 +164,7 @@ public abstract class BaseTransaction
     {
         var inputWeight = 0;
 
-        foreach (var coin in COINS)
+        foreach (var coin in _coins)
         {
             var input = _transaction.Inputs.SingleOrDefault(i => i.PrevOut == coin.Outpoint) ?? throw new NullReferenceException("Input not found in transaction.");
             if (coin.ScriptPubKey.IsScriptType(ScriptType.P2PKH))
@@ -154,24 +201,35 @@ public abstract class BaseTransaction
         var outputWeight = CalculateOutputWeight();
         var inputWeight = CalculateInputWeight();
 
-        CalculatedFee = (outputWeight + inputWeight) * (long)feeCalculator.GetCurrentEstimatedFeePerKw() / 1000;
+        CalculatedFee.Satoshi = (outputWeight + inputWeight) * feeCalculator.GetCurrentEstimatedFeePerKw().Satoshi / 1000L;
     }
 
+    #region Input Management
+    protected void AddCoin(Coin coin, Sequence sequence)
+    {
+        ArgumentNullException.ThrowIfNull(coin);
+
+        _transaction.Inputs.Add(coin.Outpoint, null, null, sequence);
+    }
     protected void AddCoin(Coin coin)
     {
         ArgumentNullException.ThrowIfNull(coin);
 
-        COINS.Add(coin);
+        _coins.Add(coin);
         _transaction.Inputs.Add(new TxIn(coin.Outpoint));
     }
+    #endregion
 
     #region Output Management
-    protected void AddOutput(OutputBase output)
+    protected int AddOutput(OutputBase output)
     {
         ArgumentNullException.ThrowIfNull(output);
 
         OUTPUTS.Add(output);
+
         OrderOutputs();
+
+        return OUTPUTS.IndexOf(output);
     }
 
     protected void AddOutputRange(IEnumerable<OutputBase> outputs)

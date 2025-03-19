@@ -1,6 +1,6 @@
 namespace NLightning.Common.Enums;
 
-public enum LightningMoneyUnit: long
+public enum LightningMoneyUnit : long
 {
     BTC = 100_000_000_000,
     MILLI_BTC = 100_000_000,

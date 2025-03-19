@@ -11,7 +11,7 @@ public class ToLocalOutput : OutputBase
     public PubKey RevocationPubKey { get; }
     public uint ToSelfDelay { get; }
 
-    public ToLocalOutput(PubKey localDelayedPubKey, PubKey revocationPubKey, uint toSelfDelay, ulong amountSats)
+    public ToLocalOutput(PubKey localDelayedPubKey, PubKey revocationPubKey, uint toSelfDelay, LightningMoney amountSats)
         : base(GenerateToLocalScript(localDelayedPubKey, revocationPubKey, toSelfDelay), amountSats)
     {
         LocalDelayedPubKey = localDelayedPubKey;

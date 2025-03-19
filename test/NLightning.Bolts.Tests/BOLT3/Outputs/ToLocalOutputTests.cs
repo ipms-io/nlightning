@@ -9,7 +9,7 @@ public class ToLocalOutputTests
     private readonly PubKey _localDelayedPubKey = new("03fd5960528dc152014952efdb702a88f71e3c1653b2314431701ec77e57fde83c");
     private readonly PubKey _revocationPubKey = new("0212a140cd0c6539d07cd08dfe09984dec3251ea808b892efeac3ede9402bf2b19");
     private const uint TO_SELF_DELAY = 144;
-    private const ulong AMOUNT_SATS = 1000;
+    private const long AMOUNT_SATS = 1000;
 
     [Fact]
     public void Given_ValidParameters_When_CreatingToLocalOutput_Then_ShouldCreateSuccessfully()
@@ -21,7 +21,7 @@ public class ToLocalOutputTests
         var toLocalOutput = new ToLocalOutput(_localDelayedPubKey, _revocationPubKey, TO_SELF_DELAY, AMOUNT_SATS);
 
         // Then
-        Assert.Equal(AMOUNT_SATS, toLocalOutput.AmountSats);
+        Assert.Equal(AMOUNT_SATS, toLocalOutput.Amount.Satoshi);
         Assert.Equal(_localDelayedPubKey, toLocalOutput.LocalDelayedPubKey);
         Assert.Equal(_revocationPubKey, toLocalOutput.RevocationPubKey);
         Assert.Equal(TO_SELF_DELAY, toLocalOutput.ToSelfDelay);
@@ -38,7 +38,7 @@ public class ToLocalOutputTests
         var txOut = toLocalOutput.ToTxOut();
 
         // Then
-        Assert.Equal(AMOUNT_SATS, (ulong)txOut.Value.Satoshi);
+        Assert.Equal(AMOUNT_SATS, txOut.Value.Satoshi);
         Assert.Equal(expectedScriptPubKey, txOut.ScriptPubKey.ToBytes());
     }
 }
