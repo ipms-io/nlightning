@@ -48,6 +48,7 @@
     <Compile Include="..\NLightning.Common\Interfaces\Crypto\*.cs" LinkBase="Common\Interfaces"/>
     <Compile Include="..\NLightning.Common\Managers\*.cs" LinkBase="Common\Managers"/>
     <Compile Include="..\NLightning.Common\Types\ChainHash.cs" LinkBase="Common\Types"/>
+    <Compile Include="..\NLightning.Common\Types\LightningMoney.cs" LinkBase="Common\Types"/>
     <Compile Include="..\NLightning.Common\Types\Network.cs" LinkBase="Common\Types"/>
     <Compile Include="..\NLightning.Common\Types\ShortChannelId.cs" LinkBase="Common\Types"/>
     <Compile Include="..\NLightning.Bolts\BOLT9\**\*.cs" LinkBase="Bolts\BOLT9"/>
