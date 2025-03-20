@@ -1,3 +1,5 @@
+using NLightning.Common.Enums;
+
 namespace NLightning.Bolts.BOLT2.Payloads;
 
 using Common.BitUtils;
@@ -28,7 +30,7 @@ public class TxAddOutputPayload : IMessagePayload
     /// <summary>
     /// The sats amount.
     /// </summary>
-    public ulong Sats { get; }
+    public LightningMoney Amount { get; }
 
     /// <summary>
     /// The spending script.
@@ -40,19 +42,19 @@ public class TxAddOutputPayload : IMessagePayload
     /// </summary>
     /// <param name="channelId">The channel id.</param>
     /// <param name="serialId">The serial id.</param>
-    /// <param name="sats">The sats amount.</param>
+    /// <param name="amount">The sats amount.</param>
     /// <param name="script">The spending script.</param>
-    /// <exception cref="ArgumentException">Script length is out of bounds.</exception>
-    public TxAddOutputPayload(ChannelId channelId, ulong serialId, ulong sats, byte[] script)
+    /// <exception cref="ArgumentException">ScriptPubKey length is out of bounds.</exception>
+    public TxAddOutputPayload(ChannelId channelId, LightningMoney serialId, ulong amount, byte[] script)
     {
         if (script.Length > ushort.MaxValue)
         {
-            throw new ArgumentException($"Script length must be less than or equal to {ushort.MaxValue} bytes", nameof(script));
+            throw new ArgumentException($"ScriptPubKey length must be less than or equal to {ushort.MaxValue} bytes", nameof(script));
         }
 
         ChannelId = channelId;
         SerialId = serialId;
-        Sats = sats;
+        Amount = amount;
         Script = script;
     }
 
@@ -61,7 +63,7 @@ public class TxAddOutputPayload : IMessagePayload
     {
         await ChannelId.SerializeAsync(stream);
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(SerialId));
-        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(Sats));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(Amount.Satoshi));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian((ushort)Script.Length));
         await stream.WriteAsync(Script);
     }
@@ -84,7 +86,7 @@ public class TxAddOutputPayload : IMessagePayload
 
             bytes = new byte[8];
             await stream.ReadExactlyAsync(bytes);
-            var sats = EndianBitConverter.ToUInt64BigEndian(bytes);
+            var sats = LightningMoney.FromUnit(EndianBitConverter.ToUInt64BigEndian(bytes), LightningMoneyUnit.SATOSHI);
 
             bytes = new byte[2];
             await stream.ReadExactlyAsync(bytes);

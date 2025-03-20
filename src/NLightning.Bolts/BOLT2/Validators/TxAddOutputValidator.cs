@@ -22,12 +22,12 @@ public static class TxAddOutputValidator
             throw new InvalidOperationException($"Cannot receive more than {InteractiveTransactionContants.MAX_OUTPUTS_ALLOWED} tx_add_output messages during this negotiation.");
         }
 
-        if (output.Sats < dustLimit)
+        if (output.Amount < dustLimit)
         {
             throw new InvalidOperationException("The sats amount is less than the dust_limit.");
         }
 
-        if (output.Sats > InteractiveTransactionContants.MAX_MONEY)
+        if (output.Amount > InteractiveTransactionContants.MAX_MONEY)
         {
             throw new InvalidOperationException("The sats amount is greater than the maximum allowed (MAX_MONEY).");
         }

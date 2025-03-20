@@ -2,6 +2,7 @@ namespace NLightning.Bolts.Tests.BOLT2.Messages;
 
 using Bolts.BOLT2.Messages;
 using Bolts.BOLT2.Payloads;
+using Common.Enums;
 using Common.Types;
 using Utils;
 
@@ -13,7 +14,7 @@ public class TxAddOutputMessageTests
         // Arrange
         var channelId = ChannelId.Zero;
         const ulong SERIAL_ID = 1;
-        const ulong SATS = 1000;
+        var sats = LightningMoney.FromUnit(1000, LightningMoneyUnit.SATOSHI);
         byte[] script = [0x00, 0x01, 0x02, 0x03];
 
         var stream = new MemoryStream("0000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000003E8000400010203".ToByteArray());
@@ -25,7 +26,7 @@ public class TxAddOutputMessageTests
         Assert.NotNull(message);
         Assert.Equal(channelId, message.Payload.ChannelId);
         Assert.Equal(SERIAL_ID, message.Payload.SerialId);
-        Assert.Equal(SATS, message.Payload.Sats);
+        Assert.Equal(sats, message.Payload.Amount);
         Assert.Equal(script, message.Payload.Script);
     }
 
@@ -35,9 +36,9 @@ public class TxAddOutputMessageTests
         // Arrange
         var channelId = ChannelId.Zero;
         const ulong SERIAL_ID = 1;
-        const ulong SATS = 1000;
+        var sats = LightningMoney.FromUnit(1000, LightningMoneyUnit.SATOSHI);
         byte[] script = [0x00, 0x01, 0x02, 0x03];
-        var message = new TxAddOutputMessage(new TxAddOutputPayload(channelId, SERIAL_ID, SATS, script));
+        var message = new TxAddOutputMessage(new TxAddOutputPayload(channelId, SERIAL_ID, sats, script));
         var stream = new MemoryStream();
         var expectedBytes = "00430000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000003E8000400010203".ToByteArray();
 
