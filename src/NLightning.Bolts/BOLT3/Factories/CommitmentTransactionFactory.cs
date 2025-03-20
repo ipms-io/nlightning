@@ -22,8 +22,6 @@ public class CommitmentTransactionFactory
                                                              CommitmentNumber commitmentNumber, bool isChannelFunder,
                                                              params BitcoinSecret[] secrets)
     {
-        // var fundingScriptPubKey = 
-
         var commitmentTransaction = new CommitmentTransaction(fundingCoin, localPaymentBasepoint, remotePaymentBasepoint,
                                                               localDelayedPubKey, revocationPubKey, toLocalAmount,
                                                               toRemoteAmount, toSelfDelay, commitmentNumber,

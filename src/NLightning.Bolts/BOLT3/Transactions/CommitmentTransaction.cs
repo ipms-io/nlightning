@@ -78,30 +78,30 @@ public class CommitmentTransaction : BaseTransaction
         }
 
         // to_local output
-        if (toLocalAmount >= ConfigManager.Instance.DustLimitAmountMoney) // Dust limit in satoshis
+        if (toLocalAmount >= ConfigManager.Instance.DustLimitAmount) // Dust limit in satoshis
         {
             ToLocalOutput = new ToLocalOutput(localDelayedPubKey, revocationPubKey, toSelfDelay, localAmount);
             AddOutput(ToLocalOutput);
         }
 
         // to_remote output
-        if (toRemoteAmount >= ConfigManager.Instance.DustLimitAmountMoney) // Dust limit in satoshis
+        if (toRemoteAmount >= ConfigManager.Instance.DustLimitAmount) // Dust limit in satoshis
         {
             ToRemoteOutput = new ToRemoteOutput(remotePaymentBasepoint, remoteAmount);
             AddOutput(ToRemoteOutput);
         }
 
-        if (!ConfigManager.Instance.IsOptionAnchorOutput || ConfigManager.Instance.AnchorAmountSats == 0)
+        if (!ConfigManager.Instance.IsOptionAnchorOutput || ConfigManager.Instance.AnchorAmount == LightningMoney.Zero)
         {
             return;
         }
 
         // Local anchor output
-        LocalAnchorOutput = new ToAnchorOutput(localPaymentBasepoint, ConfigManager.Instance.AnchorAmountSats);
+        LocalAnchorOutput = new ToAnchorOutput(localPaymentBasepoint, ConfigManager.Instance.AnchorAmount);
         AddOutput(LocalAnchorOutput);
 
         // Remote anchor output
-        RemoteAnchorOutput = new ToAnchorOutput(remotePaymentBasepoint, ConfigManager.Instance.AnchorAmountSats);
+        RemoteAnchorOutput = new ToAnchorOutput(remotePaymentBasepoint, ConfigManager.Instance.AnchorAmount);
         AddOutput(RemoteAnchorOutput);
     }
 
@@ -114,7 +114,7 @@ public class CommitmentTransaction : BaseTransaction
         if (_isChannelFunder)
         {
             RemoveOutput(ToLocalOutput);
-            if (toFunderAmount >= ConfigManager.Instance.DustLimitAmountSats)
+            if (toFunderAmount >= ConfigManager.Instance.DustLimitAmount)
             {
                 // Set amount
                 ToLocalOutput.AmountMilliSats = toFunderAmount;
@@ -128,7 +128,7 @@ public class CommitmentTransaction : BaseTransaction
         else
         {
             RemoveOutput(ToRemoteOutput);
-            if (toFunderAmount >= ConfigManager.Instance.DustLimitAmountSats)
+            if (toFunderAmount >= ConfigManager.Instance.DustLimitAmount)
             {
                 // Set amount
                 ToRemoteOutput.AmountMilliSats = toFunderAmount;

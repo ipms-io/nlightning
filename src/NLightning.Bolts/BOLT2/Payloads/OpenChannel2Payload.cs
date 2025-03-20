@@ -1,4 +1,5 @@
 using NBitcoin;
+using NLightning.Common.Enums;
 
 namespace NLightning.Bolts.BOLT2.Payloads;
 
@@ -42,24 +43,24 @@ public class OpenChannel2Payload : IMessagePayload
     /// <summary>
     /// funding_satoshis is the amount the sender is putting into the channel.
     /// </summary>
-    public ulong FundingSatoshis { get; set; }
+    public LightningMoney FundingAmount { get; set; }
 
     /// <summary>
     /// dust_limit_satoshis is the threshold below which outputs should not be generated for this node's commitment or
     /// HTLC transactions
     /// </summary>
-    public ulong DustLimitSatoshis { get; }
+    public LightningMoney DustLimitAmount { get; }
 
     /// <summary>
     /// max_htlc_value_in_flight_msat is a cap on total value of outstanding HTLCs offered by the remote node, which
     /// allows the local node to limit its exposure to HTLCs
     /// </summary>
-    public ulong MaxHtlcValueInFlightMsat { get; }
+    public LightningMoney MaxHtlcValueInFlightAmount { get; }
 
     /// <summary>
     /// htlc_minimum_msat indicates the smallest value HTLC this node will accept.
     /// </summary>
-    public ulong HtlcMinimumMsat { get; }
+    public LightningMoney HtlcMinimumAmount { get; }
 
     /// <summary>
     /// to_self_delay is how long (in blocks) the other node will have to wait in case of breakdown before redeeming
@@ -118,19 +119,19 @@ public class OpenChannel2Payload : IMessagePayload
     /// </summary>
     public ChannelFlags ChannelFlags { get; set; }
 
-    public OpenChannel2Payload(ChannelId temporaryChannelId, uint fundingFeeRatePerKw, uint commitmentFeeRatePerKw, ulong fundingSatoshis, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint, PubKey secondPerCommitmentPoint, ChannelFlags channelFlags)
+    public OpenChannel2Payload(ChannelId temporaryChannelId, uint fundingFeeRatePerKw, uint commitmentFeeRatePerKw, ulong fundingAmount, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint, PubKey secondPerCommitmentPoint, ChannelFlags channelFlags)
     {
         ChainHash = ConfigManager.Instance.Network.ChainHash;
-        DustLimitSatoshis = ConfigManager.Instance.DustLimitAmountSats;
-        MaxHtlcValueInFlightMsat = ConfigManager.Instance.MaxHtlcValueInFlightMsat;
-        HtlcMinimumMsat = ConfigManager.Instance.HtlcMinimumMsat;
+        DustLimitAmount = ConfigManager.Instance.DustLimitAmount;
+        MaxHtlcValueInFlightAmount = ConfigManager.Instance.MaxHtlcValueInFlightAmount;
+        HtlcMinimumAmount = ConfigManager.Instance.HtlcMinimumAmount;
         ToSelfDelay = ConfigManager.Instance.ToSelfDelay;
         MaxAcceptedHtlcs = ConfigManager.Instance.MaxAcceptedHtlcs;
         Locktime = ConfigManager.Instance.Locktime;
         TemporaryChannelId = temporaryChannelId;
         FundingFeeRatePerKw = fundingFeeRatePerKw;
         CommitmentFeeRatePerKw = commitmentFeeRatePerKw;
-        FundingSatoshis = fundingSatoshis;
+        FundingAmount = fundingAmount;
         FundingPubKey = fundingPubKey;
         RevocationBasepoint = revocationBasepoint;
         PaymentBasepoint = paymentBasepoint;
@@ -141,16 +142,16 @@ public class OpenChannel2Payload : IMessagePayload
         ChannelFlags = channelFlags;
     }
 
-    private OpenChannel2Payload(ChainHash chainHash, ChannelId temporaryChannelId, uint fundingFeeRatePerKw, uint commitmentFeeRatePerKw, ulong fundingSatoshis, ulong dustLimitSatoshis, ulong maxHtlcValueInFlightMsat, ulong htlcMinimumMsat, ushort toSelfDelay, ushort maxAcceptedHtlcs, uint locktime, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint, PubKey secondPerCommitmentPoint, ChannelFlags channelFlags)
+    private OpenChannel2Payload(ChainHash chainHash, ChannelId temporaryChannelId, uint fundingFeeRatePerKw, uint commitmentFeeRatePerKw, ulong fundingAmount, ulong dustLimitAmount, ulong maxHtlcValueInFlightAmount, ulong htlcMinimumAmount, ushort toSelfDelay, ushort maxAcceptedHtlcs, uint locktime, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint, PubKey secondPerCommitmentPoint, ChannelFlags channelFlags)
     {
         ChainHash = chainHash;
         TemporaryChannelId = temporaryChannelId;
         FundingFeeRatePerKw = fundingFeeRatePerKw;
         CommitmentFeeRatePerKw = commitmentFeeRatePerKw;
-        FundingSatoshis = fundingSatoshis;
-        DustLimitSatoshis = dustLimitSatoshis;
-        MaxHtlcValueInFlightMsat = maxHtlcValueInFlightMsat;
-        HtlcMinimumMsat = htlcMinimumMsat;
+        FundingAmount = fundingAmount;
+        DustLimitAmount = dustLimitAmount;
+        MaxHtlcValueInFlightAmount = maxHtlcValueInFlightAmount;
+        HtlcMinimumAmount = htlcMinimumAmount;
         ToSelfDelay = toSelfDelay;
         MaxAcceptedHtlcs = maxAcceptedHtlcs;
         Locktime = locktime;
@@ -171,10 +172,10 @@ public class OpenChannel2Payload : IMessagePayload
         await TemporaryChannelId.SerializeAsync(stream);
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(FundingFeeRatePerKw));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(CommitmentFeeRatePerKw));
-        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(FundingSatoshis));
-        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(DustLimitSatoshis));
-        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(MaxHtlcValueInFlightMsat));
-        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(HtlcMinimumMsat));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(FundingAmount.Satoshi));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(DustLimitAmount.Satoshi));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(MaxHtlcValueInFlightAmount.MilliSatoshi));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(HtlcMinimumAmount.MilliSatoshi));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(ToSelfDelay));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(MaxAcceptedHtlcs));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(Locktime));
@@ -210,10 +211,12 @@ public class OpenChannel2Payload : IMessagePayload
 
             bytes = new byte[sizeof(ulong)];
             await stream.ReadExactlyAsync(bytes);
-            var fundingSatoshis = EndianBitConverter.ToUInt64BigEndian(bytes);
+            var fundingSatoshis = LightningMoney.FromUnit(EndianBitConverter.ToUInt64BigEndian(bytes),
+                                                          LightningMoneyUnit.SATOSHI);
 
             await stream.ReadExactlyAsync(bytes);
-            var dustLimitSatoshis = EndianBitConverter.ToUInt64BigEndian(bytes);
+            var dustLimitSatoshis = LightningMoney.FromUnit(EndianBitConverter.ToUInt64BigEndian(bytes),
+                                                            LightningMoneyUnit.SATOSHI);
 
             await stream.ReadExactlyAsync(bytes);
             var maxHtlcValueInFlightMsat = EndianBitConverter.ToUInt64BigEndian(bytes);

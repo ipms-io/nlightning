@@ -4,21 +4,31 @@ namespace NLightning.Bolts.Tests.BOLT2.Messages;
 
 using Bolts.BOLT2.Messages;
 using Bolts.BOLT2.Payloads;
+using Common.Enums;
 using Common.Managers;
 using Common.TLVs;
 using Common.Types;
 using Exceptions;
 using Utils;
 
-public class AcceptChannel2MessageTests
+public class AcceptChannel2MessageTests : IDisposable
 {
+    private readonly LightningMoney _previousDustLimitAmount = ConfigManager.Instance.DustLimitAmount;
+    private readonly LightningMoney _previousHtlcMinimumAmount = ConfigManager.Instance.HtlcMinimumAmount;
+    private readonly LightningMoney _previousMaxHtlcValueInFlightAmount = ConfigManager.Instance.MaxHtlcValueInFlightAmount;
+    private readonly ushort _previousToSelfDelay = ConfigManager.Instance.ToSelfDelay;
+    private readonly uint _previousMinimumDepth = ConfigManager.Instance.MinimumDepth;
+    private readonly ushort _previousMaxAcceptedHtlcs = ConfigManager.Instance.MaxAcceptedHtlcs;
+    private readonly uint _previousLocktime = ConfigManager.Instance.Locktime;
+    private readonly Network _previousNetwork = ConfigManager.Instance.Network;
+
     public AcceptChannel2MessageTests()
     {
-        ConfigManager.Instance.DustLimitAmountSats = 1;
+        ConfigManager.Instance.DustLimitAmount = LightningMoney.FromUnit(1, LightningMoneyUnit.SATOSHI);
         ConfigManager.Instance.ToSelfDelay = 1;
-        ConfigManager.Instance.HtlcMinimumMsat = 1000;
+        ConfigManager.Instance.HtlcMinimumAmount = LightningMoney.FromUnit(1, LightningMoneyUnit.SATOSHI);
         ConfigManager.Instance.MinimumDepth = 3;
-        ConfigManager.Instance.MaxHtlcValueInFlightMsat = 1000000;
+        ConfigManager.Instance.MaxHtlcValueInFlightAmount = LightningMoney.FromUnit(1000, LightningMoneyUnit.SATOSHI);
         ConfigManager.Instance.MaxAcceptedHtlcs = 2;
         ConfigManager.Instance.Locktime = 1;
         ConfigManager.Instance.Network = Network.MAIN_NET;
@@ -30,7 +40,7 @@ public class AcceptChannel2MessageTests
     {
         // Arrange
         var expectedChannelId = ChannelId.Zero;
-        const ulong EXPECTED_FUNDING_SATOSHIS = 0;
+        var expectedFundingSatoshis = LightningMoney.Zero;
         var expectedFundingPubKey = new PubKey("02c93ca7dca44d2e45e3cc5419d92750f7fb3a0f180852b73a621f4051c0193a75".ToByteArray());
         var expectedRevocationBasepoint = new PubKey("0315525220b88467a0ee3a111ae49ffdc337136ef51031cfc1c9883b7d1cbd6534".ToByteArray());
         var expectedPaymentBasePoint = new PubKey("03A6BD98A33A52CD9D339EE20B4627AC60EC45C897E4FF182CC22ABA372C8D31C1".ToByteArray());
@@ -46,10 +56,10 @@ public class AcceptChannel2MessageTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(expectedChannelId, result.Payload.TemporaryChannelId);
-        Assert.Equal(EXPECTED_FUNDING_SATOSHIS, result.Payload.FundingSatoshis);
-        Assert.Equal(ConfigManager.Instance.DustLimitAmountSats, result.Payload.DustLimitSatoshis);
-        Assert.Equal(ConfigManager.Instance.MaxHtlcValueInFlightMsat, result.Payload.MaxHtlcValueInFlightMsat);
-        Assert.Equal(ConfigManager.Instance.HtlcMinimumMsat, result.Payload.HtlcMinimumMsat);
+        Assert.Equal(expectedFundingSatoshis, result.Payload.FundingAmount);
+        Assert.Equal(ConfigManager.Instance.DustLimitAmount, result.Payload.DustLimitAmount);
+        Assert.Equal(ConfigManager.Instance.MaxHtlcValueInFlightAmount, result.Payload.MaxHtlcValueInFlightAmount);
+        Assert.Equal(ConfigManager.Instance.HtlcMinimumAmount, result.Payload.HtlcMinimumAmount);
         Assert.Equal(ConfigManager.Instance.MinimumDepth, result.Payload.MinimumDepth);
         Assert.Equal(ConfigManager.Instance.ToSelfDelay, result.Payload.ToSelfDelay);
         Assert.Equal(ConfigManager.Instance.MaxAcceptedHtlcs, result.Payload.MaxAcceptedHtlcs);
@@ -67,7 +77,7 @@ public class AcceptChannel2MessageTests
     {
         // Arrange
         var expectedChannelId = ChannelId.Zero;
-        const ulong EXPECTED_FUNDING_SATOSHIS = 0;
+        var expectedFundingSatoshis = LightningMoney.Zero;
         var expectedFundingPubKey = new PubKey("02c93ca7dca44d2e45e3cc5419d92750f7fb3a0f180852b73a621f4051c0193a75".ToByteArray());
         var expectedRevocationBasepoint = new PubKey("0315525220b88467a0ee3a111ae49ffdc337136ef51031cfc1c9883b7d1cbd6534".ToByteArray());
         var expectedPaymentBasePoint = new PubKey("03A6BD98A33A52CD9D339EE20B4627AC60EC45C897E4FF182CC22ABA372C8D31C1".ToByteArray());
@@ -85,10 +95,10 @@ public class AcceptChannel2MessageTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(expectedChannelId, result.Payload.TemporaryChannelId);
-        Assert.Equal(EXPECTED_FUNDING_SATOSHIS, result.Payload.FundingSatoshis);
-        Assert.Equal(ConfigManager.Instance.DustLimitAmountSats, result.Payload.DustLimitSatoshis);
-        Assert.Equal(ConfigManager.Instance.MaxHtlcValueInFlightMsat, result.Payload.MaxHtlcValueInFlightMsat);
-        Assert.Equal(ConfigManager.Instance.HtlcMinimumMsat, result.Payload.HtlcMinimumMsat);
+        Assert.Equal(expectedFundingSatoshis, result.Payload.FundingAmount);
+        Assert.Equal(ConfigManager.Instance.DustLimitAmount, result.Payload.DustLimitAmount);
+        Assert.Equal(ConfigManager.Instance.MaxHtlcValueInFlightAmount, result.Payload.MaxHtlcValueInFlightAmount);
+        Assert.Equal(ConfigManager.Instance.HtlcMinimumAmount, result.Payload.HtlcMinimumAmount);
         Assert.Equal(ConfigManager.Instance.MinimumDepth, result.Payload.MinimumDepth);
         Assert.Equal(ConfigManager.Instance.ToSelfDelay, result.Payload.ToSelfDelay);
         Assert.Equal(ConfigManager.Instance.MaxAcceptedHtlcs, result.Payload.MaxAcceptedHtlcs);
@@ -123,7 +133,7 @@ public class AcceptChannel2MessageTests
     {
         // Arrange
         var channelId = ChannelId.Zero;
-        const ulong FUNDING_SATOSHIS = 0;
+        var fundingSatoshis = LightningMoney.Zero;
         var fundingPubKey = new PubKey("02c93ca7dca44d2e45e3cc5419d92750f7fb3a0f180852b73a621f4051c0193a75".ToByteArray());
         var revocationBasepoint = new PubKey("0315525220b88467a0ee3a111ae49ffdc337136ef51031cfc1c9883b7d1cbd6534".ToByteArray());
         var paymentBasePoint = new PubKey("03A6BD98A33A52CD9D339EE20B4627AC60EC45C897E4FF182CC22ABA372C8D31C1".ToByteArray());
@@ -131,7 +141,7 @@ public class AcceptChannel2MessageTests
         var htlcBasepoint = new PubKey("03798e7efc8c950fcd6c9e3af4bbad16a26f14c838e99651f637ddd73ddc88531b".ToByteArray());
         var firstPerCommitmentPoint = new PubKey("0326550f5ae41511e767afe0a9c7e20a73174875a6d1ee4e9e128cbb1fb0099f61".ToByteArray());
 
-        var message = new AcceptChannel2Message(new AcceptChannel2Payload(channelId, FUNDING_SATOSHIS, fundingPubKey,
+        var message = new AcceptChannel2Message(new AcceptChannel2Payload(channelId, fundingSatoshis, fundingPubKey,
                                                 revocationBasepoint, paymentBasePoint, delayedPaymentBasepoint,
                                                 htlcBasepoint, firstPerCommitmentPoint));
         var stream = new MemoryStream();
@@ -152,7 +162,7 @@ public class AcceptChannel2MessageTests
     {
         // Arrange
         var channelId = ChannelId.Zero;
-        const ulong FUNDING_SATOSHIS = 0;
+        var fundingSatoshis = LightningMoney.Zero;
         var fundingPubKey = new PubKey("02c93ca7dca44d2e45e3cc5419d92750f7fb3a0f180852b73a621f4051c0193a75".ToByteArray());
         var revocationBasepoint = new PubKey("0315525220b88467a0ee3a111ae49ffdc337136ef51031cfc1c9883b7d1cbd6534".ToByteArray());
         var paymentBasePoint = new PubKey("03A6BD98A33A52CD9D339EE20B4627AC60EC45C897E4FF182CC22ABA372C8D31C1".ToByteArray());
@@ -163,7 +173,7 @@ public class AcceptChannel2MessageTests
         var channelTypeTlv = new ChannelTypeTlv([0x01, 0x02]);
         var requireConfirmedInputsTlv = new RequireConfirmedInputsTlv();
 
-        var message = new AcceptChannel2Message(new AcceptChannel2Payload(channelId, FUNDING_SATOSHIS, fundingPubKey,
+        var message = new AcceptChannel2Message(new AcceptChannel2Payload(channelId, fundingSatoshis, fundingPubKey,
                                                 revocationBasepoint, paymentBasePoint, delayedPaymentBasepoint,
                                                 htlcBasepoint, firstPerCommitmentPoint), upfrontShutdownScriptTlv, channelTypeTlv, requireConfirmedInputsTlv);
         var stream = new MemoryStream();
@@ -179,4 +189,16 @@ public class AcceptChannel2MessageTests
         Assert.Equal(expectedBytes, result);
     }
     #endregion
+
+    public void Dispose()
+    {
+        ConfigManager.Instance.DustLimitAmount = _previousDustLimitAmount;
+        ConfigManager.Instance.HtlcMinimumAmount = _previousHtlcMinimumAmount;
+        ConfigManager.Instance.MaxHtlcValueInFlightAmount = _previousMaxHtlcValueInFlightAmount;
+        ConfigManager.Instance.ToSelfDelay = _previousToSelfDelay;
+        ConfigManager.Instance.MinimumDepth = _previousMinimumDepth;
+        ConfigManager.Instance.MaxAcceptedHtlcs = _previousMaxAcceptedHtlcs;
+        ConfigManager.Instance.Locktime = _previousLocktime;
+        ConfigManager.Instance.Network = _previousNetwork;
+    }
 }

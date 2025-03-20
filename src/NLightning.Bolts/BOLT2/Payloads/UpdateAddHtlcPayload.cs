@@ -12,7 +12,7 @@ using Interfaces;
 /// Initializes a new instance of the TxAckRbfPayload class.
 /// </remarks>
 /// <param name="channelId">The channel ID.</param>
-public class UpdateAddHtlcPayload(ChannelId channelId, ulong id, ulong amountMsat, ReadOnlyMemory<byte> paymentHash, uint cltvExpiry, ReadOnlyMemory<byte>? onionRoutingPacket = null) : IMessagePayload
+public class UpdateAddHtlcPayload(ChannelId channelId, ulong id, LightningMoney amount, ReadOnlyMemory<byte> paymentHash, uint cltvExpiry, ReadOnlyMemory<byte>? onionRoutingPacket = null) : IMessagePayload
 {
     /// <summary>
     /// Gets the channel ID.
@@ -30,7 +30,7 @@ public class UpdateAddHtlcPayload(ChannelId channelId, ulong id, ulong amountMsa
     /// <summary>
     /// AmountSats offered for this Htlc
     /// </summary>
-    public ulong AmountMsats { get; } = amountMsat;
+    public LightningMoney Amount { get; } = amount;
 
     /// <summary>
     /// The payment hash
@@ -52,7 +52,7 @@ public class UpdateAddHtlcPayload(ChannelId channelId, ulong id, ulong amountMsa
     {
         await ChannelId.SerializeAsync(stream);
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(Id));
-        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(AmountMsats));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(Amount.MilliSatoshi));
         await stream.WriteAsync(PaymentHash);
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(CltvExpiry));
         if (OnionRoutingPacket is not null)

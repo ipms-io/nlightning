@@ -18,27 +18,25 @@ public class ConfigManager
     public Network Network { get; set; } = Network.MAIN_NET;
 
     /// <summary>
-    /// DustLimitAmountSats is the threshold below which outputs should not be generated for this node's commitment or
+    /// DustLimitAmount is the threshold below which outputs should not be generated for this node's commitment or
     /// HTLC transactions (i.e. HTLCs below this amount plus HTLC transaction fees are not enforceable on-chain).
     /// This reflects the reality that tiny outputs are not considered standard transactions and will not propagate
     /// through the Bitcoin network.
     /// </summary>
-    public ulong DustLimitAmountSats { get; set; } = 546;
-    public LightningMoney DustLimitAmountMoney => new(DustLimitAmountSats);
+    public LightningMoney DustLimitAmount { get; set; } = 546000UL;
 
-    public ulong AnchorAmountSats { get; set; } = 330;
-    public LightningMoney AnchorAmountMoney => new(AnchorAmountSats);
+    public LightningMoney AnchorAmount { get; set; } = 330000UL;
 
     /// <summary>
-    /// MaxHtlcValueInFlightMsat is a cap on total value of outstanding HTLCs offered by the remote node, which allows
+    /// MaxHtlcValueInFlightAmount is a cap on total value of outstanding HTLCs offered by the remote node, which allows
     /// the local node to limit its exposure to HTLCs
     /// </summary>
-    public ulong MaxHtlcValueInFlightMsat { get; set; }
+    public LightningMoney MaxHtlcValueInFlightAmount { get; set; } = 0UL;
 
     /// <summary>
-    /// HtlcMinimumMsat indicates the smallest value HTLC this node will accept.
+    /// HtlcMinimumAmount indicates the smallest value HTLC this node will accept.
     /// </summary>
-    public ulong HtlcMinimumMsat { get; set; }
+    public LightningMoney HtlcMinimumAmount { get; set; } = 0UL;
 
     /// <summary>
     /// ToSelfDelay is the number of blocks that the other node's to-self outputs must be delayed, using

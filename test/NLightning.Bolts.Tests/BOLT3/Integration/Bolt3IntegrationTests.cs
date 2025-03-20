@@ -1,19 +1,19 @@
 using NBitcoin;
-using NLightning.Bolts.BOLT3.Types;
-using NLightning.Common.Enums;
-using NLightning.Common.Types;
 
 namespace NLightning.Bolts.Tests.BOLT3.Integration;
 
 using Bolts.BOLT3.Factories;
+using Bolts.BOLT3.Outputs;
+using Bolts.BOLT3.Types;
+using Common.Enums;
 using Common.Interfaces;
 using Common.Managers;
+using Common.Types;
 
 public class Bolt3IntegrationTests
 {
     private readonly FundingTransactionFactory _fundingTransactionFactory;
     private readonly CommitmentTransactionFactory _commitmentTransactionFactory;
-    private readonly IFeeService _feeService;
 
     public Bolt3IntegrationTests()
     {
@@ -24,22 +24,18 @@ public class Bolt3IntegrationTests
         var feeServiceMock = new Mock<IFeeService>();
         feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(feeRatePerKw);
 
-        _feeService = feeServiceMock.Object;
-        _fundingTransactionFactory = new FundingTransactionFactory(_feeService);
-        _commitmentTransactionFactory = new CommitmentTransactionFactory(_feeService);
+        var feeService = feeServiceMock.Object;
+        _fundingTransactionFactory = new FundingTransactionFactory(feeService);
+        _commitmentTransactionFactory = new CommitmentTransactionFactory(feeService);
     }
 
     [Fact]
-    public void IntegrationTest_ShouldFollowBolt3Specifications()
+    public void Given_Bolt3Specifications_When_CreatingFundingTransaction_Then_ShouldBeEqualToTestVector()
     {
-        // Assert that we have the right input transaction
-        Assert.Equal(AppendixBVectors.INPUT_TX_ID, AppendixBVectors.INPUT_TX.GetHash());
-
-        // Create coin from the test vector
+        // Given
         var fundingInputCoin = new Coin(AppendixBVectors.INPUT_TX, AppendixBVectors.INPUT_INDEX);
-        Assert.True(fundingInputCoin.ScriptPubKey.IsScriptType(ScriptType.P2PKH));
 
-        // Create funding transaction
+        // When
         var fundingTransaction = _fundingTransactionFactory.CreateFundingTransaction(
             AppendixBVectors.LOCAL_PUB_KEY,
             AppendixBVectors.REMOTE_PUB_KEY,
@@ -50,67 +46,69 @@ public class Bolt3IntegrationTests
             new BitcoinSecret(AppendixBVectors.INPUT_SIGNING_PRIV_KEY, ConfigManager.Instance.Network));
         var finalFundingTx = fundingTransaction.GetSignedTransaction();
 
-        // Verify the tx bytes are correct
+        // Then
         Assert.Equal(AppendixBVectors.EXPECTED_TX.ToBytes(), finalFundingTx.ToBytes());
+    }
 
-        // Verify output amounts
-        Assert.Equal(AppendixBVectors.EXPECTED_CHANGE_SATOSHIS.Satoshi, fundingTransaction.ChangeOutput.AmountMilliSats.Satoshi);
-        Assert.Equal(AppendixBVectors.FUNDING_SATOSHIS.Satoshi, fundingTransaction.FundingOutput.AmountMilliSats.Satoshi);
-
-        Assert.Equal(AppendixBVectors.EXPECTED_TX_ID, finalFundingTx.GetHash());
-
-        var fundingOutput = fundingTransaction.FundingOutput;
-
-        // Created a commitment number for the channel
+    [Fact]
+    public void Given_Bolt3Specifications_When_CreatingCommitmentTransaction_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
         var commitmentNumber = new CommitmentNumber(AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
-                                                    AppendixCVectors.NODE_B_PAYMENT_BASEPOINT,
-                                                    AppendixCVectors.COMMITMENT_NUMBER);
-        Assert.Equal(AppendixCVectors.EXPECTED_OBSCURING_FACTOR, commitmentNumber.ObscuringFactor);
+            AppendixCVectors.NODE_B_PAYMENT_BASEPOINT,
+            AppendixCVectors.COMMITMENT_NUMBER);
 
-        // Create commitment transaction for Node A
+        var fundingOutput = new FundingOutput(AppendixCVectors.NODE_A_FUNDING_PUBKEY,
+                                              AppendixCVectors.NODE_B_FUNDING_PUBKEY,
+                                              AppendixBVectors.FUNDING_SATOSHIS)
+        {
+            TxId = AppendixBVectors.EXPECTED_TX_ID
+        };
+
+        // When
         var commitmentTransacion = _commitmentTransactionFactory.CreateCommitmentTransaction(fundingOutput.ToCoin(),
-                                                                                             AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
-                                                                                             AppendixCVectors.NODE_B_PAYMENT_BASEPOINT,
-                                                                                             AppendixCVectors.NODE_A_DELAYED_PUBKEY,
-                                                                                             AppendixCVectors.NODE_A_REVOCATION_PUBKEY,
-                                                                                             AppendixCVectors.TO_LOCAL_MSAT,
-                                                                                             AppendixCVectors.TO_REMOTE_MSAT,
-                                                                                             AppendixCVectors.LOCAL_DELAY,
-                                                                                             commitmentNumber, true,
-                                                                                             new BitcoinSecret(
-                                                                                                 AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
-                                                                                                 ConfigManager.Instance.Network));
-        // Add remote signature
+            AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+            AppendixCVectors.NODE_B_PAYMENT_BASEPOINT,
+            AppendixCVectors.NODE_A_DELAYED_PUBKEY,
+            AppendixCVectors.NODE_A_REVOCATION_PUBKEY,
+            AppendixCVectors.TO_LOCAL_MSAT,
+            AppendixCVectors.TO_REMOTE_MSAT,
+            AppendixCVectors.LOCAL_DELAY,
+            commitmentNumber, true,
+            new BitcoinSecret(
+                AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
+                ConfigManager.Instance.Network));
+
         commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
-        // Validate commitment transaction outputs
+        // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_1.ToBytes(), finalCommitmentTx.ToBytes());
-
-        // Simulate adding HTLCs
-        // - Add HTLCs to the channel.
-        // - Ensure correct handling of trimmed HTLCs.
-
-        // Validate the commitment transaction with HTLCs for Node A
-        // - Ensure the transaction includes the correct HTLC outputs.
-
-        // Simulate HTLC-timeout and HTLC-success transactions
-        // - Generate HTLC-timeout and HTLC-success transactions.
-
-        // Validate HTLC-timeout transaction
-        // - Ensure the transaction adheres to BOLT 3 specifications.
-
-        // Validate HTLC-success transaction
-        // - Ensure the transaction adheres to BOLT 3 specifications.
-
-        // Simulate closing the channel
-        // - Generate the closing transaction.
-
-        // Validate the closing transaction
-        // - Ensure the transaction adheres to BOLT 3 specifications.
-
-        // Ensure outputs are ordered correctly (BIP 69+CLTV)
-        // - Check the output ordering.
     }
+
+    // Simulate adding HTLCs
+    // - Add HTLCs to the channel.
+    // - Ensure correct handling of trimmed HTLCs.
+
+    // Validate the commitment transaction with HTLCs for Node A
+    // - Ensure the transaction includes the correct HTLC outputs.
+
+    // Simulate HTLC-timeout and HTLC-success transactions
+    // - Generate HTLC-timeout and HTLC-success transactions.
+
+    // Validate HTLC-timeout transaction
+    // - Ensure the transaction adheres to BOLT 3 specifications.
+
+    // Validate HTLC-success transaction
+    // - Ensure the transaction adheres to BOLT 3 specifications.
+
+    // Simulate closing the channel
+    // - Generate the closing transaction.
+
+    // Validate the closing transaction
+    // - Ensure the transaction adheres to BOLT 3 specifications.
+
+    // Ensure outputs are ordered correctly (BIP 69+CLTV)
+    // - Check the output ordering.
 }

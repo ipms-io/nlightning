@@ -68,7 +68,7 @@ public abstract class BaseOutput
         return new TxOut((Money)AmountMilliSats, ScriptPubKey);
     }
 
-    public virtual ScriptCoin ToCoin()
+    public ScriptCoin ToCoin()
     {
         if (TxId is null || TxId == uint256.Zero || TxId == uint256.One)
             throw new InvalidOperationException("Transaction ID is not set. Sign the transaction first.");

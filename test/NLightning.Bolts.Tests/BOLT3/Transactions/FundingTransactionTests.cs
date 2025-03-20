@@ -111,22 +111,29 @@ public class FundingTransactionTests
         var mockFeeService = new Mock<IFeeService>();
         mockFeeService.Setup(c => c.GetCachedFeeRatePerKw()).Returns(new LightningMoney(10000));
 
-        var dustLimit = new LightningMoney(546000);
-        ConfigManager.Instance.DustLimitAmountSats = dustLimit;
+        var previousDustLimit = ConfigManager.Instance.DustLimitAmount;
+        ConfigManager.Instance.DustLimitAmount = 546000UL;
 
-        var fundingTx = new FundingTransaction(_localPubKey, _remotePubKey, _fundingAmount, _changeScript, _coins);
+        try
+        {
+            var fundingTx = new FundingTransaction(_localPubKey, _remotePubKey, _fundingAmount, _changeScript, _coins);
 
-        // When
-        fundingTx.SignTransaction(mockFeeService.Object, _privateKey);
+            // When
+            fundingTx.SignTransaction(mockFeeService.Object, _privateKey);
 
-        // Then
-        Assert.NotNull(fundingTx.FundingOutput.TxId);
-        Assert.NotNull(fundingTx.ChangeOutput.TxId);
-        Assert.Equal(fundingTx.TxId, fundingTx.FundingOutput.TxId);
-        Assert.Equal(fundingTx.TxId, fundingTx.ChangeOutput.TxId);
+            // Then
+            Assert.NotNull(fundingTx.FundingOutput.TxId);
+            Assert.NotNull(fundingTx.ChangeOutput.TxId);
+            Assert.Equal(fundingTx.TxId, fundingTx.FundingOutput.TxId);
+            Assert.Equal(fundingTx.TxId, fundingTx.ChangeOutput.TxId);
 
-        // The change amount should be: input (2000000) - funding (1000000) - fee (500) = 999500
-        Assert.Equal(new LightningMoney(01998995000), fundingTx.ChangeOutput.AmountMilliSats);
+            // The change amount should be: input (2000000) - funding (1000000) - fee (500) = 999500
+            Assert.Equal(new LightningMoney(01998995000), fundingTx.ChangeOutput.AmountMilliSats);
+        }
+        finally
+        {
+            ConfigManager.Instance.DustLimitAmount = previousDustLimit;
+        }
     }
 
     [Fact]
@@ -136,19 +143,26 @@ public class FundingTransactionTests
         var mockFeeService = new Mock<IFeeService>();
         mockFeeService.Setup(c => c.GetCachedFeeRatePerKw()).Returns(new LightningMoney(3640174000));
 
-        var dustLimit = new LightningMoney(546000);
-        ConfigManager.Instance.DustLimitAmountSats = dustLimit;
+        var previousDustLimit = ConfigManager.Instance.DustLimitAmount;
+        ConfigManager.Instance.DustLimitAmount = 546000UL;
 
-        var fundingTx = new FundingTransaction(_localPubKey, _remotePubKey, _fundingAmount, _changeScript, _coins);
+        try
+        {
+            var fundingTx = new FundingTransaction(_localPubKey, _remotePubKey, _fundingAmount, _changeScript, _coins);
 
-        // When
-        fundingTx.SignTransaction(mockFeeService.Object, _privateKey);
+            // When
+            fundingTx.SignTransaction(mockFeeService.Object, _privateKey);
 
-        // Then
-        Assert.NotNull(fundingTx.FundingOutput.TxId);
-        Assert.Equal(fundingTx.TxId, fundingTx.FundingOutput.TxId);
-        Assert.Equal(0U, fundingTx.FundingOutput.Index);
-        Assert.Equal(LightningMoney.Zero, fundingTx.ChangeOutput.AmountMilliSats);
+            // Then
+            Assert.NotNull(fundingTx.FundingOutput.TxId);
+            Assert.Equal(fundingTx.TxId, fundingTx.FundingOutput.TxId);
+            Assert.Equal(0U, fundingTx.FundingOutput.Index);
+            Assert.Equal(LightningMoney.Zero, fundingTx.ChangeOutput.AmountMilliSats);
+        }
+        finally
+        {
+            ConfigManager.Instance.DustLimitAmount = previousDustLimit;
+        }
     }
 
     [Fact]

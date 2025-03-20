@@ -79,7 +79,7 @@ public class FundingTransaction : BaseTransaction
         // Check if change is needed
         var changeAmount = TotalInputAmount - TotalOutputAmount - CalculatedFee;
         var changeIndex = 0U;
-        var hasChange = changeAmount >= ConfigManager.Instance.DustLimitAmountSats;
+        var hasChange = changeAmount >= ConfigManager.Instance.DustLimitAmount;
         if (hasChange)
         {
             // Add the new one

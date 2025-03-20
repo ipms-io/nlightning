@@ -54,19 +54,27 @@ public class ToRemoteOutputTests
     public void Given_OptionAnchorOutputTrue_When_ConstructingToRemoteOutput_Then_UsesP2WSH()
     {
         // Given
+        var previousIsOptionAnchorOutput = ConfigManager.Instance.IsOptionAnchorOutput;
         ConfigManager.Instance.IsOptionAnchorOutput = true;
 
-        // When
-        var toRemoteOutput = new ToRemoteOutput(_remotePubKey, _amount);
+        try
+        {
+            // When
+            var toRemoteOutput = new ToRemoteOutput(_remotePubKey, _amount);
 
-        // Then
-        Assert.Equal(ScriptType.P2WSH, toRemoteOutput.ScriptType);
+            // Then
+            Assert.Equal(ScriptType.P2WSH, toRemoteOutput.ScriptType);
 
-        // Check script structure
-        var scriptString = toRemoteOutput.RedeemScript.ToString();
-        Assert.Contains(_remotePubKey.ToHex(), scriptString);
-        Assert.Contains("CHECKSIGVERIFY", scriptString);
-        Assert.Contains("CSV", scriptString);
+            // Check script structure
+            var scriptString = toRemoteOutput.RedeemScript.ToString();
+            Assert.Contains(_remotePubKey.ToHex(), scriptString);
+            Assert.Contains("CHECKSIGVERIFY", scriptString);
+            Assert.Contains("CSV", scriptString);
+        }
+        finally
+        {
+            ConfigManager.Instance.IsOptionAnchorOutput = previousIsOptionAnchorOutput;
+        }
     }
 
     [Fact]
