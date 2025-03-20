@@ -5,6 +5,7 @@ namespace NLightning.Bolts.BOLT3.Outputs;
 using Common.Constants;
 using Common.Crypto.Hashes;
 using Common.Managers;
+using Exceptions;
 
 /// <summary>
 /// Represents a received HTLC output in a commitment transaction.
@@ -31,15 +32,17 @@ public class ReceivedHtlcOutput : BaseOutput
 
     private static Script GenerateToLocalHtlcScript(PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey, ReadOnlyMemory<byte> paymentHash, ulong cltvExpiry)
     {
+        // Hash the revocationPubKey
         using var sha256 = new Sha256();
         Span<byte> revocationPubKeySha256Hash = stackalloc byte[CryptoConstants.SHA256_HASH_LEN];
         sha256.AppendData(revocationPubKey.ToBytes());
         sha256.GetHashAndReset(revocationPubKeySha256Hash);
         var revocationPubKeyHashRipemd160 = Ripemd160.Hash(revocationPubKeySha256Hash);
 
+        // Hash the paymentHash
         var paymentHashRipemd160 = Ripemd160.Hash(paymentHash.Span);
 
-        var baseScript = new Script(
+        List<Op> ops = [
             OpcodeType.OP_DUP,
             OpcodeType.OP_HASH160,
             Op.GetPushOp(revocationPubKeyHashRipemd160),
@@ -68,19 +71,28 @@ public class ReceivedHtlcOutput : BaseOutput
             OpcodeType.OP_DROP,
             OpcodeType.OP_CHECKSIG,
             OpcodeType.OP_ENDIF
-        ).ToOps().ToList();
+        ];
 
-        if (!ConfigManager.Instance.IsOptionAnchorOutput)
+        if (ConfigManager.Instance.IsOptionAnchorOutput)
         {
-            return new Script(baseScript.Append(OpcodeType.OP_ENDIF));
+            ops.AddRange([
+                OpcodeType.OP_1,
+                OpcodeType.OP_CHECKSEQUENCEVERIFY,
+                OpcodeType.OP_DROP
+            ]);
         }
 
-        baseScript.AddRange(new Script(
-            OpcodeType.OP_1,
-            OpcodeType.OP_CHECKSEQUENCEVERIFY,
-            OpcodeType.OP_DROP,
-            OpcodeType.OP_ENDIF
-        ).ToOps());
-        return new Script(baseScript);
+        // Close last IF
+        ops.Add(OpcodeType.OP_ENDIF);
+
+        var script = new Script(ops);
+
+        // Check if script is correct
+        if (script.IsUnspendable || !script.IsValid)
+        {
+            throw new InvalidScriptException("ScriptPubKey is either 'invalid' or 'unspendable'.");
+        }
+
+        return script;
     }
 }

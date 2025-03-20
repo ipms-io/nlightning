@@ -2,17 +2,17 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT3.Factories;
 
-using Calculators;
+using Common.Interfaces;
 using Transactions;
 using Types;
 
 public class CommitmentTransactionFactory
 {
-    private readonly FeeCalculator _feeCalculator;
+    private readonly IFeeService _feeService;
 
-    public CommitmentTransactionFactory(FeeCalculator feeCalculator)
+    public CommitmentTransactionFactory(IFeeService feeService)
     {
-        _feeCalculator = feeCalculator;
+        _feeService = feeService;
     }
 
     public CommitmentTransaction CreateCommitmentTransaction(Coin fundingCoin, PubKey localPaymentBasepoint,
@@ -29,7 +29,7 @@ public class CommitmentTransactionFactory
                                                               toRemoteAmount, toSelfDelay, commitmentNumber,
                                                               isChannelFunder);
 
-        commitmentTransaction.SignTransaction(_feeCalculator, secrets);
+        commitmentTransaction.SignTransaction(_feeService, secrets);
 
         return commitmentTransaction;
     }

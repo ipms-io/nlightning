@@ -2,6 +2,8 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT3.Outputs;
 
+using Exceptions;
+
 /// <summary>
 /// Represents a to_local output in a commitment transaction.
 /// </summary>
@@ -16,6 +18,9 @@ public class ToLocalOutput : BaseOutput
     public ToLocalOutput(PubKey localDelayedPubKey, PubKey revocationPubKey, uint toSelfDelay, LightningMoney amountMilliSats)
         : base(GenerateToLocalScript(localDelayedPubKey, revocationPubKey, toSelfDelay), amountMilliSats)
     {
+        ArgumentNullException.ThrowIfNull(localDelayedPubKey);
+        ArgumentNullException.ThrowIfNull(revocationPubKey);
+
         LocalDelayedPubKey = localDelayedPubKey;
         RevocationPubKey = revocationPubKey;
         ToSelfDelay = toSelfDelay;
@@ -49,7 +54,10 @@ public class ToLocalOutput : BaseOutput
          ** }
          */
 
-        return new Script(
+        ArgumentNullException.ThrowIfNull(localDelayedPubKey);
+        ArgumentNullException.ThrowIfNull(revocationPubKey);
+
+        var script = new Script(
             OpcodeType.OP_IF,
             Op.GetPushOp(revocationPubKey.ToBytes()),
             OpcodeType.OP_ELSE,
@@ -60,5 +68,13 @@ public class ToLocalOutput : BaseOutput
             OpcodeType.OP_ENDIF,
             OpcodeType.OP_CHECKSIG
         );
+
+        // Check if script is correct
+        if (script.IsUnspendable || !script.IsValid)
+        {
+            throw new InvalidScriptException("ScriptPubKey is either 'invalid' or 'unspendable'.");
+        }
+
+        return script;
     }
 }

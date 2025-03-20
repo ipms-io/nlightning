@@ -19,7 +19,7 @@ public class FundingOutput : BaseOutput
             throw new ArgumentException("Public keys must be different.");
 
         if (amountMilliSats.IsZero)
-            throw new ArgumentException("Funding amount must be greater than zero.");
+            throw new ArgumentOutOfRangeException(nameof(amountMilliSats), "Funding amount must be greater than zero.");
 
         LocalPubKey = localPubKey;
         RemotePubKey = remotePubKey;
@@ -27,6 +27,9 @@ public class FundingOutput : BaseOutput
 
     private static Script CreateMultisigScript(PubKey localPubKey, PubKey remotePubKey)
     {
+        ArgumentNullException.ThrowIfNull(localPubKey);
+        ArgumentNullException.ThrowIfNull(remotePubKey);
+
         var orderedKeys = new[] { localPubKey, remotePubKey }.OrderBy(pk => pk, PubKeyComparer.Instance).ToArray();
         return PayToMultiSigTemplate.Instance.GenerateScriptPubKey(2, orderedKeys);
     }

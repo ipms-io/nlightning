@@ -5,14 +5,12 @@ using NLightning.Common.Types;
 
 namespace NLightning.Bolts.Tests.BOLT3.Integration;
 
-using Bolts.BOLT3.Calculators;
 using Bolts.BOLT3.Factories;
 using Common.Interfaces;
 using Common.Managers;
 
 public class Bolt3IntegrationTests
 {
-    private readonly FeeCalculator _feeCalculator;
     private readonly FundingTransactionFactory _fundingTransactionFactory;
     private readonly CommitmentTransactionFactory _commitmentTransactionFactory;
     private readonly IFeeService _feeService;
@@ -27,9 +25,8 @@ public class Bolt3IntegrationTests
         feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(feeRatePerKw);
 
         _feeService = feeServiceMock.Object;
-        _feeCalculator = new FeeCalculator(_feeService);
-        _fundingTransactionFactory = new FundingTransactionFactory(_feeCalculator);
-        _commitmentTransactionFactory = new CommitmentTransactionFactory(_feeCalculator);
+        _fundingTransactionFactory = new FundingTransactionFactory(_feeService);
+        _commitmentTransactionFactory = new CommitmentTransactionFactory(_feeService);
     }
 
     [Fact]

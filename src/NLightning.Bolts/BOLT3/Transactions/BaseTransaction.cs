@@ -2,7 +2,7 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT3.Transactions;
 
-using Calculators;
+using Common.Interfaces;
 using Common.Managers;
 using Comparers;
 using Constants;
@@ -61,7 +61,7 @@ public abstract class BaseTransaction
         _transaction.LockTime = lockTime;
     }
 
-    protected void SignAndFinalizeTransaction(FeeCalculator feeCalculator, params BitcoinSecret[] secrets)
+    protected void SignAndFinalizeTransaction(IFeeService feeService, params BitcoinSecret[] secrets)
     {
         ArgumentNullException.ThrowIfNull(secrets);
 
@@ -73,7 +73,7 @@ public abstract class BaseTransaction
         SignTransaction(secrets);
 
         // Calculate transaction fee
-        CalculateTransactionFee(feeCalculator);
+        CalculateTransactionFee(feeService);
 
         // Check if output amount + fees is greater than input amount
         if (!CheckTransactionAmounts(CalculatedFee))
@@ -220,12 +220,12 @@ public abstract class BaseTransaction
         return inputWeight;
     }
 
-    private void CalculateTransactionFee(FeeCalculator feeCalculator)
+    private void CalculateTransactionFee(IFeeService feeService)
     {
         var outputWeight = CalculateOutputWeight();
         var inputWeight = CalculateInputWeight();
 
-        CalculatedFee.Satoshi = (outputWeight + inputWeight) * feeCalculator.GetCurrentEstimatedFeePerKw().Satoshi / 1000L;
+        CalculatedFee.Satoshi = (outputWeight + inputWeight) * feeService.GetCachedFeeRatePerKw().Satoshi / 1000L;
     }
 
     #region Input Management

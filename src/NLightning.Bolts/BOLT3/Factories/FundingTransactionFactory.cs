@@ -2,26 +2,26 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT3.Factories;
 
-using Calculators;
+using Common.Interfaces;
 using Transactions;
 
 public class FundingTransactionFactory
 {
-    private readonly FeeCalculator _feeCalculator;
+    private readonly IFeeService _feeService;
 
-    public FundingTransactionFactory(FeeCalculator feeCalculator)
+    public FundingTransactionFactory(IFeeService feeService)
     {
-        _feeCalculator = feeCalculator;
+        _feeService = feeService;
     }
 
     public FundingTransaction CreateFundingTransaction(PubKey localFundingPubKey, PubKey remoteFundingPubKey,
-                                                LightningMoney fundingSatoshis, Script changeScript, Coin[] coins,
-                                                params BitcoinSecret[] secrets)
+                                                       LightningMoney fundingSatoshis, Script changeScript, Coin[] coins,
+                                                       params BitcoinSecret[] secrets)
     {
         var fundingTx = new FundingTransaction(localFundingPubKey, remoteFundingPubKey, fundingSatoshis, changeScript,
                                                coins);
 
-        fundingTx.SignTransaction(_feeCalculator, secrets);
+        fundingTx.SignTransaction(_feeService, secrets);
 
         return fundingTx;
     }
@@ -33,7 +33,7 @@ public class FundingTransactionFactory
         var fundingTx = new FundingTransaction(localFundingPubKey, remoteFundingPubKey, fundingSatoshis, redeemScript,
                                                changeScript, coins);
 
-        fundingTx.SignTransaction(_feeCalculator, secrets);
+        fundingTx.SignTransaction(_feeService, secrets);
 
         return fundingTx;
     }

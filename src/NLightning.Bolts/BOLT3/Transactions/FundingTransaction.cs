@@ -2,7 +2,7 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT3.Transactions;
 
-using Calculators;
+using Common.Interfaces;
 using Common.Managers;
 using Constants;
 using Outputs;
@@ -69,9 +69,9 @@ public class FundingTransaction : BaseTransaction
         AddOutput(ChangeOutput);
     }
 
-    internal void SignTransaction(FeeCalculator feeCalculator, params BitcoinSecret[] secrets)
+    internal void SignTransaction(IFeeService feeService, params BitcoinSecret[] secrets)
     {
-        SignAndFinalizeTransaction(feeCalculator, secrets);
+        SignAndFinalizeTransaction(feeService, secrets);
 
         // Remove the old change output (zero value)
         RemoveOutput(ChangeOutput);
@@ -86,12 +86,20 @@ public class FundingTransaction : BaseTransaction
             ChangeOutput.AmountMilliSats = changeAmount;
             changeIndex = (uint)AddOutput(ChangeOutput);
         }
+        else
+        {
+            ChangeOutput.AmountMilliSats = LightningMoney.Zero;
+        }
 
-        SignAndFinalizeTransaction(feeCalculator, secrets);
+        SignAndFinalizeTransaction(feeService, secrets);
 
         // Set funding output fields
         FundingOutput.TxId = TxId;
-        FundingOutput.Index = changeIndex == 0 ? 1U : 0;
+        FundingOutput.Index = hasChange
+            ? changeIndex == 0
+                ? 1U
+                : 0
+            : 0;
 
         if (hasChange)
         {

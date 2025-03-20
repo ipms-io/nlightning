@@ -1,15 +1,16 @@
 using NBitcoin;
-using NLightning.Bolts.BOLT3.Calculators;
 
 namespace NLightning.Bolts.BOLT3.Services;
 
+using Common.Interfaces;
+
 public class DustService
 {
-    private readonly FeeCalculator _feeCalculator;
+    private readonly IFeeService _feeService;
 
-    public DustService(FeeCalculator feeCalculator)
+    public DustService(IFeeService feeService)
     {
-        _feeCalculator = feeCalculator;
+        _feeService = feeService;
     }
 
     public ulong CalculateP2PkhDustLimit()
@@ -50,7 +51,7 @@ public class DustService
     private ulong CalculateDustLimit(uint outputSize, uint inputSize)
     {
         var totalSize = outputSize + inputSize;
-        return (totalSize * _feeCalculator.GetCurrentEstimatedFeePerKw() / 1000);
+        return (totalSize * _feeService.GetCachedFeeRatePerKw() / 1000);
     }
 
     public bool IsDust(ulong amount, Script scriptPubKey)

@@ -18,11 +18,15 @@ public class ToRemoteOutput : BaseOutput
     public ToRemoteOutput(PubKey remotePubKey, LightningMoney amountMilliSats)
         : base(GenerateToRemoteScript(remotePubKey), amountMilliSats)
     {
+        ArgumentNullException.ThrowIfNull(remotePubKey);
+
         RemotePubKey = remotePubKey;
     }
 
     private static Script GenerateToRemoteScript(PubKey remotePubKey)
     {
+        ArgumentNullException.ThrowIfNull(remotePubKey);
+
         if (ConfigManager.Instance.IsOptionAnchorOutput)
         {
             /* The following script can be read as:

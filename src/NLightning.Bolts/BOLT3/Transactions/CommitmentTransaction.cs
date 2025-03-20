@@ -3,7 +3,7 @@ using NBitcoin.Crypto;
 
 namespace NLightning.Bolts.BOLT3.Transactions;
 
-using Calculators;
+using Common.Interfaces;
 using Common.Managers;
 using Constants;
 using Outputs;
@@ -105,9 +105,9 @@ public class CommitmentTransaction : BaseTransaction
         AddOutput(RemoteAnchorOutput);
     }
 
-    internal void SignTransaction(FeeCalculator feeCalculator, params BitcoinSecret[] secrets)
+    internal void SignTransaction(IFeeService feeService, params BitcoinSecret[] secrets)
     {
-        SignAndFinalizeTransaction(feeCalculator, secrets);
+        SignAndFinalizeTransaction(feeService, secrets);
 
         // Deduct the fee from initiator
         var toFunderAmount = _toFunderAmount - CalculatedFee;
