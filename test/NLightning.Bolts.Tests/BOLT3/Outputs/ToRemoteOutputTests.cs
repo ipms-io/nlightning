@@ -40,14 +40,22 @@ public class ToRemoteOutputTests
     public void Given_OptionAnchorOutputFalse_When_ConstructingToRemoteOutput_Then_UsesP2WPKH()
     {
         // Given
+        var previousIsOptionAnchorOutput = ConfigManager.Instance.IsOptionAnchorOutput;
         ConfigManager.Instance.IsOptionAnchorOutput = false;
 
-        // When
-        var toRemoteOutput = new ToRemoteOutput(_remotePubKey, _amount);
+        try
+        {
+            // When
+            var toRemoteOutput = new ToRemoteOutput(_remotePubKey, _amount);
 
-        // Then
-        Assert.Equal(ScriptType.P2WPKH, toRemoteOutput.ScriptType);
-        Assert.Equal(_remotePubKey.WitHash.ScriptPubKey, toRemoteOutput.RedeemScript);
+            // Then
+            Assert.Equal(ScriptType.P2WPKH, toRemoteOutput.ScriptType);
+            Assert.Equal(_remotePubKey.WitHash.ScriptPubKey, toRemoteOutput.RedeemScript);
+        }
+        finally
+        {
+            ConfigManager.Instance.IsOptionAnchorOutput = previousIsOptionAnchorOutput;
+        }
     }
 
     [Fact]

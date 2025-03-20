@@ -11,8 +11,17 @@ using Common.Types;
 using Exceptions;
 using Utils;
 
-public class OpenChannel2MessageTests
+public class OpenChannel2MessageTests : IDisposable
 {
+    private readonly LightningMoney _previousDustLimitAmount = ConfigManager.Instance.DustLimitAmount;
+    private readonly LightningMoney _previousHtlcMinimumAmount = ConfigManager.Instance.HtlcMinimumAmount;
+    private readonly LightningMoney _previousMaxHtlcValueInFlightAmount = ConfigManager.Instance.MaxHtlcValueInFlightAmount;
+    private readonly ushort _previousToSelfDelay = ConfigManager.Instance.ToSelfDelay;
+    private readonly uint _previousMinimumDepth = ConfigManager.Instance.MinimumDepth;
+    private readonly ushort _previousMaxAcceptedHtlcs = ConfigManager.Instance.MaxAcceptedHtlcs;
+    private readonly uint _previousLocktime = ConfigManager.Instance.Locktime;
+    private readonly Network _previousNetwork = ConfigManager.Instance.Network;
+
     public OpenChannel2MessageTests()
     {
         ConfigManager.Instance.DustLimitAmount = LightningMoney.FromUnit(1, LightningMoneyUnit.SATOSHI);
@@ -210,4 +219,16 @@ public class OpenChannel2MessageTests
         Assert.Equal(expectedBytes, result);
     }
     #endregion
+
+    public void Dispose()
+    {
+        ConfigManager.Instance.DustLimitAmount = _previousDustLimitAmount;
+        ConfigManager.Instance.HtlcMinimumAmount = _previousHtlcMinimumAmount;
+        ConfigManager.Instance.MaxHtlcValueInFlightAmount = _previousMaxHtlcValueInFlightAmount;
+        ConfigManager.Instance.ToSelfDelay = _previousToSelfDelay;
+        ConfigManager.Instance.MinimumDepth = _previousMinimumDepth;
+        ConfigManager.Instance.MaxAcceptedHtlcs = _previousMaxAcceptedHtlcs;
+        ConfigManager.Instance.Locktime = _previousLocktime;
+        ConfigManager.Instance.Network = _previousNetwork;
+    }
 }

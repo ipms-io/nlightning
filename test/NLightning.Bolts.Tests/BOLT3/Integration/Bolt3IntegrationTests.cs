@@ -10,10 +10,11 @@ using Common.Interfaces;
 using Common.Managers;
 using Common.Types;
 
-public class Bolt3IntegrationTests
+public class Bolt3IntegrationTests : IDisposable
 {
     private readonly FundingTransactionFactory _fundingTransactionFactory;
     private readonly CommitmentTransactionFactory _commitmentTransactionFactory;
+    private readonly bool _previousIsOptionAnchorOutput = ConfigManager.Instance.IsOptionAnchorOutput;
 
     public Bolt3IntegrationTests()
     {
@@ -111,4 +112,8 @@ public class Bolt3IntegrationTests
 
     // Ensure outputs are ordered correctly (BIP 69+CLTV)
     // - Check the output ordering.
+    public void Dispose()
+    {
+        ConfigManager.Instance.IsOptionAnchorOutput = _previousIsOptionAnchorOutput;
+    }
 }
