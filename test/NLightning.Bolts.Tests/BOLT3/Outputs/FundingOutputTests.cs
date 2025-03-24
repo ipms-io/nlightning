@@ -22,7 +22,7 @@ public class FundingOutputTests
         // Then
         Assert.Equal(_localPubKey, fundingOutput.LocalPubKey);
         Assert.Equal(_remotePubKey, fundingOutput.RemotePubKey);
-        Assert.Equal(_amount, fundingOutput.AmountMilliSats);
+        Assert.Equal(_amount, fundingOutput.Amount);
         Assert.Equal(ScriptType.P2WSH, fundingOutput.ScriptType);
         Assert.NotNull(fundingOutput.RedeemScript);
         Assert.NotNull(fundingOutput.ScriptPubKey);
@@ -106,7 +106,7 @@ public class FundingOutputTests
         // Then
         Assert.Equal(fundingOutput.TxId, coin.Outpoint.Hash);
         Assert.Equal(fundingOutput.Index, coin.Outpoint.N);
-        Assert.Equal((Money)fundingOutput.AmountMilliSats, coin.Amount);
+        Assert.Equal((Money)fundingOutput.Amount, coin.Amount);
         Assert.Equal(fundingOutput.ScriptPubKey, coin.ScriptPubKey);
         Assert.Equal(fundingOutput.RedeemScript, coin.Redeem);
     }

@@ -139,8 +139,8 @@ public class AcceptChannel2Payload : IMessagePayload
     public async Task SerializeAsync(Stream stream)
     {
         await TemporaryChannelId.SerializeAsync(stream);
-        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(FundingAmount.Satoshi));
-        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(DustLimitAmount.Satoshi));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian((ulong)FundingAmount.Satoshi));
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian((ulong)DustLimitAmount.Satoshi));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(MaxHtlcValueInFlightAmount.MilliSatoshi));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(HtlcMinimumAmount.MilliSatoshi));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(MinimumDepth));

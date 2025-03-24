@@ -19,8 +19,8 @@ public class CommitmentTransaction : BaseTransaction
     private readonly IList<ReceivedHtlcOutput> _receivedHtlcOutputs = [];
     private readonly LightningMoney _toFunderAmount;
 
-    public ToLocalOutput? ToLocalOutput { get; }
-    public ToRemoteOutput? ToRemoteOutput { get; }
+    public ToLocalOutput ToLocalOutput { get; }
+    public ToRemoteOutput ToRemoteOutput { get; }
     public ToAnchorOutput? LocalAnchorOutput { get; }
     public ToAnchorOutput? RemoteAnchorOutput { get; }
 
@@ -78,16 +78,16 @@ public class CommitmentTransaction : BaseTransaction
         }
 
         // to_local output
+        ToLocalOutput = new ToLocalOutput(localDelayedPubKey, revocationPubKey, toSelfDelay, localAmount);
         if (toLocalAmount >= ConfigManager.Instance.DustLimitAmount) // Dust limit in satoshis
         {
-            ToLocalOutput = new ToLocalOutput(localDelayedPubKey, revocationPubKey, toSelfDelay, localAmount);
             AddOutput(ToLocalOutput);
         }
 
         // to_remote output
+        ToRemoteOutput = new ToRemoteOutput(remotePaymentBasepoint, remoteAmount);
         if (toRemoteAmount >= ConfigManager.Instance.DustLimitAmount) // Dust limit in satoshis
         {
-            ToRemoteOutput = new ToRemoteOutput(remotePaymentBasepoint, remoteAmount);
             AddOutput(ToRemoteOutput);
         }
 
@@ -110,14 +110,19 @@ public class CommitmentTransaction : BaseTransaction
         SignAndFinalizeTransaction(feeService, secrets);
 
         // Deduct the fee from initiator
-        var toFunderAmount = _toFunderAmount - CalculatedFee;
+        var toFunderAmount = LightningMoney.Zero;
+        if (CalculatedFee <= _toFunderAmount)
+        {
+            toFunderAmount = _toFunderAmount - CalculatedFee;
+        }
+
         if (_isChannelFunder)
         {
             RemoveOutput(ToLocalOutput);
             if (toFunderAmount >= ConfigManager.Instance.DustLimitAmount)
             {
                 // Set amount
-                ToLocalOutput.AmountMilliSats = toFunderAmount;
+                ToLocalOutput.Amount = toFunderAmount;
 
                 // Add the new output
                 ToLocalOutput.Index = (uint)AddOutput(ToLocalOutput);
@@ -131,7 +136,7 @@ public class CommitmentTransaction : BaseTransaction
             if (toFunderAmount >= ConfigManager.Instance.DustLimitAmount)
             {
                 // Set amount
-                ToRemoteOutput.AmountMilliSats = toFunderAmount;
+                ToRemoteOutput.Amount = toFunderAmount;
 
                 // Add the new output
                 ToRemoteOutput.Index = (uint)AddOutput(ToRemoteOutput);
@@ -139,6 +144,8 @@ public class CommitmentTransaction : BaseTransaction
 
             ToLocalOutput.Index = (uint)OUTPUTS.IndexOf(ToLocalOutput);
         }
+
+        SignTransactionWithExistingKeys();
 
         ToRemoteOutput.TxId = TxId;
         ToLocalOutput.TxId = TxId;
@@ -150,6 +157,19 @@ public class CommitmentTransaction : BaseTransaction
 
             LocalAnchorOutput.Index = (uint)OUTPUTS.IndexOf(LocalAnchorOutput);
             RemoteAnchorOutput.Index = (uint)OUTPUTS.IndexOf(RemoteAnchorOutput);
+        }
+
+        // Deal with HTLCs
+        foreach (var offeredHtlcOutput in _offeredHtlcOutputs)
+        {
+            offeredHtlcOutput.TxId = TxId;
+            offeredHtlcOutput.Index = (uint)OUTPUTS.IndexOf(offeredHtlcOutput); ;
+        }
+
+        foreach (var receivedHtlcOutput in _receivedHtlcOutputs)
+        {
+            receivedHtlcOutput.TxId = TxId;
+            receivedHtlcOutput.Index = (uint)OUTPUTS.IndexOf(receivedHtlcOutput); ;
         }
     }
 

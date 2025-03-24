@@ -21,7 +21,7 @@ public class ToRemoteOutputTests
 
         // Then
         Assert.Equal(_remotePubKey, toRemoteOutput.RemotePubKey);
-        Assert.Equal(_amount, toRemoteOutput.AmountMilliSats);
+        Assert.Equal(_amount, toRemoteOutput.Amount);
         Assert.NotNull(toRemoteOutput.RedeemScript);
         Assert.NotNull(toRemoteOutput.ScriptPubKey);
     }
@@ -101,7 +101,7 @@ public class ToRemoteOutputTests
         // Then
         Assert.Equal(toRemoteOutput.TxId, coin.Outpoint.Hash);
         Assert.Equal(toRemoteOutput.Index, coin.Outpoint.N);
-        Assert.Equal((Money)toRemoteOutput.AmountMilliSats, coin.Amount);
+        Assert.Equal((Money)toRemoteOutput.Amount, coin.Amount);
         Assert.Equal(toRemoteOutput.ScriptPubKey, coin.ScriptPubKey);
         Assert.Equal(toRemoteOutput.RedeemScript, coin.Redeem);
     }
@@ -116,8 +116,8 @@ public class ToRemoteOutputTests
         var toRemoteOutput = new ToRemoteOutput(_remotePubKey, zeroAmount);
 
         // Then
-        Assert.Equal(zeroAmount, toRemoteOutput.AmountMilliSats);
-        Assert.Equal(Money.Zero, (Money)toRemoteOutput.AmountMilliSats);
+        Assert.Equal(zeroAmount, toRemoteOutput.Amount);
+        Assert.Equal(Money.Zero, (Money)toRemoteOutput.Amount);
     }
 
     [Fact]

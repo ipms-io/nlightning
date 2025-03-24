@@ -124,7 +124,7 @@ public class TransactionOutputComparerTests
 
         // Then
         // First sort by amount
-        Assert.Equal(change1.AmountMilliSats, htlc1.AmountMilliSats);
+        Assert.Equal(change1.Amount, htlc1.Amount);
         Assert.True(outputs.IndexOf(change1) < outputs.IndexOf(toRemote));
         Assert.True(outputs.IndexOf(toRemote) < outputs.IndexOf(toLocal));
 

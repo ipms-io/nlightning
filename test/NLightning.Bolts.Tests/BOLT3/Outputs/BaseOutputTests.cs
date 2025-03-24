@@ -10,13 +10,13 @@ public class BaseOutputTests
     // Concrete implementation for testing the abstract class
     private class FakeOutput : BaseOutput
     {
-        public FakeOutput(Script redeemScript, Script scriptPubKey, LightningMoney amountMilliSats)
-            : base(redeemScript, scriptPubKey, amountMilliSats)
+        public FakeOutput(Script redeemScript, Script scriptPubKey, LightningMoney amount)
+            : base(redeemScript, scriptPubKey, amount)
         {
         }
 
-        public FakeOutput(Script redeemScript, LightningMoney amountMilliSats)
-            : base(redeemScript, amountMilliSats)
+        public FakeOutput(Script redeemScript, LightningMoney amount)
+            : base(redeemScript, amount)
         {
         }
 
@@ -38,7 +38,7 @@ public class BaseOutputTests
         // Then
         Assert.Equal(_redeemScript, output.RedeemScript);
         Assert.Equal(_scriptPubKey, output.ScriptPubKey);
-        Assert.Equal(_amount, output.AmountMilliSats);
+        Assert.Equal(_amount, output.Amount);
         Assert.Equal(ScriptType.P2WPKH, output.ScriptType);
         Assert.Null(output.TxId);
         Assert.Equal(0u, output.Index);
@@ -55,7 +55,7 @@ public class BaseOutputTests
         // Then
         Assert.Equal(_redeemScript, output.RedeemScript);
         Assert.Equal(_scriptPubKey, output.ScriptPubKey);
-        Assert.Equal(_amount, output.AmountMilliSats);
+        Assert.Equal(_amount, output.Amount);
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public class BaseOutputTests
         // Then
         Assert.Equal(output.TxId, coin.Outpoint.Hash);
         Assert.Equal(output.Index, coin.Outpoint.N);
-        Assert.Equal((Money)output.AmountMilliSats, coin.Amount);
+        Assert.Equal((Money)output.Amount, coin.Amount);
         Assert.Equal(output.ScriptPubKey, coin.ScriptPubKey);
         Assert.Equal(output.RedeemScript, coin.Redeem);
     }

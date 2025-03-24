@@ -1,4 +1,5 @@
 using NBitcoin;
+using NLightning.Bolts.Tests.TestCollections;
 
 namespace NLightning.Bolts.Tests.BOLT2.Messages;
 
@@ -11,33 +12,15 @@ using Common.Types;
 using Exceptions;
 using Utils;
 
-public class OpenChannel2MessageTests : IDisposable
+[Collection(ConfigManagerCollection.NAME)]
+public class OpenChannel2MessageTests
 {
-    private readonly LightningMoney _previousDustLimitAmount = ConfigManager.Instance.DustLimitAmount;
-    private readonly LightningMoney _previousHtlcMinimumAmount = ConfigManager.Instance.HtlcMinimumAmount;
-    private readonly LightningMoney _previousMaxHtlcValueInFlightAmount = ConfigManager.Instance.MaxHtlcValueInFlightAmount;
-    private readonly ushort _previousToSelfDelay = ConfigManager.Instance.ToSelfDelay;
-    private readonly uint _previousMinimumDepth = ConfigManager.Instance.MinimumDepth;
-    private readonly ushort _previousMaxAcceptedHtlcs = ConfigManager.Instance.MaxAcceptedHtlcs;
-    private readonly uint _previousLocktime = ConfigManager.Instance.Locktime;
-    private readonly Network _previousNetwork = ConfigManager.Instance.Network;
-
-    public OpenChannel2MessageTests()
-    {
-        ConfigManager.Instance.DustLimitAmount = LightningMoney.FromUnit(1, LightningMoneyUnit.SATOSHI);
-        ConfigManager.Instance.ToSelfDelay = 1;
-        ConfigManager.Instance.HtlcMinimumAmount = LightningMoney.FromUnit(1, LightningMoneyUnit.SATOSHI);
-        ConfigManager.Instance.MaxHtlcValueInFlightAmount = LightningMoney.FromUnit(1000, LightningMoneyUnit.SATOSHI);
-        ConfigManager.Instance.MaxAcceptedHtlcs = 2;
-        ConfigManager.Instance.Locktime = 1;
-        ConfigManager.Instance.Network = Network.MAIN_NET;
-    }
-
     #region Deserialize
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsOpenChannel2Payload()
     {
         // Arrange
+        SetUpConfigManagerOptions();
         var expectedChannelId = ChannelId.Zero;
         const uint EXPECTED_FUNDING_FEERATE = 1000;
         const uint EXPECTED_COMMITMENT_FEERATE = 2000;
@@ -78,12 +61,15 @@ public class OpenChannel2MessageTests : IDisposable
         Assert.Equal(expectedSecondPerCommitmentPoint, result.Payload.SecondPerCommitmentPoint);
         Assert.Equal(expectedChannelFlags, result.Payload.ChannelFlags);
         Assert.Null(result.Extension);
+
+        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsOpenChannel2PayloadWithExtensions()
     {
         // Arrange
+        SetUpConfigManagerOptions();
         var expectedChannelId = ChannelId.Zero;
         const uint EXPECTED_FUNDING_FEERATE = 1000;
         const uint EXPECTED_COMMITMENT_FEERATE = 2000;
@@ -131,16 +117,21 @@ public class OpenChannel2MessageTests : IDisposable
         Assert.NotNull(result.ChannelTypeTlv);
         Assert.Equal(expectedChannelTypeTlv, result.ChannelTypeTlv);
         Assert.NotNull(result.RequireConfirmedInputsTlv);
+
+        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public async Task Given_InvalidStream_When_DeserializeAsync_Then_ThrowsSerializationException()
     {
         // Arrange
+        SetUpConfigManagerOptions();
         var invalidStream = new MemoryStream("6FE28C0AB6F1B372C1A6A246AE63F74F931E8365E15A089C68D61900000000000000000000000000000000000000000000000000000000000000000000000000000003E8000007D000000000000186A0000000000000000100000000000F424000000000000003E8000100020000000102C93CA7DCA44D2E45E3CC5419D92750F7FB3A0F180852B73A621F4051C0193A750315525220B88467A0EE3A111AE49FFDC337136EF51031CFC1C9883B7D1CBD653403A6BD98A33A52CD9D339EE20B4627AC60EC45C897E4FF182CC22ABA372C8D31C10280A3001FE999B1FE9842317CE29F71B9BB5888448A2CF5E115BFC808BA4568CE03798E7EFC8C950FCD6C9E3AF4BBAD16A26F14C838E99651F637DDD73DDC88531B0326550F5AE41511E767AFE0A9C7E20A73174875A6D1EE4E9E128CBB1FB0099F6103A92B07CBAE641DCFD482825233AECC2D5012913B48040131DB3222670C2BFFCD000010".ToByteArray());
 
         // Act & Assert
         await Assert.ThrowsAsync<MessageSerializationException>(() => OpenChannel2Message.DeserializeAsync(invalidStream));
+
+        ConfigManagerUtil.ResetConfigManager();
     }
     #endregion
 
@@ -149,6 +140,7 @@ public class OpenChannel2MessageTests : IDisposable
     public async Task Given_ValidPayload_When_SerializeAsync_Then_WritesCorrectDataToStream()
     {
         // Arrange
+        SetUpConfigManagerOptions();
         var channelId = ChannelId.Zero;
         const uint FUNDING_FEERATE = 1000;
         const uint COMMITMENT_FEERATE = 2000;
@@ -178,12 +170,15 @@ public class OpenChannel2MessageTests : IDisposable
 
         // Assert
         Assert.Equal(expectedBytes, result);
+
+        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public async Task Given_ValidExtension_When_SerializeAsync_Then_WritesCorrectDataToStream()
     {
         // Arrange
+        SetUpConfigManagerOptions();
         var channelId = ChannelId.Zero;
         const uint FUNDING_FEERATE = 1000;
         const uint COMMITMENT_FEERATE = 2000;
@@ -217,18 +212,19 @@ public class OpenChannel2MessageTests : IDisposable
 
         // Assert
         Assert.Equal(expectedBytes, result);
+
+        ConfigManagerUtil.ResetConfigManager();
     }
     #endregion
 
-    public void Dispose()
+    private static void SetUpConfigManagerOptions()
     {
-        ConfigManager.Instance.DustLimitAmount = _previousDustLimitAmount;
-        ConfigManager.Instance.HtlcMinimumAmount = _previousHtlcMinimumAmount;
-        ConfigManager.Instance.MaxHtlcValueInFlightAmount = _previousMaxHtlcValueInFlightAmount;
-        ConfigManager.Instance.ToSelfDelay = _previousToSelfDelay;
-        ConfigManager.Instance.MinimumDepth = _previousMinimumDepth;
-        ConfigManager.Instance.MaxAcceptedHtlcs = _previousMaxAcceptedHtlcs;
-        ConfigManager.Instance.Locktime = _previousLocktime;
-        ConfigManager.Instance.Network = _previousNetwork;
+        ConfigManager.Instance.DustLimitAmount = LightningMoney.FromUnit(1, LightningMoneyUnit.SATOSHI);
+        ConfigManager.Instance.ToSelfDelay = 1;
+        ConfigManager.Instance.HtlcMinimumAmount = LightningMoney.FromUnit(1, LightningMoneyUnit.SATOSHI);
+        ConfigManager.Instance.MaxHtlcValueInFlightAmount = LightningMoney.FromUnit(1000, LightningMoneyUnit.SATOSHI);
+        ConfigManager.Instance.MaxAcceptedHtlcs = 2;
+        ConfigManager.Instance.Locktime = 1;
+        ConfigManager.Instance.Network = Network.MAIN_NET;
     }
 }

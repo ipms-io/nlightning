@@ -22,7 +22,7 @@ public class ChangeOutputTests
         // Then
         Assert.Equal(_scriptPubKey, changeOutput.ScriptPubKey);
         Assert.Equal(_scriptPubKey, changeOutput.RedeemScript);
-        Assert.Equal(_amount, changeOutput.AmountMilliSats);
+        Assert.Equal(_amount, changeOutput.Amount);
         Assert.Equal(ScriptType.P2WPKH, changeOutput.ScriptType);
     }
 
@@ -37,7 +37,7 @@ public class ChangeOutputTests
         // Then
         Assert.Equal(_redeemScript, changeOutput.RedeemScript);
         Assert.Equal(_scriptPubKey, changeOutput.ScriptPubKey);
-        Assert.Equal(_amount, changeOutput.AmountMilliSats);
+        Assert.Equal(_amount, changeOutput.Amount);
         Assert.Equal(ScriptType.P2WPKH, changeOutput.ScriptType);
     }
 
@@ -52,7 +52,7 @@ public class ChangeOutputTests
 
         // Then
         Assert.Equal(_scriptPubKey, changeOutput.ScriptPubKey);
-        Assert.Equal(new LightningMoney(0), changeOutput.AmountMilliSats);
+        Assert.Equal(new LightningMoney(0), changeOutput.Amount);
         Assert.Equal(ScriptType.P2WPKH, changeOutput.ScriptType);
     }
 
@@ -68,7 +68,7 @@ public class ChangeOutputTests
         // Then
         Assert.Equal(_redeemScript, changeOutput.RedeemScript);
         Assert.Equal(_scriptPubKey, changeOutput.ScriptPubKey);
-        Assert.Equal(new LightningMoney(0), changeOutput.AmountMilliSats);
+        Assert.Equal(new LightningMoney(0), changeOutput.Amount);
         Assert.Equal(ScriptType.P2WPKH, changeOutput.ScriptType);
     }
 
@@ -102,7 +102,7 @@ public class ChangeOutputTests
         // Then
         Assert.Equal(changeOutput.TxId, coin.Outpoint.Hash);
         Assert.Equal(changeOutput.Index, coin.Outpoint.N);
-        Assert.Equal((Money)changeOutput.AmountMilliSats, coin.Amount);
+        Assert.Equal((Money)changeOutput.Amount, coin.Amount);
         Assert.Equal(changeOutput.ScriptPubKey, coin.ScriptPubKey);
     }
 

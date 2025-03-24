@@ -15,8 +15,8 @@ public class ToRemoteOutput : BaseOutput
 
     public PubKey RemotePubKey { get; }
 
-    public ToRemoteOutput(PubKey remotePubKey, LightningMoney amountMilliSats)
-        : base(GenerateToRemoteScript(remotePubKey), amountMilliSats)
+    public ToRemoteOutput(PubKey remotePubKey, LightningMoney amount)
+        : base(GenerateToRemoteScript(remotePubKey), amount)
     {
         ArgumentNullException.ThrowIfNull(remotePubKey);
 

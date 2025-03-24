@@ -1,3 +1,5 @@
+using NLightning.Common.Enums;
+
 namespace NLightning.Common.Managers;
 
 using Types;
@@ -23,20 +25,20 @@ public class ConfigManager
     /// This reflects the reality that tiny outputs are not considered standard transactions and will not propagate
     /// through the Bitcoin network.
     /// </summary>
-    public LightningMoney DustLimitAmount { get; set; } = 546000UL;
+    public LightningMoney DustLimitAmount { get; set; } = LightningMoney.FromUnit(546, LightningMoneyUnit.SATOSHI);
 
-    public LightningMoney AnchorAmount { get; set; } = 330000UL;
+    public LightningMoney AnchorAmount { get; set; } = LightningMoney.FromUnit(330, LightningMoneyUnit.SATOSHI);
 
     /// <summary>
     /// MaxHtlcValueInFlightAmount is a cap on total value of outstanding HTLCs offered by the remote node, which allows
     /// the local node to limit its exposure to HTLCs
     /// </summary>
-    public LightningMoney MaxHtlcValueInFlightAmount { get; set; } = 0UL;
+    public LightningMoney MaxHtlcValueInFlightAmount { get; set; } = LightningMoney.Zero;
 
     /// <summary>
     /// HtlcMinimumAmount indicates the smallest value HTLC this node will accept.
     /// </summary>
-    public LightningMoney HtlcMinimumAmount { get; set; } = 0UL;
+    public LightningMoney HtlcMinimumAmount { get; set; } = LightningMoney.Zero;
 
     /// <summary>
     /// ToSelfDelay is the number of blocks that the other node's to-self outputs must be delayed, using

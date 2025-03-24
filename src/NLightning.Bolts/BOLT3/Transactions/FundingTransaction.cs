@@ -83,12 +83,12 @@ public class FundingTransaction : BaseTransaction
         if (hasChange)
         {
             // Add the new one
-            ChangeOutput.AmountMilliSats = changeAmount;
+            ChangeOutput.Amount = changeAmount;
             changeIndex = (uint)AddOutput(ChangeOutput);
         }
         else
         {
-            ChangeOutput.AmountMilliSats = LightningMoney.Zero;
+            ChangeOutput.Amount = LightningMoney.Zero;
         }
 
         SignAndFinalizeTransaction(feeService, secrets);

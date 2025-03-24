@@ -24,7 +24,7 @@ public class ToLocalOutputTests
         Assert.Equal(_localDelayedPubKey, toLocalOutput.LocalDelayedPubKey);
         Assert.Equal(_revocationPubKey, toLocalOutput.RevocationPubKey);
         Assert.Equal(_toSelfDelay, toLocalOutput.ToSelfDelay);
-        Assert.Equal(_amount, toLocalOutput.AmountMilliSats);
+        Assert.Equal(_amount, toLocalOutput.Amount);
         Assert.Equal(ScriptType.P2WSH, toLocalOutput.ScriptType);
         Assert.NotNull(toLocalOutput.RedeemScript);
         Assert.NotNull(toLocalOutput.ScriptPubKey);
@@ -96,7 +96,7 @@ public class ToLocalOutputTests
         // Then
         Assert.Equal(toLocalOutput.TxId, coin.Outpoint.Hash);
         Assert.Equal(toLocalOutput.Index, coin.Outpoint.N);
-        Assert.Equal((Money)toLocalOutput.AmountMilliSats, coin.Amount);
+        Assert.Equal((Money)toLocalOutput.Amount, coin.Amount);
         Assert.Equal(toLocalOutput.ScriptPubKey, coin.ScriptPubKey);
         Assert.Equal(toLocalOutput.RedeemScript, coin.Redeem);
     }
@@ -111,8 +111,8 @@ public class ToLocalOutputTests
         var toLocalOutput = new ToLocalOutput(_localDelayedPubKey, _revocationPubKey, _toSelfDelay, zeroAmount);
 
         // Then
-        Assert.Equal(zeroAmount, toLocalOutput.AmountMilliSats);
-        Assert.Equal(Money.Zero, (Money)toLocalOutput.AmountMilliSats);
+        Assert.Equal(zeroAmount, toLocalOutput.Amount);
+        Assert.Equal(Money.Zero, (Money)toLocalOutput.Amount);
     }
 
     [Fact]

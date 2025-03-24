@@ -1,4 +1,6 @@
 using NBitcoin;
+using NLightning.Bolts.Tests.TestCollections;
+using NLightning.Bolts.Tests.Utils;
 
 namespace NLightning.Bolts.Tests.BOLT3.Integration;
 
@@ -10,11 +12,11 @@ using Common.Interfaces;
 using Common.Managers;
 using Common.Types;
 
-public class Bolt3IntegrationTests : IDisposable
+[Collection(ConfigManagerCollection.NAME)]
+public class Bolt3IntegrationTests
 {
     private readonly FundingTransactionFactory _fundingTransactionFactory;
     private readonly CommitmentTransactionFactory _commitmentTransactionFactory;
-    private readonly bool _previousIsOptionAnchorOutput = ConfigManager.Instance.IsOptionAnchorOutput;
 
     public Bolt3IntegrationTests()
     {
@@ -28,12 +30,15 @@ public class Bolt3IntegrationTests : IDisposable
         var feeService = feeServiceMock.Object;
         _fundingTransactionFactory = new FundingTransactionFactory(feeService);
         _commitmentTransactionFactory = new CommitmentTransactionFactory(feeService);
+
+        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public void Given_Bolt3Specifications_When_CreatingFundingTransaction_Then_ShouldBeEqualToTestVector()
     {
         // Given
+        ConfigManager.Instance.IsOptionAnchorOutput = false;
         var fundingInputCoin = new Coin(AppendixBVectors.INPUT_TX, AppendixBVectors.INPUT_INDEX);
 
         // When
@@ -49,12 +54,15 @@ public class Bolt3IntegrationTests : IDisposable
 
         // Then
         Assert.Equal(AppendixBVectors.EXPECTED_TX.ToBytes(), finalFundingTx.ToBytes());
+
+        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public void Given_Bolt3Specifications_When_CreatingCommitmentTransaction_Then_ShouldBeEqualToTestVector()
     {
         // Given
+        ConfigManager.Instance.IsOptionAnchorOutput = false;
         var commitmentNumber = new CommitmentNumber(AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
             AppendixCVectors.NODE_B_PAYMENT_BASEPOINT,
             AppendixCVectors.COMMITMENT_NUMBER);
@@ -86,6 +94,8 @@ public class Bolt3IntegrationTests : IDisposable
 
         // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_1.ToBytes(), finalCommitmentTx.ToBytes());
+
+        ConfigManagerUtil.ResetConfigManager();
     }
 
     // Simulate adding HTLCs
@@ -112,8 +122,4 @@ public class Bolt3IntegrationTests : IDisposable
 
     // Ensure outputs are ordered correctly (BIP 69+CLTV)
     // - Check the output ordering.
-    public void Dispose()
-    {
-        ConfigManager.Instance.IsOptionAnchorOutput = _previousIsOptionAnchorOutput;
-    }
 }

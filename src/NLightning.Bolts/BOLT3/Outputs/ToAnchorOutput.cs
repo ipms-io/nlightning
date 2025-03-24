@@ -11,8 +11,8 @@ public class ToAnchorOutput : BaseOutput
 
     public PubKey RemoteFundingPubKey { get; set; }
 
-    public ToAnchorOutput(PubKey remoteFundingPubKey, LightningMoney amountMilliSats)
-        : base(GenerateAnchorScript(remoteFundingPubKey), amountMilliSats)
+    public ToAnchorOutput(PubKey remoteFundingPubKey, LightningMoney amount)
+        : base(GenerateAnchorScript(remoteFundingPubKey), amount)
     {
         RemoteFundingPubKey = remoteFundingPubKey;
     }

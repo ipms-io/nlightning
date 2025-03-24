@@ -78,10 +78,6 @@ public abstract class BaseTransaction
         // Check if output amount + fees is greater than input amount
         if (!CheckTransactionAmounts(CalculatedFee))
             throw new InvalidOperationException("Output amount cannot exceed input amount.");
-
-        TxId = _transaction.GetHash();
-
-        Finalized = true;
     }
 
     protected void AppendRemoteSignatureToTransaction(ITransactionSignature remoteSignature, PubKey remotePubKey)
@@ -92,13 +88,16 @@ public abstract class BaseTransaction
     protected void SignTransactionWithExistingKeys()
     {
         _transaction = _builder.SignTransactionInPlace(_transaction);
+
+        TxId = _transaction.GetHash();
+        Finalized = true;
     }
 
     protected LightningMoney TotalInputAmount => _coins.Sum(c => (LightningMoney)c.Item1.Amount);
 
-    protected LightningMoney TotalOutputAmount => OUTPUTS.Sum(o => o.AmountMilliSats);
+    protected LightningMoney TotalOutputAmount => OUTPUTS.Sum(o => o.Amount);
 
-    private void SignTransaction(params BitcoinSecret[] secrets)
+    private void SignTransaction(params ISecret[] secrets)
     {
         ArgumentNullException.ThrowIfNull(secrets);
 
@@ -119,6 +118,9 @@ public abstract class BaseTransaction
         }
 
         _transaction = _builder.SignTransactionInPlace(_transaction);
+
+        TxId = _transaction.GetHash();
+        Finalized = true;
     }
 
     private bool CheckTransactionAmounts(LightningMoney? fees = null)

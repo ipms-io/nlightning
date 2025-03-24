@@ -10,8 +10,8 @@ public class HtlcOutput : BaseOutput
     public PubKey LocalDelayedPubKey { get; }
     public ulong ToSelfDelay { get; }
 
-    public HtlcOutput(PubKey revocationPubKey, PubKey localDelayedPubKey, ulong toSelfDelay, LightningMoney amountMilliSats)
-        : base(GenerateHtlcOutputScript(revocationPubKey, localDelayedPubKey, toSelfDelay), amountMilliSats)
+    public HtlcOutput(PubKey revocationPubKey, PubKey localDelayedPubKey, ulong toSelfDelay, LightningMoney amount)
+        : base(GenerateHtlcOutputScript(revocationPubKey, localDelayedPubKey, toSelfDelay), amount)
     {
         RevocationPubKey = revocationPubKey;
         LocalDelayedPubKey = localDelayedPubKey;

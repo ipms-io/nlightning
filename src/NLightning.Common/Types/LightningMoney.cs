@@ -276,6 +276,9 @@ public class LightningMoney : IMoney
         ArgumentNullException.ThrowIfNull(left);
         ArgumentNullException.ThrowIfNull(right);
 
+        if (left._milliSatoshi < right._milliSatoshi)
+            throw new ArithmeticException("LightningMoney does not support negative values");
+
         return new LightningMoney(checked(left._milliSatoshi - right._milliSatoshi));
     }
     public static LightningMoney operator -(LightningMoney _)

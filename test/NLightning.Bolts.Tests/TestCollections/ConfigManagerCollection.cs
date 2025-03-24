@@ -1,11 +1,9 @@
 namespace NLightning.Bolts.Tests.TestCollections;
 
-using Docker.Fixtures;
-
 [CollectionDefinition(NAME)]
-public class LightningRegtestNetworkFixtureCollection : ICollectionFixture<LightningRegtestNetworkFixture>
+public class ConfigManagerCollection
 {
-    public const string NAME = "regtest";
+    public const string NAME = "config-manager";
     // This class has no code, and is never created. Its purpose is simply
     // to be the place to apply [CollectionDefinition] and all the
     // ICollectionFixture<> interfaces.
