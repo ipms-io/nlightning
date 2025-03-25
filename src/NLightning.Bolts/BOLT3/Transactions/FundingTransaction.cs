@@ -69,9 +69,12 @@ public class FundingTransaction : BaseTransaction
         AddOutput(ChangeOutput);
     }
 
-    internal void SignTransaction(IFeeService feeService, params BitcoinSecret[] secrets)
+    internal void ConstructTransaction(IFeeService feeService)
     {
-        SignAndFinalizeTransaction(feeService, secrets);
+        var mustReconstruct = false;
+
+        // Calculate transaction fee
+        CalculateTransactionFee(feeService);
 
         // Remove the old change output (zero value)
         RemoveOutput(ChangeOutput);
@@ -91,10 +94,6 @@ public class FundingTransaction : BaseTransaction
             ChangeOutput.Amount = LightningMoney.Zero;
         }
 
-        SignAndFinalizeTransaction(feeService, secrets);
-
-        // Set funding output fields
-        FundingOutput.TxId = TxId;
         FundingOutput.Index = hasChange
             ? changeIndex == 0
                 ? 1U
@@ -104,8 +103,23 @@ public class FundingTransaction : BaseTransaction
         if (hasChange)
         {
             // Set change output fields
-            ChangeOutput.TxId = TxId;
             ChangeOutput.Index = changeIndex;
+        }
+
+        // Order Outputs
+        AddOrderedOutputsToTransaction();
+    }
+
+    internal void SignTransaction(params BitcoinSecret[] secrets)
+    {
+        base.SignTransaction(secrets);
+        // Set funding output fields
+        FundingOutput.TxId = TxId;
+
+        if (!ChangeOutput.Amount.IsZero)
+        {
+            // Set change output fields
+            ChangeOutput.TxId = TxId;
         }
     }
 

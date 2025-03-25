@@ -1,5 +1,4 @@
 using NBitcoin;
-using NLightning.Bolts.Tests.TestCollections;
 
 namespace NLightning.Bolts.Tests.BOLT2.Messages;
 
@@ -10,6 +9,7 @@ using Common.Managers;
 using Common.TLVs;
 using Common.Types;
 using Exceptions;
+using TestCollections;
 using Utils;
 
 [Collection(ConfigManagerCollection.NAME)]

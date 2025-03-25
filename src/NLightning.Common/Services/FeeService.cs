@@ -139,15 +139,15 @@ public class FeeService : IFeeService, IDisposable
         var root = document.RootElement;
 
         // Extract the preferred fee rate from the JSON response
-        if (!root.TryGetProperty(ConfigManager.Instance.PreferredFeeRate, out var feeRateElement))
+        if (!root.TryGetProperty(ConfigManager.Instance.FeeEstimationPreferredFeeRate, out var feeRateElement))
         {
-            throw new InvalidOperationException($"Could not extract {ConfigManager.Instance.PreferredFeeRate} from API response.");
+            throw new InvalidOperationException($"Could not extract {ConfigManager.Instance.FeeEstimationPreferredFeeRate} from API response.");
         }
 
         // Parse the fee rate value
         if (!feeRateElement.TryGetDecimal(out var feeRate))
         {
-            throw new InvalidOperationException($"Could not extract {ConfigManager.Instance.PreferredFeeRate} from API response.");
+            throw new InvalidOperationException($"Could not extract {ConfigManager.Instance.FeeEstimationPreferredFeeRate} from API response.");
         }
 
         // Apply the multiplier to convert to sat/kw
@@ -156,7 +156,7 @@ public class FeeService : IFeeService, IDisposable
             return (long)(feeRate * multiplier);
         }
 
-        throw new InvalidOperationException($"Could not extract {ConfigManager.Instance.PreferredFeeRate} from API response.");
+        throw new InvalidOperationException($"Could not extract {ConfigManager.Instance.FeeEstimationPreferredFeeRate} from API response.");
     }
 
     private async Task RunPeriodicRefreshAsync(CancellationToken cancellationToken)

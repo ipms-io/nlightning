@@ -21,7 +21,9 @@ public class FundingTransactionFactory
         var fundingTx = new FundingTransaction(localFundingPubKey, remoteFundingPubKey, fundingSatoshis, changeScript,
                                                coins);
 
-        fundingTx.SignTransaction(_feeService, secrets);
+        fundingTx.ConstructTransaction(_feeService);
+
+        fundingTx.SignTransaction(secrets);
 
         return fundingTx;
     }
@@ -33,7 +35,9 @@ public class FundingTransactionFactory
         var fundingTx = new FundingTransaction(localFundingPubKey, remoteFundingPubKey, fundingSatoshis, redeemScript,
                                                changeScript, coins);
 
-        fundingTx.SignTransaction(_feeService, secrets);
+        fundingTx.ConstructTransaction(_feeService);
+
+        fundingTx.SignTransaction(secrets);
 
         return fundingTx;
     }

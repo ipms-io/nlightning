@@ -1,4 +1,5 @@
 using NBitcoin;
+using NLightning.Bolts.BOLT3.Outputs;
 
 namespace NLightning.Bolts.BOLT3.Factories;
 
@@ -27,7 +28,40 @@ public class CommitmentTransactionFactory
                                                               toRemoteAmount, toSelfDelay, commitmentNumber,
                                                               isChannelFunder);
 
-        commitmentTransaction.SignTransaction(_feeService, secrets);
+        commitmentTransaction.ConstructTransaction(_feeService);
+
+        commitmentTransaction.SignTransaction(secrets);
+
+        return commitmentTransaction;
+    }
+
+    public CommitmentTransaction CreateCommitmentTransaction(Coin fundingCoin, PubKey localPaymentBasepoint,
+                                                             PubKey remotePaymentBasepoint, PubKey localDelayedPubKey,
+                                                             PubKey revocationPubKey, LightningMoney toLocalAmount,
+                                                             LightningMoney toRemoteAmount, uint toSelfDelay,
+                                                             CommitmentNumber commitmentNumber, bool isChannelFunder,
+                                                             IEnumerable<OfferedHtlcOutput> offeredHtlcs,
+                                                             IEnumerable<ReceivedHtlcOutput> receivedHtlcs,
+                                                             params BitcoinSecret[] secrets)
+    {
+        var commitmentTransaction = new CommitmentTransaction(fundingCoin, localPaymentBasepoint, remotePaymentBasepoint,
+                                                              localDelayedPubKey, revocationPubKey, toLocalAmount,
+                                                              toRemoteAmount, toSelfDelay, commitmentNumber,
+                                                              isChannelFunder);
+
+        foreach (var offeredHtlc in offeredHtlcs)
+        {
+            commitmentTransaction.AddOfferedHtlcOutputAndUpdate(offeredHtlc);
+        }
+
+        foreach (var receivedHtlc in receivedHtlcs)
+        {
+            commitmentTransaction.AddReceivedHtlcOutputAndUpdate(receivedHtlc);
+        }
+
+        commitmentTransaction.ConstructTransaction(_feeService);
+
+        commitmentTransaction.SignTransaction(secrets);
 
         return commitmentTransaction;
     }

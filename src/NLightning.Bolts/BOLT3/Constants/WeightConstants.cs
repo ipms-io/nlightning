@@ -23,5 +23,10 @@ public static class WeightConstants
     public const int HTLC_OUTPUT_WEIGHT = P2WSH_OUTPUT_WEIGHT;
     public const int ANCHOR_OUTPUT_WEIGHT = P2WSH_OUTPUT_WEIGHT;
 
+    public const int HTLC_TIMEOUT_WEIGHT_ANCHORS = 666;
+    public const int HTLC_TIMEOUT_WEIGHT_NO_ANCHORS = 663;
+    public const int HTLC_SUCCESS_WEIGHT_ANCHORS = 706;
+    public const int HTLC_SUCCESS_WEIGHT_NO_ANCHORS = 703;
+
     public const int TRANSACTION_BASE_WEIGHT = 10 * 4; // version, input count, output count, locktime
 }

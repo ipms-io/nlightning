@@ -74,6 +74,11 @@ public class ConfigManager
     public bool IsOptionSimpleClose => true;
 
     /// <summary>
+    /// VTrue if outputs should be trimmed according to dust limits.
+    /// </summary>
+    public bool MustTrimHtlcOutputs { get; set; }
+
+    /// <summary>
     /// default_cltv_expiry is the default CLTV expiry for HTLC outputs.
     /// </summary>
     public ulong DefaultCltvExpiry { get; set; }
@@ -83,7 +88,7 @@ public class ConfigManager
     public string FeeEstimationMethod { get; set; } = "GET";
     public string FeeEstimationBody { get; set; } = string.Empty;
     public string FeeEstimationContentType { get; set; } = "application/json";
-    public string PreferredFeeRate { get; set; } = "fastestFee";
+    public string FeeEstimationPreferredFeeRate { get; set; } = "fastestFee";
     public string FeeRateMultiplier { get; set; } = "1000";
     public string FeeEstimationCacheFile { get; set; } = "fee_estimation_cache.json";
     public string FeeEstimationCacheExpiration { get; set; } = "5m"; // 5 minutes

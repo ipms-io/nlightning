@@ -1,6 +1,4 @@
 using NBitcoin;
-using NLightning.Bolts.Tests.TestCollections;
-using NLightning.Bolts.Tests.Utils;
 
 namespace NLightning.Bolts.Tests.BOLT3.Transactions;
 
@@ -9,6 +7,8 @@ using Common.Enums;
 using Common.Interfaces;
 using Common.Managers;
 using Common.Types;
+using TestCollections;
+using Utils;
 
 [Collection(ConfigManagerCollection.NAME)]
 public class FundingTransactionTests
@@ -131,9 +131,10 @@ public class FundingTransactionTests
         ConfigManager.Instance.DustLimitAmount = LightningMoney.FromUnit(546, LightningMoneyUnit.SATOSHI);
 
         var fundingTx = new FundingTransaction(_localPubKey, _remotePubKey, _fundingAmount, _changeScript, _coins);
+        fundingTx.ConstructTransaction(mockFeeService.Object);
 
         // When
-        fundingTx.SignTransaction(mockFeeService.Object, _privateKey);
+        fundingTx.SignTransaction(_privateKey);
 
         // Then
         Assert.NotNull(fundingTx.FundingOutput.TxId);
@@ -157,9 +158,10 @@ public class FundingTransactionTests
         ConfigManager.Instance.DustLimitAmount = LightningMoney.FromUnit(900, LightningMoneyUnit.SATOSHI);
 
         var fundingTx = new FundingTransaction(_localPubKey, _remotePubKey, _fundingAmount, _changeScript, _coins);
+        fundingTx.ConstructTransaction(mockFeeService.Object);
 
         // When
-        fundingTx.SignTransaction(mockFeeService.Object, _privateKey);
+        fundingTx.SignTransaction(_privateKey);
 
         // Then
         Assert.NotNull(fundingTx.FundingOutput.TxId);
@@ -178,7 +180,8 @@ public class FundingTransactionTests
         mockFeeService.Setup(c => c.GetCachedFeeRatePerKw()).Returns(LightningMoney.FromUnit(500, LightningMoneyUnit.SATOSHI));
 
         var fundingTx = new FundingTransaction(_localPubKey, _remotePubKey, _fundingAmount, _changeScript, _coins);
-        fundingTx.SignTransaction(mockFeeService.Object, _privateKey);
+        fundingTx.ConstructTransaction(mockFeeService.Object);
+        fundingTx.SignTransaction(_privateKey);
 
         // When
         var signedTx = fundingTx.GetSignedTransaction();

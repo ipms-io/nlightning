@@ -1,7 +1,5 @@
 using NBitcoin;
 using NBitcoin.Crypto;
-using NLightning.Bolts.Tests.TestCollections;
-using NLightning.Bolts.Tests.Utils;
 
 namespace NLightning.Bolts.Tests.BOLT3.Transactions;
 
@@ -12,6 +10,8 @@ using Common.Enums;
 using Common.Interfaces;
 using Common.Managers;
 using Common.Types;
+using TestCollections;
+using Utils;
 
 [Collection(ConfigManagerCollection.NAME)]
 public class CommitmentTransactionTests
@@ -22,8 +22,8 @@ public class CommitmentTransactionTests
     private readonly PubKey _localDelayedPubKey = new("03fd5960528dc152014952efdb702a88f71e3c1653b2314431701ec77e57fde83c");
     private readonly PubKey _revocationPubKey = new("0212a140cd0c6539d07cd08dfe09984dec3251ea808b892efeac3ede9402bf2b19");
     private readonly Coin _fundingCoin;
-    private readonly LightningMoney _toLocalAmount = LightningMoney.FromUnit(8_000, LightningMoneyUnit.SATOSHI);
-    private readonly LightningMoney _toRemoteAmount = LightningMoney.FromUnit(2_000, LightningMoneyUnit.SATOSHI);
+    private readonly LightningMoney _toLocalAmount = new(8_000, LightningMoneyUnit.SATOSHI);
+    private readonly LightningMoney _toRemoteAmount = new(2_000, LightningMoneyUnit.SATOSHI);
     private readonly CommitmentNumber _commitmentNumber;
     private readonly BitcoinSecret _privateKey = new(new Key(Convert.FromHexString("6bd078650fcee8444e4e09825227b801a1ca928debb750eb36e6d56124bb20e8")), NBitcoin.Network.TestNet);
 
@@ -88,7 +88,7 @@ public class CommitmentTransactionTests
     {
         // Given
         ConfigManager.Instance.IsOptionAnchorOutput = true;
-        ConfigManager.Instance.AnchorAmount = LightningMoney.FromUnit(330, LightningMoneyUnit.SATOSHI);
+        ConfigManager.Instance.AnchorAmount = new LightningMoney(330, LightningMoneyUnit.SATOSHI);
         const bool IS_CHANNEL_FUNDER = true;
 
         // When
@@ -186,14 +186,18 @@ public class CommitmentTransactionTests
     {
         // Given
         ConfigManager.Instance.IsOptionAnchorOutput = false;
-        ConfigManager.Instance.DustLimitAmount = LightningMoney.FromUnit(1_999, LightningMoneyUnit.SATOSHI);
+        ConfigManager.Instance.DustLimitAmount = new LightningMoney(800, LightningMoneyUnit.SATOSHI);
         const bool IS_CHANNEL_FUNDER = true;
-        var commitmentTx = CreateCommitmentTransaction(IS_CHANNEL_FUNDER);
+        // ToLocalAmount and ToRemoteAmount are inverted to simulate the dust limit
+        var commitmentTx = new CommitmentTransaction(_fundingCoin, _localPaymentBasepoint, _remotePaymentBasepoint,
+                                                     _localDelayedPubKey, _revocationPubKey, _toRemoteAmount,
+                                                     _toLocalAmount, TO_SELF_DELAY, _commitmentNumber, IS_CHANNEL_FUNDER);
         var mockFeeService = new Mock<IFeeService>();
-        mockFeeService.Setup(s => s.GetCachedFeeRatePerKw()).Returns(LightningMoney.FromUnit(15_000, LightningMoneyUnit.SATOSHI));
+        mockFeeService.Setup(s => s.GetCachedFeeRatePerKw()).Returns(new LightningMoney(2_000, LightningMoneyUnit.SATOSHI));
+        commitmentTx.ConstructTransaction(mockFeeService.Object);
 
         // When
-        commitmentTx.SignTransaction(mockFeeService.Object, _privateKey);
+        commitmentTx.SignTransaction(_privateKey);
         var signedTx = commitmentTx.GetSignedTransaction();
 
         // Then
@@ -209,14 +213,15 @@ public class CommitmentTransactionTests
     {
         // Given
         ConfigManager.Instance.IsOptionAnchorOutput = false;
-        ConfigManager.Instance.DustLimitAmount = LightningMoney.FromUnit(600, LightningMoneyUnit.SATOSHI);
+        ConfigManager.Instance.DustLimitAmount = new LightningMoney(800, LightningMoneyUnit.SATOSHI);
         const bool IS_CHANNEL_FUNDER = false;
         var commitmentTx = CreateCommitmentTransaction(IS_CHANNEL_FUNDER);
         var mockFeeService = new Mock<IFeeService>();
-        mockFeeService.Setup(s => s.GetCachedFeeRatePerKw()).Returns(LightningMoney.FromUnit(15_000, LightningMoneyUnit.SATOSHI));
+        mockFeeService.Setup(s => s.GetCachedFeeRatePerKw()).Returns(new LightningMoney(2_000, LightningMoneyUnit.SATOSHI));
+        commitmentTx.ConstructTransaction(mockFeeService.Object);
 
         // When
-        commitmentTx.SignTransaction(mockFeeService.Object, _privateKey);
+        commitmentTx.SignTransaction(_privateKey);
         var signedTx = commitmentTx.GetSignedTransaction();
 
         // Then
@@ -236,18 +241,19 @@ public class CommitmentTransactionTests
         var commitmentTx = CreateCommitmentTransaction(IS_CHANNEL_FUNDER);
 
         var htlcOffered = new OfferedHtlcOutput(_localPaymentBasepoint, _revocationPubKey, _localPaymentBasepoint,
-                                                new ReadOnlyMemory<byte>([0]), new LightningMoney(50000), 500);
+                                                new ReadOnlyMemory<byte>([0]), new LightningMoney(500, LightningMoneyUnit.SATOSHI), 500);
         var htlcReceived = new ReceivedHtlcOutput(_localPaymentBasepoint, _revocationPubKey, _localPaymentBasepoint,
-                                                  new ReadOnlyMemory<byte>([0]), new LightningMoney(40000), 500);
+                                                  new ReadOnlyMemory<byte>([0]), new LightningMoney(400, LightningMoneyUnit.SATOSHI), 500);
 
         commitmentTx.AddOfferedHtlcOutputAndUpdate(htlcOffered);
         commitmentTx.AddReceivedHtlcOutputAndUpdate(htlcReceived);
 
         var mockFeeService = new Mock<IFeeService>();
         mockFeeService.Setup(s => s.GetCachedFeeRatePerKw()).Returns(new LightningMoney(100000));
+        commitmentTx.ConstructTransaction(mockFeeService.Object);
 
         // When
-        commitmentTx.SignTransaction(mockFeeService.Object, _privateKey);
+        commitmentTx.SignTransaction(_privateKey);
         var signedTx = commitmentTx.GetSignedTransaction();
 
         // Then
@@ -276,8 +282,9 @@ public class CommitmentTransactionTests
         // Given
         var commitmentTx = CreateCommitmentTransaction(true);
         var mockFeeService = new Mock<IFeeService>();
-        mockFeeService.Setup(s => s.GetCachedFeeRatePerKw()).Returns(LightningMoney.FromUnit(1_000, LightningMoneyUnit.SATOSHI));
-        commitmentTx.SignTransaction(mockFeeService.Object, _privateKey);
+        mockFeeService.Setup(s => s.GetCachedFeeRatePerKw()).Returns(new LightningMoney(1_000, LightningMoneyUnit.SATOSHI));
+        commitmentTx.ConstructTransaction(mockFeeService.Object);
+        commitmentTx.SignTransaction(_privateKey);
 
         // When
         var signedTx = commitmentTx.GetSignedTransaction();

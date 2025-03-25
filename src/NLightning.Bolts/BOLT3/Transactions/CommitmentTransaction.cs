@@ -14,15 +14,20 @@ using Types;
 /// </summary>
 public class CommitmentTransaction : BaseTransaction
 {
+    private const int INPUT_WEIGHT = WeightConstants.WITNESS_HEADER
+                                     + WeightConstants.MULTISIG_WITNESS_WEIGHT
+                                     + (4 * WeightConstants.P2WSH_INTPUT_WEIGHT);
+
     private readonly bool _isChannelFunder;
     private readonly IList<OfferedHtlcOutput> _offeredHtlcOutputs = [];
     private readonly IList<ReceivedHtlcOutput> _receivedHtlcOutputs = [];
-    private readonly LightningMoney _toFunderAmount;
+
+    private LightningMoney _toFunderAmount;
 
     public ToLocalOutput ToLocalOutput { get; }
     public ToRemoteOutput ToRemoteOutput { get; }
-    public ToAnchorOutput? LocalAnchorOutput { get; }
-    public ToAnchorOutput? RemoteAnchorOutput { get; }
+    public ToAnchorOutput? LocalAnchorOutput { get; private set; }
+    public ToAnchorOutput? RemoteAnchorOutput { get; private set; }
 
     public CommitmentNumber CommitmentNumber { get; }
 
@@ -105,72 +110,91 @@ public class CommitmentTransaction : BaseTransaction
         AddOutput(RemoteAnchorOutput);
     }
 
-    internal void SignTransaction(IFeeService feeService, params BitcoinSecret[] secrets)
+    internal void ConstructTransaction(IFeeService feeService)
     {
-        SignAndFinalizeTransaction(feeService, secrets);
+        var currentFeePerKw = feeService.GetCachedFeeRatePerKw();
 
-        // Deduct the fee from initiator
-        var toFunderAmount = LightningMoney.Zero;
-        if (CalculatedFee <= _toFunderAmount)
+        // Calculate base fee
+        var outputWeight = CalculateOutputWeight();
+        var calculatedFee = (outputWeight + INPUT_WEIGHT) * currentFeePerKw.Satoshi / 1000L;
+        if (CalculatedFee.Satoshi != calculatedFee)
         {
-            toFunderAmount = _toFunderAmount - CalculatedFee;
+            CalculatedFee.Satoshi = calculatedFee;
         }
 
+        // Deduct base fee from the funder amount
+        _toFunderAmount -= CalculatedFee;
+
+        // Deduct anchor fee from the funder amount
+        if (ConfigManager.Instance.IsOptionAnchorOutput)
+        {
+            _toFunderAmount -= ConfigManager.Instance.AnchorAmount;
+            _toFunderAmount -= ConfigManager.Instance.AnchorAmount;
+        }
+
+        // Trim Local and Remote outputs
         if (_isChannelFunder)
         {
-            RemoveOutput(ToLocalOutput);
-            if (toFunderAmount >= ConfigManager.Instance.DustLimitAmount)
-            {
-                // Set amount
-                ToLocalOutput.Amount = toFunderAmount;
-
-                // Add the new output
-                ToLocalOutput.Index = (uint)AddOutput(ToLocalOutput);
-            }
-
-            ToRemoteOutput.Index = (uint)OUTPUTS.IndexOf(ToRemoteOutput);
+            SetLocalAndRemoteAmounts(ToLocalOutput, ToRemoteOutput);
         }
         else
         {
-            RemoveOutput(ToRemoteOutput);
-            if (toFunderAmount >= ConfigManager.Instance.DustLimitAmount)
-            {
-                // Set amount
-                ToRemoteOutput.Amount = toFunderAmount;
+            SetLocalAndRemoteAmounts(ToRemoteOutput, ToLocalOutput);
+        }
 
-                // Add the new output
-                ToRemoteOutput.Index = (uint)AddOutput(ToRemoteOutput);
+        // Trim HTLCs
+        if (ConfigManager.Instance.MustTrimHtlcOutputs)
+        {
+            var offeredHtlcWeight = ConfigManager.Instance.IsOptionAnchorOutput
+                ? WeightConstants.HTLC_TIMEOUT_WEIGHT_ANCHORS
+                : WeightConstants.HTLC_TIMEOUT_WEIGHT_NO_ANCHORS;
+            var offeredHtlcFee = offeredHtlcWeight * currentFeePerKw.Satoshi / 1000L;
+            foreach (var offeredHtlcOutput in _offeredHtlcOutputs)
+            {
+                var htlcAmount = offeredHtlcOutput.Amount - offeredHtlcFee;
+                if (htlcAmount < ConfigManager.Instance.DustLimitAmount)
+                {
+                    RemoveOutput(offeredHtlcOutput);
+                }
             }
 
-            ToLocalOutput.Index = (uint)OUTPUTS.IndexOf(ToLocalOutput);
+            var receivedHtlcWeight = ConfigManager.Instance.IsOptionAnchorOutput
+                ? WeightConstants.HTLC_SUCCESS_WEIGHT_ANCHORS
+                : WeightConstants.HTLC_SUCCESS_WEIGHT_NO_ANCHORS;
+            var receivedHtlcFee = receivedHtlcWeight * currentFeePerKw.Satoshi / 1000L;
+            foreach (var receivedHtlcOutput in _receivedHtlcOutputs)
+            {
+                var htlcAmount = receivedHtlcOutput.Amount - receivedHtlcFee;
+                if (htlcAmount < ConfigManager.Instance.DustLimitAmount)
+                {
+                    RemoveOutput(receivedHtlcOutput);
+                }
+            }
         }
 
-        SignTransactionWithExistingKeys();
-
-        ToRemoteOutput.TxId = TxId;
-        ToLocalOutput.TxId = TxId;
-
-        if (ConfigManager.Instance.IsOptionAnchorOutput)
+        // Add anchors if needed
+        if (ConfigManager.Instance.IsOptionAnchorOutput && !OUTPUTS.Any(o => o is HtlcOutput))
         {
-            LocalAnchorOutput!.TxId = TxId;
-            RemoteAnchorOutput!.TxId = TxId;
+            if (ToLocalOutput.Amount.IsZero)
+            {
+                RemoveOutput(ToLocalOutput);
+            }
 
-            LocalAnchorOutput.Index = (uint)OUTPUTS.IndexOf(LocalAnchorOutput);
-            RemoteAnchorOutput.Index = (uint)OUTPUTS.IndexOf(RemoteAnchorOutput);
+            if (ToRemoteOutput.Amount.IsZero)
+            {
+                RemoveOutput(ToRemoteOutput);
+            }
         }
 
-        // Deal with HTLCs
-        foreach (var offeredHtlcOutput in _offeredHtlcOutputs)
-        {
-            offeredHtlcOutput.TxId = TxId;
-            offeredHtlcOutput.Index = (uint)OUTPUTS.IndexOf(offeredHtlcOutput); ;
-        }
+        // Order Outputs
+        AddOrderedOutputsToTransaction();
+    }
 
-        foreach (var receivedHtlcOutput in _receivedHtlcOutputs)
-        {
-            receivedHtlcOutput.TxId = TxId;
-            receivedHtlcOutput.Index = (uint)OUTPUTS.IndexOf(receivedHtlcOutput); ;
-        }
+    internal new void SignTransaction(params BitcoinSecret[] secrets)
+    {
+        base.SignTransaction(secrets);
+
+        SetTxId();
     }
 
     internal Transaction GetSignedTransaction()
@@ -200,5 +224,69 @@ public class CommitmentTransaction : BaseTransaction
     {
         AppendRemoteSignatureToTransaction(new TransactionSignature(remoteSignature), remotePubKey);
         SignTransactionWithExistingKeys();
+
+        SetTxId();
+    }
+
+    private void SetLocalAndRemoteAmounts(BaseOutput funderOutput, BaseOutput otherOutput)
+    {
+        if (_toFunderAmount >= ConfigManager.Instance.DustLimitAmount)
+        {
+            if (_toFunderAmount != funderOutput.Amount)
+            {
+                // Remove old output
+                RemoveOutput(funderOutput);
+
+                // Set amount
+                funderOutput.Amount = _toFunderAmount;
+
+                // Add new output
+                funderOutput.Index = (uint)AddOutput(funderOutput);
+            }
+        }
+        else
+        {
+            RemoveOutput(funderOutput);
+            funderOutput.Amount = LightningMoney.Zero;
+        }
+
+        RemoveOutput(otherOutput);
+        if (otherOutput.Amount >= ConfigManager.Instance.DustLimitAmount)
+        {
+            otherOutput.Index = (uint)AddOutput(otherOutput);
+        }
+        else
+        {
+            otherOutput.Amount = LightningMoney.Zero;
+        }
+    }
+
+    private void SetTxId()
+    {
+        ToRemoteOutput.TxId = TxId;
+        ToLocalOutput.TxId = TxId;
+
+        foreach (var offeredHtlcOutput in _offeredHtlcOutputs)
+        {
+            offeredHtlcOutput.TxId = TxId;
+        }
+
+        foreach (var receivedHtlcOutput in _receivedHtlcOutputs)
+        {
+            receivedHtlcOutput.TxId = TxId;
+        }
+
+        if (ConfigManager.Instance.IsOptionAnchorOutput)
+        {
+            if (LocalAnchorOutput is not null)
+            {
+                LocalAnchorOutput.TxId = TxId;
+            }
+
+            if (RemoteAnchorOutput is not null)
+            {
+                RemoteAnchorOutput.TxId = TxId;
+            }
+        }
     }
 }

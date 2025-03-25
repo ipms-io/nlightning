@@ -61,7 +61,7 @@ public abstract class BaseTransaction
         _transaction.LockTime = lockTime;
     }
 
-    protected void SignAndFinalizeTransaction(IFeeService feeService, params BitcoinSecret[] secrets)
+    protected void SignTransaction(params BitcoinSecret[] secrets)
     {
         ArgumentNullException.ThrowIfNull(secrets);
 
@@ -70,8 +70,32 @@ public abstract class BaseTransaction
             throw new InvalidOperationException("Output amount cannot exceed input amount.");
 
         // Sign all inputs
-        SignTransaction(secrets);
+        ArgumentNullException.ThrowIfNull(secrets);
 
+        if (Finalized)
+        {
+            // Remove signature from inputs
+            _transaction.Inputs.Clear();
+            foreach (var (coin, sequence) in _coins)
+            {
+                _transaction.Inputs.Add(coin.Outpoint, null, null, sequence);
+            }
+        }
+        else
+        {
+            // Add our keys
+            _builder.AddKeys(secrets);
+            _builder.AddCoins(_coins.Select(c => c.Item1));
+        }
+
+        _transaction = _builder.SignTransactionInPlace(_transaction);
+
+        TxId = _transaction.GetHash();
+        Finalized = true;
+    }
+
+    protected void CalculateAndCheckFees(IFeeService feeService)
+    {
         // Calculate transaction fee
         CalculateTransactionFee(feeService);
 
@@ -97,39 +121,13 @@ public abstract class BaseTransaction
 
     protected LightningMoney TotalOutputAmount => OUTPUTS.Sum(o => o.Amount);
 
-    private void SignTransaction(params ISecret[] secrets)
-    {
-        ArgumentNullException.ThrowIfNull(secrets);
-
-        if (Finalized)
-        {
-            // Remove signature from inputs
-            _transaction.Inputs.Clear();
-            foreach (var (coin, sequence) in _coins)
-            {
-                _transaction.Inputs.Add(coin.Outpoint, null, null, sequence);
-            }
-        }
-        else
-        {
-            // Add our keys
-            _builder.AddKeys(secrets);
-            _builder.AddCoins(_coins.Select(c => c.Item1));
-        }
-
-        _transaction = _builder.SignTransactionInPlace(_transaction);
-
-        TxId = _transaction.GetHash();
-        Finalized = true;
-    }
-
-    private bool CheckTransactionAmounts(LightningMoney? fees = null)
+    protected bool CheckTransactionAmounts(LightningMoney? fees = null)
     {
         // Check if output amount is greater than input amount
         return TotalOutputAmount + (fees ?? LightningMoney.Zero) <= TotalInputAmount;
     }
 
-    private int CalculateOutputWeight()
+    protected int CalculateOutputWeight()
     {
         var outputWeight = WeightConstants.TRANSACTION_BASE_WEIGHT;
 
@@ -174,7 +172,7 @@ public abstract class BaseTransaction
         return outputWeight;
     }
 
-    private int CalculateInputWeight()
+    protected int CalculateInputWeight()
     {
         var inputWeight = 0;
         var mustAddWitnessHeader = false;
@@ -222,7 +220,7 @@ public abstract class BaseTransaction
         return inputWeight;
     }
 
-    private void CalculateTransactionFee(IFeeService feeService)
+    protected void CalculateTransactionFee(IFeeService feeService)
     {
         var outputWeight = CalculateOutputWeight();
         var inputWeight = CalculateInputWeight();
@@ -253,7 +251,7 @@ public abstract class BaseTransaction
 
         OUTPUTS.Add(baseOutput);
 
-        OrderOutputs();
+        // OrderOutputs();
 
         return OUTPUTS.IndexOf(baseOutput);
     }
@@ -272,7 +270,12 @@ public abstract class BaseTransaction
             OUTPUTS.Add(output);
         }
 
-        OrderOutputs();
+        // OrderOutputs();
+    }
+
+    protected void ClearOutputsFromTransaction()
+    {
+        _transaction.Outputs.Clear();
     }
 
     protected void RemoveOutput(BaseOutput baseOutput)
@@ -280,10 +283,10 @@ public abstract class BaseTransaction
         ArgumentNullException.ThrowIfNull(baseOutput);
 
         OUTPUTS.Remove(baseOutput);
-        OrderOutputs();
+        // OrderOutputs();
     }
 
-    private void OrderOutputs()
+    protected void AddOrderedOutputsToTransaction()
     {
         // Clear TxOuts
         _transaction.Outputs.Clear();

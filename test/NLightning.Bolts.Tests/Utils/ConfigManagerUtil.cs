@@ -19,11 +19,12 @@ public static class ConfigManagerUtil
         ConfigManager.Instance.MinimumDepth = 0;
         ConfigManager.Instance.IsOptionAnchorOutput = true;
         ConfigManager.Instance.DefaultCltvExpiry = 0;
+        ConfigManager.Instance.MustTrimHtlcOutputs = false;
         ConfigManager.Instance.FeeEstimationUrl = "https://mempool.space/api/v1/fees/recommended";
         ConfigManager.Instance.FeeEstimationMethod = "GET";
         ConfigManager.Instance.FeeEstimationBody = string.Empty;
         ConfigManager.Instance.FeeEstimationContentType = "application/json";
-        ConfigManager.Instance.PreferredFeeRate = "fastestFee";
+        ConfigManager.Instance.FeeEstimationPreferredFeeRate = "fastestFee";
         ConfigManager.Instance.FeeRateMultiplier = "1000";
         ConfigManager.Instance.FeeEstimationCacheFile = "fee_estimation_cache.json";
         ConfigManager.Instance.FeeEstimationCacheExpiration = "5m"; // 5 minutes
