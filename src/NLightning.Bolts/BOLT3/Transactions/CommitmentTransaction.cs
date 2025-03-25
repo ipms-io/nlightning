@@ -123,10 +123,17 @@ public class CommitmentTransaction : BaseTransaction
         }
 
         // Deduct base fee from the funder amount
-        _toFunderAmount -= CalculatedFee;
+        if (CalculatedFee > _toFunderAmount)
+        {
+            _toFunderAmount = LightningMoney.Zero;
+        }
+        else
+        {
+            _toFunderAmount -= CalculatedFee;
+        }
 
         // Deduct anchor fee from the funder amount
-        if (ConfigManager.Instance.IsOptionAnchorOutput)
+        if (ConfigManager.Instance.IsOptionAnchorOutput && !_toFunderAmount.IsZero)
         {
             _toFunderAmount -= ConfigManager.Instance.AnchorAmount;
             _toFunderAmount -= ConfigManager.Instance.AnchorAmount;

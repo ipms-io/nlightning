@@ -163,7 +163,8 @@ public abstract class BaseTransaction
                 case ToAnchorOutput:
                     outputWeight += WeightConstants.ANCHOR_OUTPUT_WEIGHT;
                     break;
-                case HtlcOutput:
+                case OfferedHtlcOutput:
+                case ReceivedHtlcOutput:
                     outputWeight += WeightConstants.HTLC_OUTPUT_WEIGHT;
                     break;
             }

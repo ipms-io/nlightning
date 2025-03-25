@@ -4,7 +4,7 @@ using Outputs;
 
 public class TransactionOutputComparer : IComparer<BaseOutput>
 {
-    public static TransactionOutputComparer Instance { get; } = new TransactionOutputComparer();
+    public static TransactionOutputComparer Instance { get; } = new();
 
     public int Compare(BaseOutput? x, BaseOutput? y)
     {
@@ -33,16 +33,28 @@ public class TransactionOutputComparer : IComparer<BaseOutput>
             return scriptComparison;
         }
 
-        // Compare by length if scripts are identical up to the length of the shorter one
-        if (x.ScriptPubKey.Length != y.ScriptPubKey.Length)
-        {
-            return x.ScriptPubKey.Length.CompareTo(y.ScriptPubKey.Length);
-        }
-
         // For HTLC outputs, compare by CLTV expiry
-        if (x is OfferedHtlcOutput xHtlc && y is OfferedHtlcOutput yHtlc)
+        if (x is OfferedHtlcOutput or ReceivedHtlcOutput &&
+            y is OfferedHtlcOutput or ReceivedHtlcOutput)
         {
-            return xHtlc.CltvExpiry != yHtlc.CltvExpiry ? xHtlc.CltvExpiry.CompareTo(yHtlc.CltvExpiry) : 0;
+            ulong xExpiry = x switch
+            {
+                OfferedHtlcOutput offered => offered.CltvExpiry,
+                ReceivedHtlcOutput received => received.CltvExpiry,
+                _ => 0
+            };
+
+            ulong yExpiry = y switch
+            {
+                OfferedHtlcOutput offered => offered.CltvExpiry,
+                ReceivedHtlcOutput received => received.CltvExpiry,
+                _ => 0
+            };
+
+            if (xExpiry != yExpiry)
+            {
+                return xExpiry.CompareTo(yExpiry);
+            }
         }
 
         return 0;
@@ -59,6 +71,7 @@ public class TransactionOutputComparer : IComparer<BaseOutput>
             }
         }
 
+        // Compare by length if scripts are identical up to the length of the shorter one
         return script1.Length.CompareTo(script2.Length);
     }
 }
