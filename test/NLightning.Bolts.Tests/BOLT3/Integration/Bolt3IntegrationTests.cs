@@ -1,4 +1,5 @@
 using NBitcoin;
+using NLightning.Bolts.BOLT3.Services;
 
 namespace NLightning.Bolts.Tests.BOLT3.Integration;
 
@@ -26,6 +27,7 @@ public class Bolt3IntegrationTests
         TxId = AppendixBVectors.EXPECTED_TX_ID
     };
 
+    #region Appendix B Vectors
     [Fact]
     public void Given_Bolt3Specifications_When_CreatingFundingTransaction_Then_ShouldBeEqualToTestVector()
     {
@@ -55,7 +57,9 @@ public class Bolt3IntegrationTests
 
         ConfigManagerUtil.ResetConfigManager();
     }
+    #endregion
 
+    #region Appendix C Vectors
     [Fact]
     public void Given_Bolt3Specifications_When_CreatingCommitmentTransaction_Then_ShouldBeEqualToTestVector()
     {
@@ -80,7 +84,7 @@ public class Bolt3IntegrationTests
                                                                                                 AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                                                                 ConfigManager.Instance.Network));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, _fundingOutput.RemotePubKey);
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_0, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
@@ -131,10 +135,12 @@ public class Bolt3IntegrationTests
                                         new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, _fundingOutput.RemotePubKey);
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_1, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_1.GetHash(), commitmentTransacion.TxId);
+        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_1.ToBytes(), finalCommitmentTx.ToBytes());
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -180,10 +186,12 @@ public class Bolt3IntegrationTests
                                         new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, _fundingOutput.RemotePubKey);
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_2, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_2.GetHash(), commitmentTransacion.TxId);
+        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_2.ToBytes(), finalCommitmentTx.ToBytes());
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -226,10 +234,12 @@ public class Bolt3IntegrationTests
                                         new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, _fundingOutput.RemotePubKey);
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_3, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_3.GetHash(), commitmentTransacion.TxId);
+        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_3.ToBytes(), finalCommitmentTx.ToBytes());
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -272,10 +282,12 @@ public class Bolt3IntegrationTests
                                         new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, _fundingOutput.RemotePubKey);
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_4, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_4.GetHash(), commitmentTransacion.TxId);
+        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_4.ToBytes(), finalCommitmentTx.ToBytes());
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -315,10 +327,12 @@ public class Bolt3IntegrationTests
                                         new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, _fundingOutput.RemotePubKey);
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_5, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_5.GetHash(), commitmentTransacion.TxId);
+        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_5.ToBytes(), finalCommitmentTx.ToBytes());
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -358,10 +372,12 @@ public class Bolt3IntegrationTests
                                         new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, _fundingOutput.RemotePubKey);
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_6, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_6.GetHash(), commitmentTransacion.TxId);
+        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_6.ToBytes(), finalCommitmentTx.ToBytes());
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -398,10 +414,12 @@ public class Bolt3IntegrationTests
                                         new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, _fundingOutput.RemotePubKey);
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_7, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_7.GetHash(), commitmentTransacion.TxId);
+        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_7.ToBytes(), finalCommitmentTx.ToBytes());
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -438,10 +456,12 @@ public class Bolt3IntegrationTests
                                         new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, _fundingOutput.RemotePubKey);
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_8, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_8.GetHash(), commitmentTransacion.TxId);
+        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_8.ToBytes(), finalCommitmentTx.ToBytes());
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -474,10 +494,12 @@ public class Bolt3IntegrationTests
                                         new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, _fundingOutput.RemotePubKey);
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_9, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_9.GetHash(), commitmentTransacion.TxId);
+        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_9.ToBytes(), finalCommitmentTx.ToBytes());
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -508,10 +530,12 @@ public class Bolt3IntegrationTests
                                         new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, _fundingOutput.RemotePubKey);
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_10, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_10.GetHash(), commitmentTransacion.TxId);
+        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_10.ToBytes(), finalCommitmentTx.ToBytes());
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -535,10 +559,12 @@ public class Bolt3IntegrationTests
                                         true, new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, _fundingOutput.RemotePubKey);
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_11, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_11.GetHash(), commitmentTransacion.TxId);
+        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_11.ToBytes(), finalCommitmentTx.ToBytes());
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -562,10 +588,12 @@ public class Bolt3IntegrationTests
                                         true, new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, _fundingOutput.RemotePubKey);
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_12, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_12.GetHash(), commitmentTransacion.TxId);
+        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_12.ToBytes(), finalCommitmentTx.ToBytes());
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -589,10 +617,12 @@ public class Bolt3IntegrationTests
                                         true, new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, _fundingOutput.RemotePubKey);
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_13, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_13.GetHash(), commitmentTransacion.TxId);
+        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_13.ToBytes(), finalCommitmentTx.ToBytes());
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -616,10 +646,12 @@ public class Bolt3IntegrationTests
                                         true, new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, _fundingOutput.RemotePubKey);
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_14, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_14.GetHash(), commitmentTransacion.TxId);
+        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_14.ToBytes(), finalCommitmentTx.ToBytes());
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -658,11 +690,86 @@ public class Bolt3IntegrationTests
                                         true, offeredHtlcs, receivedHtlcs, new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE, _fundingOutput.RemotePubKey);
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_15, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_15.GetHash(), commitmentTransacion.TxId);
+        Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_15.ToBytes(), finalCommitmentTx.ToBytes());
 
         ConfigManagerUtil.ResetConfigManager();
     }
+    #endregion
+
+    #region Appendix D Vectors
+    [Fact]
+    public void Given_Bolt3Specifications_When_GeneratingFromSeed0FinalNode_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        var keyDerivationService = new KeyDerivationService();
+
+        // When
+        var result = KeyDerivationService.GeneratePerCommitmentSecret(AppendixDVectors.SEED_0_FINAL_NODE,
+                                                                      AppendixDVectors.I_0_FINAL_NODE);
+
+        // Then
+        Assert.Equal(AppendixDVectors.EXPECTED_OUTPUT_0_FINAL_NODE, result);
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_GeneratingFromSeedFFFinalNode_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        var keyDerivationService = new KeyDerivationService();
+
+        // When
+        var result = KeyDerivationService.GeneratePerCommitmentSecret(AppendixDVectors.SEED_FF_FINAL_NODE,
+                                                                      AppendixDVectors.I_FF_FINAL_NODE);
+
+        // Then
+        Assert.Equal(AppendixDVectors.EXPECTED_OUTPUT_FF_FINAL_NODE, result);
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_GeneratingFromSeedFFAlternateBits1_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        var keyDerivationService = new KeyDerivationService();
+
+        // When
+        var result = KeyDerivationService.GeneratePerCommitmentSecret(AppendixDVectors.SEED_FF_ALTERNATE_BITS_1,
+                                                                      AppendixDVectors.I_FF_ALTERNATE_BITS_1);
+
+        // Then
+        Assert.Equal(AppendixDVectors.EXPECTED_OUTPUT_FF_ALTERNATE_BITS_1, result);
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_GeneratingFromSeedFFAlternateBits2_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        var keyDerivationService = new KeyDerivationService();
+
+        // When
+        var result = KeyDerivationService.GeneratePerCommitmentSecret(AppendixDVectors.SEED_FF_ALTERNATE_BITS_2,
+                                                                      AppendixDVectors.I_FF_ALTERNATE_BITS_2);
+
+        // Then
+        Assert.Equal(AppendixDVectors.EXPECTED_OUTPUT_FF_ALTERNATE_BITS_2, result);
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_GeneratingFromSeed01LastNonTrivialNode_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        var keyDerivationService = new KeyDerivationService();
+
+        // When
+        var result = KeyDerivationService.GeneratePerCommitmentSecret(AppendixDVectors.SEED_01_LAST_NON_TRIVIAL_NODE,
+                                                                      AppendixDVectors.I_01_LAST_NON_TRIVIAL_NODE);
+
+        // Then
+        Assert.Equal(AppendixDVectors.EXPECTED_OUTPUT_01_LAST_NON_TRIVIAL_NODE, result);
+    }
+    #endregion
 }
