@@ -1,5 +1,4 @@
 using NBitcoin;
-using NBitcoin.Crypto;
 using NBitcoin.Secp256k1;
 
 namespace NLightning.Bolts.BOLT3.Services;
@@ -7,7 +6,6 @@ namespace NLightning.Bolts.BOLT3.Services;
 using Common.Constants;
 using Common.Crypto.Contexts;
 using Common.Crypto.Hashes;
-using Common.Managers;
 
 public class KeyDerivationService
 {
@@ -119,17 +117,9 @@ public class KeyDerivationService
     }
 
     /// <summary>
-    /// Generates per-commitment point from per-commitment secret
-    /// </summary>
-    public PubKey GeneratePerCommitmentPoint(byte[] perCommitmentSecret)
-    {
-        return new Key(perCommitmentSecret).PubKey;
-    }
-
-    /// <summary>
     /// Helper method to calculate SHA256(point1 || point2)
     /// </summary>
-    private void ComputeSha256(PubKey point1, PubKey point2, Span<byte> buffer)
+    private static void ComputeSha256(PubKey point1, PubKey point2, Span<byte> buffer)
     {
         using var sha256 = new Sha256();
         sha256.AppendData(point1.ToBytes());
@@ -140,7 +130,7 @@ public class KeyDerivationService
     /// <summary>
     /// Adds two public keys (EC point addition)
     /// </summary>
-    private PubKey AddPubKeys(PubKey pubKey1, PubKey pubKey2)
+    private static PubKey AddPubKeys(PubKey pubKey1, PubKey pubKey2)
     {
         // Create ECPubKey objects
         if (!ECPubKey.TryCreate(pubKey1.ToBytes(), NLightningContext.Instance, out _, out var ecPubKey1))
@@ -160,7 +150,7 @@ public class KeyDerivationService
     /// <summary>
     /// Multiplies a public key by a scalar
     /// </summary>
-    private PubKey MultiplyPubKey(PubKey pubKey, byte[] scalar)
+    private static PubKey MultiplyPubKey(PubKey pubKey, byte[] scalar)
     {
         ArgumentNullException.ThrowIfNull(pubKey);
         if (scalar is not { Length: 32 })
@@ -202,7 +192,7 @@ public class KeyDerivationService
     /// <summary>
     /// Multiplies a private key by a scalar
     /// </summary>
-    private Key MultiplyPrivateKey(Key key, byte[] scalar)
+    private static Key MultiplyPrivateKey(Key key, byte[] scalar)
     {
         ArgumentNullException.ThrowIfNull(key);
         if (scalar is not { Length: 32 })
@@ -217,111 +207,5 @@ public class KeyDerivationService
 
         // Create a new Key with the result
         return new Key(multipliedKey.sec.ToBytes());
-    }
-
-    /// <summary>
-    /// Securely initializes a new seed for per-commitment secret generation
-    /// </summary>
-    public void InitializeSecureSeed(byte[] seed)
-    {
-        // Initialize the secure key manager with the seed
-        SecureKeyManager.Initialize(seed);
-    }
-
-    /// <summary>
-    /// Gets the current seed from secure storage for per-commitment secret generation
-    /// </summary>
-    public byte[] GetSecureSeed()
-    {
-        return SecureKeyManager.GetPrivateKey();
-    }
-
-    /// <summary>
-    /// Provides efficient storage of per-commitment secrets
-    /// </summary>
-    public class PerCommitmentSecretStorage
-    {
-        private class StoredSecret
-        {
-            public ulong Index { get; set; }
-            public byte[] Secret { get; set; } = [];
-        }
-
-        private readonly StoredSecret[] _knownSecrets = new StoredSecret[49];
-
-        /// <summary>
-        /// Inserts a new secret and verifies it against existing secrets
-        /// </summary>
-        public bool InsertSecret(byte[] secret, ulong index)
-        {
-            var bucket = GetBucketIndex(index);
-
-            // Verify this secret can derive all previously known secrets
-            for (var b = 0; b < bucket; b++)
-            {
-                if (_knownSecrets[b] != null)
-                {
-                    var derived = DeriveSecret(secret, bucket, _knownSecrets[b].Index);
-                    if (!derived.SequenceEqual(_knownSecrets[b].Secret))
-                    {
-                        return false; // Secret verification failed
-                    }
-                }
-            }
-
-            _knownSecrets[bucket] = new StoredSecret { Index = index, Secret = secret };
-            return true;
-        }
-
-        /// <summary>
-        /// Derives an old secret from a known higher-level secret
-        /// </summary>
-        public byte[] DeriveOldSecret(ulong index)
-        {
-            for (var b = 0; b < _knownSecrets.Length; b++)
-            {
-                if (_knownSecrets[b] != null)
-                {
-                    // Create mask with b trailing zeros
-                    var mask = ~((1UL << b) - 1);
-
-                    if ((_knownSecrets[b].Index & mask) == (index & mask))
-                    {
-                        return DeriveSecret(_knownSecrets[b].Secret, b, index);
-                    }
-                }
-            }
-
-            throw new InvalidOperationException($"Secret at index {index} cannot be derived from known secrets");
-        }
-
-        private int GetBucketIndex(ulong index)
-        {
-            for (var b = 0; b < 48; b++)
-            {
-                if (((index >> b) & 1) == 1)
-                {
-                    return b;
-                }
-            }
-            return 48; // For index 0 (seed)
-        }
-
-        private byte[] DeriveSecret(byte[] baseSecret, int bits, ulong index)
-        {
-            var result = new byte[baseSecret.Length];
-            Buffer.BlockCopy(baseSecret, 0, result, 0, baseSecret.Length);
-
-            for (var b = bits - 1; b >= 0; b--)
-            {
-                if (((index >> b) & 1) != 0)
-                {
-                    result[b / 8] ^= (byte)(1 << (b % 8));
-                    result = Hashes.SHA256(result);
-                }
-            }
-
-            return result;
-        }
     }
 }

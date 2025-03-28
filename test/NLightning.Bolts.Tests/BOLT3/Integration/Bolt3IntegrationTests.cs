@@ -702,6 +702,7 @@ public class Bolt3IntegrationTests
     #endregion
 
     #region Appendix D Vectors
+    #region Generation Tests
     [Fact]
     public void Given_Bolt3Specifications_When_GeneratingFromSeed0FinalNode_Then_ShouldBeEqualToTestVector()
     {
@@ -770,6 +771,362 @@ public class Bolt3IntegrationTests
 
         // Then
         Assert.Equal(AppendixDVectors.EXPECTED_OUTPUT_01_LAST_NON_TRIVIAL_NODE, result);
+    }
+    #endregion
+
+    #region Storage Tests
+    [Fact]
+    public void Given_Bolt3Specifications_When_InsertingSecretsInCorrectSequence_Then_ShouldSucceed()
+    {
+        // Given
+        using var storage = new SecretStorageService();
+
+        // When
+        var result1 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_0, AppendixDVectors.STORAGE_INDEX_MAX);
+        var result2 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_1, AppendixDVectors.STORAGE_INDEX_MAX - 1);
+        var result3 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_2, AppendixDVectors.STORAGE_INDEX_MAX - 2);
+        var result4 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_3, AppendixDVectors.STORAGE_INDEX_MAX - 3);
+        var result5 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_4, AppendixDVectors.STORAGE_INDEX_MAX - 4);
+        var result6 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_5, AppendixDVectors.STORAGE_INDEX_MAX - 5);
+        var result7 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_6, AppendixDVectors.STORAGE_INDEX_MAX - 6);
+        var result8 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_7, AppendixDVectors.STORAGE_INDEX_MAX - 7);
+
+        // Then
+        Assert.True(result1);
+        Assert.True(result2);
+        Assert.True(result3);
+        Assert.True(result4);
+        Assert.True(result5);
+        Assert.True(result6);
+        Assert.True(result7);
+        Assert.True(result8);
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_InsertingSecrets1InWrongSequence_Then_ShouldFail()
+    {
+        // Given
+        using var storage = new SecretStorageService();
+
+        var result1 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_8, AppendixDVectors.STORAGE_INDEX_MAX);
+
+        // When
+        var result2 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_1, AppendixDVectors.STORAGE_INDEX_MAX - 1);
+
+        // Then
+        Assert.True(result1);
+        Assert.False(result2);
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_InsertingSecrets2InWrongSequence_Then_ShouldFail()
+    {
+        // Given
+        using var storage = new SecretStorageService();
+
+        var result1 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_8, AppendixDVectors.STORAGE_INDEX_MAX);
+        var result2 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_9, AppendixDVectors.STORAGE_INDEX_MAX - 1);
+        var result3 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_2, AppendixDVectors.STORAGE_INDEX_MAX - 2);
+
+        // When
+        var result4 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_3, AppendixDVectors.STORAGE_INDEX_MAX - 3);
+
+        // Then
+        Assert.True(result1);
+        Assert.True(result2);
+        Assert.True(result3);
+        Assert.False(result4);
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_InsertingSecrets3InWrongSequence_Then_ShouldFail()
+    {
+        // Given
+        using var storage = new SecretStorageService();
+
+        var result1 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_0, AppendixDVectors.STORAGE_INDEX_MAX);
+        var result2 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_1, AppendixDVectors.STORAGE_INDEX_MAX - 1);
+        var result3 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_10, AppendixDVectors.STORAGE_INDEX_MAX - 2);
+
+        // When
+        var result4 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_3, AppendixDVectors.STORAGE_INDEX_MAX - 3);
+
+        // Then
+        Assert.True(result1);
+        Assert.True(result2);
+        Assert.True(result3);
+        Assert.False(result4);
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_InsertingSecrets4InWrongSequence_Then_ShouldFail()
+    {
+        // Given
+        using var storage = new SecretStorageService();
+
+        var result1 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_8, AppendixDVectors.STORAGE_INDEX_MAX);
+        var result2 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_9, AppendixDVectors.STORAGE_INDEX_MAX - 1);
+        var result3 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_10, AppendixDVectors.STORAGE_INDEX_MAX - 2);
+        var result4 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_11, AppendixDVectors.STORAGE_INDEX_MAX - 3);
+        var result5 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_4, AppendixDVectors.STORAGE_INDEX_MAX - 4);
+        var result6 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_5, AppendixDVectors.STORAGE_INDEX_MAX - 5);
+        var result7 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_6, AppendixDVectors.STORAGE_INDEX_MAX - 6);
+
+        // When
+        var result8 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_7, AppendixDVectors.STORAGE_INDEX_MAX - 7);
+
+        // Then
+        Assert.True(result1);
+        Assert.True(result2);
+        Assert.True(result3);
+        Assert.True(result4);
+        Assert.True(result5);
+        Assert.True(result6);
+        Assert.True(result7);
+        Assert.False(result8);
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_InsertingSecrets5InWrongSequence_Then_ShouldFail()
+    {
+        // Given
+        using var storage = new SecretStorageService();
+
+        var result1 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_0, AppendixDVectors.STORAGE_INDEX_MAX);
+        var result2 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_1, AppendixDVectors.STORAGE_INDEX_MAX - 1);
+        var result3 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_2, AppendixDVectors.STORAGE_INDEX_MAX - 2);
+        var result4 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_3, AppendixDVectors.STORAGE_INDEX_MAX - 3);
+        var result5 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_12, AppendixDVectors.STORAGE_INDEX_MAX - 4);
+
+        // When
+        var result6 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_5, AppendixDVectors.STORAGE_INDEX_MAX - 5);
+
+        // Then
+        Assert.True(result1);
+        Assert.True(result2);
+        Assert.True(result3);
+        Assert.True(result4);
+        Assert.True(result5);
+        Assert.False(result6);
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_InsertingSecrets6InWrongSequence_Then_ShouldFail()
+    {
+        // Given
+        using var storage = new SecretStorageService();
+
+        var result1 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_0, AppendixDVectors.STORAGE_INDEX_MAX);
+        var result2 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_1, AppendixDVectors.STORAGE_INDEX_MAX - 1);
+        var result3 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_2, AppendixDVectors.STORAGE_INDEX_MAX - 2);
+        var result4 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_3, AppendixDVectors.STORAGE_INDEX_MAX - 3);
+        var result5 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_12, AppendixDVectors.STORAGE_INDEX_MAX - 4);
+        var result6 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_13, AppendixDVectors.STORAGE_INDEX_MAX - 5);
+        var result7 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_6, AppendixDVectors.STORAGE_INDEX_MAX - 6);
+
+        // When
+        var result8 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_7, AppendixDVectors.STORAGE_INDEX_MAX - 7);
+
+        // Then
+        Assert.True(result1);
+        Assert.True(result2);
+        Assert.True(result3);
+        Assert.True(result4);
+        Assert.True(result5);
+        Assert.True(result6);
+        Assert.True(result7);
+        Assert.False(result8);
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_InsertingSecrets7InWrongSequence_Then_ShouldFail()
+    {
+        // Given
+        using var storage = new SecretStorageService();
+
+        var result1 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_0, AppendixDVectors.STORAGE_INDEX_MAX);
+        var result2 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_1, AppendixDVectors.STORAGE_INDEX_MAX - 1);
+        var result3 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_2, AppendixDVectors.STORAGE_INDEX_MAX - 2);
+        var result4 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_3, AppendixDVectors.STORAGE_INDEX_MAX - 3);
+        var result5 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_4, AppendixDVectors.STORAGE_INDEX_MAX - 4);
+        var result6 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_5, AppendixDVectors.STORAGE_INDEX_MAX - 5);
+        var result7 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_14, AppendixDVectors.STORAGE_INDEX_MAX - 6);
+
+        // When
+        var result8 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_7, AppendixDVectors.STORAGE_INDEX_MAX - 7);
+
+        // Then
+        Assert.True(result1);
+        Assert.True(result2);
+        Assert.True(result3);
+        Assert.True(result4);
+        Assert.True(result5);
+        Assert.True(result6);
+        Assert.True(result7);
+        Assert.False(result8);
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_InsertingSecrets8InWrongSequence_Then_ShouldFail()
+    {
+        // Given
+        using var storage = new SecretStorageService();
+
+        var result1 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_0, AppendixDVectors.STORAGE_INDEX_MAX);
+        var result2 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_1, AppendixDVectors.STORAGE_INDEX_MAX - 1);
+        var result3 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_2, AppendixDVectors.STORAGE_INDEX_MAX - 2);
+        var result4 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_3, AppendixDVectors.STORAGE_INDEX_MAX - 3);
+        var result5 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_4, AppendixDVectors.STORAGE_INDEX_MAX - 4);
+        var result6 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_5, AppendixDVectors.STORAGE_INDEX_MAX - 5);
+        var result7 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_6, AppendixDVectors.STORAGE_INDEX_MAX - 6);
+
+        // When
+        var result8 = storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_15, AppendixDVectors.STORAGE_INDEX_MAX - 7);
+
+        // Then
+        Assert.True(result1);
+        Assert.True(result2);
+        Assert.True(result3);
+        Assert.True(result4);
+        Assert.True(result5);
+        Assert.True(result6);
+        Assert.True(result7);
+        Assert.False(result8);
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_DerivingOldSecret_Then_ShouldDeriveCorrectly()
+    {
+        // Given
+        using var storage = new SecretStorageService();
+        Span<byte> derivedSecret = stackalloc byte[SecretStorageService.SECRET_SIZE];
+
+        // Insert a valid secret with known index
+        storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_0, AppendixDVectors.STORAGE_INDEX_MAX);
+        storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_1, AppendixDVectors.STORAGE_INDEX_MAX - 1);
+        storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_2, AppendixDVectors.STORAGE_INDEX_MAX - 2);
+
+        // When
+        storage.DeriveOldSecret(AppendixDVectors.STORAGE_INDEX_MAX, derivedSecret);
+
+        // Then
+        Assert.Equal(AppendixDVectors.STORAGE_EXPECTED_SECRET_0, derivedSecret);
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_DerivingUnknownSecret_Then_ShouldThrowException()
+    {
+        // Given
+        using var storage = new SecretStorageService();
+        var derivedSecret = new byte[SecretStorageService.SECRET_SIZE];
+
+        // Insert a valid secret with known index
+        storage.InsertSecret(AppendixDVectors.STORAGE_EXPECTED_SECRET_1, AppendixDVectors.STORAGE_INDEX_MAX);
+
+        // When/Then
+        // Cannot derive a secret with higher index
+        Assert.Throws<InvalidOperationException>(() => storage.DeriveOldSecret(AppendixDVectors.STORAGE_INDEX_MAX - 1, derivedSecret));
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_StoringAndDeriving48Secrets_Then_ShouldWorkCorrectly()
+    {
+        // Given
+        using var storage = new SecretStorageService();
+        Span<byte> derivedSecret = stackalloc byte[SecretStorageService.SECRET_SIZE];
+
+        // Insert secrets with different number of trailing zeros
+        for (var i = 0; i < 48; i++)
+        {
+            var index = (AppendixDVectors.STORAGE_INDEX_MAX - 1) & ~((1UL << i) - 1);
+            var secret = KeyDerivationService.GeneratePerCommitmentSecret(
+                AppendixDVectors.STORAGE_CORRECT_SEED, index);
+
+            storage.InsertSecret(secret, index);
+        }
+
+        // When/Then
+        // We should be able to derive any secret in the range
+        for (var i = 1U; i < 20; i++)
+        {
+            var index = AppendixDVectors.STORAGE_INDEX_MAX - i;
+            var expectedSecret = KeyDerivationService.GeneratePerCommitmentSecret(
+                AppendixDVectors.STORAGE_CORRECT_SEED, index);
+
+            storage.DeriveOldSecret(index, derivedSecret);
+
+            Assert.Equal(expectedSecret, derivedSecret);
+        }
+    }
+    #endregion
+    #endregion
+
+    #region Appendix E Vectors
+    [Fact]
+    public void Given_Bolt3Specifications_When_DerivingPubKey_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        var keyDerivationService = new KeyDerivationService();
+        var basepoint = new PubKey("036d6caac248af96f6afa7f904f550253a0f3ef3f5aa2fe6838a95b216691468e2");
+        var perCommitmentPoint = new PubKey("025f7117a78150fe2ef97db7cfc83bd57b2e2c0d0dd25eaf467a4a1c2a45ce1486");
+        var expectedLocalPubkey = new PubKey("0235f2dbfaa89b57ec7b055afe29849ef7ddfeb1cefdb9ebdc43f5494984db29e5");
+
+        // When
+        var result = keyDerivationService.DerivePublicKey(basepoint, perCommitmentPoint);
+
+        // Then
+        Assert.Equal(expectedLocalPubkey, result);
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_DerivingPrivateKey_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        var keyDerivationService = new KeyDerivationService();
+        var baseSecretBytes = Convert.FromHexString("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
+        var basepointSecret = new Key(baseSecretBytes);
+        var perCommitmentPoint = new PubKey("025f7117a78150fe2ef97db7cfc83bd57b2e2c0d0dd25eaf467a4a1c2a45ce1486");
+        var expectedPrivkeyBytes = Convert.FromHexString("cbced912d3b21bf196a766651e436aff192362621ce317704ea2f75d87e7be0f");
+
+        // When
+        var result = keyDerivationService.DerivePrivateKey(basepointSecret, perCommitmentPoint);
+
+        // Then
+        Assert.Equal(expectedPrivkeyBytes, result.ToBytes());
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_DerivingRevocationPubKey_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        var keyDerivationService = new KeyDerivationService();
+        var revocationBasepoint = new PubKey("036d6caac248af96f6afa7f904f550253a0f3ef3f5aa2fe6838a95b216691468e2");
+        var perCommitmentPoint = new PubKey("025f7117a78150fe2ef97db7cfc83bd57b2e2c0d0dd25eaf467a4a1c2a45ce1486");
+        var expectedRevocationPubkey = new PubKey("02916e326636d19c33f13e8c0c3a03dd157f332f3e99c317c141dd865eb01f8ff0");
+
+        // When
+        var result = keyDerivationService.DeriveRevocationPubKey(revocationBasepoint, perCommitmentPoint);
+
+        // Then
+        Assert.Equal(expectedRevocationPubkey, result);
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_DerivingRevocationPrivKey_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        var keyDerivationService = new KeyDerivationService();
+        var baseSecretBytes = Convert.FromHexString("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
+        var revocationBasepointSecret = new Key(baseSecretBytes);
+        var perCommitmentSecretBytes = Convert.FromHexString("1f1e1d1c1b1a191817161514131211100f0e0d0c0b0a09080706050403020100");
+        var perCommitmentSecret = new Key(perCommitmentSecretBytes);
+        var expectedRevocationPrivkeyBytes = Convert.FromHexString("d09ffff62ddb2297ab000cc85bcb4283fdeb6aa052affbc9dddcf33b61078110");
+
+        // When
+        var result = keyDerivationService.DeriveRevocationPrivKey(revocationBasepointSecret, perCommitmentSecret);
+
+        // Then
+        Assert.Equal(expectedRevocationPrivkeyBytes, result.ToBytes());
     }
     #endregion
 }
