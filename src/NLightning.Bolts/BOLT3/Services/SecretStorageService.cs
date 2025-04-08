@@ -21,7 +21,7 @@ public class SecretStorageService : IDisposable
     /// <summary>
     /// Inserts a new secret and verifies it against existing secrets
     /// </summary>
-    public bool InsertSecret(ReadOnlySpan<byte> secret, ulong index, bool shouldWipeInput = true)
+    public bool InsertSecret(ReadOnlySpan<byte> secret, ulong index)
     {
         if (secret is not { Length: SECRET_SIZE })
             throw new ArgumentException($"Secret must be {SECRET_SIZE} bytes", nameof(secret));
