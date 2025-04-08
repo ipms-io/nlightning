@@ -100,7 +100,7 @@ public class ToRemoteOutputTests
 
         // Then
         Assert.Equal(toRemoteOutput.TxId, coin.Outpoint.Hash);
-        Assert.Equal(toRemoteOutput.Index, coin.Outpoint.N);
+        Assert.Equal(toRemoteOutput.Index, (int)coin.Outpoint.N);
         Assert.Equal((Money)toRemoteOutput.Amount, coin.Amount);
         Assert.Equal(toRemoteOutput.ScriptPubKey, coin.ScriptPubKey);
         Assert.Equal(toRemoteOutput.RedeemScript, coin.Redeem);

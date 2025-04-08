@@ -95,7 +95,7 @@ public class ToLocalOutputTests
 
         // Then
         Assert.Equal(toLocalOutput.TxId, coin.Outpoint.Hash);
-        Assert.Equal(toLocalOutput.Index, coin.Outpoint.N);
+        Assert.Equal(toLocalOutput.Index, (int)coin.Outpoint.N);
         Assert.Equal((Money)toLocalOutput.Amount, coin.Amount);
         Assert.Equal(toLocalOutput.ScriptPubKey, coin.ScriptPubKey);
         Assert.Equal(toLocalOutput.RedeemScript, coin.Redeem);

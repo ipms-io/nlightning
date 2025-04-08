@@ -105,7 +105,7 @@ public class FundingOutputTests
 
         // Then
         Assert.Equal(fundingOutput.TxId, coin.Outpoint.Hash);
-        Assert.Equal(fundingOutput.Index, coin.Outpoint.N);
+        Assert.Equal(fundingOutput.Index, (int)coin.Outpoint.N);
         Assert.Equal((Money)fundingOutput.Amount, coin.Amount);
         Assert.Equal(fundingOutput.ScriptPubKey, coin.ScriptPubKey);
         Assert.Equal(fundingOutput.RedeemScript, coin.Redeem);

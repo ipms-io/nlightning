@@ -7,7 +7,7 @@ namespace NLightning.Bolts.BOLT3.Outputs;
 /// </summary>
 public class ToAnchorOutput : BaseOutput
 {
-    public override ScriptType ScriptType { get; } // Get correct type
+    public override ScriptType ScriptType => ScriptType.P2WSH;
 
     public PubKey RemoteFundingPubKey { get; set; }
 

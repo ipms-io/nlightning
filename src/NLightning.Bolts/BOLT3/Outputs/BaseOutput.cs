@@ -24,7 +24,13 @@ public abstract class BaseOutput
     /// </summary>
     public uint256? TxId { get; set; }
 
-    public uint Index { get; set; }
+    /// <summary>
+    /// Gets or sets the index of the output in the transaction.
+    /// </summary>
+    /// <remarks>
+    /// Output is nonexistent if this is -1.
+    /// </remarks>
+    public int Index { get; set; }
 
     public Script RedeemScript { get; }
 
@@ -39,6 +45,8 @@ public abstract class BaseOutput
         Amount = amount;
         RedeemScript = redeemScript;
         ScriptPubKey = scriptPubKey;
+        TxId = uint256.Zero;
+        Index = -1;
     }
     protected BaseOutput(Script redeemScript, LightningMoney amount)
     {
@@ -57,6 +65,8 @@ public abstract class BaseOutput
             ScriptType.P2SH => redeemScript.Hash.ScriptPubKey,
             _ => redeemScript.PaymentScript
         };
+        TxId = uint256.Zero;
+        Index = -1;
     }
 
     /// <summary>
@@ -70,13 +80,16 @@ public abstract class BaseOutput
 
     public ScriptCoin ToCoin()
     {
+        if (Index == -1)
+            throw new InvalidOperationException("Output is nonexistent. Sign the transaction first.");
+
         if (TxId is null || TxId == uint256.Zero || TxId == uint256.One)
             throw new InvalidOperationException("Transaction ID is not set. Sign the transaction first.");
 
         if (Amount.IsZero)
             throw new InvalidOperationException("You can't spend a zero amount output.");
 
-        return new ScriptCoin(TxId, Index, Amount, ScriptPubKey, RedeemScript);
+        return new ScriptCoin(TxId, checked((uint)Index), Amount, ScriptPubKey, RedeemScript);
     }
 
     public int CompareTo(BaseOutput? other) => other is null ? 1 : TransactionOutputComparer.Instance.Compare(this, other);

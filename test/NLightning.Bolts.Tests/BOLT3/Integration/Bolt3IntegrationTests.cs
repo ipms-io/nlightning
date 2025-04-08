@@ -1,10 +1,13 @@
+using System.Reflection;
 using NBitcoin;
-using NLightning.Bolts.BOLT3.Services;
+using NBitcoin.Policy;
 
 namespace NLightning.Bolts.Tests.BOLT3.Integration;
 
 using Bolts.BOLT3.Factories;
 using Bolts.BOLT3.Outputs;
+using Bolts.BOLT3.Services;
+using Bolts.BOLT3.Transactions;
 using Bolts.BOLT3.Types;
 using Common.Enums;
 using Common.Interfaces;
@@ -16,6 +19,14 @@ using Utils;
 [Collection(ConfigManagerCollection.NAME)]
 public class Bolt3IntegrationTests
 {
+    private OfferedHtlcOutput? _offeredHtlc2;
+    private OfferedHtlcOutput? _offeredHtlc3;
+    private OfferedHtlcOutput? _offeredHtlc5;
+    private OfferedHtlcOutput? _offeredHtlc6;
+    private ReceivedHtlcOutput? _receivedHtlc0;
+    private ReceivedHtlcOutput? _receivedHtlc1;
+    private ReceivedHtlcOutput? _receivedHtlc4;
+
     private readonly CommitmentNumber _commitmentNumber = new(AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
                                                               AppendixCVectors.NODE_B_PAYMENT_BASEPOINT,
                                                               AppendixCVectors.COMMITMENT_NUMBER);
@@ -24,7 +35,13 @@ public class Bolt3IntegrationTests
                                                         AppendixCVectors.NODE_B_FUNDING_PUBKEY,
                                                         AppendixBVectors.FUNDING_SATOSHIS)
     {
-        TxId = AppendixBVectors.EXPECTED_TX_ID
+        TxId = AppendixBVectors.EXPECTED_TX_ID,
+        Index = 0
+    };
+
+    private readonly StandardTransactionPolicy _dontCheckFeePolicy = new()
+    {
+        CheckFee = false
     };
 
     #region Appendix B Vectors
@@ -54,6 +71,7 @@ public class Bolt3IntegrationTests
 
         // Then
         Assert.Equal(AppendixBVectors.EXPECTED_TX.ToBytes(), finalFundingTx.ToBytes());
+        Assert.True(fundingTransaction.IsValid);
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -71,25 +89,20 @@ public class Bolt3IntegrationTests
         var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
 
         // When
-        var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(_fundingOutput.ToCoin(),
-                                                                                            AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
-                                                                                            AppendixCVectors.NODE_B_PAYMENT_BASEPOINT,
-                                                                                            AppendixCVectors.NODE_A_DELAYED_PUBKEY,
-                                                                                            AppendixCVectors.NODE_A_REVOCATION_PUBKEY,
-                                                                                            AppendixCVectors.TX0_TO_LOCAL_MSAT,
-                                                                                            AppendixCVectors.TO_REMOTE_MSAT,
-                                                                                            AppendixCVectors.LOCAL_DELAY,
-                                                                                            _commitmentNumber, true,
-                                                                                            new BitcoinSecret(
-                                                                                                AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
-                                                                                                ConfigManager.Instance.Network));
+        var commitmentTransaction = commitmentTransactionFactory.CreateCommitmentTransaction(
+            _fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT, AppendixCVectors.NODE_B_PAYMENT_BASEPOINT,
+            AppendixCVectors.NODE_A_DELAYED_PUBKEY, AppendixCVectors.NODE_A_REVOCATION_PUBKEY,
+            AppendixCVectors.TX0_TO_LOCAL_MSAT, AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY,
+            _commitmentNumber, true, new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
+                                                       ConfigManager.Instance.Network));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_0, _fundingOutput.RemotePubKey);
+        commitmentTransaction.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_0, _fundingOutput.RemotePubKey);
 
-        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
+        var finalCommitmentTx = commitmentTransaction.GetSignedTransaction();
 
         // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_0.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransaction.IsValid);
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -99,35 +112,18 @@ public class Bolt3IntegrationTests
     {
         // Given
         ConfigManager.Instance.IsOptionAnchorOutput = false;
+        GenerateHtlcs();
 
         var feeServiceMock = new Mock<IFeeService>();
         feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(LightningMoney.Zero);
         var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
 
-        List<OfferedHtlcOutput> offeredHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC2_PAYMENT_HASH,
-                AppendixCVectors.HTLC2_AMOUNT, AppendixCVectors.HTLC2_CLTV_EXPIRY),
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC3_PAYMENT_HASH,
-                AppendixCVectors.HTLC3_AMOUNT, AppendixCVectors.HTLC3_CLTV_EXPIRY),
-        ];
-
-        List<ReceivedHtlcOutput> receivedHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC0_PAYMENT_HASH,
-                AppendixCVectors.HTLC0_AMOUNT, AppendixCVectors.HTLC0_CLTV_EXPIRY),
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC1_PAYMENT_HASH,
-                AppendixCVectors.HTLC1_AMOUNT, AppendixCVectors.HTLC1_CLTV_EXPIRY),
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC4_PAYMENT_HASH,
-                AppendixCVectors.HTLC4_AMOUNT, AppendixCVectors.HTLC4_CLTV_EXPIRY),
-        ];
+        List<OfferedHtlcOutput> offeredHtlcs = [_offeredHtlc2!, _offeredHtlc3!];
+        List<ReceivedHtlcOutput> receivedHtlcs = [_receivedHtlc0!, _receivedHtlc1!, _receivedHtlc4!];
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.
-            CreateCommitmentTransaction(_fundingOutput.ToCoin(), AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
                                         AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
                                         AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.TX1_TO_LOCAL_MSAT,
                                         AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
@@ -135,12 +131,18 @@ public class Bolt3IntegrationTests
                                         new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
 
+        // Allow zero fee via reflection
+        var builder = typeof(BaseTransaction).GetField("_builder", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(commitmentTransacion);
+        var propertyInfo = typeof(TransactionBuilder).GetProperty("StandardTransactionPolicy", BindingFlags.Public | BindingFlags.Instance);
+        propertyInfo?.SetValue(builder, _dontCheckFeePolicy);
+
         commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_1, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_1.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -150,35 +152,18 @@ public class Bolt3IntegrationTests
     {
         // Given
         ConfigManager.Instance.IsOptionAnchorOutput = false;
+        GenerateHtlcs();
 
         var feeServiceMock = new Mock<IFeeService>();
         feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(647, LightningMoneyUnit.SATOSHI));
         var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
 
-        List<OfferedHtlcOutput> offeredHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC2_PAYMENT_HASH,
-                AppendixCVectors.HTLC2_AMOUNT, AppendixCVectors.HTLC2_CLTV_EXPIRY),
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC3_PAYMENT_HASH,
-                AppendixCVectors.HTLC3_AMOUNT, AppendixCVectors.HTLC3_CLTV_EXPIRY),
-        ];
-
-        List<ReceivedHtlcOutput> receivedHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC0_PAYMENT_HASH,
-                AppendixCVectors.HTLC0_AMOUNT, AppendixCVectors.HTLC0_CLTV_EXPIRY),
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC1_PAYMENT_HASH,
-                AppendixCVectors.HTLC1_AMOUNT, AppendixCVectors.HTLC1_CLTV_EXPIRY),
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC4_PAYMENT_HASH,
-                AppendixCVectors.HTLC4_AMOUNT, AppendixCVectors.HTLC4_CLTV_EXPIRY),
-        ];
+        List<OfferedHtlcOutput> offeredHtlcs = [_offeredHtlc2!, _offeredHtlc3!];
+        List<ReceivedHtlcOutput> receivedHtlcs = [_receivedHtlc0!, _receivedHtlc1!, _receivedHtlc4!];
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.
-            CreateCommitmentTransaction(_fundingOutput.ToCoin(), AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
                                         AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
                                         AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.TX1_TO_LOCAL_MSAT,
                                         AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
@@ -192,6 +177,7 @@ public class Bolt3IntegrationTests
 
         // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_2.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -201,32 +187,18 @@ public class Bolt3IntegrationTests
     {
         // Given
         ConfigManager.Instance.IsOptionAnchorOutput = false;
+        GenerateHtlcs();
 
         var feeServiceMock = new Mock<IFeeService>();
         feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(648, LightningMoneyUnit.SATOSHI));
         var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
 
-        List<OfferedHtlcOutput> offeredHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC2_PAYMENT_HASH,
-                AppendixCVectors.HTLC2_AMOUNT, AppendixCVectors.HTLC2_CLTV_EXPIRY),
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC3_PAYMENT_HASH,
-                AppendixCVectors.HTLC3_AMOUNT, AppendixCVectors.HTLC3_CLTV_EXPIRY),
-        ];
-
-        List<ReceivedHtlcOutput> receivedHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC1_PAYMENT_HASH,
-                AppendixCVectors.HTLC1_AMOUNT, AppendixCVectors.HTLC1_CLTV_EXPIRY),
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC4_PAYMENT_HASH,
-                AppendixCVectors.HTLC4_AMOUNT, AppendixCVectors.HTLC4_CLTV_EXPIRY),
-        ];
+        List<OfferedHtlcOutput> offeredHtlcs = [_offeredHtlc2!, _offeredHtlc3!];
+        List<ReceivedHtlcOutput> receivedHtlcs = [_receivedHtlc1!, _receivedHtlc4!];
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.
-            CreateCommitmentTransaction(_fundingOutput.ToCoin(), AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
                                         AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
                                         AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.TX1_TO_LOCAL_MSAT,
                                         AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
@@ -240,6 +212,7 @@ public class Bolt3IntegrationTests
 
         // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_3.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -249,32 +222,18 @@ public class Bolt3IntegrationTests
     {
         // Given
         ConfigManager.Instance.IsOptionAnchorOutput = false;
+        GenerateHtlcs();
 
         var feeServiceMock = new Mock<IFeeService>();
         feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(2069, LightningMoneyUnit.SATOSHI));
         var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
 
-        List<OfferedHtlcOutput> offeredHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC2_PAYMENT_HASH,
-                AppendixCVectors.HTLC2_AMOUNT, AppendixCVectors.HTLC2_CLTV_EXPIRY),
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC3_PAYMENT_HASH,
-                AppendixCVectors.HTLC3_AMOUNT, AppendixCVectors.HTLC3_CLTV_EXPIRY),
-        ];
-
-        List<ReceivedHtlcOutput> receivedHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC1_PAYMENT_HASH,
-                AppendixCVectors.HTLC1_AMOUNT, AppendixCVectors.HTLC1_CLTV_EXPIRY),
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC4_PAYMENT_HASH,
-                AppendixCVectors.HTLC4_AMOUNT, AppendixCVectors.HTLC4_CLTV_EXPIRY),
-        ];
+        List<OfferedHtlcOutput> offeredHtlcs = [_offeredHtlc2!, _offeredHtlc3!];
+        List<ReceivedHtlcOutput> receivedHtlcs = [_receivedHtlc1!, _receivedHtlc4!];
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.
-            CreateCommitmentTransaction(_fundingOutput.ToCoin(), AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
                                         AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
                                         AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.TX1_TO_LOCAL_MSAT,
                                         AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
@@ -288,6 +247,7 @@ public class Bolt3IntegrationTests
 
         // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_4.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -297,29 +257,18 @@ public class Bolt3IntegrationTests
     {
         // Given
         ConfigManager.Instance.IsOptionAnchorOutput = false;
+        GenerateHtlcs();
 
         var feeServiceMock = new Mock<IFeeService>();
         feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(2070, LightningMoneyUnit.SATOSHI));
         var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
 
-        List<OfferedHtlcOutput> offeredHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                                  AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC2_PAYMENT_HASH,
-                                  AppendixCVectors.HTLC2_AMOUNT, AppendixCVectors.HTLC2_CLTV_EXPIRY),
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                                  AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC3_PAYMENT_HASH,
-                                  AppendixCVectors.HTLC3_AMOUNT, AppendixCVectors.HTLC3_CLTV_EXPIRY),
-        ];
-
-        List<ReceivedHtlcOutput> receivedHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                                   AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC4_PAYMENT_HASH,
-                                   AppendixCVectors.HTLC4_AMOUNT, AppendixCVectors.HTLC4_CLTV_EXPIRY),
-        ];
+        List<OfferedHtlcOutput> offeredHtlcs = [_offeredHtlc2!, _offeredHtlc3!];
+        List<ReceivedHtlcOutput> receivedHtlcs = [_receivedHtlc4!];
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.
-            CreateCommitmentTransaction(_fundingOutput.ToCoin(), AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
                                         AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
                                         AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.TX1_TO_LOCAL_MSAT,
                                         AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
@@ -333,6 +282,7 @@ public class Bolt3IntegrationTests
 
         // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_5.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -342,29 +292,18 @@ public class Bolt3IntegrationTests
     {
         // Given
         ConfigManager.Instance.IsOptionAnchorOutput = false;
+        GenerateHtlcs();
 
         var feeServiceMock = new Mock<IFeeService>();
         feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(2194, LightningMoneyUnit.SATOSHI));
         var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
 
-        List<OfferedHtlcOutput> offeredHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                                  AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC2_PAYMENT_HASH,
-                                  AppendixCVectors.HTLC2_AMOUNT, AppendixCVectors.HTLC2_CLTV_EXPIRY),
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                                  AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC3_PAYMENT_HASH,
-                                  AppendixCVectors.HTLC3_AMOUNT, AppendixCVectors.HTLC3_CLTV_EXPIRY),
-        ];
-
-        List<ReceivedHtlcOutput> receivedHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                                   AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC4_PAYMENT_HASH,
-                                   AppendixCVectors.HTLC4_AMOUNT, AppendixCVectors.HTLC4_CLTV_EXPIRY),
-        ];
+        List<OfferedHtlcOutput> offeredHtlcs = [_offeredHtlc2!, _offeredHtlc3!];
+        List<ReceivedHtlcOutput> receivedHtlcs = [_receivedHtlc4!];
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.
-            CreateCommitmentTransaction(_fundingOutput.ToCoin(), AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
                                         AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
                                         AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.TX1_TO_LOCAL_MSAT,
                                         AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
@@ -378,6 +317,7 @@ public class Bolt3IntegrationTests
 
         // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_6.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -387,26 +327,18 @@ public class Bolt3IntegrationTests
     {
         // Given
         ConfigManager.Instance.IsOptionAnchorOutput = false;
+        GenerateHtlcs();
 
         var feeServiceMock = new Mock<IFeeService>();
         feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(2195, LightningMoneyUnit.SATOSHI));
         var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
 
-        List<OfferedHtlcOutput> offeredHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                                  AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC3_PAYMENT_HASH,
-                                  AppendixCVectors.HTLC3_AMOUNT, AppendixCVectors.HTLC3_CLTV_EXPIRY),
-        ];
-
-        List<ReceivedHtlcOutput> receivedHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                                   AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC4_PAYMENT_HASH,
-                                   AppendixCVectors.HTLC4_AMOUNT, AppendixCVectors.HTLC4_CLTV_EXPIRY),
-        ];
+        List<OfferedHtlcOutput> offeredHtlcs = [_offeredHtlc3!];
+        List<ReceivedHtlcOutput> receivedHtlcs = [_receivedHtlc4!];
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.
-            CreateCommitmentTransaction(_fundingOutput.ToCoin(), AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
                                         AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
                                         AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.TX1_TO_LOCAL_MSAT,
                                         AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
@@ -420,6 +352,7 @@ public class Bolt3IntegrationTests
 
         // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_7.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -429,26 +362,18 @@ public class Bolt3IntegrationTests
     {
         // Given
         ConfigManager.Instance.IsOptionAnchorOutput = false;
+        GenerateHtlcs();
 
         var feeServiceMock = new Mock<IFeeService>();
         feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(3702, LightningMoneyUnit.SATOSHI));
         var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
 
-        List<OfferedHtlcOutput> offeredHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                                  AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC3_PAYMENT_HASH,
-                                  AppendixCVectors.HTLC3_AMOUNT, AppendixCVectors.HTLC3_CLTV_EXPIRY),
-        ];
-
-        List<ReceivedHtlcOutput> receivedHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                                   AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC4_PAYMENT_HASH,
-                                   AppendixCVectors.HTLC4_AMOUNT, AppendixCVectors.HTLC4_CLTV_EXPIRY),
-        ];
+        List<OfferedHtlcOutput> offeredHtlcs = [_offeredHtlc3!];
+        List<ReceivedHtlcOutput> receivedHtlcs = [_receivedHtlc4!];
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.
-            CreateCommitmentTransaction(_fundingOutput.ToCoin(), AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
                                         AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
                                         AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.TX1_TO_LOCAL_MSAT,
                                         AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
@@ -462,6 +387,7 @@ public class Bolt3IntegrationTests
 
         // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_8.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -471,28 +397,22 @@ public class Bolt3IntegrationTests
     {
         // Given
         ConfigManager.Instance.IsOptionAnchorOutput = false;
+        GenerateHtlcs();
 
         var feeServiceMock = new Mock<IFeeService>();
         feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(3703, LightningMoneyUnit.SATOSHI));
         var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
 
-        List<OfferedHtlcOutput> offeredHtlcs = [];
-
-        List<ReceivedHtlcOutput> receivedHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                                   AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC4_PAYMENT_HASH,
-                                   AppendixCVectors.HTLC4_AMOUNT, AppendixCVectors.HTLC4_CLTV_EXPIRY),
-        ];
+        List<ReceivedHtlcOutput> receivedHtlcs = [_receivedHtlc4!];
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.
-            CreateCommitmentTransaction(_fundingOutput.ToCoin(), AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
                                         AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
                                         AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.TX1_TO_LOCAL_MSAT,
                                         AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
-                                        true, offeredHtlcs, receivedHtlcs,
-                                        new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
-                                                          ConfigManager.Instance.Network));
+                                        true, [], receivedHtlcs, new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
+                                                                                   ConfigManager.Instance.Network));
 
         commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_9, _fundingOutput.RemotePubKey);
 
@@ -500,6 +420,7 @@ public class Bolt3IntegrationTests
 
         // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_9.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -509,26 +430,22 @@ public class Bolt3IntegrationTests
     {
         // Given
         ConfigManager.Instance.IsOptionAnchorOutput = false;
+        GenerateHtlcs();
 
         var feeServiceMock = new Mock<IFeeService>();
         feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(4914, LightningMoneyUnit.SATOSHI));
         var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
 
-        List<ReceivedHtlcOutput> receivedHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                                   AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC4_PAYMENT_HASH,
-                                   AppendixCVectors.HTLC4_AMOUNT, AppendixCVectors.HTLC4_CLTV_EXPIRY),
-        ];
+        List<ReceivedHtlcOutput> receivedHtlcs = [_receivedHtlc4!];
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.
-            CreateCommitmentTransaction(_fundingOutput.ToCoin(), AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
                                         AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
                                         AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.TX1_TO_LOCAL_MSAT,
                                         AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
-                                        true, [], receivedHtlcs,
-                                        new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
-                                                          ConfigManager.Instance.Network));
+                                        true, [], receivedHtlcs, new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
+                                                                                   ConfigManager.Instance.Network));
 
         commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_10, _fundingOutput.RemotePubKey);
 
@@ -536,6 +453,7 @@ public class Bolt3IntegrationTests
 
         // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_10.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -552,12 +470,12 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.
-            CreateCommitmentTransaction(_fundingOutput.ToCoin(), AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
                                         AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
                                         AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.TX1_TO_LOCAL_MSAT,
                                         AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
                                         true, new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
-                                                          ConfigManager.Instance.Network));
+                                                                ConfigManager.Instance.Network));
 
         commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_11, _fundingOutput.RemotePubKey);
 
@@ -565,6 +483,7 @@ public class Bolt3IntegrationTests
 
         // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_11.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -581,12 +500,17 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.
-            CreateCommitmentTransaction(_fundingOutput.ToCoin(), AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
                                         AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
                                         AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.TX1_TO_LOCAL_MSAT,
                                         AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
                                         true, new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
-                                                          ConfigManager.Instance.Network));
+                                                                ConfigManager.Instance.Network));
+
+        // Allow huge fee via reflection
+        var builder = typeof(BaseTransaction).GetField("_builder", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(commitmentTransacion);
+        var propertyInfo = typeof(TransactionBuilder).GetProperty("StandardTransactionPolicy", BindingFlags.Public | BindingFlags.Instance);
+        propertyInfo?.SetValue(builder, _dontCheckFeePolicy);
 
         commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_12, _fundingOutput.RemotePubKey);
 
@@ -594,6 +518,7 @@ public class Bolt3IntegrationTests
 
         // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_12.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -610,12 +535,17 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.
-            CreateCommitmentTransaction(_fundingOutput.ToCoin(), AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
                                         AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
                                         AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.TX1_TO_LOCAL_MSAT,
                                         AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
                                         true, new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
+
+        // Allow huge fee via reflection
+        var builder = typeof(BaseTransaction).GetField("_builder", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(commitmentTransacion);
+        var propertyInfo = typeof(TransactionBuilder).GetProperty("StandardTransactionPolicy", BindingFlags.Public | BindingFlags.Instance);
+        propertyInfo?.SetValue(builder, _dontCheckFeePolicy);
 
         commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_13, _fundingOutput.RemotePubKey);
 
@@ -623,6 +553,7 @@ public class Bolt3IntegrationTests
 
         // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_13.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -639,12 +570,17 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.
-            CreateCommitmentTransaction(_fundingOutput.ToCoin(), AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
                                         AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
                                         AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.TX1_TO_LOCAL_MSAT,
                                         AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
                                         true, new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
+
+        // Allow huge fee via reflection
+        var builder = typeof(BaseTransaction).GetField("_builder", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(commitmentTransacion);
+        var propertyInfo = typeof(TransactionBuilder).GetProperty("StandardTransactionPolicy", BindingFlags.Public | BindingFlags.Instance);
+        propertyInfo?.SetValue(builder, _dontCheckFeePolicy);
 
         commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_14, _fundingOutput.RemotePubKey);
 
@@ -652,6 +588,7 @@ public class Bolt3IntegrationTests
 
         // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_14.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -661,33 +598,23 @@ public class Bolt3IntegrationTests
     {
         // Given
         ConfigManager.Instance.IsOptionAnchorOutput = false;
+        GenerateHtlcs();
 
         var feeServiceMock = new Mock<IFeeService>();
         feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(253, LightningMoneyUnit.SATOSHI));
         var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
 
-        List<OfferedHtlcOutput> offeredHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC5_PAYMENT_HASH,
-                AppendixCVectors.HTLC5_AMOUNT, AppendixCVectors.HTLC5_CLTV_EXPIRY),
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC6_PAYMENT_HASH,
-                AppendixCVectors.HTLC6_AMOUNT, AppendixCVectors.HTLC6_CLTV_EXPIRY),
-        ];
-
-        List<ReceivedHtlcOutput> receivedHtlcs = [
-            new(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
-                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC1_PAYMENT_HASH,
-                AppendixCVectors.HTLC1_AMOUNT, AppendixCVectors.HTLC1_CLTV_EXPIRY),
-        ];
+        List<OfferedHtlcOutput> offeredHtlcs = [_offeredHtlc5!, _offeredHtlc6!];
+        List<ReceivedHtlcOutput> receivedHtlcs = [_receivedHtlc1!];
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.
-            CreateCommitmentTransaction(_fundingOutput.ToCoin(), AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
                                         AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
                                         AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.TX15_TO_LOCAL_MSAT,
                                         AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
-                                        true, offeredHtlcs, receivedHtlcs, new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
+                                        true, offeredHtlcs, receivedHtlcs,
+                                        new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
                                                           ConfigManager.Instance.Network));
 
         commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NODE_B_SIGNATURE_15, _fundingOutput.RemotePubKey);
@@ -696,6 +623,7 @@ public class Bolt3IntegrationTests
 
         // Then
         Assert.Equal(AppendixCVectors.EXPECTED_COMMIT_TX_15.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
 
         ConfigManagerUtil.ResetConfigManager();
     }
@@ -707,8 +635,6 @@ public class Bolt3IntegrationTests
     public void Given_Bolt3Specifications_When_GeneratingFromSeed0FinalNode_Then_ShouldBeEqualToTestVector()
     {
         // Given
-        var keyDerivationService = new KeyDerivationService();
-
         // When
         var result = KeyDerivationService.GeneratePerCommitmentSecret(AppendixDVectors.SEED_0_FINAL_NODE,
                                                                       AppendixDVectors.I_0_FINAL_NODE);
@@ -721,8 +647,6 @@ public class Bolt3IntegrationTests
     public void Given_Bolt3Specifications_When_GeneratingFromSeedFFFinalNode_Then_ShouldBeEqualToTestVector()
     {
         // Given
-        var keyDerivationService = new KeyDerivationService();
-
         // When
         var result = KeyDerivationService.GeneratePerCommitmentSecret(AppendixDVectors.SEED_FF_FINAL_NODE,
                                                                       AppendixDVectors.I_FF_FINAL_NODE);
@@ -735,8 +659,6 @@ public class Bolt3IntegrationTests
     public void Given_Bolt3Specifications_When_GeneratingFromSeedFFAlternateBits1_Then_ShouldBeEqualToTestVector()
     {
         // Given
-        var keyDerivationService = new KeyDerivationService();
-
         // When
         var result = KeyDerivationService.GeneratePerCommitmentSecret(AppendixDVectors.SEED_FF_ALTERNATE_BITS_1,
                                                                       AppendixDVectors.I_FF_ALTERNATE_BITS_1);
@@ -749,8 +671,6 @@ public class Bolt3IntegrationTests
     public void Given_Bolt3Specifications_When_GeneratingFromSeedFFAlternateBits2_Then_ShouldBeEqualToTestVector()
     {
         // Given
-        var keyDerivationService = new KeyDerivationService();
-
         // When
         var result = KeyDerivationService.GeneratePerCommitmentSecret(AppendixDVectors.SEED_FF_ALTERNATE_BITS_2,
                                                                       AppendixDVectors.I_FF_ALTERNATE_BITS_2);
@@ -763,8 +683,6 @@ public class Bolt3IntegrationTests
     public void Given_Bolt3Specifications_When_GeneratingFromSeed01LastNonTrivialNode_Then_ShouldBeEqualToTestVector()
     {
         // Given
-        var keyDerivationService = new KeyDerivationService();
-
         // When
         var result = KeyDerivationService.GeneratePerCommitmentSecret(AppendixDVectors.SEED_01_LAST_NON_TRIVIAL_NODE,
                                                                       AppendixDVectors.I_01_LAST_NON_TRIVIAL_NODE);
@@ -1129,4 +1047,335 @@ public class Bolt3IntegrationTests
         Assert.Equal(expectedRevocationPrivkeyBytes, result.ToBytes());
     }
     #endregion
+
+    #region Vector F Tests
+    [Fact]
+    public void Given_Bolt3Specifications_When_CreatingCommitmentTransactionWithAnchors_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        ConfigManager.Instance.IsOptionAnchorOutput = true;
+
+        var feeServiceMock = new Mock<IFeeService>();
+        feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(15000, LightningMoneyUnit.SATOSHI));
+        var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
+
+        // When
+        var commitmentTransaction = commitmentTransactionFactory.
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+                                        AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
+                                        AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixFVectors.TX0_TO_LOCAL_MSAT,
+                                        AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
+                                        true, new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
+                                                                ConfigManager.Instance.Network));
+
+        commitmentTransaction.AppendRemoteSignatureAndSign(AppendixFVectors.NODE_B_SIGNATURE_0, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransaction.GetSignedTransaction();
+
+        // Then
+        Assert.Equal(AppendixFVectors.EXPECTED_COMMIT_TX_0.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransaction.IsValid);
+
+        ConfigManagerUtil.ResetConfigManager();
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_CreatingCommitmentTransactionWithSingleAnchor_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        ConfigManager.Instance.IsOptionAnchorOutput = true;
+
+        var feeServiceMock = new Mock<IFeeService>();
+        feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(15000, LightningMoneyUnit.SATOSHI));
+        var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
+
+        // When
+        var commitmentTransaction = commitmentTransactionFactory.
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+                                        AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
+                                        AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixFVectors.TX1_TO_LOCAL_MSAT,
+                                        0UL, AppendixCVectors.LOCAL_DELAY, _commitmentNumber, true,
+                                        new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
+                                                          ConfigManager.Instance.Network));
+
+        commitmentTransaction.AppendRemoteSignatureAndSign(AppendixFVectors.NODE_B_SIGNATURE_1, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransaction.GetSignedTransaction();
+
+        // Then
+        Assert.Equal(AppendixFVectors.EXPECTED_COMMIT_TX_1.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransaction.IsValid);
+
+        ConfigManagerUtil.ResetConfigManager();
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_CreatingCommitmentTransactionWithAnchorsAnd7OutputsUntrimmed_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        ConfigManager.Instance.IsOptionAnchorOutput = true;
+        GenerateHtlcs();
+
+        var feeServiceMock = new Mock<IFeeService>();
+        feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(644, LightningMoneyUnit.SATOSHI));
+        var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
+
+        List<OfferedHtlcOutput> offeredHtlcs = [_offeredHtlc2!, _offeredHtlc3!];
+        List<ReceivedHtlcOutput> receivedHtlcs = [_receivedHtlc0!, _receivedHtlc1!, _receivedHtlc4!];
+
+        // When
+        var commitmentTransacion = commitmentTransactionFactory.
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+                                        AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
+                                        AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixFVectors.TX2_TO_LOCAL_MSAT,
+                                        AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
+                                        true, offeredHtlcs, receivedHtlcs,
+                                        new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
+                                                          ConfigManager.Instance.Network));
+
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixFVectors.NODE_B_SIGNATURE_2, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
+
+        // Then
+        Assert.Equal(AppendixFVectors.EXPECTED_COMMIT_TX_2.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
+
+        ConfigManagerUtil.ResetConfigManager();
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_CreatingCommitmentTransactionWithAnchorsAnd6OutputsUntrimmed_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        ConfigManager.Instance.IsOptionAnchorOutput = true;
+        ConfigManager.Instance.DustLimitAmount = new LightningMoney(1001, LightningMoneyUnit.SATOSHI);
+        GenerateHtlcs();
+
+        var feeServiceMock = new Mock<IFeeService>();
+        feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(645, LightningMoneyUnit.SATOSHI));
+        var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
+
+        List<OfferedHtlcOutput> offeredHtlcs = [_offeredHtlc2!, _offeredHtlc3!];
+        List<ReceivedHtlcOutput> receivedHtlcs = [_receivedHtlc1!, _receivedHtlc4!];
+
+        // When
+        var commitmentTransacion = commitmentTransactionFactory.
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+                                        AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
+                                        AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixFVectors.TX2_TO_LOCAL_MSAT,
+                                        AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
+                                        true, offeredHtlcs, receivedHtlcs,
+                                        new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
+                                                          ConfigManager.Instance.Network));
+
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixFVectors.NODE_B_SIGNATURE_3, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
+
+        // Then
+        Assert.Equal(AppendixFVectors.EXPECTED_COMMIT_TX_3.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
+
+        ConfigManagerUtil.ResetConfigManager();
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_CreatingCommitmentTransactionWithAnchorsAnd4OutputsUntrimmedMinFeeRate_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        ConfigManager.Instance.IsOptionAnchorOutput = true;
+        ConfigManager.Instance.DustLimitAmount = new LightningMoney(2001, LightningMoneyUnit.SATOSHI);
+        GenerateHtlcs();
+
+        var feeServiceMock = new Mock<IFeeService>();
+        feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(2185, LightningMoneyUnit.SATOSHI));
+        var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
+
+        List<OfferedHtlcOutput> offeredHtlcs = [_offeredHtlc3!];
+        List<ReceivedHtlcOutput> receivedHtlcs = [_receivedHtlc4!];
+
+        // When
+        var commitmentTransacion = commitmentTransactionFactory.
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+                                        AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
+                                        AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixFVectors.TX2_TO_LOCAL_MSAT,
+                                        AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
+                                        true, offeredHtlcs, receivedHtlcs,
+                                        new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
+                                                          ConfigManager.Instance.Network));
+
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixFVectors.NODE_B_SIGNATURE_4, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
+
+        // Then
+        Assert.Equal(AppendixFVectors.EXPECTED_COMMIT_TX_4.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
+
+        ConfigManagerUtil.ResetConfigManager();
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_CreatingCommitmentTransactionWithAnchorsAnd3OutputsUntrimmedMinFeeRate_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        ConfigManager.Instance.IsOptionAnchorOutput = true;
+        ConfigManager.Instance.DustLimitAmount = new LightningMoney(3001, LightningMoneyUnit.SATOSHI);
+        GenerateHtlcs();
+
+        var feeServiceMock = new Mock<IFeeService>();
+        feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(3687, LightningMoneyUnit.SATOSHI));
+        var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
+
+        List<ReceivedHtlcOutput> receivedHtlcs = [_receivedHtlc4!];
+
+        // When
+        var commitmentTransacion = commitmentTransactionFactory.
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+                                        AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
+                                        AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixFVectors.TX2_TO_LOCAL_MSAT,
+                                        AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
+                                        true, [], receivedHtlcs, new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
+                                                                 ConfigManager.Instance.Network));
+
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixFVectors.NODE_B_SIGNATURE_5, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
+
+        // Then
+        Assert.Equal(AppendixFVectors.EXPECTED_COMMIT_TX_5.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
+
+        ConfigManagerUtil.ResetConfigManager();
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_CreatingCommitmentTransactionWithAnchorsAnd2OutputsUntrimmedMinFeeRate_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        ConfigManager.Instance.IsOptionAnchorOutput = true;
+        ConfigManager.Instance.DustLimitAmount = new LightningMoney(4001, LightningMoneyUnit.SATOSHI);
+
+        var feeServiceMock = new Mock<IFeeService>();
+        feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(4894, LightningMoneyUnit.SATOSHI));
+        var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
+
+        // When
+        var commitmentTransacion = commitmentTransactionFactory.
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+                                        AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
+                                        AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixFVectors.TX2_TO_LOCAL_MSAT,
+                                        AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
+                                        true, new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
+                                                                ConfigManager.Instance.Network));
+
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixFVectors.NODE_B_SIGNATURE_6, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
+
+        // Then
+        Assert.Equal(AppendixFVectors.EXPECTED_COMMIT_TX_6.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
+
+        ConfigManagerUtil.ResetConfigManager();
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_CreatingCommitmentTransactionWithAnchorsAnd1OutputsUntrimmedMinFeeRate_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        ConfigManager.Instance.IsOptionAnchorOutput = true;
+        ConfigManager.Instance.DustLimitAmount = new LightningMoney(4001, LightningMoneyUnit.SATOSHI);
+
+        var feeServiceMock = new Mock<IFeeService>();
+        feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(6_216_010, LightningMoneyUnit.SATOSHI));
+        var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
+
+        // When
+        var commitmentTransacion = commitmentTransactionFactory.
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+                                        AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
+                                        AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixFVectors.TX2_TO_LOCAL_MSAT,
+                                        AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
+                                        true, new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
+                                                          ConfigManager.Instance.Network));
+
+        // Allow huge fee via reflection
+        var builder = typeof(BaseTransaction).GetField("_builder", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(commitmentTransacion);
+        var propertyInfo = typeof(TransactionBuilder).GetProperty("StandardTransactionPolicy", BindingFlags.Public | BindingFlags.Instance);
+        propertyInfo?.SetValue(builder, _dontCheckFeePolicy);
+
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixFVectors.NODE_B_SIGNATURE_7, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
+
+        // Then
+        Assert.Equal(AppendixFVectors.EXPECTED_COMMIT_TX_7.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
+
+        ConfigManagerUtil.ResetConfigManager();
+    }
+
+    [Fact]
+    public void Given_Bolt3Specifications_When_CreatingCommitmentTransactionWithAnchorsAnd2SimilarOfferedHtlc_Then_ShouldBeEqualToTestVector()
+    {
+        // Given
+        ConfigManager.Instance.IsOptionAnchorOutput = true;
+        GenerateHtlcs();
+
+        var feeServiceMock = new Mock<IFeeService>();
+        feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(253, LightningMoneyUnit.SATOSHI));
+        var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object);
+
+        List<OfferedHtlcOutput> offeredHtlcs = [_offeredHtlc5!, _offeredHtlc6!];
+        List<ReceivedHtlcOutput> receivedHtlcs = [_receivedHtlc1!];
+
+        // When
+        var commitmentTransacion = commitmentTransactionFactory.
+            CreateCommitmentTransaction(_fundingOutput, AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
+                                        AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, AppendixCVectors.NODE_A_DELAYED_PUBKEY,
+                                        AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixFVectors.TX8_TO_LOCAL_MSAT,
+                                        AppendixCVectors.TO_REMOTE_MSAT, AppendixCVectors.LOCAL_DELAY, _commitmentNumber,
+                                        true, offeredHtlcs, receivedHtlcs,
+                                        new BitcoinSecret(AppendixCVectors.NODE_A_FUNDING_PRIVKEY,
+                                                          ConfigManager.Instance.Network));
+
+        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixFVectors.NODE_B_SIGNATURE_8, _fundingOutput.RemotePubKey);
+
+        var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
+
+        // Then
+        Assert.Equal(AppendixFVectors.EXPECTED_COMMIT_TX_8.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.True(commitmentTransacion.IsValid);
+
+        ConfigManagerUtil.ResetConfigManager();
+    }
+    #endregion
+
+    private void GenerateHtlcs()
+    {
+        _offeredHtlc2 = new OfferedHtlcOutput(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
+                                              AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC2_PAYMENT_HASH,
+                                              2_000_000UL, 502);
+        _offeredHtlc3 = new OfferedHtlcOutput(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
+                                              AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC3_PAYMENT_HASH,
+                                              3_000_000UL, 503);
+        _offeredHtlc5 = new OfferedHtlcOutput(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
+                                              AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC5_PAYMENT_HASH,
+                                              5_000_000UL, 506);
+        _offeredHtlc6 = new OfferedHtlcOutput(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
+                                              AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC6_PAYMENT_HASH,
+                                              5_000_000UL, 505);
+
+        _receivedHtlc0 = new ReceivedHtlcOutput(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
+                                                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC0_PAYMENT_HASH,
+                                                1_000_000UL, 500);
+        _receivedHtlc1 = new ReceivedHtlcOutput(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
+                                                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC1_PAYMENT_HASH,
+                                                2_000_000UL, 501);
+        _receivedHtlc4 = new ReceivedHtlcOutput(AppendixCVectors.NODE_A_REVOCATION_PUBKEY, AppendixCVectors.NODE_B_HTLC_PUBKEY,
+                                                AppendixCVectors.NODE_A_HTLC_PUBKEY, AppendixCVectors.HTLC4_PAYMENT_HASH,
+                                                4_000_000UL, 504);
+    }
 }

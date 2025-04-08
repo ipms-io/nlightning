@@ -101,7 +101,7 @@ public class ChangeOutputTests
 
         // Then
         Assert.Equal(changeOutput.TxId, coin.Outpoint.Hash);
-        Assert.Equal(changeOutput.Index, coin.Outpoint.N);
+        Assert.Equal(changeOutput.Index, (int)coin.Outpoint.N);
         Assert.Equal((Money)changeOutput.Amount, coin.Amount);
         Assert.Equal(changeOutput.ScriptPubKey, coin.ScriptPubKey);
     }

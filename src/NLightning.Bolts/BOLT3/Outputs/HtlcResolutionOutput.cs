@@ -2,7 +2,7 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT3.Outputs;
 
-public class HtlcOutput : BaseOutput
+public class HtlcResolutionOutput : BaseOutput
 {
     public override ScriptType ScriptType => ScriptType.P2WSH;
 
@@ -10,7 +10,7 @@ public class HtlcOutput : BaseOutput
     public PubKey LocalDelayedPubKey { get; }
     public ulong ToSelfDelay { get; }
 
-    public HtlcOutput(PubKey revocationPubKey, PubKey localDelayedPubKey, ulong toSelfDelay, LightningMoney amount)
+    public HtlcResolutionOutput(PubKey revocationPubKey, PubKey localDelayedPubKey, ulong toSelfDelay, LightningMoney amount)
         : base(GenerateHtlcOutputScript(revocationPubKey, localDelayedPubKey, toSelfDelay), amount)
     {
         RevocationPubKey = revocationPubKey;

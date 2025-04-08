@@ -1,27 +1,32 @@
 using NBitcoin;
+using NLightning.Common.Interfaces;
 
 namespace NLightning.Bolts.BOLT3.Transactions;
 
-using Common.Managers;
+using Outputs;
 
-public class HtlcSuccessTransaction : HtlcTransactionBase
+public class HtlcSuccessTransaction : BaseHtlcTransaction
 {
-    public HtlcSuccessTransaction(OutPoint outPoint,
-                                  PubKey revocationPubKey,
-                                  PubKey localDelayedPubKey,
-                                  // ReadOnlySpan<byte> remoteHtlcSignature,
-                                  // ReadOnlySpan<byte> localHtlcSignature,
-                                  uint cltvEpiry,
-                                  ulong toSelfDelay,
-                                  ulong amountMilliSats,
-                                  ulong feesSats)
-        : base(revocationPubKey, localDelayedPubKey, toSelfDelay, amountMilliSats, feesSats)
+    public byte[] PaymentPreimage { get; }
+
+    public HtlcSuccessTransaction(IFeeService feeService, BaseHtlcOutput output, PubKey revocationPubKey,
+                                  PubKey localDelayedPubKey, ulong toSelfDelay, ulong amountMilliSats,
+                                  byte[] paymentPreimage)
+        : base(feeService, output, revocationPubKey, localDelayedPubKey, toSelfDelay, amountMilliSats)
     {
-        LockTime = new LockTime(cltvEpiry);
-        Inputs.Add(new TxIn
-        {
-            PrevOut = outPoint,
-            Sequence = new Sequence(ConfigManager.Instance.IsOptionAnchorOutput ? 1 : 0)
-        });
+        SetLockTime(0);
+        PaymentPreimage = paymentPreimage;
+    }
+
+    protected new void SignTransaction(params BitcoinSecret[] secrets)
+    {
+        var witness = new WitScript(
+            Op.GetPushOp(0), // OP_0
+            Op.GetPushOp(0), // Remote signature
+            Op.GetPushOp(0), // Local signature
+            Op.GetPushOp(PaymentPreimage) // Payment pre-image for HTLC-success
+        );
+
+        base.SignTransaction(secrets);
     }
 }

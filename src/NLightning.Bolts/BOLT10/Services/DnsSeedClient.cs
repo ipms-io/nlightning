@@ -28,30 +28,39 @@ public static class DnsSeedClient
         {
             if (list.Count < nodeCount)
             {
-                var srvResult = client.Query(dnsSeed, QueryType.SRV);
-                var srvShuffled = srvResult.Answers.OrderBy(_ => Guid.NewGuid()).ToList();
-
-                foreach (var srv in srvShuffled.SrvRecords())
+                try
                 {
-                    if (list.Count >= nodeCount)
-                    {
+                    var srvResult = client.Query(dnsSeed, QueryType.SRV);
+                    if (srvResult.HasError)
                         continue;
-                    }
 
-                    var result = client.Query(srv.Target, ipV6 ? QueryType.AAAA : QueryType.A);
+                    var srvShuffled = srvResult.Answers.OrderBy(_ => Guid.NewGuid()).ToList();
 
-                    if (result.Answers.Count <= 0)
+                    foreach (var srv in srvShuffled.SrvRecords())
                     {
-                        continue;
-                    }
+                        if (list.Count >= nodeCount)
+                        {
+                            continue;
+                        }
 
-                    var publicKey = GetPublicKey(srv);
-                    var ip = GetIp(result.Answers[0]);
+                        var result = client.Query(srv.Target, ipV6 ? QueryType.AAAA : QueryType.A);
 
-                    if (ip != "0.0.0.0" && ip != "[::0]")
-                    {
-                        list.Add(new NodeRecord(publicKey, new IPEndPoint(IPAddress.Parse(ip), srv.Port)));
+                        if (result.Answers.Count <= 0)
+                        {
+                            continue;
+                        }
+
+                        var publicKey = GetPublicKey(srv);
+                        var ip = GetIp(result.Answers[0]);
+
+                        if (ip != "0.0.0.0" && ip != "[::0]")
+                        {
+                            list.Add(new NodeRecord(publicKey, new IPEndPoint(IPAddress.Parse(ip), srv.Port)));
+                        }
                     }
+                }
+                catch
+                {
                 }
             }
             else

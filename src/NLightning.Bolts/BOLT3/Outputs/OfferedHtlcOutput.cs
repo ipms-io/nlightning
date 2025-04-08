@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using NBitcoin;
 
 namespace NLightning.Bolts.BOLT3.Outputs;
@@ -10,17 +11,13 @@ using Exceptions;
 /// <summary>
 /// Represents an offered HTLC output in a commitment transaction.
 /// </summary>
-public class OfferedHtlcOutput : BaseOutput
+public class OfferedHtlcOutput : BaseHtlcOutput
 {
     public override ScriptType ScriptType => ScriptType.P2WPKH;
 
-    public PubKey RevocationPubKey { get; }
-    public PubKey RemoteHtlcPubKey { get; }
-    public PubKey LocalHtlcPubKey { get; }
-    public ReadOnlyMemory<byte> PaymentHash { get; set; }
-    public ulong CltvExpiry { get; }
-
-    public OfferedHtlcOutput(PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey, ReadOnlyMemory<byte> paymentHash, LightningMoney amount, ulong? cltvExpiry = null)
+    [SetsRequiredMembers]
+    public OfferedHtlcOutput(PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey,
+                             ReadOnlyMemory<byte> paymentHash, LightningMoney amount, ulong? cltvExpiry = null)
         : base(GenerateToRemoteHtlcScript(revocationPubKey, remoteHtlcPubKey, localHtlcPubKey, paymentHash), amount)
     {
         RevocationPubKey = revocationPubKey;

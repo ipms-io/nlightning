@@ -40,8 +40,8 @@ public class BaseOutputTests
         Assert.Equal(_scriptPubKey, output.ScriptPubKey);
         Assert.Equal(_amount, output.Amount);
         Assert.Equal(ScriptType.P2WPKH, output.ScriptType);
-        Assert.Null(output.TxId);
-        Assert.Equal(0u, output.Index);
+        Assert.Equal(uint256.Zero, output.TxId);
+        Assert.Equal(-1, output.Index);
     }
 
     [Fact]
@@ -87,7 +87,7 @@ public class BaseOutputTests
 
         // Then
         Assert.Equal(output.TxId, coin.Outpoint.Hash);
-        Assert.Equal(output.Index, coin.Outpoint.N);
+        Assert.Equal(output.Index, (int)coin.Outpoint.N);
         Assert.Equal((Money)output.Amount, coin.Amount);
         Assert.Equal(output.ScriptPubKey, coin.ScriptPubKey);
         Assert.Equal(output.RedeemScript, coin.Redeem);

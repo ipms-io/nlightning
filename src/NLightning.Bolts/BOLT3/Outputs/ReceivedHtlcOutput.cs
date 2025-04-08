@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using NBitcoin;
 
 namespace NLightning.Bolts.BOLT3.Outputs;
@@ -10,18 +11,16 @@ using Exceptions;
 /// <summary>
 /// Represents a received HTLC output in a commitment transaction.
 /// </summary>
-public class ReceivedHtlcOutput : BaseOutput
+public class ReceivedHtlcOutput : BaseHtlcOutput
 {
     public override ScriptType ScriptType => ScriptType.P2WSH;
 
-    public PubKey RevocationPubKey { get; }
-    public PubKey RemoteHtlcPubKey { get; }
-    public PubKey LocalHtlcPubKey { get; }
-    public ReadOnlyMemory<byte> PaymentHash { get; set; }
-    public ulong CltvExpiry { get; }
-
-    public ReceivedHtlcOutput(PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey, ReadOnlyMemory<byte> paymentHash, LightningMoney amount, ulong? cltvExpiry = null)
-        : base(GenerateToLocalHtlcScript(revocationPubKey, remoteHtlcPubKey, localHtlcPubKey, paymentHash, cltvExpiry ?? ConfigManager.Instance.DefaultCltvExpiry), amount)
+    [SetsRequiredMembers]
+    public ReceivedHtlcOutput(PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey,
+                              ReadOnlyMemory<byte> paymentHash, LightningMoney amount, ulong? cltvExpiry = null)
+        : base(GenerateToLocalHtlcScript(revocationPubKey, remoteHtlcPubKey, localHtlcPubKey, paymentHash,
+                                         cltvExpiry ?? ConfigManager.Instance.DefaultCltvExpiry),
+               amount)
     {
         RevocationPubKey = revocationPubKey;
         RemoteHtlcPubKey = remoteHtlcPubKey;

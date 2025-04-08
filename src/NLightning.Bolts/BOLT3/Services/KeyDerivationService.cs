@@ -144,7 +144,7 @@ public class KeyDerivationService
             throw new InvalidOperationException("Failed to combine public keys");
 
         // Create a new PubKey from the combined ECPubKey
-        return new PubKey(combinedPubKey.ToBytes());
+        return new PubKey(combinedPubKey!.ToBytes());
     }
 
     /// <summary>

@@ -3,7 +3,6 @@ using NBitcoin.Crypto;
 
 namespace NLightning.Bolts.BOLT3.Transactions;
 
-using Common.Interfaces;
 using Common.Managers;
 using Constants;
 using Outputs;
@@ -14,27 +13,29 @@ using Types;
 /// </summary>
 public class CommitmentTransaction : BaseTransaction
 {
-    private const int INPUT_WEIGHT = WeightConstants.WITNESS_HEADER
-                                     + WeightConstants.MULTISIG_WITNESS_WEIGHT
-                                     + (4 * WeightConstants.P2WSH_INTPUT_WEIGHT);
-
+    #region Private Fields
     private readonly bool _isChannelFunder;
-    private readonly IList<OfferedHtlcOutput> _offeredHtlcOutputs = [];
-    private readonly IList<ReceivedHtlcOutput> _receivedHtlcOutputs = [];
 
     private LightningMoney _toFunderAmount;
+    #endregion
 
+    #region Public Properties
     public ToLocalOutput ToLocalOutput { get; }
     public ToRemoteOutput ToRemoteOutput { get; }
     public ToAnchorOutput? LocalAnchorOutput { get; private set; }
     public ToAnchorOutput? RemoteAnchorOutput { get; private set; }
-
     public CommitmentNumber CommitmentNumber { get; }
+    public IList<OfferedHtlcOutput> OfferedHtlcOutputs { get; } = [];
+    public IList<ReceivedHtlcOutput> ReceivedHtlcOutputs { get; } = [];
+
+    #endregion
+
+    #region Constructors
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CommitmentTransaction"/> class.
     /// </summary>
-    /// <param name="fundingCoin">The funding coin.</param>
+    /// <param name="fundingOutput">The funding coin.</param>
     /// <param name="localPaymentBasepoint">The local public key.</param>
     /// <param name="remotePaymentBasepoint">The remote public key.</param>
     /// <param name="localDelayedPubKey">The local delayed public key.</param>
@@ -44,11 +45,12 @@ public class CommitmentTransaction : BaseTransaction
     /// <param name="toSelfDelay">The to_self_delay in blocks.</param>
     /// <param name="commitmentNumber">The commitment number object.</param>
     /// <param name="isChannelFunder">Indicates if the local node is the channel funder.</param>
-    internal CommitmentTransaction(Coin fundingCoin, PubKey localPaymentBasepoint, PubKey remotePaymentBasepoint,
-                                   PubKey localDelayedPubKey, PubKey revocationPubKey, LightningMoney toLocalAmount,
-                                   LightningMoney toRemoteAmount, uint toSelfDelay, CommitmentNumber commitmentNumber,
-                                   bool isChannelFunder)
-        : base(TransactionConstants.COMMITMENT_TRANSACTION_VERSION, (fundingCoin, commitmentNumber.CalculateSequence()))
+    internal CommitmentTransaction(FundingOutput fundingOutput, PubKey localPaymentBasepoint,
+                                   PubKey remotePaymentBasepoint, PubKey localDelayedPubKey, PubKey revocationPubKey,
+                                   LightningMoney toLocalAmount, LightningMoney toRemoteAmount, uint toSelfDelay,
+                                   CommitmentNumber commitmentNumber, bool isChannelFunder)
+        : base(TransactionConstants.COMMITMENT_TRANSACTION_VERSION, SigHash.All, (fundingOutput.ToCoin(),
+                                                                                  commitmentNumber.CalculateSequence()))
     {
         ArgumentNullException.ThrowIfNull(localPaymentBasepoint);
         ArgumentNullException.ThrowIfNull(remotePaymentBasepoint);
@@ -84,17 +86,11 @@ public class CommitmentTransaction : BaseTransaction
 
         // to_local output
         ToLocalOutput = new ToLocalOutput(localDelayedPubKey, revocationPubKey, toSelfDelay, localAmount);
-        if (toLocalAmount >= ConfigManager.Instance.DustLimitAmount) // Dust limit in satoshis
-        {
-            AddOutput(ToLocalOutput);
-        }
+        AddOutput(ToLocalOutput);
 
         // to_remote output
         ToRemoteOutput = new ToRemoteOutput(remotePaymentBasepoint, remoteAmount);
-        if (toRemoteAmount >= ConfigManager.Instance.DustLimitAmount) // Dust limit in satoshis
-        {
-            AddOutput(ToRemoteOutput);
-        }
+        AddOutput(ToRemoteOutput);
 
         if (!ConfigManager.Instance.IsOptionAnchorOutput || ConfigManager.Instance.AnchorAmount == LightningMoney.Zero)
         {
@@ -102,21 +98,63 @@ public class CommitmentTransaction : BaseTransaction
         }
 
         // Local anchor output
-        LocalAnchorOutput = new ToAnchorOutput(localPaymentBasepoint, ConfigManager.Instance.AnchorAmount);
+        LocalAnchorOutput = new ToAnchorOutput(fundingOutput.LocalPubKey, ConfigManager.Instance.AnchorAmount);
         AddOutput(LocalAnchorOutput);
 
         // Remote anchor output
-        RemoteAnchorOutput = new ToAnchorOutput(remotePaymentBasepoint, ConfigManager.Instance.AnchorAmount);
+        RemoteAnchorOutput = new ToAnchorOutput(fundingOutput.RemotePubKey, ConfigManager.Instance.AnchorAmount);
         AddOutput(RemoteAnchorOutput);
     }
+    #endregion
 
-    internal void ConstructTransaction(IFeeService feeService)
+    #region Public Methods
+    public void AddOfferedHtlcOutput(OfferedHtlcOutput offeredHtlcOutput)
     {
-        var currentFeePerKw = feeService.GetCachedFeeRatePerKw();
+        if (Finalized)
+        {
+            throw new InvalidOperationException("You can't add outputs to an already finalized transaction.");
+        }
 
+        // Add output
+        OfferedHtlcOutputs.Add(offeredHtlcOutput);
+        AddOutput(offeredHtlcOutput);
+    }
+
+    public void AddReceivedHtlcOutput(ReceivedHtlcOutput receivedHtlcOutput)
+    {
+        if (Finalized)
+        {
+            throw new InvalidOperationException("You can't add outputs to an already finalized transaction.");
+        }
+
+        ReceivedHtlcOutputs.Add(receivedHtlcOutput);
+        AddOutput(receivedHtlcOutput);
+    }
+
+    public void AppendRemoteSignatureAndSign(ECDSASignature remoteSignature, PubKey remotePubKey)
+    {
+        AppendRemoteSignatureToTransaction(new TransactionSignature(remoteSignature), remotePubKey);
+        SignTransactionWithExistingKeys();
+    }
+
+    public Transaction GetSignedTransaction()
+    {
+        if (Finalized)
+        {
+            return FinalizedTransaction;
+        }
+
+        throw new InvalidOperationException("You have to sign and finalize the transaction first.");
+    }
+    #endregion
+
+    #region Internal Methods
+    internal override void ConstructTransaction(LightningMoney currentFeePerKw)
+    {
         // Calculate base fee
         var outputWeight = CalculateOutputWeight();
-        var calculatedFee = (outputWeight + INPUT_WEIGHT) * currentFeePerKw.Satoshi / 1000L;
+        var calculatedFee = (outputWeight + TransactionConstants.COMMITMENT_TRANSACTION_INPUT_WEIGHT)
+                          * currentFeePerKw.Satoshi / 1000L;
         if (CalculatedFee.Satoshi != calculatedFee)
         {
             CalculatedFee.Satoshi = calculatedFee;
@@ -156,7 +194,7 @@ public class CommitmentTransaction : BaseTransaction
                 ? WeightConstants.HTLC_TIMEOUT_WEIGHT_ANCHORS
                 : WeightConstants.HTLC_TIMEOUT_WEIGHT_NO_ANCHORS;
             var offeredHtlcFee = offeredHtlcWeight * currentFeePerKw.Satoshi / 1000L;
-            foreach (var offeredHtlcOutput in _offeredHtlcOutputs)
+            foreach (var offeredHtlcOutput in OfferedHtlcOutputs)
             {
                 var htlcAmount = offeredHtlcOutput.Amount - offeredHtlcFee;
                 if (htlcAmount < ConfigManager.Instance.DustLimitAmount)
@@ -169,7 +207,7 @@ public class CommitmentTransaction : BaseTransaction
                 ? WeightConstants.HTLC_SUCCESS_WEIGHT_ANCHORS
                 : WeightConstants.HTLC_SUCCESS_WEIGHT_NO_ANCHORS;
             var receivedHtlcFee = receivedHtlcWeight * currentFeePerKw.Satoshi / 1000L;
-            foreach (var receivedHtlcOutput in _receivedHtlcOutputs)
+            foreach (var receivedHtlcOutput in ReceivedHtlcOutputs)
             {
                 var htlcAmount = receivedHtlcOutput.Amount - receivedHtlcFee;
                 if (htlcAmount < ConfigManager.Instance.DustLimitAmount)
@@ -179,17 +217,17 @@ public class CommitmentTransaction : BaseTransaction
             }
         }
 
-        // Add anchors if needed
-        if (ConfigManager.Instance.IsOptionAnchorOutput && !OUTPUTS.Any(o => o is HtlcOutput))
+        // Anchors are always needed, except when one of the outputs is zero and there's no htlc output
+        if (ConfigManager.Instance.IsOptionAnchorOutput && !Outputs.Any(o => o is BaseHtlcOutput))
         {
             if (ToLocalOutput.Amount.IsZero)
             {
-                RemoveOutput(ToLocalOutput);
+                RemoveOutput(LocalAnchorOutput);
             }
 
             if (ToRemoteOutput.Amount.IsZero)
             {
-                RemoveOutput(ToRemoteOutput);
+                RemoveOutput(RemoteAnchorOutput);
             }
         }
 
@@ -201,40 +239,11 @@ public class CommitmentTransaction : BaseTransaction
     {
         base.SignTransaction(secrets);
 
-        SetTxId();
+        SetTxIdAndIndexes();
     }
+    #endregion
 
-    internal Transaction GetSignedTransaction()
-    {
-        if (Finalized)
-        {
-            return FinalizedTransaction;
-        }
-
-        throw new InvalidOperationException("You have to sign and finalize the transaction first.");
-    }
-
-    public void AddOfferedHtlcOutputAndUpdate(OfferedHtlcOutput offeredHtlcOutput)
-    {
-        // Add output to lists
-        _offeredHtlcOutputs.Add(offeredHtlcOutput);
-        AddOutput(offeredHtlcOutput);
-    }
-
-    public void AddReceivedHtlcOutputAndUpdate(ReceivedHtlcOutput receivedHtlcOutput)
-    {
-        _receivedHtlcOutputs.Add(receivedHtlcOutput);
-        AddOutput(receivedHtlcOutput);
-    }
-
-    public void AppendRemoteSignatureAndSign(ECDSASignature remoteSignature, PubKey remotePubKey)
-    {
-        AppendRemoteSignatureToTransaction(new TransactionSignature(remoteSignature), remotePubKey);
-        SignTransactionWithExistingKeys();
-
-        SetTxId();
-    }
-
+    #region Private Methods
     private void SetLocalAndRemoteAmounts(BaseOutput funderOutput, BaseOutput otherOutput)
     {
         if (_toFunderAmount >= ConfigManager.Instance.DustLimitAmount)
@@ -248,7 +257,7 @@ public class CommitmentTransaction : BaseTransaction
                 funderOutput.Amount = _toFunderAmount;
 
                 // Add new output
-                funderOutput.Index = (uint)AddOutput(funderOutput);
+                AddOutput(funderOutput);
             }
         }
         else
@@ -260,7 +269,7 @@ public class CommitmentTransaction : BaseTransaction
         RemoveOutput(otherOutput);
         if (otherOutput.Amount >= ConfigManager.Instance.DustLimitAmount)
         {
-            otherOutput.Index = (uint)AddOutput(otherOutput);
+            AddOutput(otherOutput);
         }
         else
         {
@@ -268,19 +277,24 @@ public class CommitmentTransaction : BaseTransaction
         }
     }
 
-    private void SetTxId()
+    private void SetTxIdAndIndexes()
     {
         ToRemoteOutput.TxId = TxId;
-        ToLocalOutput.TxId = TxId;
+        ToRemoteOutput.Index = Outputs.IndexOf(ToRemoteOutput);
 
-        foreach (var offeredHtlcOutput in _offeredHtlcOutputs)
+        ToLocalOutput.TxId = TxId;
+        ToRemoteOutput.Index = Outputs.IndexOf(ToLocalOutput);
+
+        foreach (var offeredHtlcOutput in OfferedHtlcOutputs)
         {
             offeredHtlcOutput.TxId = TxId;
+            offeredHtlcOutput.Index = Outputs.IndexOf(offeredHtlcOutput);
         }
 
-        foreach (var receivedHtlcOutput in _receivedHtlcOutputs)
+        foreach (var receivedHtlcOutput in ReceivedHtlcOutputs)
         {
             receivedHtlcOutput.TxId = TxId;
+            receivedHtlcOutput.Index = Outputs.IndexOf(receivedHtlcOutput);
         }
 
         if (ConfigManager.Instance.IsOptionAnchorOutput)
@@ -288,12 +302,15 @@ public class CommitmentTransaction : BaseTransaction
             if (LocalAnchorOutput is not null)
             {
                 LocalAnchorOutput.TxId = TxId;
+                LocalAnchorOutput.Index = Outputs.IndexOf(LocalAnchorOutput);
             }
 
             if (RemoteAnchorOutput is not null)
             {
                 RemoteAnchorOutput.TxId = TxId;
+                RemoteAnchorOutput.Index = Outputs.IndexOf(RemoteAnchorOutput);
             }
         }
     }
+    #endregion
 }
