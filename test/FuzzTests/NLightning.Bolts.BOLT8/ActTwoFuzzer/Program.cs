@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
 using NLightning.Bolts.BOLT8.Constants;
 using NLightning.Bolts.BOLT8.States;
@@ -10,7 +10,7 @@ namespace ActTwoFuzzer;
 
 internal abstract class ActTwoFuzzer
 {
-    private static void Main(string[] args)
+    private static void Main()
     {
         Fuzzer.OutOfProcess.Run(stream =>
         {
@@ -20,18 +20,18 @@ internal abstract class ActTwoFuzzer
                 using var memory = new MemoryStream();
                 stream.CopyTo(memory);
                 var data = memory.ToArray().AsSpan();
-        
+
                 var initiator = new HandshakeState(
                     true,
                     InitiatorValidKeysUtil.LocalStaticPrivateKey,
                     InitiatorValidKeysUtil.RemoteStaticPublicKey,
                     new FakeFixedKeyDh(InitiatorValidKeysUtil.EphemeralPrivateKey)
                 );
-        
+
                 var buffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        
+
                 initiator.WriteMessage(Encoding.ASCII.GetBytes(string.Empty), buffer);
-        
+
                 initiator.ReadMessage(data, buffer);
             }
             catch (ObjectDisposedException) { }
@@ -43,4 +43,3 @@ internal abstract class ActTwoFuzzer
         });
     }
 }
-

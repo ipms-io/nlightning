@@ -1,4 +1,4 @@
-﻿using NLightning.Bolts.BOLT11;
+using NLightning.Bolts.BOLT11;
 using NLightning.Bolts.Exceptions;
 using SharpFuzz;
 

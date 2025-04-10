@@ -41,13 +41,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Fuzztests", "Fuzztests", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NLightning.Bolts.BOLT11", "NLightning.Bolts.BOLT11", "{79B6F41F-3E5A-4ABF-83A4-5860F9ADAC35}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvoiceRoundTripFuzzer", "test\Fuzztests\NLightning.Bolts.BOLT11\InvoiceRoundTripFuzzer\InvoiceRoundTripFuzzer.csproj", "{201CF0D3-AA8A-40D3-843E-4382F9EDEABA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InvoiceRoundTripFuzzer", "test\FuzzTests\NLightning.Bolts.BOLT11\InvoiceRoundTripFuzzer\InvoiceRoundTripFuzzer.csproj", "{201CF0D3-AA8A-40D3-843E-4382F9EDEABA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NLightning.Bolts.BOLT8", "NLightning.Bolts.BOLT8", "{6BECD5C6-9978-41E1-BAC0-854E16F0D142}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActOneFuzzer", "test\Fuzztests\NLightning.Bolts.BOLT8\ActOneFuzzer\ActOneFuzzer.csproj", "{A7C2075F-1C1E-4EE6-A2FE-D65EFBB2D662}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActOneFuzzer", "test\FuzzTests\NLightning.Bolts.BOLT8\ActOneFuzzer\ActOneFuzzer.csproj", "{A7C2075F-1C1E-4EE6-A2FE-D65EFBB2D662}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActTwoFuzzer", "test\Fuzztests\NLightning.Bolts.BOLT8\ActTwoFuzzer\ActTwoFuzzer.csproj", "{8A99EB76-83DA-4E88-A7F8-265224F901D5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActTwoFuzzer", "test\FuzzTests\NLightning.Bolts.BOLT8\ActTwoFuzzer\ActTwoFuzzer.csproj", "{8A99EB76-83DA-4E88-A7F8-265224F901D5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
