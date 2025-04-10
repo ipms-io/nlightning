@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Common.Constants;
 
+[ExcludeFromCodeCoverage]
 public static class CryptoConstants
 {
     public const int CHACHA20_POLY1305_TAG_LEN = 16;

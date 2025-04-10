@@ -6,9 +6,9 @@ using Enums;
 
 public class LightningFormatter : IFormatProvider, ICustomFormatter
 {
-    public static readonly LightningFormatter FORMATTER = new LightningFormatter();
+    public static readonly LightningFormatter FORMATTER = new();
 
-    public object? GetFormat(Type formatType)
+    public object? GetFormat(Type? formatType)
     {
         return formatType == typeof(ICustomFormatter) ? this : null;
     }
@@ -21,11 +21,16 @@ public class LightningFormatter : IFormatProvider, ICustomFormatter
         }
 
         var i = 0;
-        if (int.TryParse(format.AsSpan(i, 1), out var decPos))
+
+        // Parse all leading digits for the decimal position
+        var decimalPositionSpan = format.AsSpan(i);
+        var decPos = 0;
+        while (i < decimalPositionSpan.Length && char.IsDigit(decimalPositionSpan[i]))
         {
+            decPos = decPos * 10 + (decimalPositionSpan[i] - '0');
             i++;
         }
-        var unit = format[i];
+        var unit = decimalPositionSpan[i];
         var unitToUseInCalc = unit switch
         {
             'B' => LightningMoneyUnit.BTC,

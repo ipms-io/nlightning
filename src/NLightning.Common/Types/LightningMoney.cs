@@ -138,7 +138,7 @@ public class LightningMoney : IMoney
         CheckLightningMoneyUnit(unit, nameof(unit));
         // overflow safe because (long / int) always fit in decimal
         // decimal operations are checked by default
-        return (decimal)MilliSatoshi / (int)unit;
+        return (decimal)MilliSatoshi / (ulong)unit;
     }
     /// <summary>
     /// Convert Money to decimal (same as ToUnit)
@@ -165,8 +165,11 @@ public class LightningMoney : IMoney
 
         for (var i = 0; i < parts; i++)
         {
-            yield return LightningMoney.MilliSatoshis(result + (remain > 0 ? 1UL : 0UL));
-            remain--;
+            yield return MilliSatoshis(result + (remain > 0 ? 1UL : 0UL));
+            if (remain > 0)
+            {
+                remain--;
+            }
         }
     }
     IEnumerable<IMoney> IMoney.Split(int parts)
@@ -203,17 +206,17 @@ public class LightningMoney : IMoney
 
     public static LightningMoney Satoshis(decimal sats)
     {
-        return new LightningMoney(sats, LightningMoneyUnit.MILLI_SATOSHI);
+        return new LightningMoney(sats, LightningMoneyUnit.SATOSHI);
     }
 
     public static LightningMoney Satoshis(ulong sats)
     {
-        return new LightningMoney(sats);
+        return new LightningMoney(sats, LightningMoneyUnit.SATOSHI);
     }
 
     public static LightningMoney Satoshis(long sats)
     {
-        return new LightningMoney((ulong)sats);
+        return new LightningMoney((ulong)sats, LightningMoneyUnit.SATOSHI);
     }
 
     public static LightningMoney MilliSatoshis(ulong milliSats)
@@ -446,7 +449,7 @@ public class LightningMoney : IMoney
         ArgumentNullException.ThrowIfNull(amount);
         ArgumentNullException.ThrowIfNull(dust);
 
-        return checked(amount - this) <= dust;
+        return amount - this <= dust;
     }
 
     /// <summary>
@@ -461,7 +464,7 @@ public class LightningMoney : IMoney
         if (margin is < 0.0m or > 1.0m)
             throw new ArgumentOutOfRangeException(nameof(margin), "margin should be between 0 and 1");
 
-        var dust = Satoshis(MilliSatoshi * margin);
+        var dust = new LightningMoney(MilliSatoshi * margin, LightningMoneyUnit.MILLI_SATOSHI);
         return Almost(amount, dust);
     }
 

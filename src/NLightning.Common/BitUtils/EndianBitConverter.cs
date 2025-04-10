@@ -18,17 +18,13 @@ public static class EndianBitConverter
             Array.Reverse(bytes);
         }
 
-        if (trimToMinimumLenght)
+        if (!trimToMinimumLenght)
         {
-            var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
-            if (firstNonZeroIndex == -1)
-            {
-                return [0];
-            }
-            return bytes[firstNonZeroIndex..];
+            return bytes;
         }
 
-        return bytes;
+        var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
+        return firstNonZeroIndex == -1 ? [0] : bytes[firstNonZeroIndex..];
     }
 
     /// <summary>
@@ -46,17 +42,13 @@ public static class EndianBitConverter
             Array.Reverse(bytes);
         }
 
-        if (trimToMinimumLenght)
+        if (!trimToMinimumLenght)
         {
-            var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
-            if (firstNonZeroIndex == -1)
-            {
-                return [0];
-            }
-            return bytes[firstNonZeroIndex..];
+            return bytes;
         }
 
-        return bytes;
+        var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
+        return firstNonZeroIndex == -1 ? [0] : bytes[firstNonZeroIndex..];
     }
 
     /// <summary>
@@ -74,17 +66,13 @@ public static class EndianBitConverter
             Array.Reverse(bytes);
         }
 
-        if (trimToMinimumLenght)
+        if (!trimToMinimumLenght)
         {
-            var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
-            if (firstNonZeroIndex == -1)
-            {
-                return [0];
-            }
-            return bytes[firstNonZeroIndex..];
+            return bytes;
         }
 
-        return bytes;
+        var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
+        return firstNonZeroIndex == -1 ? [0] : bytes[firstNonZeroIndex..];
     }
 
     /// <summary>
@@ -102,17 +90,13 @@ public static class EndianBitConverter
             Array.Reverse(bytes);
         }
 
-        if (trimToMinimumLenght)
+        if (!trimToMinimumLenght)
         {
-            var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
-            if (firstNonZeroIndex == -1)
-            {
-                return [0];
-            }
-            return bytes[firstNonZeroIndex..];
+            return bytes;
         }
 
-        return bytes;
+        var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
+        return firstNonZeroIndex == -1 ? [0] : bytes[firstNonZeroIndex..];
     }
 
     /// <summary>
@@ -130,17 +114,13 @@ public static class EndianBitConverter
             Array.Reverse(bytes);
         }
 
-        if (trimToMinimumLenght)
+        if (!trimToMinimumLenght)
         {
-            var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
-            if (firstNonZeroIndex == -1)
-            {
-                return [0];
-            }
-            return bytes[firstNonZeroIndex..];
+            return bytes;
         }
 
-        return bytes;
+        var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
+        return firstNonZeroIndex == -1 ? [0] : bytes[firstNonZeroIndex..];
     }
 
     /// <summary>
@@ -158,17 +138,13 @@ public static class EndianBitConverter
             Array.Reverse(bytes);
         }
 
-        if (trimToMinimumLenght)
+        if (!trimToMinimumLenght)
         {
-            var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
-            if (firstNonZeroIndex == -1)
-            {
-                return [0];
-            }
-            return bytes[firstNonZeroIndex..];
+            return bytes;
         }
 
-        return bytes;
+        var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
+        return firstNonZeroIndex == -1 ? [0] : bytes[firstNonZeroIndex..];
     }
     #endregion
 
@@ -188,17 +164,13 @@ public static class EndianBitConverter
             Array.Reverse(bytes);
         }
 
-        if (trimToMinimumLenght)
+        if (!trimToMinimumLenght)
         {
-            var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
-            if (firstNonZeroIndex == -1)
-            {
-                return [0];
-            }
-            return bytes[firstNonZeroIndex..];
+            return bytes;
         }
 
-        return bytes;
+        var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
+        return firstNonZeroIndex == -1 ? [0] : bytes[firstNonZeroIndex..];
     }
 
     /// <summary>
@@ -216,17 +188,13 @@ public static class EndianBitConverter
             Array.Reverse(bytes);
         }
 
-        if (trimToMinimumLenght)
+        if (!trimToMinimumLenght)
         {
-            var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
-            if (firstNonZeroIndex == -1)
-            {
-                return [0];
-            }
-            return bytes[firstNonZeroIndex..];
+            return bytes;
         }
 
-        return bytes;
+        var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
+        return firstNonZeroIndex == -1 ? [0] : bytes[firstNonZeroIndex..];
     }
 
     /// <summary>
@@ -244,17 +212,13 @@ public static class EndianBitConverter
             Array.Reverse(bytes);
         }
 
-        if (trimToMinimumLenght)
+        if (!trimToMinimumLenght)
         {
-            var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
-            if (firstNonZeroIndex == -1)
-            {
-                return [0];
-            }
-            return bytes[firstNonZeroIndex..];
+            return bytes;
         }
 
-        return bytes;
+        var firstNonZeroIndex = Array.FindIndex(bytes, b => b != 0);
+        return firstNonZeroIndex == -1 ? [0] : bytes[firstNonZeroIndex..];
     }
     #endregion
 
