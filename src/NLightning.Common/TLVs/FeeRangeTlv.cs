@@ -2,6 +2,7 @@ namespace NLightning.Common.TLVs;
 
 using BitUtils;
 using Constants;
+using Enums;
 using Types;
 
 /// <summary>
@@ -15,20 +16,20 @@ public class FeeRangeTlv : Tlv
     /// <summary>
     /// The minimum acceptable fee in satoshis
     /// </summary>
-    public ulong MinFeeSatoshis { get; private set; }
+    public LightningMoney MinFeeAmount { get; private set; }
 
     /// <summary>
     /// The maximum acceptable fee in satoshis
     /// </summary>
-    public ulong MaxFeeSatoshis { get; private set; }
+    public LightningMoney MaxFeeAmount { get; private set; }
 
-    public FeeRangeTlv(ulong minFeeSatoshis, ulong maxFeeSatoshis) : base(TlvConstants.FEE_RANGE)
+    public FeeRangeTlv(LightningMoney minFeeAmount, LightningMoney maxFeeAmount) : base(TlvConstants.FEE_RANGE)
     {
-        MinFeeSatoshis = minFeeSatoshis;
-        MaxFeeSatoshis = maxFeeSatoshis;
+        MinFeeAmount = minFeeAmount;
+        MaxFeeAmount = maxFeeAmount;
 
-        var minSatsBytes = EndianBitConverter.GetBytesBigEndian(MinFeeSatoshis);
-        var maxSatsBytes = EndianBitConverter.GetBytesBigEndian(MaxFeeSatoshis);
+        var minSatsBytes = EndianBitConverter.GetBytesBigEndian(MinFeeAmount.Satoshi);
+        var maxSatsBytes = EndianBitConverter.GetBytesBigEndian(MaxFeeAmount.Satoshi);
 
         Length = sizeof(ulong) * 2;
         Value = new byte[Length];
@@ -54,8 +55,10 @@ public class FeeRangeTlv : Tlv
             throw new InvalidCastException("Invalid length");
         }
 
-        var minFeeSatoshis = EndianBitConverter.ToUInt64BigEndian(tlv.Value[..sizeof(ulong)]);
-        var maxFeeSatoshis = EndianBitConverter.ToUInt64BigEndian(tlv.Value[sizeof(ulong)..]);
+        var minFeeSatoshis = LightningMoney.FromUnit(EndianBitConverter.ToUInt64BigEndian(tlv.Value[..sizeof(ulong)]),
+                                                     LightningMoneyUnit.SATOSHI);
+        var maxFeeSatoshis = LightningMoney.FromUnit(EndianBitConverter.ToUInt64BigEndian(tlv.Value[sizeof(ulong)..]),
+                                                     LightningMoneyUnit.SATOSHI);
 
         return new FeeRangeTlv(minFeeSatoshis, maxFeeSatoshis);
     }

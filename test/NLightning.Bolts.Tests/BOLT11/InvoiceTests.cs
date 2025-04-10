@@ -10,8 +10,9 @@ using Common.Constants;
 using Common.Managers;
 using Common.Types;
 using Exceptions;
+using TestCollections;
 
-[Collection("secure-key-manager")]
+[Collection(SecureKeyManagerCollection.NAME)]
 public class InvoiceTests
 {
     private static readonly uint256 s_testPaymentHash = new("0001020304050607080900010203040506070809000102030405060708090102");

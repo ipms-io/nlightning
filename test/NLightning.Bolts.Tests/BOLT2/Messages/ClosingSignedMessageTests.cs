@@ -4,6 +4,7 @@ namespace NLightning.Bolts.Tests.BOLT2.Messages;
 
 using Bolts.BOLT2.Messages;
 using Bolts.BOLT2.Payloads;
+using Common.Enums;
 using Common.TLVs;
 using Common.Types;
 using Exceptions;
@@ -17,9 +18,9 @@ public class ClosingSignedMessageTests
     {
         // Arrange
         var expectedChannelId = ChannelId.Zero;
-        const ulong EXPECTED_FEE_SATOSHIS = 2UL;
-        const ulong EXPECTED_MIN_FEE = 1UL;
-        const ulong EXPECTED_MAX_FEE = 3UL;
+        var expectedFeeSatoshis = LightningMoney.FromUnit(2, LightningMoneyUnit.SATOSHI);
+        var expectedMinFee = LightningMoney.FromUnit(1, LightningMoneyUnit.SATOSHI);
+        var expectedMaxFee = LightningMoney.FromUnit(3, LightningMoneyUnit.SATOSHI);
         _ = ECDSASignature.TryParseFromCompact("4737AF4C6314905296FD31D3610BD638F92C8A3687D0C6D845E3B9EF4957670733A30A9A81F924CD9F73F46805D0FB60D7C293FB2D8100DD3FA92B10934A7320".ToByteArray(), out var expectedSignature);
         var expectedSignatureBytes = expectedSignature.ToCompact().ToArray();
 
@@ -31,11 +32,11 @@ public class ClosingSignedMessageTests
         // Assert
         Assert.NotNull(message);
         Assert.Equal(expectedChannelId, message.Payload.ChannelId);
-        Assert.Equal(EXPECTED_FEE_SATOSHIS, message.Payload.FeeSatoshis);
+        Assert.Equal(expectedFeeSatoshis, message.Payload.FeeAmount);
         Assert.Equal(expectedSignatureBytes, message.Payload.Signature.ToCompact().ToArray());
         Assert.NotNull(message.Extension);
-        Assert.Equal(EXPECTED_MIN_FEE, message.FeeRangeTlv.MinFeeSatoshis);
-        Assert.Equal(EXPECTED_MAX_FEE, message.FeeRangeTlv.MaxFeeSatoshis);
+        Assert.Equal(expectedMinFee, message.FeeRangeTlv.MinFeeAmount);
+        Assert.Equal(expectedMaxFee, message.FeeRangeTlv.MaxFeeAmount);
     }
 
     [Fact]
@@ -55,11 +56,11 @@ public class ClosingSignedMessageTests
     {
         // Arrange
         var channelId = ChannelId.Zero;
-        const ulong FEE_SATOSHIS = 2UL;
-        const ulong MIN_FEE = 1UL;
-        const ulong MAX_FEE = 3UL;
+        var feeSatoshis = LightningMoney.FromUnit(2, LightningMoneyUnit.SATOSHI);
+        var minFee = LightningMoney.FromUnit(1, LightningMoneyUnit.SATOSHI);
+        var maxFee = LightningMoney.FromUnit(3, LightningMoneyUnit.SATOSHI);
         _ = ECDSASignature.TryParseFromCompact("4737AF4C6314905296FD31D3610BD638F92C8A3687D0C6D845E3B9EF4957670733A30A9A81F924CD9F73F46805D0FB60D7C293FB2D8100DD3FA92B10934A7320".ToByteArray(), out var signature);
-        var message = new ClosingSignedMessage(new ClosingSignedPayload(channelId, FEE_SATOSHIS, signature), new FeeRangeTlv(MIN_FEE, MAX_FEE));
+        var message = new ClosingSignedMessage(new ClosingSignedPayload(channelId, feeSatoshis, signature), new FeeRangeTlv(minFee, maxFee));
         var stream = new MemoryStream();
         var expectedBytes = "0027000000000000000000000000000000000000000000000000000000000000000000000000000000024737AF4C6314905296FD31D3610BD638F92C8A3687D0C6D845E3B9EF4957670733A30A9A81F924CD9F73F46805D0FB60D7C293FB2D8100DD3FA92B10934A7320011000000000000000010000000000000003".ToByteArray();
 

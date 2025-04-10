@@ -2,7 +2,7 @@ namespace NLightning.Common.Types;
 
 using Constants;
 
-public readonly struct Network(string name)
+public readonly struct Network(string name) : IEquatable<Network>
 {
     public static readonly Network MAIN_NET = new(NetworkConstants.MAINNET);
     public static readonly Network TEST_NET = new(NetworkConstants.TESTNET);
@@ -57,6 +57,11 @@ public readonly struct Network(string name)
     public override bool Equals(object? obj)
     {
         return obj is Network network && Name == network.Name;
+    }
+
+    public bool Equals(Network other)
+    {
+        return Name == other.Name;
     }
 
     public override int GetHashCode()

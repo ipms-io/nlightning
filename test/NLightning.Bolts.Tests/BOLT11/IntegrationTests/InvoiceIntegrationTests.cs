@@ -11,12 +11,14 @@ using Common.Crypto.Hashes;
 using Common.Managers;
 using Common.Types;
 using Exceptions;
+using TestCollections;
 using static Utils.TestUtils;
 
-[Collection("secure-key-manager")]
-public class InvoiceIntegrationTests
+[Collection(SecureKeyManagerCollection.NAME)]
+public class InvoiceIntegrationTests : IDisposable
 {
-    private static readonly PubKey s_expectedPayeePubkey = new PubKey("03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad");
+    private static readonly PubKey s_expectedPayeePubkey = new("03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad");
+    private readonly Network _originalConfigNetwork = Network.MAIN_NET;
 
     [Fact]
     public void Given_ValidInvoiceString_When_Decoding_Then_InvoiceIsCorrect()
@@ -392,5 +394,10 @@ public class InvoiceIntegrationTests
         }
 
         return testInvoice;
+    }
+
+    public void Dispose()
+    {
+        ConfigManager.Instance.Network = _originalConfigNetwork;
     }
 }

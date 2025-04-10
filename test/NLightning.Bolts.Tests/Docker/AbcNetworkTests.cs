@@ -16,11 +16,12 @@ using Bolts.BOLT1.Services;
 using Common.Constants;
 using Common.Crypto.Functions;
 using Fixtures;
+using TestCollections;
 using Utils;
 
 // ReSharper disable AccessToDisposedClosure
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
-[Collection("regtest")]
+[Collection(LightningRegtestNetworkFixtureCollection.NAME)]
 public class AbcNetworkTests
 {
     private readonly LightningRegtestNetworkFixture _lightningRegtestNetworkFixture;

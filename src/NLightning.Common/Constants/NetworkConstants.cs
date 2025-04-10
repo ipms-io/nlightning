@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Common.Constants;
 
 /// <summary>
@@ -6,6 +8,7 @@ namespace NLightning.Common.Constants;
 /// <remarks>
 /// The network constants are used to identify the network name.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public static class NetworkConstants
 {
     public const string MAINNET = "mainnet";

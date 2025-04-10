@@ -86,4 +86,8 @@
     <EmbeddedResource Remove="TestResults\**"/>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Docker\Fixtures\" />
+  </ItemGroup>
+
 </Project>

@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Common.Exceptions;
 
 /// <summary>
@@ -6,6 +8,7 @@ namespace NLightning.Common.Exceptions;
 /// <remarks>
 /// A warning exception is an exception that should be caught and should not terminate the application.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public class WarningException(string message) : Exception(message)
 {
 }

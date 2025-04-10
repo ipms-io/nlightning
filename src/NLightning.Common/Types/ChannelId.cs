@@ -6,7 +6,7 @@ namespace NLightning.Common.Types;
 /// <remarks>
 /// The channel id is a unique identifier for a channel.
 /// </remarks>
-public readonly struct ChannelId
+public readonly struct ChannelId : IEquatable<ChannelId>
 {
     private const int LENGTH = 32;
 
@@ -56,7 +56,7 @@ public readonly struct ChannelId
         return false;
     }
 
-    private bool Equals(ChannelId other) => _value.SequenceEqual(other._value);
+    public bool Equals(ChannelId other) => _value.SequenceEqual(other._value);
 
     public override int GetHashCode()
     {

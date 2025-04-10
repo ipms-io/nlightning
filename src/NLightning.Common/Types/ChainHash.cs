@@ -6,7 +6,7 @@ namespace NLightning.Common.Types;
 /// <remarks>
 /// A chain hash is a 32 byte hash that is used to identify a chain.
 /// </remarks>
-public readonly struct ChainHash
+public readonly struct ChainHash : IEquatable<ChainHash>
 {
     /// <summary>
     /// The length of a chain hash.
@@ -35,12 +35,12 @@ public readonly struct ChainHash
     /// </summary>
     /// <param name="other">The chain hash to compare to.</param>
     /// <returns>True if the chain hashes are equal, otherwise false.</returns>
-    private readonly bool Equals(ChainHash other)
+    public bool Equals(ChainHash other)
     {
         return _value.SequenceEqual(other._value);
     }
 
-    public override readonly bool Equals(object? obj)
+    public override bool Equals(object? obj)
     {
         if (obj is ChainHash other)
         {
@@ -50,7 +50,7 @@ public readonly struct ChainHash
         return false;
     }
 
-    public override readonly int GetHashCode()
+    public override int GetHashCode()
     {
         return BitConverter.ToInt32(_value, 0);
     }

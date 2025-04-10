@@ -350,7 +350,7 @@ public static class MessageFactory
     /// Create a Shutdown message.
     /// </summary>
     /// <param name="channelId">The channel id.</param>
-    /// <param name="scriptPubkey">The Script to send closing funds to.</param>
+    /// <param name="scriptPubkey">The ScriptPubKey to send closing funds to.</param>
     /// <returns>The Shutdown message.</returns>
     /// <seealso cref="ShutdownMessage"/>
     /// <seealso cref="ChannelId"/>

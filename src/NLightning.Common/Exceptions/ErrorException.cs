@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Common.Exceptions;
 
 /// <summary>
@@ -6,6 +8,7 @@ namespace NLightning.Common.Exceptions;
 /// <remarks>
 /// This exception is the base class for all exceptions that are thrown when an error occurs.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public class ErrorException : Exception
 {
     public ErrorException(string message) : base(message) { }

@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Common.Constants;
 
 using Types;
@@ -8,6 +10,7 @@ using Types;
 /// <remarks>
 /// The chain constants are used to identify the chain in the network messages.
 /// </remarks>
+[ExcludeFromCodeCoverage]
 public static class ChainConstants
 {
     #pragma warning disable format
