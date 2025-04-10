@@ -32,7 +32,7 @@ You can check our documentation page [here](https://nlightning.ipms.io/)
 
 - [x] BOLT 1: Base Protocol
 - [x] BOLT 2: Peer Protocol for Channel Management
-- [ ] BOLT 3: Bitcoin Transaction and Script Formats
+- [x] BOLT 3: Bitcoin Transaction and Script Formats
 - [ ] BOLT 4: Onion Routing Protocol
 - [ ] BOLT 5: Recommendations for On-chain Transaction Handling
 - [ ] BOLT 7: P2P Node and Channel Discovery
@@ -147,8 +147,6 @@ supporter of open-source innovation, your contribution is immensely appreciated.
 
 If you find this project useful, consider supporting us:
 
-- ~~**LNBits Store** (set amounts): [Donate Here](https://t.ly/3E_Nd)~~ (DEPRECATED)
-- ~~**LNURL** (donate any amount): [Donate Here](https://t.ly/WHHC_)~~ (DEPRECATED)
 - **LNAddress**: `nlightning@ipms.io`
 - **Bitcoin on-chain address**: `bc1pgtdj7qtdfrate2hhnt5lecayvgafhmpu6t250dg7d0sdrwtwcnkq8usux8`
 

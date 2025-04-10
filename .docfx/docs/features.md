@@ -8,8 +8,8 @@
 ## Current State of BOLT implementation
 
 - [x] BOLT 1: Base Protocol
-- [ ] BOLT 2: Peer Protocol for Channel Management
-- [ ] BOLT 3: Bitcoin Transaction and Script Formats
+- [x] BOLT 2: Peer Protocol for Channel Management
+- [x] BOLT 3: Bitcoin Transaction and Script Formats
 - [ ] BOLT 4: Onion Routing Protocol
 - [ ] BOLT 5: Recommendations for On-chain Transaction Handling
 - [ ] BOLT 7: P2P Node and Channel Discovery
