@@ -1,5 +1,6 @@
 namespace NLightning.Bolts.BOLT1.Factories;
 
+using Common.Interfaces;
 using Interfaces;
 using Services;
 
@@ -9,11 +10,11 @@ using Services;
 /// <remarks>
 /// This class is used to create a ping pong service in test environments.
 /// </remarks>
-internal class PingPongServiceFactory : IPingPongServiceFactory
+public class PingPongServiceFactory : IPingPongServiceFactory
 {
     /// <inheritdoc />
-    public IPingPongService CreatePingPongService(TimeSpan networkTimeout)
+    public IPingPongService CreatePingPongService()
     {
-        return new PingPongService(networkTimeout);
+        return new PingPongService();
     }
 }

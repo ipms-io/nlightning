@@ -11,8 +11,6 @@ internal class FakeHandshakeService : IHandshakeService, ITestHandshakeService
 
     public bool IsInitiator => _isInitiator;
 
-    public ITransport? Transport => _transport;
-
     public PubKey RemoteStaticPublicKey => new Key().PubKey;
 
     public void SetIsInitiator(bool isInitiator)
@@ -20,35 +18,31 @@ internal class FakeHandshakeService : IHandshakeService, ITestHandshakeService
         _isInitiator = isInitiator;
     }
 
-    public void SetTransport(ITransport transport)
-    {
-        _transport = transport;
-    }
-
-    public virtual int PerformStep(byte[] inMessage, out byte[] outMessage)
+    public virtual (int, ITransport?) PerformStep(byte[] inMessage, out byte[] outMessage)
     {
         if (_steps == 2)
         {
             _steps--;
             outMessage = new byte[50];
-            return 50;
+            return (50, _transport);
         }
-        else if (_steps == 1)
+
+        if (_steps == 1)
         {
             _steps--;
             outMessage = new byte[66];
 
             _transport = new FakeTransport();
 
-            return 66;
+            return (66, null);
         }
 
         throw new InvalidOperationException("There's no more steps to complete");
     }
 
-    public int PerformStep(ReadOnlySpan<byte> inMessage, Span<byte> outMessage)
+    public int PerformStep(ReadOnlySpan<byte> inMessage, Span<byte> outMessage, out ITransport? transport)
     {
-        var result = PerformStep(inMessage.ToArray(), out var outMessageArray);
+        (var result, transport) = PerformStep(inMessage.ToArray(), out var outMessageArray);
         outMessageArray.CopyTo(outMessage);
         return result;
     }

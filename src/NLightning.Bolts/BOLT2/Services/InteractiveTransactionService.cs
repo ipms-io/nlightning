@@ -1,36 +1,37 @@
+using NLightning.Common.Managers;
+
 namespace NLightning.Bolts.BOLT2.Services;
 
 using Payloads;
 using Validators;
 
-public class InteractiveTransactionService(bool isInitiator, ulong dustLimit)
+public class InteractiveTransactionService(bool isInitiator)
 {
     private readonly Dictionary<ulong, TxAddInputPayload> _inputs = [];
     private readonly Dictionary<ulong, TxAddOutputPayload> _outputs = [];
-    private readonly bool _isInitiator = isInitiator;
-    private readonly ulong _dustLimit = dustLimit;
 
     public void AddInput(TxAddInputPayload input)
     {
-        TxAddInputValidator.Validate(_isInitiator, input, _inputs.Count, IsValidPrevTx, IsUniqueInput, IsSerialIdUnique);
+        TxAddInputValidator.Validate(isInitiator, input, _inputs.Count, IsValidPrevTx, IsUniqueInput, IsSerialIdUnique);
         _inputs.Add(input.SerialId, input);
     }
 
     public void AddOutput(TxAddOutputPayload output)
     {
-        TxAddOutputValidator.Validate(_isInitiator, output, _outputs.Count, IsSerialIdUnique, IsStandardScript, _dustLimit);
+        TxAddOutputValidator.Validate(isInitiator, output, _outputs.Count, IsSerialIdUnique, IsStandardScript,
+                                      ConfigManager.Instance.DustLimitAmount);
         _outputs.Add(output.SerialId, output);
     }
 
     public void RemoveInput(TxRemoveInputPayload input)
     {
-        TxRemoveInputValidator.Validate(_isInitiator, input, IsSerialIdPresent);
+        TxRemoveInputValidator.Validate(isInitiator, input, IsSerialIdPresent);
         _inputs.Remove(input.SerialId);
     }
 
     public void RemoveOutput(TxRemoveOutputPayload output)
     {
-        TxRemoveOutputValidator.Validate(_isInitiator, output, IsSerialIdPresent);
+        TxRemoveOutputValidator.Validate(isInitiator, output, IsSerialIdPresent);
         _outputs.Remove(output.SerialId);
     }
 

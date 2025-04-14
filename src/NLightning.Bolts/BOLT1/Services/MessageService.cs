@@ -1,9 +1,7 @@
 namespace NLightning.Bolts.BOLT1.Services;
 
-using BOLT8.Interfaces;
 using Bolts.Factories;
-using Bolts.Interfaces;
-using Interfaces;
+using Common.Interfaces;
 
 /// <summary>
 /// Service for sending and receiving messages.
@@ -14,41 +12,76 @@ using Interfaces;
 /// <seealso cref="IMessageService" />
 internal sealed class MessageService : IMessageService
 {
-    private readonly ITransportService _transportService;
+    private readonly ITransportService? _transportService;
 
     private bool _disposed;
 
     /// <inheritdoc />
-    public event EventHandler<IMessage>? MessageReceived;
+    public event EventHandler<IMessage?>? MessageReceived;
+    public event EventHandler<Exception>? ExceptionRaised;
 
     /// <inheritdoc />
-    public bool IsConnected => _transportService.IsConnected;
+    public bool IsConnected => _transportService?.IsConnected ?? false;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MessageService"/> class.
+    /// Initializes a new <see cref="MessageService"/> class.
     /// </summary>
     /// <param name="transportService">The transport service.</param>
     public MessageService(ITransportService transportService)
     {
         _transportService = transportService;
 
-        _transportService.MessageReceived += ReceiveMessageAsync;
+        _transportService.MessageReceived += ReceiveMessage;
+        _transportService.ExceptionRaised += RaiseException;
     }
 
     /// <inheritdoc />
     /// <exception cref="ObjectDisposedException">Thrown when the object is disposed.</exception>
     public async Task SendMessageAsync(IMessage message, CancellationToken cancellationToken = default)
     {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(MessageService));
+        if (_transportService == null)
+        {
+            throw new InvalidOperationException($"{nameof(MessageService)} is not initialized");
+        }
 
         await _transportService.WriteMessageAsync(message, cancellationToken);
     }
 
-    private async void ReceiveMessageAsync(object? _, MemoryStream stream)
+    private void ReceiveMessage(object? _, MemoryStream stream)
     {
-        var message = await MessageFactory.DeserializeMessageAsync(stream);
+        try
+        {
+            MessageFactory.DeserializeMessageAsync(stream).ContinueWith(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    RaiseException(this, task.Exception.InnerExceptions[0]);
+                }
+                else
+                {
+                    var message = task.Result;
+                    if (message is not null)
+                    {
+                        MessageReceived?.Invoke(this, message);
+                    }
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            RaiseException(this, e);
+        }
+    }
 
-        MessageReceived?.Invoke(this, message);
+    private void RaiseException(object? sender, Exception e)
+    {
+        ExceptionRaised?.Invoke(sender, e);
     }
 
     #region Dispose Pattern
@@ -68,7 +101,7 @@ internal sealed class MessageService : IMessageService
         {
             if (disposing)
             {
-                _transportService.Dispose();
+                _transportService?.Dispose();
             }
 
             _disposed = true;

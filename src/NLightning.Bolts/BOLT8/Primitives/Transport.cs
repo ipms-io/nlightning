@@ -1,12 +1,9 @@
-using NLightning.Bolts.Exceptions;
-
 namespace NLightning.Bolts.BOLT8.Primitives;
 
 using Common.Constants;
-using Common.Utils;
-using Constants;
 using Interfaces;
 using States;
+using static ExceptionUtils;
 
 /// <inheritdoc/>
 internal sealed class Transport : ITransport
@@ -15,10 +12,12 @@ internal sealed class Transport : ITransport
     private readonly CipherState _sendingKey;
     private readonly CipherState _receivingKey;
 
+    private bool _disposed;
+
     public Transport(bool initiator, CipherState c1, CipherState c2)
     {
-        ExceptionUtils.ThrowIfNull(c1, nameof(c1));
-        ExceptionUtils.ThrowIfNull(c2, nameof(c2));
+        ThrowIfNull(c1, nameof(c1));
+        ThrowIfNull(c2, nameof(c2));
 
         _initiator = initiator;
         _sendingKey = c1;
@@ -31,6 +30,8 @@ internal sealed class Transport : ITransport
     /// <exception cref="ArgumentException">Thrown if the encrypted payload was greater than <see cref="ProtocolConstants.MAX_MESSAGE_LENGTH"/> bytes in length, or if the output buffer did not have enough space to hold the ciphertext.</exception>
     public int WriteMessage(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
+        ThrowIfDisposed(_disposed, nameof(Transport));
+
         // Serialize length into 2 bytes encoded as a big-endian integer
         var l = BitConverter.GetBytes((ushort)payload.Length);
         if (BitConverter.IsLittleEndian)
@@ -50,6 +51,8 @@ internal sealed class Transport : ITransport
     /// <inheritdoc/>
     public int ReadMessageLength(ReadOnlySpan<byte> lc)
     {
+        ThrowIfDisposed(_disposed, nameof(Transport));
+
         if (lc.Length != ProtocolConstants.MESSAGE_HEADER_SIZE)
         {
             throw new ArgumentException($"Lightning Message Header must be {ProtocolConstants.MESSAGE_HEADER_SIZE} bytes in length.");
@@ -73,6 +76,8 @@ internal sealed class Transport : ITransport
     /// <inheritdoc/>
     public int ReadMessagePayload(ReadOnlySpan<byte> message, Span<byte> payloadBuffer)
     {
+        ThrowIfDisposed(_disposed, nameof(Transport));
+
         // Decrypt the payload from the message buffer
         return ReadMessagePart(message, payloadBuffer);
     }
@@ -159,7 +164,14 @@ internal sealed class Transport : ITransport
 
     public void Dispose()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         _sendingKey.Dispose();
         _receivingKey.Dispose();
+
+        _disposed = true;
     }
 }

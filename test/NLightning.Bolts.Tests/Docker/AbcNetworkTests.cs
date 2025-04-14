@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using Lnrpc;
 using NBitcoin;
+using NLightning.Common.Interfaces;
 using ServiceStack;
 using ServiceStack.Text;
 using Xunit.Abstractions;
@@ -11,20 +12,21 @@ namespace NLightning.Bolts.Tests.Docker;
 
 using BOLT1.Fixtures;
 using Bolts.BOLT1.Factories;
-using Bolts.BOLT1.Primitives;
-using Bolts.BOLT1.Services;
+using Bolts.BOLT1.Managers;
 using Common.Constants;
-using Common.Crypto.Functions;
-using Fixtures;
+using Common.Managers;
+using Common.Node;
 using TestCollections;
+using Tests.Fixtures;
 using Utils;
 
 // ReSharper disable AccessToDisposedClosure
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
-[Collection(LightningRegtestNetworkFixtureCollection.NAME)]
+[Collection(SecureKeyAndConfigAndRegtestCollection.NAME)]
 public class AbcNetworkTests
 {
     private readonly LightningRegtestNetworkFixture _lightningRegtestNetworkFixture;
+    private readonly Mock<ILogger> _mockLogger = new();
 
     public AbcNetworkTests(LightningRegtestNetworkFixture fixture, ITestOutputHelper output)
     {
@@ -36,34 +38,38 @@ public class AbcNetworkTests
     public async Task NLightning_BOLT8_Test_Connect_Alice()
     {
         // Arrange
-        var localKeys = new Ecdh().GenerateKeyPair();
-        var hex = BitConverter.ToString(localKeys.PublicKey.ToBytes()).Replace("-", "");
+        var hex = BitConverter.ToString(SecureKeyManager.GetPrivateKey().PubKey.ToBytes()).Replace("-", "");
 
         var alice = _lightningRegtestNetworkFixture.Builder?.LNDNodePool?.ReadyNodes.First(x => x.LocalAlias == "alice");
         Assert.NotNull(alice);
 
-        var nodeOptions = new NodeOptions
+        ConfigManager.NodeOptions = new NodeOptions
         {
             ChainHashes = [ChainConstants.REGTEST],
             EnableDataLossProtect = true,
             EnableStaticRemoteKey = true,
-            EnablePaymentSecret = true,
-            KeyPair = localKeys
+            EnablePaymentSecret = true
         };
-        var peerService = new PeerService(nodeOptions, new TransportServiceFactory(), new PingPongServiceFactory(), new MessageServiceFactory());
+        IPeerManager peerManager = new PeerManager(new TransportServiceFactory(), new PingPongServiceFactory(),
+                                                   new MessageServiceFactory(), _mockLogger.Object);
 
-        var aliceHost = new IPEndPoint((await Dns.GetHostAddressesAsync(alice.Host.SplitOnFirst("//")[1].SplitOnFirst(":")[0])).First(), 9735);
+        var aliceHost = new IPEndPoint((await Dns.GetHostAddressesAsync(alice.Host
+                                                                             .SplitOnFirst("//")[1]
+                                                                             .SplitOnFirst(":")[0])).First(), 9735);
 
         // Act
-        await peerService.ConnectToPeerAsync(new PeerAddress(new PubKey(alice.LocalNodePubKeyBytes), aliceHost.Address.ToString(), aliceHost.Port));
+        await peerManager.ConnectToPeerAsync(new Common.Types.PeerAddress(new PubKey(alice.LocalNodePubKeyBytes),
+                                                                          aliceHost.Address.ToString(), aliceHost.Port));
         var alicePeers = alice.LightningClient.ListPeers(new ListPeersRequest());
 
         // Assert
         Assert.NotNull(alicePeers.Peers.FirstOrDefault(x => x.PubKey.Equals(hex, StringComparison.CurrentCultureIgnoreCase)));
+
+        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
-    public async Task NLightning_BOLT8_Test_Alice_Connect()
+    public async Task NLightning_BOLT8_Test_Bob_Connect()
     {
         // Arrange
         var availablePort = await PortPool.GetAvailablePortAsync();
@@ -75,34 +81,34 @@ public class AbcNetworkTests
             // Get ip from host
             var hostAddress = Environment.GetEnvironmentVariable("HOST_ADDRESS") ?? "host.docker.internal";
 
-            var localKeys = new Ecdh().GenerateKeyPair();
-            var hex = BitConverter.ToString(localKeys.PublicKey.ToBytes()).Replace("-", "");
+            var hex = BitConverter.ToString(SecureKeyManager.GetPrivateKey().PubKey.ToBytes()).Replace("-", "");
 
-            var alice = _lightningRegtestNetworkFixture.Builder?.LNDNodePool?.ReadyNodes.First(x => x.LocalAlias == "alice");
-            Assert.NotNull(alice);
+            var bob = _lightningRegtestNetworkFixture.Builder?.LNDNodePool?.ReadyNodes.First(x =>
+                x.LocalAlias == "bob");
+            Assert.NotNull(bob);
 
-            var nodeOptions = new NodeOptions
+            ConfigManager.NodeOptions = new NodeOptions
             {
                 ChainHashes = [ChainConstants.REGTEST],
                 EnableDataLossProtect = true,
                 EnableStaticRemoteKey = true,
-                EnablePaymentSecret = true,
-                KeyPair = localKeys
+                EnablePaymentSecret = true
             };
-            var peerService = new PeerService(nodeOptions, new TransportServiceFactory(), new PingPongServiceFactory(), new MessageServiceFactory());
+            IPeerManager peerManager = new PeerManager(new TransportServiceFactory(), new PingPongServiceFactory(),
+                new MessageServiceFactory(), _mockLogger.Object);
 
             var acceptTask = Task.Run(async () =>
             {
                 {
                     var tcpClient = await listener.AcceptTcpClientAsync();
 
-                    await peerService.AcceptPeerAsync(tcpClient);
+                    await peerManager.AcceptPeerAsync(tcpClient);
                 }
             });
             await Task.Delay(1000);
 
             // Act
-            await alice.LightningClient.ConnectPeerAsync(new ConnectPeerRequest
+            await bob.LightningClient.ConnectPeerAsync(new ConnectPeerRequest
             {
                 Addr = new LightningAddress
                 {
@@ -110,16 +116,19 @@ public class AbcNetworkTests
                     Pubkey = hex
                 }
             });
-            var alicePeers = alice.LightningClient.ListPeers(new ListPeersRequest());
+            var alicePeers = bob.LightningClient.ListPeers(new ListPeersRequest());
             await acceptTask;
 
             // Assert
-            Assert.NotNull(alicePeers.Peers.FirstOrDefault(x => x.PubKey.Equals(hex, StringComparison.CurrentCultureIgnoreCase)));
+            Assert.NotNull(alicePeers.Peers.FirstOrDefault(x =>
+                x.PubKey.Equals(hex, StringComparison.CurrentCultureIgnoreCase)));
         }
         finally
         {
             listener.Dispose();
             PortPool.ReleasePort(availablePort);
+
+            ConfigManagerUtil.ResetConfigManager();
         }
     }
 

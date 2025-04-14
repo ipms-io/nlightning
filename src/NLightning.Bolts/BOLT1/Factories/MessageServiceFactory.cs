@@ -1,6 +1,6 @@
 namespace NLightning.Bolts.BOLT1.Factories;
 
-using BOLT8.Interfaces;
+using Common.Interfaces;
 using Interfaces;
 using Services;
 
@@ -10,7 +10,7 @@ using Services;
 /// <remarks>
 /// This class is used to create a message service in test environments.
 /// </remarks>
-internal sealed class MessageServiceFactory : IMessageServiceFactory
+public sealed class MessageServiceFactory : IMessageServiceFactory
 {
     /// <inheritdoc />
     public IMessageService CreateMessageService(ITransportService transportService)

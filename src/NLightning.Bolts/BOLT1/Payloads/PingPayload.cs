@@ -1,8 +1,9 @@
+using NLightning.Common.Constants;
+
 namespace NLightning.Bolts.BOLT1.Payloads;
 
-using Bolts.Interfaces;
 using Common.BitUtils;
-using Exceptions;
+using Common.Interfaces;
 
 /// <summary>
 /// The ping payload.
@@ -35,10 +36,14 @@ public class PingPayload : IMessagePayload
 
     public PingPayload()
     {
-        // Get number of bytes at random between byte.MaxValue and ushort.MaxValue
+        // Get number of bytes at random between HashConstants.SHA256_HASH_LEN and ushort.MaxValue
         NumPongBytes = (ushort)new Random().Next(byte.MaxValue, MAX_LENGTH);
-        BytesLength = (ushort)new Random().Next(byte.MaxValue, MAX_LENGTH);
-        Ignored = new byte[BytesLength];
+        BytesLength = (ushort)new Random().Next(HashConstants.SHA256_HASH_LEN, MAX_LENGTH);
+
+        var ignoredBytesRandom = new Random(BytesLength);
+        var ignoredBytesLen = ignoredBytesRandom.Next(HashConstants.SHA256_HASH_LEN, 4 * HashConstants.SHA256_HASH_LEN);
+        Ignored = new byte[ignoredBytesLen];
+        ignoredBytesRandom.NextBytes(Ignored);
     }
 
     /// <inheritdoc/>

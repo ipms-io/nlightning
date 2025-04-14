@@ -1,4 +1,5 @@
 using NLightning.Common.Enums;
+using NLightning.Common.Node;
 
 namespace NLightning.Common.Managers;
 
@@ -7,6 +8,7 @@ using Types;
 public class ConfigManager
 {
     private static readonly Lazy<ConfigManager> s_instance = new(() => new ConfigManager());
+    private static NodeOptions? s_nodeOptions;
 
     // Private constructor to prevent external instantiation
     private ConfigManager() { }
@@ -18,6 +20,26 @@ public class ConfigManager
     /// Network in which this node will be running
     /// </summary>
     public Network Network { get; set; } = Network.MAIN_NET;
+
+    /// <summary>
+    /// Global network timeout.
+    /// </summary>
+    /// <remarks>
+    /// The global network timeout is used for all network operations.
+    /// </remarks>
+    public TimeSpan NetworkTimeout = TimeSpan.FromSeconds(15);
+
+    public static NodeOptions NodeOptions
+    {
+        get
+        {
+            return s_nodeOptions ?? throw new InvalidOperationException("Config Manager is not initialized.");
+        }
+        set
+        {
+            s_nodeOptions = value;
+        }
+    }
 
     /// <summary>
     /// DustLimitAmount is the threshold below which outputs should not be generated for this node's commitment or

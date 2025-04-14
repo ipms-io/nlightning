@@ -6,6 +6,7 @@ using Common.Crypto.Hashes;
 using Common.Crypto.Primitives;
 using Common.Factories.Crypto;
 using Common.Interfaces.Crypto;
+using static ExceptionUtils;
 
 /// <summary>
 /// A SymmetricState object contains a CipherState plus ck (a chaining
@@ -19,6 +20,8 @@ internal sealed class SymmetricState : IDisposable
     private readonly CipherState _state = new();
     private readonly SecureMemory _ck;
     private readonly byte[] _h;
+
+    private bool _disposed;
 
     /// <summary>
     /// Initializes a new SymmetricState with an
@@ -50,6 +53,8 @@ internal sealed class SymmetricState : IDisposable
     /// </summary>
     public void MixKey(ReadOnlySpan<byte> inputKeyMaterial)
     {
+        ThrowIfDisposed(_disposed, nameof(Hkdf));
+
         var length = inputKeyMaterial.Length;
         if (length != 0 && length != CryptoConstants.PRIVKEY_LEN)
         {
@@ -70,6 +75,8 @@ internal sealed class SymmetricState : IDisposable
     /// </summary>
     public void MixHash(ReadOnlySpan<byte> data)
     {
+        ThrowIfDisposed(_disposed, nameof(Hkdf));
+
         _sha256.AppendData(_h);
         _sha256.AppendData(data);
         _sha256.GetHashAndReset(_h);
@@ -83,6 +90,8 @@ internal sealed class SymmetricState : IDisposable
     /// </summary>
     public void MixKeyAndHash(ReadOnlySpan<byte> inputKeyMaterial)
     {
+        ThrowIfDisposed(_disposed, nameof(Hkdf));
+
         var length = inputKeyMaterial.Length;
         if (length != 0 && length != CryptoConstants.PRIVKEY_LEN)
         {
@@ -107,6 +116,8 @@ internal sealed class SymmetricState : IDisposable
     /// </summary>
     public byte[] GetHandshakeHash()
     {
+        ThrowIfDisposed(_disposed, nameof(Hkdf));
+
         return _h;
     }
 
@@ -116,6 +127,8 @@ internal sealed class SymmetricState : IDisposable
     /// </summary>
     public int EncryptAndHash(ReadOnlySpan<byte> plaintext, Span<byte> ciphertext)
     {
+        ThrowIfDisposed(_disposed, nameof(Hkdf));
+
         var bytesWritten = _state.EncryptWithAd(_h, plaintext, ciphertext);
         MixHash(ciphertext[..bytesWritten]);
 
@@ -128,6 +141,8 @@ internal sealed class SymmetricState : IDisposable
     /// </summary>
     public int DecryptAndHash(ReadOnlySpan<byte> ciphertext, Span<byte> plaintext)
     {
+        ThrowIfDisposed(_disposed, nameof(Hkdf));
+
         var bytesRead = _state.DecryptWithAd(_h, ciphertext, plaintext);
         MixHash(ciphertext);
 
@@ -139,6 +154,8 @@ internal sealed class SymmetricState : IDisposable
     /// </summary>
     public (CipherState c1, CipherState c2) Split()
     {
+        ThrowIfDisposed(_disposed, nameof(Hkdf));
+
         Span<byte> output = stackalloc byte[2 * CryptoConstants.SHA256_HASH_LEN];
         _hkdf.ExtractAndExpand2(_ck, null, output);
 
@@ -159,15 +176,24 @@ internal sealed class SymmetricState : IDisposable
     /// </summary>
     public bool HasKeys()
     {
+        ThrowIfDisposed(_disposed, nameof(Hkdf));
+
         return _state.HasKeys();
     }
 
     public void Dispose()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         _ck.Dispose();
         _state.Dispose();
         _hkdf.Dispose();
         _sha256.Dispose();
         _cryptoProvider.Dispose();
+
+        _disposed = true;
     }
 }

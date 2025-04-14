@@ -8,10 +8,10 @@ using BOLT1.Payloads;
 using BOLT2.Messages;
 using BOLT2.Payloads;
 using Common.BitUtils;
+using Common.Constants;
+using Common.Interfaces;
+using Common.Node;
 using Common.TLVs;
-using Constants;
-using Exceptions;
-using Interfaces;
 
 /// <summary>
 /// Factory for creating messages.
@@ -630,7 +630,7 @@ public static class MessageFactory
     /// <param name="stream">The stream to deserialize from.</param>
     /// <returns>The deserialized message.</returns>
     /// <exception cref="InvalidMessageException">Unknown message type</exception>
-    public static async Task<IMessage> DeserializeMessageAsync(MemoryStream stream)
+    public static async Task<IMessage?> DeserializeMessageAsync(MemoryStream stream)
     {
         // Get type of message
         var typeBytes = new byte[2];
@@ -638,42 +638,79 @@ public static class MessageFactory
         var type = EndianBitConverter.ToUInt16BigEndian(typeBytes);
 
         // Deserialize message based on type
-        return type switch
+        switch (type)
         {
-            MessageTypes.WARNING => await WarningMessage.DeserializeAsync(stream),                                      // 01  -> 0x01
-            MessageTypes.INIT => await InitMessage.DeserializeAsync(stream),                                            // 16  -> 0x10
-            MessageTypes.ERROR => await ErrorMessage.DeserializeAsync(stream),                                          // 17  -> 0x11
-            MessageTypes.PING => await PingMessage.DeserializeAsync(stream),                                            // 18  -> 0x12
-            MessageTypes.PONG => await PongMessage.DeserializeAsync(stream),                                            // 19  -> 0x13
-            MessageTypes.CHANNEL_READY => await ChannelReadyMessage.DeserializeAsync(stream),                           // 36  -> 0x24
-            MessageTypes.SHUTDOWN => await ShutdownMessage.DeserializeAsync(stream),                                    // 38  -> 0x26
-            MessageTypes.CLOSING_SIGNED => await ClosingSignedMessage.DeserializeAsync(stream),                         // 39  -> 0x27
-            MessageTypes.OPEN_CHANNEL_2 => await OpenChannel2Message.DeserializeAsync(stream),                          // 64  -> 0x40
-            MessageTypes.ACCEPT_CHANNEL_2 => await AcceptChannel2Message.DeserializeAsync(stream),                      // 65  -> 0x41
-            MessageTypes.TX_ADD_INPUT => await TxAddInputMessage.DeserializeAsync(stream),                              // 66  -> 0x42
-            MessageTypes.TX_ADD_OUTPUT => await TxAddOutputMessage.DeserializeAsync(stream),                            // 67  -> 0x43
-            MessageTypes.TX_REMOVE_INPUT => await TxRemoveInputMessage.DeserializeAsync(stream),                        // 68  -> 0x44
-            MessageTypes.TX_REMOVE_OUTPUT => await TxRemoveOutputMessage.DeserializeAsync(stream),                      // 69  -> 0x45
-            MessageTypes.TX_COMPLETE => await TxCompleteMessage.DeserializeAsync(stream),                               // 70  -> 0x46
-            MessageTypes.TX_SIGNATURES => await TxSignaturesMessage.DeserializeAsync(stream),                           // 71  -> 0x47
-            MessageTypes.TX_INIT_RBF => await TxInitRbfMessage.DeserializeAsync(stream),                                // 72  -> 0x48
-            MessageTypes.TX_ACK_RBF => await TxAckRbfMessage.DeserializeAsync(stream),                                  // 73  -> 0x49
-            MessageTypes.TX_ABORT => await TxAbortMessage.DeserializeAsync(stream),                                     // 74  -> 0x4A
-            MessageTypes.UPDATE_ADD_HTLC => await UpdateAddHtlcMessage.DeserializeAsync(stream),                        // 128 -> 0x80
-            MessageTypes.UPDATE_FULFILL_HTLC => await UpdateFulfillHtlcMessage.DeserializeAsync(stream),                // 130 -> 0x82
-            MessageTypes.UPDATE_FAIL_HTLC => await UpdateFailHtlcMessage.DeserializeAsync(stream),                      // 131 -> 0x83
-            MessageTypes.COMMITMENT_SIGNED => await CommitmentSignedMessage.DeserializeAsync(stream),                   // 132 -> 0x84
-            MessageTypes.REVOKE_AND_ACK => await RevokeAndAckMessage.DeserializeAsync(stream),                          // 133 -> 0x85
-            MessageTypes.UPDATE_FEE => await UpdateFeeMessage.DeserializeAsync(stream),                                 // 134 -> 0x86
-            MessageTypes.UPDATE_FAIL_MALFORMED_HTLC => await UpdateFailMalformedHtlcMessage.DeserializeAsync(stream),   // 135 -> 0x87
-            MessageTypes.CHANNEL_REESTABLISH => await ChannelReestablishMessage.DeserializeAsync(stream),               // 136 -> 0x88
+            case MessageTypes.WARNING:
+                return await WarningMessage.DeserializeAsync(stream);                   // 01  -> 0x01
+            case MessageTypes.INIT:
+                return await InitMessage.DeserializeAsync(stream);                      // 16  -> 0x10
+            case MessageTypes.ERROR:
+                return await ErrorMessage.DeserializeAsync(stream);                     // 17  -> 0x11
+            case MessageTypes.PING:
+                return await PingMessage.DeserializeAsync(stream);                      // 18  -> 0x12
+            case MessageTypes.PONG:
+                return await PongMessage.DeserializeAsync(stream);                      // 19  -> 0x13
+            case MessageTypes.CHANNEL_READY:
+                return await ChannelReadyMessage.DeserializeAsync(stream);              // 36  -> 0x24
+            case MessageTypes.SHUTDOWN:
+                return await ShutdownMessage.DeserializeAsync(stream);                  // 38  -> 0x26
+            case MessageTypes.CLOSING_SIGNED:
+                return await ClosingSignedMessage.DeserializeAsync(stream);             // 39  -> 0x27
+            case MessageTypes.OPEN_CHANNEL_2:
+                return await OpenChannel2Message.DeserializeAsync(stream);              // 64  -> 0x40
+            case MessageTypes.ACCEPT_CHANNEL_2:
+                return await AcceptChannel2Message.DeserializeAsync(stream);            // 65  -> 0x41
+            case MessageTypes.TX_ADD_INPUT:
+                return await TxAddInputMessage.DeserializeAsync(stream);                // 66  -> 0x42
+            case MessageTypes.TX_ADD_OUTPUT:
+                return await TxAddOutputMessage.DeserializeAsync(stream);               // 67  -> 0x43
+            case MessageTypes.TX_REMOVE_INPUT:
+                return await TxRemoveInputMessage.DeserializeAsync(stream);             // 68  -> 0x44
+            case MessageTypes.TX_REMOVE_OUTPUT:
+                return await TxRemoveOutputMessage.DeserializeAsync(stream);            // 69  -> 0x45
+            case MessageTypes.TX_COMPLETE:
+                return await TxCompleteMessage.DeserializeAsync(stream);                // 70  -> 0x46
+            case MessageTypes.TX_SIGNATURES:
+                return await TxSignaturesMessage.DeserializeAsync(stream);              // 71  -> 0x47
+            case MessageTypes.TX_INIT_RBF:
+                return await TxInitRbfMessage.DeserializeAsync(stream);                 // 72  -> 0x48
+            case MessageTypes.TX_ACK_RBF:
+                return await TxAckRbfMessage.DeserializeAsync(stream);                  // 73  -> 0x49
+            case MessageTypes.TX_ABORT:
+                return await TxAbortMessage.DeserializeAsync(stream);                   // 74  -> 0x4A
+            case MessageTypes.UPDATE_ADD_HTLC:
+                return await UpdateAddHtlcMessage.DeserializeAsync(stream);             // 128 -> 0x80
+            case MessageTypes.UPDATE_FULFILL_HTLC:
+                return await UpdateFulfillHtlcMessage.DeserializeAsync(stream);         // 130 -> 0x82
+            case MessageTypes.UPDATE_FAIL_HTLC:
+                return await UpdateFailHtlcMessage.DeserializeAsync(stream);            // 131 -> 0x83
+            case MessageTypes.COMMITMENT_SIGNED:
+                return await CommitmentSignedMessage.DeserializeAsync(stream);          // 132 -> 0x84
+            case MessageTypes.REVOKE_AND_ACK:
+                return await RevokeAndAckMessage.DeserializeAsync(stream);              // 133 -> 0x85
+            case MessageTypes.UPDATE_FEE:
+                return await UpdateFeeMessage.DeserializeAsync(stream);                 // 134 -> 0x86
+            case MessageTypes.UPDATE_FAIL_MALFORMED_HTLC:
+                return await UpdateFailMalformedHtlcMessage.DeserializeAsync(stream);   // 135 -> 0x87
+            case MessageTypes.CHANNEL_REESTABLISH:
+                return await ChannelReestablishMessage.DeserializeAsync(stream);        // 136 -> 0x88
 
-            MessageTypes.OPEN_CHANNEL => throw new InvalidMessageException("You must use OpenChannel2 flow"),
-            MessageTypes.ACCEPT_CHANNEL => throw new InvalidMessageException("You must use OpenChannel2 flow"),
-            MessageTypes.FUNDING_CREATED => throw new InvalidMessageException("You must use OpenChannel2 flow"),
-            MessageTypes.FUNDING_SIGNED => throw new InvalidMessageException("You must use OpenChannel2 flow"),
+            case MessageTypes.OPEN_CHANNEL:
+            case MessageTypes.ACCEPT_CHANNEL:
+            case MessageTypes.FUNDING_CREATED:
+            case MessageTypes.FUNDING_SIGNED:
+                throw new InvalidMessageException("You must use OpenChannel2 flow");
 
-            _ => throw new InvalidMessageException("Unknown message type"),
-        };
+            default:
+                {
+                    // If type is unknown and even, throw exception
+                    if (type % 2 == 0)
+                    {
+                        throw new InvalidMessageException("Unknown message type");
+                    }
+
+                    return null;
+                }
+        }
     }
 }

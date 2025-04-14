@@ -4,9 +4,8 @@ namespace NLightning.Bolts.BOLT2.Payloads;
 
 using Common.BitUtils;
 using Common.Enums;
+using Common.Interfaces;
 using Common.Managers;
-using Exceptions;
-using Interfaces;
 
 /// <summary>
 /// Represents the payload for the accept_channel2 message.

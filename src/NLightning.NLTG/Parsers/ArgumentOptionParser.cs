@@ -47,7 +47,6 @@ public static class ArgumentOptionParser
             {
                 opts.LogFile = parsedArgs.LogFile;
             }
-            loggerConfiguration.WriteTo.File(opts.LogFile);
 
             if (!string.IsNullOrWhiteSpace(parsedArgs.LogLevel))
             {
@@ -61,19 +60,15 @@ public static class ArgumentOptionParser
                     _ => throw new ArgumentException("Invalid log level.")
                 };
             }
-            loggerConfiguration.MinimumLevel.Is(opts.LogLevel);
 
-            if (!parsedArgs.Daemon)
-            {
-                loggerConfiguration.WriteTo.Console(theme: Serilog.Sinks.SystemConsole.Themes.AnsiConsoleTheme.Sixteen);
-            }
+            opts.Daemon = parsedArgs.Daemon;
         });
 
         parserResult.WithNotParsed(errors =>
         {
             foreach (var error in errors)
             {
-                if (error is HelpRequestedError || error is VersionRequestedError)
+                if (error is HelpRequestedError or VersionRequestedError)
                 {
                     Console.WriteLine();
                 }
@@ -81,6 +76,33 @@ public static class ArgumentOptionParser
 
             Environment.Exit(1);
         });
+
+        // Check if the configuration file exists
+        if (File.Exists(opts.ConfigFile))
+        {
+            // Parse the configuration file
+            var fileOpts = FileOptionParser.GetOptionsFromFile(opts.ConfigFile);
+
+            // Merge the configuration file options with the command line options
+            // Command Line Options take precedence
+            opts = opts.MergeWith(fileOpts);
+        }
+        else if (opts.IsConfigFileDefault) // Create config with passed args only if it's in the default location
+        {
+            opts.SaveToFile();
+        }
+        else
+        {
+            throw new Exception($"Config file not found: {opts.ConfigFile}");
+        }
+
+        loggerConfiguration.WriteTo.File(opts.LogFile);
+        loggerConfiguration.MinimumLevel.Is(opts.LogLevel);
+
+        if (!opts.Daemon)
+        {
+            loggerConfiguration.WriteTo.Console(theme: Serilog.Sinks.SystemConsole.Themes.AnsiConsoleTheme.Sixteen);
+        }
 
         return (opts, loggerConfiguration);
     }

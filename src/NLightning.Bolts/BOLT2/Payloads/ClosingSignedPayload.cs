@@ -1,11 +1,10 @@
 using NBitcoin.Crypto;
-using NLightning.Common.Enums;
 
 namespace NLightning.Bolts.BOLT2.Payloads;
 
 using Common.BitUtils;
-using Exceptions;
-using Interfaces;
+using Common.Enums;
+using Common.Interfaces;
 
 /// <summary>
 /// Represents the payload for the closing_signed message.

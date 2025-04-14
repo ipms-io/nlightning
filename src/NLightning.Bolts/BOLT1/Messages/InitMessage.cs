@@ -1,12 +1,10 @@
 using System.Runtime.Serialization;
-using NLightning.Common.Constants;
 
 namespace NLightning.Bolts.BOLT1.Messages;
 
 using Base;
+using Common.Constants;
 using Common.TLVs;
-using Constants;
-using Exceptions;
 using Payloads;
 
 /// <summary>

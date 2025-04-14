@@ -1,8 +1,9 @@
+using NLightning.Common.Interfaces;
+
 namespace NLightning.Bolts.Base;
 
 using BOLT1.Payloads;
 using Common.BitUtils;
-using Interfaces;
 
 /// <summary>
 /// Base class for a message.

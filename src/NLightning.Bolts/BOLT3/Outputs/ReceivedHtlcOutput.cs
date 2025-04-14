@@ -6,7 +6,6 @@ namespace NLightning.Bolts.BOLT3.Outputs;
 using Common.Constants;
 using Common.Crypto.Hashes;
 using Common.Managers;
-using Exceptions;
 
 /// <summary>
 /// Represents a received HTLC output in a commitment transaction.

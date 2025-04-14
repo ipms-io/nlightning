@@ -2,7 +2,7 @@ using System.Net.Sockets;
 
 namespace NLightning.Bolts.BOLT1.Interfaces;
 
-using BOLT8.Interfaces;
+using Common.Interfaces;
 
 /// <summary>
 /// Interface for a transport service factory.
@@ -15,5 +15,5 @@ public interface ITransportServiceFactory
     /// <summary>
     /// Creates a transport service.
     /// </summary>
-    ITransportService CreateTransportService(bool isInitiator, ReadOnlySpan<byte> s, ReadOnlySpan<byte> rs, TcpClient tcpClient);
+    ITransportService CreateTransportService(ILogger logger, bool isInitiator, ReadOnlySpan<byte> s, ReadOnlySpan<byte> rs, TcpClient tcpClient);
 }

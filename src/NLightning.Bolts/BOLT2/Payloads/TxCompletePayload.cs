@@ -1,7 +1,6 @@
 namespace NLightning.Bolts.BOLT2.Payloads;
 
-using Exceptions;
-using Interfaces;
+using Common.Interfaces;
 
 /// <summary>
 /// Represents a tx_complete payload.

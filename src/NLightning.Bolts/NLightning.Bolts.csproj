@@ -19,12 +19,19 @@
 
   <ItemGroup>
     <PackageReference Include="DnsClient" Version="1.8.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
     <PackageReference Include="NBitcoin" Version="7.0.50" />
     <PackageReference Include="NBitcoin.Secp256k1" Version="3.1.6" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\NLightning.Common\NLightning.Common.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="BOLT8\Constants\" />
+    <Folder Include="Constants\" />
+    <Folder Include="Interfaces\" />
   </ItemGroup>
 
 </Project>

@@ -1,9 +1,8 @@
 namespace NLightning.Bolts.BOLT2.Payloads;
 
 using Common.BitUtils;
+using Common.Interfaces;
 using Common.Types;
-using Exceptions;
-using Interfaces;
 
 /// <summary>
 /// Represents a tx_remove_input payload.

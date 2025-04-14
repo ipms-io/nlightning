@@ -2,6 +2,7 @@ namespace NLightning.Bolts.Tests.Utils;
 
 using Common.Enums;
 using Common.Managers;
+using Common.Node;
 using Common.Types;
 
 public static class ConfigManagerUtil
@@ -28,5 +29,7 @@ public static class ConfigManagerUtil
         ConfigManager.Instance.FeeRateMultiplier = "1000";
         ConfigManager.Instance.FeeEstimationCacheFile = "fee_estimation_cache.json";
         ConfigManager.Instance.FeeEstimationCacheExpiration = "5m"; // 5 minutes
+        ConfigManager.Instance.NetworkTimeout = TimeSpan.FromSeconds(15);
+        ConfigManager.NodeOptions = new NodeOptions();
     }
 }

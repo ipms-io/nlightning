@@ -2,9 +2,8 @@ using System.Text;
 
 namespace NLightning.Bolts.BOLT1.Payloads;
 
-using Bolts.Interfaces;
 using Common.BitUtils;
-using Exceptions;
+using Common.Interfaces;
 
 /// <summary>
 /// Represents an error payload.

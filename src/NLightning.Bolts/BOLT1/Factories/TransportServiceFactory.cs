@@ -2,8 +2,8 @@ using System.Net.Sockets;
 
 namespace NLightning.Bolts.BOLT1.Factories;
 
-using BOLT8.Interfaces;
 using BOLT8.Services;
+using Common.Interfaces;
 using Interfaces;
 
 /// <summary>
@@ -12,11 +12,11 @@ using Interfaces;
 /// <remarks>
 /// This class is used to create a transport service in test environments.
 /// </remarks>
-internal sealed class TransportServiceFactory : ITransportServiceFactory
+public sealed class TransportServiceFactory : ITransportServiceFactory
 {
     /// <inheritdoc />
-    public ITransportService CreateTransportService(bool isInitiator, ReadOnlySpan<byte> s, ReadOnlySpan<byte> rs, TcpClient tcpClient)
+    public ITransportService CreateTransportService(ILogger logger, bool isInitiator, ReadOnlySpan<byte> s, ReadOnlySpan<byte> rs, TcpClient tcpClient)
     {
-        return new TransportService(isInitiator, s, rs, tcpClient);
+        return new TransportService(logger, isInitiator, s, rs, tcpClient);
     }
 }

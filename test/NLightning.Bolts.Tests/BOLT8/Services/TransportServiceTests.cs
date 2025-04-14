@@ -1,21 +1,30 @@
 using System.Net;
 using System.Net.Sockets;
 using NBitcoin;
+using NLightning.Bolts.BOLT8.Interfaces;
+using NLightning.Common.Interfaces;
 
 namespace NLightning.Bolts.Tests.BOLT8.Services;
 
 using BOLT1.Fixtures;
 using Bolts.BOLT8.Services;
-using Exceptions;
+using Common.Exceptions;
+using Common.Managers;
 using Mock;
+using TestCollections;
+using Tests.Utils;
 
 // ReSharper disable AccessToDisposedClosure
+[Collection(ConfigManagerCollection.NAME)]
 public class TransportServiceTests
 {
+    private readonly Mock<ILogger> _mockLogger = new();
+
     [Fact]
     public async Task Given_TransportServiceAsInitiator_When_InitializeIsCalled_Then_HandshakeServicePerformStepIsCalledTwice()
     {
         // Arrange
+        ConfigManager.Instance.NetworkTimeout = TimeSpan.FromSeconds(30);
         var availablePort = await PortPool.GetAvailablePortAsync();
         var tcpListener = new TcpListener(IPAddress.Loopback, availablePort);
         tcpListener.Start();
@@ -26,6 +35,7 @@ public class TransportServiceTests
             var steps = 2;
             handshakeServiceMock.Setup(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny)).Returns((byte[] inMessage, out byte[] outMessage) =>
             {
+                ITransport? transport = null;
                 switch (steps)
                 {
                     case 2:
@@ -36,7 +46,7 @@ public class TransportServiceTests
                                 throw new InvalidOperationException("Expected 50 bytes");
                             }
                             outMessage = new byte[50];
-                            return 50;
+                            return (50, transport);
                         }
                     case 1:
                         {
@@ -47,9 +57,7 @@ public class TransportServiceTests
                             }
                             outMessage = new byte[66];
 
-                            handshakeServiceMock.Object.SetTransport(new FakeTransport());
-
-                            return 66;
+                            return (66, new FakeTransport());
                         }
                     default:
                         throw new InvalidOperationException("There's no more steps to complete");
@@ -70,10 +78,10 @@ public class TransportServiceTests
                 await stream.ReadExactlyAsync(buffer);
             });
             await tcpClient1.ConnectAsync(IPEndPoint.Parse(tcpListener.LocalEndpoint.ToEndpointString()));
-            var transportService = new TransportService(handshakeServiceMock.Object, tcpClient1);
+            var transportService = new TransportService(_mockLogger.Object, handshakeServiceMock.Object, tcpClient1);
 
             // Act
-            await transportService.InitializeAsync(TimeSpan.FromSeconds(30));
+            await transportService.InitializeAsync();
             await acceptTask;
 
             // Assert
@@ -83,6 +91,8 @@ public class TransportServiceTests
         {
             tcpListener.Dispose();
             PortPool.ReleasePort(availablePort);
+
+            ConfigManagerUtil.ResetConfigManager();
         }
     }
 
@@ -90,21 +100,25 @@ public class TransportServiceTests
     public async Task Given_TransportServiceAsInitiator_When_InitializeIsCalledAndTcpClinetIsDisconnected_Then_ThrowsInvalidOperationException()
     {
         // Arrange
+        ConfigManager.Instance.NetworkTimeout = TimeSpan.FromSeconds(30);
         var handshakeServiceMock = new Mock<FakeHandshakeService>();
         var tcpClient1 = new TcpClient();
-        var transportService = new TransportService(handshakeServiceMock.Object, tcpClient1);
+        var transportService = new TransportService(_mockLogger.Object, handshakeServiceMock.Object, tcpClient1);
 
         // Act
-        var exception = await Assert.ThrowsAnyAsync<InvalidOperationException>(() => transportService.InitializeAsync(TimeSpan.FromSeconds(30)));
+        var exception = await Assert.ThrowsAnyAsync<InvalidOperationException>(() => transportService.InitializeAsync());
 
         // Assert
         Assert.Equal("TcpClient is not connected", exception.Message);
+
+        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public async Task Given_TransportService_When_TimeoutOccurs_Then_ThrowsConnectionTimeoutException()
     {
         // Arrange
+        ConfigManager.Instance.NetworkTimeout = TimeSpan.Zero;
         var availablePort = await PortPool.GetAvailablePortAsync();
         var tcpListener = new TcpListener(IPAddress.Loopback, availablePort);
         tcpListener.Start();
@@ -126,7 +140,8 @@ public class TransportServiceTests
                     throw new InvalidOperationException("Expected 50 bytes");
                 }
                 outMessage = new byte[50];
-                return 50;
+                ITransport? transport = null;
+                return (50, transport);
 
             });
             handshakeServiceMock.Object.SetIsInitiator(true);
@@ -141,10 +156,10 @@ public class TransportServiceTests
                 await stream.WriteAsync(buffer);
             });
             await tcpClient1.ConnectAsync(IPEndPoint.Parse(tcpListener.LocalEndpoint.ToEndpointString()));
-            var transportService = new TransportService(handshakeServiceMock.Object, tcpClient1);
+            var transportService = new TransportService(_mockLogger.Object, handshakeServiceMock.Object, tcpClient1);
 
             // Act
-            var exception = await Assert.ThrowsAnyAsync<ConnectionTimeoutException>(() => transportService.InitializeAsync(TimeSpan.Zero));
+            var exception = await Assert.ThrowsAnyAsync<ConnectionTimeoutException>(() => transportService.InitializeAsync());
             await acceptTask;
 
             // Assert
@@ -154,6 +169,8 @@ public class TransportServiceTests
         {
             tcpListener.Dispose();
             PortPool.ReleasePort(availablePort);
+
+            ConfigManagerUtil.ResetConfigManager();
         }
     }
 }

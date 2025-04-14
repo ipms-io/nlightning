@@ -1,9 +1,8 @@
 namespace NLightning.Bolts.BOLT2.Payloads;
 
 using Common.BitUtils;
+using Common.Interfaces;
 using Constants;
-using Exceptions;
-using Interfaces;
 
 /// <summary>
 /// Represents a tx_add_input payload.

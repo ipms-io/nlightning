@@ -1,6 +1,7 @@
+using NLightning.Common.Constants;
+
 namespace NLightning.Bolts.Tests.BOLT8.IntegrationTests;
 
-using Bolts.BOLT8.Constants;
 using Utils;
 
 public class MessageIntegrationTests

@@ -1,5 +1,7 @@
 namespace NLightning.Bolts.BOLT1.Interfaces;
 
+using Common.Interfaces;
+
 /// <summary>
 /// Interface for a ping pong service factory.
 /// </summary>
@@ -11,5 +13,5 @@ public interface IPingPongServiceFactory
     /// <summary>
     /// Creates a ping pong service.
     /// </summary>
-    IPingPongService CreatePingPongService(TimeSpan networkTimeout);
+    IPingPongService CreatePingPongService();
 }

@@ -2,8 +2,7 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT2.Payloads;
 
-using Exceptions;
-using Interfaces;
+using Common.Interfaces;
 
 /// <summary>
 /// Represents the payload for the channel_ready message.

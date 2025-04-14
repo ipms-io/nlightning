@@ -1,10 +1,10 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using NBitcoin;
+using NLightning.Common.Node;
 
 namespace NLightning.Bolts.BOLT11;
 
-using BOLT9;
 using Common.BitUtils;
 using Common.Constants;
 using Common.Crypto.Hashes;
@@ -13,7 +13,6 @@ using Common.Types;
 using Constants;
 using Encoders;
 using Enums;
-using Exceptions;
 using Types;
 using Types.TaggedFields;
 
@@ -135,8 +134,8 @@ public partial class Invoice
     /// <remarks>
     /// The features are used to specify the features the payer should support
     /// </remarks>
-    /// <seealso cref="BOLT9.Features"/>
-    public Features? Features
+    /// <seealso cref="FeatureSet"/>
+    public FeatureSet? Features
     {
         get
         {
@@ -727,12 +726,17 @@ public partial class Invoice
         var nBitcoinHash = new uint256(hash);
 
         // Sign the hash
-        using var key = new Key(SecureKeyManager.GetPrivateKey());
+        using var key = new Key(SecureKeyManager.GetPrivateKeyBytes());
         return key.SignCompact(nBitcoinHash, false);
     }
 
     private static Network GetNetwork(string? invoiceString)
     {
+        if (string.IsNullOrWhiteSpace(invoiceString))
+        {
+            throw new ArgumentException("Invoice string was empty", nameof(invoiceString));
+        }
+
         if (!s_supportedNetworks.TryGetValue(invoiceString.Substring(2, 4), out var network)
             && !s_supportedNetworks.TryGetValue(invoiceString.Substring(2, 3), out network)
             && !s_supportedNetworks.TryGetValue(invoiceString.Substring(2, 2), out network))

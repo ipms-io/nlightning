@@ -2,11 +2,11 @@ namespace NLightning.Bolts.Tests.BOLT1.Messages;
 
 using Bolts.BOLT1.Messages;
 using Bolts.BOLT1.Payloads;
-using Bolts.BOLT9;
 using Common.Constants;
+using Common.Exceptions;
+using Common.Node;
 using Common.TLVs;
 using Common.Types;
-using Exceptions;
 using Utils;
 
 public class InitMessageTests
@@ -15,7 +15,7 @@ public class InitMessageTests
     public async Task Given_ValidStreamWithPayloadAndExtension_When_DeserializeAsync_Then_ReturnsInitMessageWithCorrectData()
     {
         // Arrange
-        var expectedPayload = new InitPayload(new Features());
+        var expectedPayload = new InitPayload(new FeatureSet());
         var expectedExtension = new TlvStream();
         var expectedTlv = new NetworksTlv([ChainConstants.MAIN]);
         expectedExtension.Add(expectedTlv);
@@ -27,7 +27,7 @@ public class InitMessageTests
         // Assert
         Tlv? tlv = null;
         Assert.NotNull(initMessage);
-        Assert.Equal(expectedPayload.Features.ToString(), initMessage.Payload.Features.ToString());
+        Assert.Equal(expectedPayload.FeatureSet.ToString(), initMessage.Payload.FeatureSet.ToString());
         var hasTlv = initMessage.Extension?.TryGetTlv(TlvConstants.NETWORKS, out tlv);
         Assert.True(hasTlv);
         Assert.Equal(expectedTlv.Value, tlv!.Value);
@@ -37,7 +37,7 @@ public class InitMessageTests
     public async Task Given_ValidStreamWithOnlyPayload_When_DeserializeAsync_Then_ReturnsInitMessageWithNullExtension()
     {
         // Arrange
-        var expectedPayload = new InitPayload(new Features());
+        var expectedPayload = new InitPayload(new FeatureSet());
         var stream = new MemoryStream("0002020000020200".ToByteArray());
 
         // Act
@@ -45,7 +45,7 @@ public class InitMessageTests
 
         // Assert
         Assert.NotNull(initMessage);
-        Assert.Equal(expectedPayload.Features.ToString(), initMessage.Payload.Features.ToString());
+        Assert.Equal(expectedPayload.FeatureSet.ToString(), initMessage.Payload.FeatureSet.ToString());
         Assert.Null(initMessage.Extension);
     }
 
@@ -63,7 +63,7 @@ public class InitMessageTests
     public async Task Given_ValidPayloadAndExtension_When_SerializeAsync_Then_WritesCorrectDataToStream()
     {
         // Arrange
-        var message = new InitMessage(new InitPayload(new Features()), new NetworksTlv([ChainConstants.MAIN]));
+        var message = new InitMessage(new InitPayload(new FeatureSet()), new NetworksTlv([ChainConstants.MAIN]));
         var stream = new MemoryStream();
         var expectedBytes = "0010000202000002020001206FE28C0AB6F1B372C1A6A246AE63F74F931E8365E15A089C68D6190000000000".ToByteArray();
 
@@ -81,7 +81,7 @@ public class InitMessageTests
     public async Task Given_ValidPayloadOnly_When_SerializeAsync_Then_WritesCorrectDataToStream()
     {
         // Arrange
-        var message = new InitMessage(new InitPayload(new Features()));
+        var message = new InitMessage(new InitPayload(new FeatureSet()));
         var stream = new MemoryStream();
         var expectedBytes = "00100002020000020200".ToByteArray();
 

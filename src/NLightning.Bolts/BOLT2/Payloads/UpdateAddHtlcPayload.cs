@@ -2,8 +2,7 @@ namespace NLightning.Bolts.BOLT2.Payloads;
 
 using Common.BitUtils;
 using Common.Constants;
-using Exceptions;
-using Interfaces;
+using Common.Interfaces;
 
 /// <summary>
 /// Represents the payload for the update_add_htlc message.

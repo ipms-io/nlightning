@@ -7,9 +7,9 @@ using Bolts.BOLT11;
 using Bolts.BOLT11.Constants;
 using Bolts.BOLT11.Types;
 using Common.Constants;
+using Common.Exceptions;
 using Common.Managers;
 using Common.Types;
-using Exceptions;
 using TestCollections;
 
 [Collection(SecureKeyManagerCollection.NAME)]

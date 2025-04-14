@@ -2,9 +2,9 @@ namespace NLightning.Bolts.Tests.BOLT2.Messages;
 
 using Bolts.BOLT2.Messages;
 using Bolts.BOLT2.Payloads;
+using Common.Exceptions;
 using Common.TLVs;
 using Common.Types;
-using Exceptions;
 using Utils;
 
 public class TxAckRbfMessageTests

@@ -3,8 +3,7 @@ using System.Runtime.Serialization;
 namespace NLightning.Bolts.BOLT1.Messages;
 
 using Base;
-using Constants;
-using Exceptions;
+using Common.Constants;
 using Payloads;
 
 /// <summary>

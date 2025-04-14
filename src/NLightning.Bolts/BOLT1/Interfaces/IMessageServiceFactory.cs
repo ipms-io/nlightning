@@ -1,6 +1,6 @@
 namespace NLightning.Bolts.BOLT1.Interfaces;
 
-using BOLT8.Interfaces;
+using Common.Interfaces;
 
 /// <summary>
 /// Interface for a message service factory.

@@ -56,7 +56,7 @@
 //     {
 //         try {
 //             // Try to load from SecureKeyManager
-//             return SecureKeyManager.GetPrivateKey();
+//             return SecureKeyManager.GetPrivateKeyBytes();
 //         }
 //         catch (InvalidOperationException) {
 //             // Generate new seed if not initialized

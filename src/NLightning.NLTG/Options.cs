@@ -1,3 +1,4 @@
+using NLightning.Common.Node;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
@@ -41,6 +42,10 @@ public class Options
     /// </summary>
     /// <seealso cref="Network"/>
     public Network Network { get; set; }
+
+    public int Port { get; set; } = 9735;
+
+    public bool Daemon { get; set; }
 
     /// <summary>
     /// Path to the configuration file
@@ -130,18 +135,36 @@ public class Options
     /// <returns>Merged Options</returns>
     public Options MergeWith(Options other)
     {
-        var merged = new Options()
+        var merged = new Options
         {
-            LogFile = !string.IsNullOrWhiteSpace(LogFile) ? LogFile : other.LogFile,
-            LogLevel = LogLevel != Serilog.Events.LogEventLevel.Warning ? LogLevel : other.LogLevel,
-            Network = Network != Network.MAIN_NET ? Network : other.Network,
-            Peers = Peers
+            Peers = Peers,
+            LogFile = IsLogFileDefault
+            ? other.IsLogFileDefault
+                ? LogFile
+                : other.LogFile
+            : LogFile
         };
+        merged.LogLevel = merged.LogLevel != LogLevel ? LogLevel : other.LogLevel;
+        merged.Network = merged.Network != Network ? Network : other.Network;
+        merged.Port = merged.Port != Port ? Port : other.Port;
+        merged.Daemon = Daemon || other.Daemon;
 
         // Merge Peers and filter by unique
         merged.Peers.AddRange(other.Peers.Where(p => !Peers.Contains(p)));
 
         return merged;
+    }
+
+    public NodeOptions ToNodeOptions()
+    {
+        return new NodeOptions
+        {
+            EnableDataLossProtect = true,
+            EnableStaticRemoteKey = true,
+            EnablePaymentSecret = true,
+            EnableDualFund = true,
+            ChainHashes = [Network.ChainHash]
+        };
     }
 
     /// <summary>
@@ -171,7 +194,7 @@ public class Options
         public object ReadYaml(IParser parser, Type type)
         {
             var value = parser.Consume<Scalar>().Value;
-            parser.MoveNext();
+            // parser.MoveNext();
             return new Network(value);
         }
 

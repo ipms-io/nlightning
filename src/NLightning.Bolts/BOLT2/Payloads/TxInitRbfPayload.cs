@@ -1,8 +1,7 @@
 namespace NLightning.Bolts.BOLT2.Payloads;
 
 using Common.BitUtils;
-using Exceptions;
-using Interfaces;
+using Common.Interfaces;
 
 /// <summary>
 /// Represents the payload for the tx_init_rbf message.

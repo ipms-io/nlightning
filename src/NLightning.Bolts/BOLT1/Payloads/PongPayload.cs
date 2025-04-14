@@ -1,8 +1,7 @@
 namespace NLightning.Bolts.BOLT1.Payloads;
 
-using Bolts.Interfaces;
 using Common.BitUtils;
-using Exceptions;
+using Common.Interfaces;
 
 /// <summary>
 /// Represents a Pong payload.

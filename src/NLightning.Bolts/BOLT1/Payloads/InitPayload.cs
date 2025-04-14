@@ -1,8 +1,7 @@
 namespace NLightning.Bolts.BOLT1.Payloads;
 
-using BOLT9;
-using Bolts.Interfaces;
-using Exceptions;
+using Common.Interfaces;
+using Common.Node;
 
 /// <summary>
 /// The init payload.
@@ -10,21 +9,21 @@ using Exceptions;
 /// <remarks>
 /// The init payload is used to communicate the features supported by the node.
 /// </remarks>
-/// <param name="features">The features supported by the node.</param>
+/// <param name="featureSet">The features supported by the node.</param>
 /// <seealso cref="Messages.InitMessage"/>
-/// <seealso cref="BOLT9.Features"/>
-public class InitPayload(Features features) : IMessagePayload
+/// <seealso cref="FeatureSet"/>
+public class InitPayload(FeatureSet featureSet) : IMessagePayload
 {
     /// <summary>
     /// The features supported by the node.
     /// </summary>
-    public Features Features { get; } = features;
+    public FeatureSet FeatureSet { get; } = featureSet;
 
     /// <inheritdoc/>
     public async Task SerializeAsync(Stream stream)
     {
-        await Features.SerializeAsync(stream, true);
-        await Features.SerializeAsync(stream);
+        await FeatureSet.SerializeAsync(stream, true);
+        await FeatureSet.SerializeAsync(stream);
     }
 
     /// <summary>
@@ -37,11 +36,11 @@ public class InitPayload(Features features) : IMessagePayload
     {
         try
         {
-            var globalFeatures = await Features.DeserializeAsync(stream);
+            var globalFeatures = await FeatureSet.DeserializeAsync(stream);
 
-            var features = await Features.DeserializeAsync(stream);
+            var features = await FeatureSet.DeserializeAsync(stream);
 
-            return new InitPayload(Features.Combine(globalFeatures, features));
+            return new InitPayload(FeatureSet.Combine(globalFeatures, features));
         }
         catch (Exception e)
         {
