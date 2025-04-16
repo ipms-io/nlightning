@@ -1,7 +1,6 @@
 namespace NLightning.Bolts.BOLT1.Factories;
 
 using Common.Interfaces;
-using Interfaces;
 using Services;
 
 /// <summary>
@@ -12,9 +11,16 @@ using Services;
 /// </remarks>
 public class PingPongServiceFactory : IPingPongServiceFactory
 {
+    private readonly IMessageFactory _messageFactory;
+
+    public PingPongServiceFactory(IMessageFactory messageFactory)
+    {
+        _messageFactory = messageFactory;
+    }
+
     /// <inheritdoc />
     public IPingPongService CreatePingPongService()
     {
-        return new PingPongService();
+        return new PingPongService(_messageFactory);
     }
 }

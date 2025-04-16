@@ -1,6 +1,5 @@
 namespace NLightning.Bolts.BOLT1.Services;
 
-using Bolts.Factories;
 using Common.Interfaces;
 
 /// <summary>
@@ -12,6 +11,7 @@ using Common.Interfaces;
 /// <seealso cref="IMessageService" />
 internal sealed class MessageService : IMessageService
 {
+    private readonly IMessageFactory _messageFactory;
     private readonly ITransportService? _transportService;
 
     private bool _disposed;
@@ -26,9 +26,11 @@ internal sealed class MessageService : IMessageService
     /// <summary>
     /// Initializes a new <see cref="MessageService"/> class.
     /// </summary>
+    /// <param name="messageFactory">The message factory.</param>
     /// <param name="transportService">The transport service.</param>
-    public MessageService(ITransportService transportService)
+    public MessageService(IMessageFactory messageFactory, ITransportService transportService)
     {
+        _messageFactory = messageFactory;
         _transportService = transportService;
 
         _transportService.MessageReceived += ReceiveMessage;
@@ -57,7 +59,7 @@ internal sealed class MessageService : IMessageService
     {
         try
         {
-            MessageFactory.DeserializeMessageAsync(stream).ContinueWith(task =>
+            _messageFactory.DeserializeMessageAsync(stream).ContinueWith(task =>
             {
                 if (task.IsFaulted)
                 {

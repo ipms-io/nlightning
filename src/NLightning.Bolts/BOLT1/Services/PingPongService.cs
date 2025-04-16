@@ -1,9 +1,8 @@
 namespace NLightning.Bolts.BOLT1.Services;
 
-using Bolts.Factories;
 using Common.Interfaces;
 using Common.Managers;
-using Messages;
+using Common.Messages;
 
 /// <summary>
 /// Service for managing the ping pong protocol.
@@ -11,18 +10,25 @@ using Messages;
 /// <remarks>
 /// This class is used to manage the ping pong protocol.
 /// </remarks>
-internal class PingPongService() : IPingPongService
+internal class PingPongService : IPingPongService
 {
     private readonly Random _random = new();
+    private readonly IMessageFactory _messageFactory;
 
     private TaskCompletionSource<bool> _pongReceivedTaskSource = new();
-    private PingMessage _pingMessage = (PingMessage)MessageFactory.CreatePingMessage();
+    private PingMessage _pingMessage;
 
     /// <inheritdoc />
     public event EventHandler<IMessage>? PingMessageReadyEvent;
 
     /// <inheritdoc />
     public event EventHandler<Exception>? DisconnectEvent;
+
+    public PingPongService(IMessageFactory messageFactory)
+    {
+        _messageFactory = messageFactory;
+        _pingMessage = (PingMessage)messageFactory.CreatePingMessage();
+    }
 
     /// <inheritdoc />
     /// <remarks>
@@ -56,7 +62,7 @@ internal class PingPongService() : IPingPongService
             await Task.Delay(_random.Next(30000, 300000), cancellationToken);
 
             _pongReceivedTaskSource = new TaskCompletionSource<bool>();
-            _pingMessage = (PingMessage)MessageFactory.CreatePingMessage();
+            _pingMessage = (PingMessage)_messageFactory.CreatePingMessage();
         }
     }
 

@@ -1,7 +1,8 @@
+using NLightning.Common.Messages;
+using NLightning.Common.Messages.Payloads;
+
 namespace NLightning.Bolts.Tests.BOLT1.Messages;
 
-using Bolts.BOLT1.Messages;
-using Bolts.BOLT1.Payloads;
 using Common.Constants;
 using Common.Exceptions;
 using Common.Node;

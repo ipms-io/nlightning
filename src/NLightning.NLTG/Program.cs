@@ -1,85 +1,106 @@
-using System.Net;
-using System.Net.Sockets;
-using System.Runtime.InteropServices;
-using Microsoft.Extensions.DependencyInjection;
-using NBitcoin;
-using NLightning.Bolts.BOLT1.Factories;
-using NLightning.Bolts.BOLT1.Interfaces;
-using NLightning.Bolts.BOLT1.Managers;
-using NLightning.Common.Interfaces;
-using NLightning.Common.Managers;
-using NLightning.NLTG;
-using NLightning.NLTG.Parsers;
+using Microsoft.Extensions.Hosting;
+using NLightning.NLTG.Extensions;
+using NLightning.NLTG.Helpers;
+using NLightning.NLTG.Utilities;
 using Serilog;
-using ILogger = NLightning.Common.Interfaces.ILogger;
 
-// Register signal handlers
-var cts = new CancellationTokenSource();
-PosixSignalRegistration.Create(PosixSignal.SIGTERM, HandleTermination);
-PosixSignalRegistration.Create(PosixSignal.SIGQUIT, HandleTermination);
-
-// Set up the DI container
-var services = new ServiceCollection();
-
-// Configure logging to use Serilog
-services.AddLogging(builder => builder.AddSerilog());
-
-// Initialize the options and logger from provided args
-var (options, loggerConfig) = ArgumentOptionParser.Initialize(args);
-
-Log.Logger = loggerConfig.CreateLogger();
-
-Log.Logger.Information("Using config file: {ConfigFile}", options.ConfigFile);
-
-Log.Logger.Information("Log file: {LogFile}", options.LogFile);
-// Initialize ConfigManager
-ConfigManager.NodeOptions = options.ToNodeOptions();
-
-// Register services
-services.AddSingleton<ILogger, SerilogLogger>();
-services.AddSingleton<IPeerManager, PeerManager>();
-services.AddScoped<ITransportServiceFactory, TransportServiceFactory>();
-services.AddScoped<IMessageServiceFactory, MessageServiceFactory>();
-services.AddScoped<IPingPongServiceFactory, PingPongServiceFactory>();
-
-// Build the service provider
-var serviceProvider = services.BuildServiceProvider();
-
-// Initialize Peer Manager
-var peerManager = serviceProvider.GetRequiredService<IPeerManager>();
-
-var listener = new TcpListener(IPAddress.Any, options.Port);
-listener.Start();
-Log.Logger.Information("Listening for connections on port {port}...", options.Port);
-var key = new Key();
-SecureKeyManager.Initialize(key.ToBytes());
-Log.Logger.Debug("lncli connect {pubKey}@docker.for.mac.host.internal:9735", key.PubKey.ToString());
-
-while (!cts.Token.IsCancellationRequested)
+try
 {
-    var tcpClient = await listener.AcceptTcpClientAsync();
-    _ = Task.Run(async () =>
+    // Bootstrap logger for startup messages
+    Log.Logger = new LoggerConfiguration()
+        .WriteTo.Console()
+        .CreateBootstrapLogger();
+
+    // Get network for PID file path
+    var network = CommandLineHelper.GetNetwork(args);
+    var pidFilePath = DaemonUtility.GetPidFilePath(network);
+
+    // Check for stop command
+    if (CommandLineHelper.IsStopRequested(args))
     {
-        try
-        {
-            Log.Logger.Information("[NLTG] New peer connection from {remoteEndPoint}", tcpClient.Client.RemoteEndPoint);
-            await peerManager.AcceptPeerAsync(tcpClient);
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error(e, "[NLTG] Error accepting peer connection for {remoteEndPoint}",
-                                tcpClient.Client.RemoteEndPoint);
-        }
-    }, cts.Token);
+        var stopped = DaemonUtility.StopDaemon(pidFilePath, Log.Logger);
+        return stopped ? 0 : 1;
+    }
+
+    // Check for status command
+    if (CommandLineHelper.IsStatusRequested(args))
+    {
+        ReportDaemonStatus(pidFilePath);
+        return 0;
+    }
+
+    // Check if help is requested
+    if (CommandLineHelper.IsHelpRequested(args))
+    {
+        CommandLineHelper.ShowUsage();
+        return 0;
+    }
+
+    // Read configuration file to check for daemon setting
+    var initialConfig = NltgConfigurationExtensions.ReadInitialConfiguration(args);
+
+    // Start as daemon if requested
+    if (DaemonUtility.StartDaemonIfRequested(args, initialConfig, pidFilePath, Log.Logger))
+    {
+        // Parent process exits immediately after starting daemon
+        return 0;
+    }
+
+    Log.Information("Starting NLTG...");
+
+    // Create and run host
+    await Host.CreateDefaultBuilder(args)
+        .ConfigureNltg(initialConfig)
+        .ConfigureNltgServices()
+        .RunConsoleAsync();
+
+    return 0;
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+    return 1;
+}
+finally
+{
+    Log.CloseAndFlush();
 }
 
-Log.Logger.Information("Shutting down...");
-
-return;
-
-void HandleTermination(PosixSignalContext context)
+static void ReportDaemonStatus(string pidFilePath)
 {
-    Log.Logger.Information("Received {signal} signal, starting graceful shutdown...", context.Signal);
-    context.Cancel = true;
-    cts.Cancel();
+    try
+    {
+        if (!File.Exists(pidFilePath))
+        {
+            Console.WriteLine("NLTG daemon is not running");
+            return;
+        }
+
+        var pidText = File.ReadAllText(pidFilePath).Trim();
+        if (!int.TryParse(pidText, out var pid))
+        {
+            Console.WriteLine("Invalid PID in file, daemon may not be running");
+            return;
+        }
+
+        try
+        {
+            var process = System.Diagnostics.Process.GetProcessById(pid);
+            var runTime = DateTime.Now - process.StartTime;
+
+            Console.WriteLine("NLTG daemon is running");
+            Console.WriteLine($"PID: {pid}");
+            Console.WriteLine($"Started: {process.StartTime}");
+            Console.WriteLine($"Uptime: {runTime.Days}d {runTime.Hours}h {runTime.Minutes}m");
+            Console.WriteLine($"Memory: {process.WorkingSet64 / (1024 * 1024)} MB");
+        }
+        catch (ArgumentException)
+        {
+            Console.WriteLine("NLTG daemon is not running (stale PID file)");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error checking daemon status: {ex.Message}");
+    }
 }

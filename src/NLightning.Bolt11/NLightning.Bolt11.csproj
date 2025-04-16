@@ -53,7 +53,6 @@
     <Compile Include="..\NLightning.Common\Managers\ConfigManager.cs" LinkBase="Common\Managers"/>
     <Compile Include="..\NLightning.Common\Managers\SecureKeyManager.cs" LinkBase="Common\Managers"/>
     <Compile Include="..\NLightning.Common\Node\FeatureSet.cs" LinkBase="Common\Node"/>
-    <Compile Include="..\NLightning.Common\Node\NodeOptions.cs" LinkBase="Common\Node"/>
     <Compile Include="..\NLightning.Common\Types\BigSize.cs" LinkBase="Common\Types"/>
     <Compile Include="..\NLightning.Common\Types\ChainHash.cs" LinkBase="Common\Types"/>
     <Compile Include="..\NLightning.Common\Types\LightningMoney.cs" LinkBase="Common\Types"/>

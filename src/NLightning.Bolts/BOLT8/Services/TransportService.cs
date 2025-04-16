@@ -1,4 +1,5 @@
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
 
 namespace NLightning.Bolts.BOLT8.Services;
 
@@ -63,7 +64,7 @@ internal sealed class TransportService : ITransportService
         {
             try
             {
-                _logger.Verbose("[TransportService] We're initiator, writing Act One");
+                _logger.LogTrace("[TransportService] We're initiator, writing Act One");
 
                 // Write Act One
                 var len = _handshakeService.PerformStep(ProtocolConstants.EMPTY_MESSAGE, writeBuffer, out _);
@@ -71,14 +72,14 @@ internal sealed class TransportService : ITransportService
                 await stream.FlushAsync(networkTimeoutCancellationTokenSource.Token);
 
                 // Read exactly 50 bytes
-                _logger.Verbose("[TransportService] Reading Act Two");
+                _logger.LogTrace("[TransportService] Reading Act Two");
                 networkTimeoutCancellationTokenSource = new CancellationTokenSource(ConfigManager.Instance.NetworkTimeout);
                 var readBuffer = new byte[50];
                 await stream.ReadExactlyAsync(readBuffer, networkTimeoutCancellationTokenSource.Token);
                 networkTimeoutCancellationTokenSource.Dispose();
 
                 // Read Act Two and Write Act Three
-                _logger.Verbose("[TransportService] Writing Act Three");
+                _logger.LogTrace("[TransportService] Writing Act Three");
                 writeBuffer = new byte[66];
                 len = _handshakeService.PerformStep(readBuffer, writeBuffer, out _transport);
                 await stream.WriteAsync(writeBuffer.AsMemory()[..len]);
@@ -95,7 +96,7 @@ internal sealed class TransportService : ITransportService
 
             try
             {
-                _logger.Verbose("[TransportService] We're NOT initiator, reading Act One");
+                _logger.LogTrace("[TransportService] We're NOT initiator, reading Act One");
 
                 // Read exactly 50 bytes
                 networkTimeoutCancellationTokenSource = new CancellationTokenSource(ConfigManager.Instance.NetworkTimeout);
@@ -103,13 +104,13 @@ internal sealed class TransportService : ITransportService
                 await stream.ReadExactlyAsync(readBuffer, networkTimeoutCancellationTokenSource.Token);
 
                 // Read Act One and Write Act Two
-                _logger.Verbose("[TransportService] Writing Act Two");
+                _logger.LogTrace("[TransportService] Writing Act Two");
                 var len = _handshakeService.PerformStep(readBuffer, writeBuffer, out _);
                 await stream.WriteAsync(writeBuffer.AsMemory()[..len]);
                 await stream.FlushAsync();
 
                 // Read exactly 66 bytes
-                _logger.Verbose("[TransportService] Reading Act Three");
+                _logger.LogTrace("[TransportService] Reading Act Three");
                 act = 3;
                 networkTimeoutCancellationTokenSource = new CancellationTokenSource(ConfigManager.Instance.NetworkTimeout);
                 readBuffer = new byte[66];
@@ -134,7 +135,7 @@ internal sealed class TransportService : ITransportService
                                 ?? throw new InvalidOperationException("RemoteStaticPublicKey is null");
 
         // Listen to messages and raise event
-        _logger.Verbose("[TransportService] Handshake completed, listening to messages");
+        _logger.LogTrace("[TransportService] Handshake completed, listening to messages");
         _ = Task.Run(ReadResponseAsync, CancellationToken.None).ContinueWith(task =>
         {
             if (task.Exception?.InnerExceptions.Count > 0)
@@ -161,11 +162,6 @@ internal sealed class TransportService : ITransportService
         {
             throw new InvalidOperationException("Handshake not completed");
         }
-
-        // if (!IsInitiator)
-        // {
-        //     throw new InvalidOperationException("Responder cannot write messages");
-        // }
 
         // Serialize message
         using var messageStream = new MemoryStream();
@@ -226,7 +222,10 @@ internal sealed class TransportService : ITransportService
             }
             catch (Exception e)
             {
-                throw new ConnectionException("Error reading response", e);
+                if (!_cts.IsCancellationRequested)
+                {
+                    throw new ConnectionException("Error reading response", e);
+                }
             }
         }
 
@@ -255,7 +254,7 @@ internal sealed class TransportService : ITransportService
 
             _handshakeService?.Dispose();
             _transport?.Dispose();
-            _tcpClient?.Dispose();
+            _tcpClient.Dispose();
         }
 
         _disposed = true;

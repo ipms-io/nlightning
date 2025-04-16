@@ -1,6 +1,6 @@
 namespace NLightning.Bolts.BOLT2.Validators;
 
-using Payloads;
+using Common.Messages.Payloads;
 
 public static class TxRemoveInputValidator
 {

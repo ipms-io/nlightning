@@ -1,14 +1,11 @@
-using NLightning.Common.Enums;
-using NLightning.Common.Node;
-
 namespace NLightning.Common.Managers;
 
+using Enums;
 using Types;
 
 public class ConfigManager
 {
     private static readonly Lazy<ConfigManager> s_instance = new(() => new ConfigManager());
-    private static NodeOptions? s_nodeOptions;
 
     // Private constructor to prevent external instantiation
     private ConfigManager() { }
@@ -28,18 +25,6 @@ public class ConfigManager
     /// The global network timeout is used for all network operations.
     /// </remarks>
     public TimeSpan NetworkTimeout = TimeSpan.FromSeconds(15);
-
-    public static NodeOptions NodeOptions
-    {
-        get
-        {
-            return s_nodeOptions ?? throw new InvalidOperationException("Config Manager is not initialized.");
-        }
-        set
-        {
-            s_nodeOptions = value;
-        }
-    }
 
     /// <summary>
     /// DustLimitAmount is the threshold below which outputs should not be generated for this node's commitment or
@@ -104,15 +89,4 @@ public class ConfigManager
     /// default_cltv_expiry is the default CLTV expiry for HTLC outputs.
     /// </summary>
     public ulong DefaultCltvExpiry { get; set; }
-
-    #region Fee Estimation
-    public string FeeEstimationUrl { get; set; } = "https://mempool.space/api/v1/fees/recommended";
-    public string FeeEstimationMethod { get; set; } = "GET";
-    public string FeeEstimationBody { get; set; } = string.Empty;
-    public string FeeEstimationContentType { get; set; } = "application/json";
-    public string FeeEstimationPreferredFeeRate { get; set; } = "fastestFee";
-    public string FeeRateMultiplier { get; set; } = "1000";
-    public string FeeEstimationCacheFile { get; set; } = "fee_estimation_cache.json";
-    public string FeeEstimationCacheExpiration { get; set; } = "5m"; // 5 minutes
-    #endregion
 }

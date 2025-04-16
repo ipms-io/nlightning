@@ -1,7 +1,6 @@
 namespace NLightning.Bolts.BOLT1.Factories;
 
 using Common.Interfaces;
-using Interfaces;
 using Services;
 
 /// <summary>
@@ -12,9 +11,16 @@ using Services;
 /// </remarks>
 public sealed class MessageServiceFactory : IMessageServiceFactory
 {
+    private readonly IMessageFactory _messageFactory;
+
+    public MessageServiceFactory(IMessageFactory messageFactory)
+    {
+        _messageFactory = messageFactory;
+    }
+
     /// <inheritdoc />
     public IMessageService CreateMessageService(ITransportService transportService)
     {
-        return new MessageService(transportService);
+        return new MessageService(_messageFactory, transportService);
     }
 }

@@ -1,4 +1,6 @@
 using System.Net;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
 
@@ -6,6 +8,7 @@ namespace NLightning.Common.Tests.Services;
 
 using Common.Services;
 using Common.Types;
+using Options;
 
 public class FeeServiceTests
 {
@@ -21,7 +24,8 @@ public class FeeServiceTests
 
         s_httpMessageHandlerMock = new Mock<HttpMessageHandler>();
         var httpClient = new HttpClient(s_httpMessageHandlerMock.Object);
-        s_feeService = new FeeService(httpClient);
+        s_feeService = new FeeService(new OptionsWrapper<FeeOptions>(new FeeOptions()), httpClient,
+                                      new Mock<ILogger<FeeService>>().Object);
     }
 
     [Fact]
@@ -29,9 +33,11 @@ public class FeeServiceTests
     {
         // Arrange
         var cachedFeeRate = LightningMoney.Satoshis(1000);
-        typeof(FeeService).GetField("s_cachedFeeRate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+        typeof(FeeService).GetField("s_cachedFeeRate", System.Reflection.BindingFlags.NonPublic
+                                                       | System.Reflection.BindingFlags.Static)
             ?.SetValue(null, cachedFeeRate);
-        typeof(FeeService).GetField("s_lastFetchTime", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+        typeof(FeeService).GetField("s_lastFetchTime", System.Reflection.BindingFlags.NonPublic
+                                                       | System.Reflection.BindingFlags.Static)
             ?.SetValue(null, DateTime.UtcNow);
 
         // Act
@@ -45,15 +51,17 @@ public class FeeServiceTests
     public async Task GetFeeRatePerKwAsync_WhenCacheIsInvalid_RefreshesAndReturnsNewValue()
     {
         // Arrange
-        typeof(FeeService).GetField("s_lastFetchTime", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+        typeof(FeeService).GetField("s_lastFetchTime", System.Reflection.BindingFlags.NonPublic
+                                                       | System.Reflection.BindingFlags.Static)
             ?.SetValue(null, DateTime.UtcNow.Subtract(TimeSpan.FromHours(1)));
-        var apiResponse = "{\"fastestFee\": 2}";
+        const string API_RESPONSE = "{\"fastestFee\": 2}";
         s_httpMessageHandlerMock!.Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(),
+                                              ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(apiResponse)
+                Content = new StringContent(API_RESPONSE)
             });
 
         // Act
@@ -68,11 +76,13 @@ public class FeeServiceTests
     {
         // Arrange
         var cachedFeeRate = LightningMoney.Satoshis(1000);
-        typeof(FeeService).GetField("s_cachedFeeRate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+        typeof(FeeService).GetField("s_cachedFeeRate", System.Reflection.BindingFlags.NonPublic
+                                                       | System.Reflection.BindingFlags.Static)
             ?.SetValue(null, cachedFeeRate);
 
         s_httpMessageHandlerMock!.Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(),
+                                              ItExpr.IsAny<CancellationToken>())
             .ThrowsAsync(new HttpRequestException());
 
         // Act
@@ -87,11 +97,13 @@ public class FeeServiceTests
     {
         // Arrange
         var tempFilePath = Path.GetTempFileName();
-        typeof(FeeService).GetField("_cacheFilePath", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+        typeof(FeeService).GetField("_cacheFilePath", System.Reflection.BindingFlags.NonPublic
+                                                      | System.Reflection.BindingFlags.Instance)
             ?.SetValue(s_feeService, tempFilePath);
 
         var feeRate = LightningMoney.Satoshis(1500);
-        typeof(FeeService).GetField("s_cachedFeeRate", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+        typeof(FeeService).GetField("s_cachedFeeRate", System.Reflection.BindingFlags.NonPublic
+                                                       | System.Reflection.BindingFlags.Static)
             ?.SetValue(null, feeRate);
 
         // Act
@@ -103,31 +115,18 @@ public class FeeServiceTests
     }
 
     [Fact]
-    public void Dispose_WhenCalled_CancelsBackgroundTask()
-    {
-        // Arrange
-        var cts = new CancellationTokenSource();
-        typeof(FeeService).GetField("s_cts", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-            ?.SetValue(null, cts);
-
-        // Act
-        s_feeService!.Dispose();
-
-        // Assert
-        Assert.True(cts.IsCancellationRequested);
-    }
-
-    [Fact]
     public async Task RunPeriodicRefreshAsync_RefreshesFeeRatePeriodically()
     {
         // Arrange
         var refreshCount = 0;
         var cancellationTokenSource = new CancellationTokenSource();
-        typeof(FeeService).GetField("_cacheTimeExpiration", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+        typeof(FeeService).GetField("_cacheTimeExpiration", System.Reflection.BindingFlags.NonPublic
+                                                            | System.Reflection.BindingFlags.Instance)
             ?.SetValue(s_feeService, TimeSpan.FromMilliseconds(100));
 
         s_httpMessageHandlerMock!.Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(),
+                                              ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
@@ -143,8 +142,9 @@ public class FeeServiceTests
             });
 
         // Act
-        var startRefreshTask = s_feeService!.StartBackgroundRefreshAsync(cancellationTokenSource.Token);
-        var backgroundTask = typeof(FeeService).GetField("s_backgroundTask", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+        var startRefreshTask = s_feeService!.StartAsync(cancellationTokenSource.Token);
+        var backgroundTask = typeof(FeeService).GetField("s_backgroundTask", System.Reflection.BindingFlags.NonPublic
+                                                                             | System.Reflection.BindingFlags.Static)
             ?.GetValue(s_feeService) as Task ?? throw new Exception("Can't find field to test.");
 
         await startRefreshTask;

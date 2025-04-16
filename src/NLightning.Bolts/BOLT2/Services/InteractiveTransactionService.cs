@@ -1,8 +1,7 @@
-using NLightning.Common.Managers;
-
 namespace NLightning.Bolts.BOLT2.Services;
 
-using Payloads;
+using Common.Managers;
+using Common.Messages.Payloads;
 using Validators;
 
 public class InteractiveTransactionService(bool isInitiator)

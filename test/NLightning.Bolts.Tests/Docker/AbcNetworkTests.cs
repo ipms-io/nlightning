@@ -2,20 +2,22 @@ using System.Collections.Immutable;
 using System.Net;
 using System.Net.Sockets;
 using Lnrpc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NBitcoin;
-using NLightning.Common.Interfaces;
 using ServiceStack;
 using ServiceStack.Text;
 using Xunit.Abstractions;
 
 namespace NLightning.Bolts.Tests.Docker;
 
-using BOLT1.Fixtures;
 using Bolts.BOLT1.Factories;
 using Bolts.BOLT1.Managers;
 using Common.Constants;
+using Common.Enums;
+using Common.Factories;
 using Common.Managers;
-using Common.Node;
+using Common.Options;
 using TestCollections;
 using Tests.Fixtures;
 using Utils;
@@ -26,7 +28,6 @@ using Utils;
 public class AbcNetworkTests
 {
     private readonly LightningRegtestNetworkFixture _lightningRegtestNetworkFixture;
-    private readonly Mock<ILogger> _mockLogger = new();
 
     public AbcNetworkTests(LightningRegtestNetworkFixture fixture, ITestOutputHelper output)
     {
@@ -43,15 +44,22 @@ public class AbcNetworkTests
         var alice = _lightningRegtestNetworkFixture.Builder?.LNDNodePool?.ReadyNodes.First(x => x.LocalAlias == "alice");
         Assert.NotNull(alice);
 
-        ConfigManager.NodeOptions = new NodeOptions
+        var nodeOptions = new OptionsWrapper<NodeOptions>(new NodeOptions
         {
             ChainHashes = [ChainConstants.REGTEST],
-            EnableDataLossProtect = true,
-            EnableStaticRemoteKey = true,
-            EnablePaymentSecret = true
-        };
-        IPeerManager peerManager = new PeerManager(new TransportServiceFactory(), new PingPongServiceFactory(),
-                                                   new MessageServiceFactory(), _mockLogger.Object);
+            DataLossProtect = FeatureSupport.OPTIONAL,
+            StaticRemoteKey = FeatureSupport.OPTIONAL,
+            PaymentSecret = FeatureSupport.OPTIONAL
+        });
+        var loggerFactory = new LoggerFactory();
+        var messageFactory = new MessageFactory();
+
+        var peerManager = new PeerManager(new PeerFactory(loggerFactory, messageFactory,
+                                                          new MessageServiceFactory(messageFactory),
+                                                          new PingPongServiceFactory(messageFactory),
+                                                          new TransportServiceFactory(loggerFactory),
+                                                          nodeOptions),
+                                          new Mock<ILogger<PeerManager>>().Object);
 
         var aliceHost = new IPEndPoint((await Dns.GetHostAddressesAsync(alice.Host
                                                                              .SplitOnFirst("//")[1]
@@ -59,12 +67,16 @@ public class AbcNetworkTests
 
         // Act
         await peerManager.ConnectToPeerAsync(new Common.Types.PeerAddress(new PubKey(alice.LocalNodePubKeyBytes),
-                                                                          aliceHost.Address.ToString(), aliceHost.Port));
+                                                                          aliceHost.Address.ToString(),
+                                                                          aliceHost.Port));
         var alicePeers = alice.LightningClient.ListPeers(new ListPeersRequest());
 
         // Assert
-        Assert.NotNull(alicePeers.Peers.FirstOrDefault(x => x.PubKey.Equals(hex, StringComparison.CurrentCultureIgnoreCase)));
+        Assert.NotNull(alicePeers.Peers.FirstOrDefault(x => x.PubKey
+                                                             .Equals(hex, StringComparison.CurrentCultureIgnoreCase)));
 
+        // Cleanup
+        peerManager.DisconnectPeer(new PubKey(alice.LocalNodePubKeyBytes));
         ConfigManagerUtil.ResetConfigManager();
     }
 
@@ -72,7 +84,7 @@ public class AbcNetworkTests
     public async Task NLightning_BOLT8_Test_Bob_Connect()
     {
         // Arrange
-        var availablePort = await PortPool.GetAvailablePortAsync();
+        var availablePort = await PortPoolUtil.GetAvailablePortAsync();
         var listener = new TcpListener(IPAddress.Any, availablePort);
         listener.Start();
 
@@ -83,19 +95,28 @@ public class AbcNetworkTests
 
             var hex = BitConverter.ToString(SecureKeyManager.GetPrivateKey().PubKey.ToBytes()).Replace("-", "");
 
-            var bob = _lightningRegtestNetworkFixture.Builder?.LNDNodePool?.ReadyNodes.First(x =>
-                x.LocalAlias == "bob");
+            var bob = _lightningRegtestNetworkFixture
+                .Builder?
+                .LNDNodePool?
+                .ReadyNodes.First(x => x.LocalAlias == "bob");
             Assert.NotNull(bob);
 
-            ConfigManager.NodeOptions = new NodeOptions
+            var nodeOptions = new OptionsWrapper<NodeOptions>(new NodeOptions
             {
                 ChainHashes = [ChainConstants.REGTEST],
-                EnableDataLossProtect = true,
-                EnableStaticRemoteKey = true,
-                EnablePaymentSecret = true
-            };
-            IPeerManager peerManager = new PeerManager(new TransportServiceFactory(), new PingPongServiceFactory(),
-                new MessageServiceFactory(), _mockLogger.Object);
+                DataLossProtect = FeatureSupport.OPTIONAL,
+                StaticRemoteKey = FeatureSupport.OPTIONAL,
+                PaymentSecret = FeatureSupport.OPTIONAL
+            });
+            var loggerFactory = new LoggerFactory();
+            var messageFacotry = new MessageFactory();
+
+            var peerManager = new PeerManager(new PeerFactory(loggerFactory, messageFacotry,
+                    new MessageServiceFactory(messageFacotry),
+                    new PingPongServiceFactory(messageFacotry),
+                    new TransportServiceFactory(loggerFactory),
+                    nodeOptions),
+                new Mock<ILogger<PeerManager>>().Object);
 
             var acceptTask = Task.Run(async () =>
             {
@@ -120,13 +141,16 @@ public class AbcNetworkTests
             await acceptTask;
 
             // Assert
-            Assert.NotNull(alicePeers.Peers.FirstOrDefault(x =>
-                x.PubKey.Equals(hex, StringComparison.CurrentCultureIgnoreCase)));
+            Assert.NotNull(alicePeers.Peers
+                .FirstOrDefault(x => x.PubKey.Equals(hex, StringComparison.CurrentCultureIgnoreCase)));
+
+            // Cleanup
+            peerManager.DisconnectPeer(new PubKey(bob.LocalNodePubKeyBytes));
         }
         finally
         {
             listener.Dispose();
-            PortPool.ReleasePort(availablePort);
+            PortPoolUtil.ReleasePort(availablePort);
 
             ConfigManagerUtil.ResetConfigManager();
         }

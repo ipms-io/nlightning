@@ -1,4 +1,5 @@
 using System.Net.Sockets;
+using NBitcoin;
 
 namespace NLightning.Common.Interfaces;
 
@@ -23,4 +24,10 @@ public interface IPeerManager
     /// <param name="tcpClient">The TCP client.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task AcceptPeerAsync(TcpClient tcpClient);
+
+    /// <summary>
+    /// Disconnects a peer.
+    /// </summary>
+    /// <param name="pubKey">Pubkey of the peer</param>
+    void DisconnectPeer(PubKey pubKey);
 }

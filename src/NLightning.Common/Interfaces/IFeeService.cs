@@ -24,5 +24,11 @@ public interface IFeeService
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task StartBackgroundRefreshAsync(CancellationToken cancellationToken = default);
+    Task StartAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Stops the background task and cancels any ongoing operations within the service.
+    /// </summary>
+    /// <returns>A task representing the asynchronous stop operation.</returns>
+    Task StopAsync();
 }

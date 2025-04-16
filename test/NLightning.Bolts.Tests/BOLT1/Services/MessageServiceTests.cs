@@ -1,20 +1,22 @@
 using System.Reflection;
-using NLightning.Bolts.BOLT1.Payloads;
-using NLightning.Common.Interfaces;
 
 namespace NLightning.Bolts.Tests.BOLT1.Services;
 
 using Bolts.BOLT1.Services;
-using Factories;
+using Common.Factories;
+using Common.Interfaces;
+using Common.Messages.Payloads;
 
 public class MessageServiceTests
 {
+    private readonly MessageFactory _messageFactory = new();
+
     [Fact]
     public async Task Given_Message_When_SendMessageAsync_IsCalled_Then_TransportServiceWritesMessage()
     {
         // Arrange
         var transportServiceMock = new Mock<ITransportService>();
-        var messageService = new MessageService(transportServiceMock.Object);
+        var messageService = new MessageService(_messageFactory, transportServiceMock.Object);
         var messageMock = new Mock<IMessage>();
 
         // Act
@@ -29,9 +31,9 @@ public class MessageServiceTests
     {
         // Arrange
         var transportServiceMock = new Mock<ITransportService>();
-        var messageService = new MessageService(transportServiceMock.Object);
+        var messageService = new MessageService(_messageFactory, transportServiceMock.Object);
         var stream = new MemoryStream();
-        var pingMessage = MessageFactory.CreatePingMessage();
+        var pingMessage = _messageFactory.CreatePingMessage();
         await pingMessage.SerializeAsync(stream);
         stream.Position = 0;
         var pingPayload = pingMessage.Payload as PingPayload ?? throw new Exception("Unable to converto payload");
@@ -45,10 +47,11 @@ public class MessageServiceTests
             async () =>
             {
                 var method = messageService.GetType().GetMethod("ReceiveMessage", BindingFlags.NonPublic | BindingFlags.Instance);
-                method?.Invoke(messageService, [messageService, stream]);
+                Assert.NotNull(method);
+                method.Invoke(messageService, [messageService, stream]);
                 await tcs.Task;
             });
-        // var receivedMessage = await tcs.Task;
+
         Assert.NotNull(receivedMessage.Arguments);
         var receivedPayload = receivedMessage.Arguments.Payload as PingPayload;
         Assert.NotNull(receivedPayload);
@@ -68,7 +71,7 @@ public class MessageServiceTests
         // Arrange
         var transportServiceMock = new Mock<ITransportService>();
         transportServiceMock.Setup(t => t.IsConnected).Returns(true);
-        var messageService = new MessageService(transportServiceMock.Object);
+        var messageService = new MessageService(_messageFactory, transportServiceMock.Object);
 
         // Act
         var isConnected = messageService.IsConnected;
@@ -82,7 +85,7 @@ public class MessageServiceTests
     {
         // Arrange
         var transportServiceMock = new Mock<ITransportService>();
-        var messageService = new MessageService(transportServiceMock.Object);
+        var messageService = new MessageService(_messageFactory, transportServiceMock.Object);
 
         // Act
         messageService.Dispose();

@@ -1,7 +1,7 @@
 namespace NLightning.Bolts.BOLT2.Validators;
 
-using Constants;
-using Payloads;
+using Common.Constants;
+using Common.Messages.Payloads;
 
 public static class TxAddOutputValidator
 {

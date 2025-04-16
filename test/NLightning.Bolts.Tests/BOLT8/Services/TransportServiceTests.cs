@@ -1,12 +1,11 @@
 using System.Net;
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
 using NBitcoin;
-using NLightning.Bolts.BOLT8.Interfaces;
-using NLightning.Common.Interfaces;
 
 namespace NLightning.Bolts.Tests.BOLT8.Services;
 
-using BOLT1.Fixtures;
+using Bolts.BOLT8.Interfaces;
 using Bolts.BOLT8.Services;
 using Common.Exceptions;
 using Common.Managers;
@@ -25,7 +24,7 @@ public class TransportServiceTests
     {
         // Arrange
         ConfigManager.Instance.NetworkTimeout = TimeSpan.FromSeconds(30);
-        var availablePort = await PortPool.GetAvailablePortAsync();
+        var availablePort = await PortPoolUtil.GetAvailablePortAsync();
         var tcpListener = new TcpListener(IPAddress.Loopback, availablePort);
         tcpListener.Start();
 
@@ -90,7 +89,7 @@ public class TransportServiceTests
         finally
         {
             tcpListener.Dispose();
-            PortPool.ReleasePort(availablePort);
+            PortPoolUtil.ReleasePort(availablePort);
 
             ConfigManagerUtil.ResetConfigManager();
         }
@@ -119,7 +118,7 @@ public class TransportServiceTests
     {
         // Arrange
         ConfigManager.Instance.NetworkTimeout = TimeSpan.Zero;
-        var availablePort = await PortPool.GetAvailablePortAsync();
+        var availablePort = await PortPoolUtil.GetAvailablePortAsync();
         var tcpListener = new TcpListener(IPAddress.Loopback, availablePort);
         tcpListener.Start();
 
@@ -168,7 +167,7 @@ public class TransportServiceTests
         finally
         {
             tcpListener.Dispose();
-            PortPool.ReleasePort(availablePort);
+            PortPoolUtil.ReleasePort(availablePort);
 
             ConfigManagerUtil.ResetConfigManager();
         }
