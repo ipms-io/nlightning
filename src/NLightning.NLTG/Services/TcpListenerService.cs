@@ -126,9 +126,9 @@ public class TcpListenerService : ITcpListenerService
         {
             _logger.LogInformation("Listener service shutdown requested");
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            _logger.LogError(ex, "Unhandled exception in listener service");
+            _logger.LogError(e, "Unhandled exception in listener service");
         }
     }
 }

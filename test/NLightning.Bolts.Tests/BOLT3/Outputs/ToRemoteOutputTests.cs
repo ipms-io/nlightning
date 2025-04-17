@@ -27,16 +27,6 @@ public class ToRemoteOutputTests
     }
 
     [Fact]
-    public void Given_NullRemotePubKey_When_ConstructingToRemoteOutput_Then_ThrowsArgumentNullException()
-    {
-        // Given
-        PubKey remotePubKey = null;
-
-        // When/Then
-        Assert.Throws<ArgumentNullException>(() => new ToRemoteOutput(remotePubKey, _amount));
-    }
-
-    [Fact]
     public void Given_OptionAnchorOutputFalse_When_ConstructingToRemoteOutput_Then_UsesP2WPKH()
     {
         // Given

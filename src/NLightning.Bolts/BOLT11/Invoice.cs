@@ -482,7 +482,7 @@ public partial class Invoice
     /// <param name="invoiceString">The invoice string</param>
     /// <returns>The invoice</returns>
     /// <exception cref="InvoiceSerializationException">If something goes wrong in the decoding process</exception>
-    public static Invoice Decode(string invoiceString)
+    public static Invoice Decode(string? invoiceString)
     {
         if (string.IsNullOrWhiteSpace(invoiceString))
             throw new InvoiceSerializationException("Invoice string was empty");

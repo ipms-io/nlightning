@@ -46,7 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="logs\" />
+    <None Remove="fee_estimation_cache.json" />
   </ItemGroup>
 
 </Project>

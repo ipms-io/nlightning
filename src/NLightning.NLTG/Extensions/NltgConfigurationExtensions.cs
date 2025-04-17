@@ -7,7 +7,6 @@ namespace NLightning.NLTG.Extensions;
 
 public static class NltgConfigurationExtensions
 {
-
     /// <summary>
     /// Configures the host builder with NLTG configuration and Serilog
     /// </summary>

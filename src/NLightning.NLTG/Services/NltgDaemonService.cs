@@ -64,6 +64,7 @@ public class NltgDaemonService : BackgroundService
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Stopping NLTG daemon service");
+
         await _feeService.StopAsync();
         await _tcpListenerService.StopAsync();
         await base.StopAsync(cancellationToken);

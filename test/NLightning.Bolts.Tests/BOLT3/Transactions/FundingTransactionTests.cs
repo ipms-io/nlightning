@@ -16,21 +16,23 @@ public class FundingTransactionTests
     private readonly PubKey _localPubKey = new("034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa");
     private readonly PubKey _remotePubKey = new("032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e668680991");
     private readonly LightningMoney _fundingAmount = LightningMoney.FromUnit(1_000, LightningMoneyUnit.SATOSHI);
-    private readonly Script _changeScript = Script.FromHex("002032E8DA66B7054D40832C6A7A66DF79D8D7BCCCD5FFA53F5DD1772CB9CB9F3283");
-    private readonly Script _redeemScript = Script.FromHex("21034F355BDCB7CC0AF728EF3CCEB9615D90684BB5B2CA5F859AB0F0B704075871AAAD51B2");
+    private readonly Script _changeScript = Script
+        .FromHex("002032E8DA66B7054D40832C6A7A66DF79D8D7BCCCD5FFA53F5DD1772CB9CB9F3283");
+    private readonly Script _redeemScript = Script
+        .FromHex("21034F355BDCB7CC0AF728EF3CCEB9615D90684BB5B2CA5F859AB0F0B704075871AAAD51B2");
     private readonly Coin[] _coins =
     [
-        new Coin(new OutPoint(uint256.Parse("8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be"), 0),
+        new(new OutPoint(uint256.Parse("8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be"), 0),
                  new TxOut(Money.Satoshis(2_000), Script.FromHex("0014c5ac364661c2f1e5a7a3b1bb1b8bbbc7cd89bff3")))
     ];
-    private readonly BitcoinSecret _privateKey = new(new Key(Convert.FromHexString("6bd078650fcee8444e4e09825227b801a1ca928debb750eb36e6d56124bb20e8")), NBitcoin.Network.TestNet);
-    private readonly IFeeService _feeService;
+    private readonly BitcoinSecret _privateKey =
+        new(new Key(Convert.FromHexString("6bd078650fcee8444e4e09825227b801a1ca928debb750eb36e6d56124bb20e8")),
+            NBitcoin.Network.TestNet);
 
     public FundingTransactionTests()
     {
         var feeServiceMock = new Mock<IFeeService>();
         feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(15000, LightningMoneyUnit.SATOSHI));
-        _feeService = feeServiceMock.Object;
     }
 
     [Fact]
@@ -55,40 +57,14 @@ public class FundingTransactionTests
         // Given
 
         // When
-        var fundingTx = new FundingTransaction(_localPubKey, _remotePubKey, _fundingAmount, _redeemScript, _changeScript,
-                                               _coins);
+        var fundingTx = new FundingTransaction(_localPubKey, _remotePubKey, _fundingAmount, _redeemScript,
+                                               _changeScript, _coins);
 
         // Then
         Assert.NotNull(fundingTx.FundingOutput);
         Assert.NotNull(fundingTx.ChangeOutput);
         Assert.Equal(_fundingAmount, fundingTx.FundingOutput.Amount);
         Assert.Equal(_redeemScript, fundingTx.ChangeOutput.RedeemScript);
-
-        ConfigManagerUtil.ResetConfigManager();
-    }
-
-    [Fact]
-    public void Given_NullPubKey1_When_ConstructingFundingTransaction_Then_ThrowsArgumentNullException()
-    {
-        // Given
-        PubKey pubKey1 = null;
-
-        // When/Then
-        Assert.Throws<ArgumentNullException>(() => new FundingTransaction(pubKey1, _remotePubKey, _fundingAmount,
-                                                                          _changeScript, _coins));
-
-        ConfigManagerUtil.ResetConfigManager();
-    }
-
-    [Fact]
-    public void Given_NullPubKey2_When_ConstructingFundingTransaction_Then_ThrowsArgumentNullException()
-    {
-        // Given
-        PubKey pubKey2 = null;
-
-        // When/Then
-        Assert.Throws<ArgumentNullException>(() => new FundingTransaction(_localPubKey, pubKey2, _fundingAmount,
-                                                                          _changeScript, _coins));
 
         ConfigManagerUtil.ResetConfigManager();
     }

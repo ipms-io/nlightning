@@ -38,7 +38,6 @@
     <Compile Include="..\NLightning.Common\Constants\ChainConstants.cs" LinkBase="Common\Constants"/>
     <Compile Include="..\NLightning.Common\Constants\CryptoConstants.cs" LinkBase="Common\Constants"/>
     <Compile Include="..\NLightning.Common\Constants\NetworkConstants.cs" LinkBase="Common\Constants"/>
-    <Compile Include="..\NLightning.Common\Constants\TlvConstants.cs" LinkBase="Common\Constants"/>
     <Compile Include="..\NLightning.Common\Crypto\Ciphers\*.cs" LinkBase="Common\Crypto\Ciphers"/>
     <Compile Include="..\NLightning.Common\Crypto\Functions\*.cs" LinkBase="Common\Crypto\Functions"/>
     <Compile Include="..\NLightning.Common\Crypto\Hashes\*.cs" LinkBase="Common\Crypto\Hashes"/>
@@ -59,8 +58,6 @@
     <Compile Include="..\NLightning.Common\Types\Network.cs" LinkBase="Common\Types"/>
     <Compile Include="..\NLightning.Common\Types\ShortChannelId.cs" LinkBase="Common\Types"/>
     <Compile Include="..\NLightning.Common\Types\Tlv.cs" LinkBase="Common\Types"/>
-    <Compile Include="..\NLightning.Common\Types\TlvStream.cs" LinkBase="Common\Types"/>
-    <Compile Include="..\NLightning.Common\TLVs\NetworksTlv.cs" LinkBase="Common\TLVs"/>
     <Compile Include="..\NLightning.Bolts\BOLT9\**\*.cs" LinkBase="Bolts\BOLT9"/>
     <Compile Include="..\NLightning.Bolts\BOLT11\**\*.cs" LinkBase="Bolts\BOLT11"/>
     <Compile Remove="..\NLightning.Bolts\BOLT9\**" />

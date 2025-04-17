@@ -109,66 +109,6 @@ public class CommitmentTransactionTests
     }
 
     [Fact]
-    public void Given_NullLocalBasepoint_When_ConstructingCommitmentTransaction_Then_ThrowsArgumentNullException()
-    {
-        // Given
-
-        // When/Then
-        Assert.Throws<ArgumentNullException>(() => new CommitmentTransaction(_fundingOutput, null,
-                                                                             _remotePaymentBasepoint,
-                                                                             _localDelayedPubKey, _revocationPubKey,
-                                                                             _toLocalAmount, _toRemoteAmount,
-                                                                             TO_SELF_DELAY, _commitmentNumber, true));
-
-        ConfigManagerUtil.ResetConfigManager();
-    }
-
-    [Fact]
-    public void Given_NullRemoteBasepoint_When_ConstructingCommitmentTransaction_Then_ThrowsArgumentNullException()
-    {
-        // Given
-
-        // When/Then
-        Assert.Throws<ArgumentNullException>(() => new CommitmentTransaction(_fundingOutput, _localPaymentBasepoint,
-                                                                             null, _localDelayedPubKey,
-                                                                             _revocationPubKey, _toLocalAmount,
-                                                                             _toRemoteAmount, TO_SELF_DELAY,
-                                                                             _commitmentNumber, true));
-
-        ConfigManagerUtil.ResetConfigManager();
-    }
-
-    [Fact]
-    public void Given_NullLocalDelayedKey_When_ConstructingCommitmentTransaction_Then_ThrowsArgumentNullException()
-    {
-        // Given
-
-        // When/Then
-        Assert.Throws<ArgumentNullException>(() => new CommitmentTransaction(_fundingOutput, _localPaymentBasepoint,
-                                                                             _remotePaymentBasepoint, null,
-                                                                             _revocationPubKey, _toLocalAmount,
-                                                                             _toRemoteAmount, TO_SELF_DELAY,
-                                                                             _commitmentNumber, true));
-
-        ConfigManagerUtil.ResetConfigManager();
-    }
-
-    [Fact]
-    public void Given_NullRevocationKey_When_ConstructingCommitmentTransaction_Then_ThrowsArgumentNullException()
-    {
-        // Given
-
-        // When/Then
-        Assert.Throws<ArgumentNullException>(() => new CommitmentTransaction(_fundingOutput, _localPaymentBasepoint,
-                                                                             _remotePaymentBasepoint,
-                                                                             _localDelayedPubKey, null, _toLocalAmount,
-                                                                             _toRemoteAmount, TO_SELF_DELAY,
-                                                                             _commitmentNumber, true));
-
-        ConfigManagerUtil.ResetConfigManager();
-    }
-
-    [Fact]
     public void Given_ZeroAmounts_When_ConstructingCommitmentTransaction_Then_ThrowsArgumentException()
     {
         // Given

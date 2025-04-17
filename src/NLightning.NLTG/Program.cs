@@ -56,9 +56,9 @@ try
 
     return 0;
 }
-catch (Exception ex)
+catch (Exception e)
 {
-    Log.Fatal(ex, "Application terminated unexpectedly");
+    Log.Fatal(e, "Application terminated unexpectedly");
     return 1;
 }
 finally
@@ -99,8 +99,8 @@ static void ReportDaemonStatus(string pidFilePath)
             Console.WriteLine("NLTG daemon is not running (stale PID file)");
         }
     }
-    catch (Exception ex)
+    catch (Exception e)
     {
-        Console.WriteLine($"Error checking daemon status: {ex.Message}");
+        Console.WriteLine($"Error checking daemon status: {e.Message}");
     }
 }
