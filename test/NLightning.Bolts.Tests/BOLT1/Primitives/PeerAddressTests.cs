@@ -3,8 +3,6 @@ using NBitcoin;
 
 namespace NLightning.Bolts.Tests.BOLT1.Primitives;
 
-using Bolts.BOLT1.Primitives;
-
 public class PeerAddressTests
 {
     [Fact]
@@ -14,7 +12,7 @@ public class PeerAddressTests
         var address = "028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7@127.0.0.1:8080";
 
         // Act
-        var peerAddress = new PeerAddress(address);
+        var peerAddress = new Common.Types.PeerAddress(address);
 
         // Assert
         Assert.Equal("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7", peerAddress.PubKey.ToString());
@@ -30,7 +28,7 @@ public class PeerAddressTests
         var address = "http://dnstest.ipms.io:8080/";
 
         // Act
-        var peerAddress = new PeerAddress(pubKey, address);
+        var peerAddress = new Common.Types.PeerAddress(pubKey, address);
 
         // Assert
         Assert.Equal(pubKey, peerAddress.PubKey);
@@ -50,7 +48,7 @@ public class PeerAddressTests
         var port = 8080;
 
         // Act
-        var peerAddress = new PeerAddress(pubKey, host, port);
+        var peerAddress = new Common.Types.PeerAddress(pubKey, host, port);
 
         // Assert
         Assert.Equal(pubKey, peerAddress.PubKey);
@@ -65,7 +63,7 @@ public class PeerAddressTests
         var pubKey = new PubKey("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7");
         var host = "127.0.0.1";
         var port = 8080;
-        var peerAddress = new PeerAddress(pubKey, host, port);
+        var peerAddress = new Common.Types.PeerAddress(pubKey, host, port);
 
         // Act
         var result = peerAddress.ToString();

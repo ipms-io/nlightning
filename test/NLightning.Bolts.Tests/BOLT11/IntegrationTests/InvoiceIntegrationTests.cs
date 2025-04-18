@@ -6,11 +6,11 @@ namespace NLightning.Bolts.Tests.BOLT11.IntegrationTests;
 using Bolts.BOLT11;
 using Bolts.BOLT11.Enums;
 using Bolts.BOLT11.Types;
-using Bolts.BOLT9;
 using Common.Crypto.Hashes;
+using Common.Exceptions;
 using Common.Managers;
+using Common.Node;
 using Common.Types;
-using Exceptions;
 using TestCollections;
 using static Utils.TestUtils;
 
@@ -76,7 +76,7 @@ public class InvoiceIntegrationTests : IDisposable
                         }
                         break;
                     case TaggedFieldTypes.FEATURES:
-                        var expectedFeatures = taggedField.Value as Features;
+                        var expectedFeatures = taggedField.Value as FeatureSet;
                         Assert.NotNull(expectedFeatures);
                         Assert.NotNull(invoice.Features);
                         Assert.True(expectedFeatures.IsCompatible(invoice.Features));
@@ -155,7 +155,7 @@ public class InvoiceIntegrationTests : IDisposable
                         invoice.RoutingInfos = taggedField.Value as RoutingInfoCollection;
                         break;
                     case TaggedFieldTypes.FEATURES:
-                        invoice.Features = taggedField.Value as Features;
+                        invoice.Features = taggedField.Value as FeatureSet;
                         break;
                     case TaggedFieldTypes.METADATA:
                         invoice.Metadata = taggedField.Value as byte[];
@@ -353,7 +353,7 @@ public class InvoiceIntegrationTests : IDisposable
                     throw new InvalidOperationException("f line without invoice line");
                 }
 
-                currentInvoice.EXPECTED_TAGGED_FIELDS.Add(TaggedFieldTypes.FEATURES, Features.DeserializeFromBytes(GetBytes(line[2..])));
+                currentInvoice.EXPECTED_TAGGED_FIELDS.Add(TaggedFieldTypes.FEATURES, FeatureSet.DeserializeFromBytes(GetBytes(line[2..])));
             }
             else if (line.StartsWith("m="))
             {

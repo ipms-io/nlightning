@@ -1,6 +1,7 @@
+using NLightning.Common.Messages.Payloads;
+
 namespace NLightning.Bolts.Tests.BOLT2.Payloads;
 
-using Bolts.BOLT2.Payloads;
 using Common.Types;
 
 public class TxSignaturesPayloadTests

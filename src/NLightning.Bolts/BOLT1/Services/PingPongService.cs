@@ -1,8 +1,8 @@
 namespace NLightning.Bolts.BOLT1.Services;
 
-using Bolts.Factories;
-using Interfaces;
-using Messages;
+using Common.Interfaces;
+using Common.Managers;
+using Common.Messages;
 
 /// <summary>
 /// Service for managing the ping pong protocol.
@@ -10,20 +10,25 @@ using Messages;
 /// <remarks>
 /// This class is used to manage the ping pong protocol.
 /// </remarks>
-/// <param name="networkTimeout">The network timeout.</param>
-public class PingPongService(TimeSpan networkTimeout) : IPingPongService
+internal class PingPongService : IPingPongService
 {
-    private readonly TimeSpan _networkTimeout = networkTimeout;
     private readonly Random _random = new();
+    private readonly IMessageFactory _messageFactory;
 
     private TaskCompletionSource<bool> _pongReceivedTaskSource = new();
-    private PingMessage _pingMessage = (PingMessage)MessageFactory.CreatePingMessage();
+    private PingMessage _pingMessage;
 
     /// <inheritdoc />
-    public event EventHandler<PingMessage>? PingMessageReadyEvent;
+    public event EventHandler<IMessage>? PingMessageReadyEvent;
 
     /// <inheritdoc />
-    public event EventHandler? DisconnectEvent;
+    public event EventHandler<Exception>? DisconnectEvent;
+
+    public PingPongService(IMessageFactory messageFactory)
+    {
+        _messageFactory = messageFactory;
+        _pingMessage = (PingMessage)messageFactory.CreatePingMessage();
+    }
 
     /// <inheritdoc />
     /// <remarks>
@@ -32,22 +37,32 @@ public class PingPongService(TimeSpan networkTimeout) : IPingPongService
     /// </remarks>
     public async Task StartPingAsync(CancellationToken cancellationToken)
     {
+        // Send the first ping message
         while (!cancellationToken.IsCancellationRequested)
         {
             PingMessageReadyEvent?.Invoke(this, _pingMessage);
 
-            using var pongTimeoutTokenSource = new CancellationTokenSource(_networkTimeout);
+            using var pongTimeoutTokenSource = CancellationTokenSource
+                .CreateLinkedTokenSource(cancellationToken,
+                                         new CancellationTokenSource(ConfigManager.Instance.NetworkTimeout).Token);
 
-            if (await Task.WhenAny(_pongReceivedTaskSource.Task, Task.Delay(-1, pongTimeoutTokenSource.Token)) != _pongReceivedTaskSource.Task)
+            var task = await Task.WhenAny(_pongReceivedTaskSource.Task, Task.Delay(-1, pongTimeoutTokenSource.Token));
+            if (task.IsFaulted)
             {
-                DisconnectEvent?.Invoke(this, EventArgs.Empty);
+                DisconnectEvent?
+                    .Invoke(this, new ConnectionException("Pong message not received within network timeout."));
                 return;
+            }
+
+            if (task.IsCanceled)
+            {
+                continue;
             }
 
             await Task.Delay(_random.Next(30000, 300000), cancellationToken);
 
-            _pongReceivedTaskSource = new();
-            _pingMessage = (PingMessage)MessageFactory.CreatePingMessage();
+            _pongReceivedTaskSource = new TaskCompletionSource<bool>();
+            _pingMessage = (PingMessage)_messageFactory.CreatePingMessage();
         }
     }
 
@@ -56,12 +71,13 @@ public class PingPongService(TimeSpan networkTimeout) : IPingPongService
     /// Handles a pong message.
     /// If the pong message has a different length than the ping message, DisconnectEvent is raised.
     /// </remarks>
-    public void HandlePong(PongMessage pongMessage)
+    public void HandlePong(IMessage message)
     {
         // if the pong message has a different length than the ping message, disconnect
-        if (pongMessage.Payload.BytesLength != _pingMessage.Payload.NumPongBytes)
+        if (message is not PongMessage pongMessage ||
+            pongMessage.Payload.BytesLength != _pingMessage.Payload.NumPongBytes)
         {
-            DisconnectEvent?.Invoke(this, EventArgs.Empty);
+            DisconnectEvent?.Invoke(this, new Exception("Pong message has different length than ping message."));
             return;
         }
 

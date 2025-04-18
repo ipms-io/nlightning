@@ -1,9 +1,9 @@
 using System.Reflection;
 using System.Text;
+using NLightning.Common.Constants;
 
 namespace NLightning.Bolts.Tests.BOLT8.IntegrationTests;
 
-using Bolts.BOLT8.Constants;
 using Bolts.BOLT8.Primitives;
 using Bolts.BOLT8.States;
 using Common.Crypto.Primitives;

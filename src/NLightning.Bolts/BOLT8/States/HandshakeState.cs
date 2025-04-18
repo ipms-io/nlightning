@@ -6,11 +6,11 @@ using Common.Constants;
 using Common.Crypto.Functions;
 using Common.Crypto.Primitives;
 using Common.Interfaces.Crypto;
-using Constants;
 using Enums;
 using Interfaces;
 using MessagePatterns;
 using Primitives;
+using static ExceptionUtils;
 
 /// <inheritdoc/>
 /// <remarks> See <see href="https://github.com/lightning/bolts/blob/master/08-transport.md">Lightning Bolt8</see> for specific implementation information.</remarks>
@@ -30,6 +30,7 @@ internal sealed class HandshakeState : IHandshakeState
     private byte[]? _re;
     private byte[] _rs;
     private bool _turnToWrite;
+    private bool _disposed;
 
     public NBitcoin.PubKey RemoteStaticPublicKey => new(_rs);
 
@@ -84,6 +85,8 @@ internal sealed class HandshakeState : IHandshakeState
     /// <exception cref="ArgumentException">Thrown if the output was greater than <see cref="ProtocolConstants.MAX_MESSAGE_LENGTH"/> bytes in length, or if the output buffer did not have enough space to hold the ciphertext.</exception>
     public (int, byte[]?, Transport?) WriteMessage(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
+        ThrowIfDisposed(_disposed, nameof(HandshakeState));
+
         if (_messagePatterns.Count == 0)
         {
             throw new InvalidOperationException("Cannot call WriteMessage after the handshake has already been completed.");
@@ -150,6 +153,8 @@ internal sealed class HandshakeState : IHandshakeState
     /// <exception cref="System.Security.Cryptography.CryptographicException">Thrown if the decryption of the message has failed.</exception>
     public (int, byte[]?, Transport?) ReadMessage(ReadOnlySpan<byte> message, Span<byte> payloadBuffer)
     {
+        ThrowIfDisposed(_disposed, nameof(HandshakeState));
+
         if (_messagePatterns.Count == 0)
         {
             throw new InvalidOperationException("Cannot call WriteMessage after the handshake has already been completed.");
@@ -355,7 +360,19 @@ internal sealed class HandshakeState : IHandshakeState
 
     public void Dispose()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         Clear();
         GC.SuppressFinalize(this);
+
+        _disposed = true;
+    }
+
+    ~HandshakeState()
+    {
+        Dispose();
     }
 }

@@ -1,6 +1,7 @@
+using NLightning.Common.Node;
+
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
-using BOLT9;
 using Common.BitUtils;
 using Enums;
 using Interfaces;
@@ -15,14 +16,14 @@ using Interfaces;
 internal sealed class FeaturesTaggedField : ITaggedField
 {
     public TaggedFieldTypes Type => TaggedFieldTypes.FEATURES;
-    internal Features Value { get; }
+    internal FeatureSet Value { get; }
     public short Length { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DescriptionTaggedField"/> class.
     /// </summary>
     /// <param name="value">The Description</param>
-    internal FeaturesTaggedField(Features value)
+    internal FeaturesTaggedField(FeatureSet value)
     {
         Value = value;
         Length = (short)(value.SizeInBits / 5 + (value.SizeInBits % 5 == 0 ? 0 : 1));
@@ -58,7 +59,7 @@ internal sealed class FeaturesTaggedField : ITaggedField
         }
 
         var shouldPad = length * 5 / 8 == (length * 5 - 7) / 8;
-        var features = Features.DeserializeFromBitReader(bitReader, length * 5, shouldPad);
+        var features = FeatureSet.DeserializeFromBitReader(bitReader, length * 5, shouldPad);
 
         return new FeaturesTaggedField(features);
     }

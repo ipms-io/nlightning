@@ -1,7 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using NLightning.Common.Types;
 
 namespace NLightning.Common.Constants;
+
+using Types;
 
 /// <summary>
 /// Constants for TLV.

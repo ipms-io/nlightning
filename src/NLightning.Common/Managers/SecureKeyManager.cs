@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using NBitcoin;
 
 namespace NLightning.Common.Managers;
 
@@ -55,7 +56,7 @@ public static class SecureKeyManager
     /// </summary>
     /// <returns>The private key as a byte array.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the key is not initialized.</exception>
-    public static byte[] GetPrivateKey()
+    public static byte[] GetPrivateKeyBytes()
     {
         if (s_securePrivateKeyPtr == IntPtr.Zero)
             throw new InvalidOperationException("Secure key is not initialized.");
@@ -64,6 +65,11 @@ public static class SecureKeyManager
         Marshal.Copy(s_securePrivateKeyPtr, privateKey, 0, (int)s_privateKeyLength);
 
         return privateKey;
+    }
+
+    public static Key GetPrivateKey()
+    {
+        return new Key(GetPrivateKeyBytes());
     }
 
     /// <summary>

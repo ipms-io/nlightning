@@ -40,9 +40,10 @@ public class PostgresTests
                 .UseSnakeCaseNamingConvention();
         }, ServiceLifetime.Transient);
         _serviceProvider = serviceCollection.BuildServiceProvider();
-        var context = _serviceProvider.GetService<NLightningContext>();
+        var context = _serviceProvider.GetService<NLightningContext>() ?? throw new Exception($"Could not find a service provider for type {nameof(NLightningContext)}");
+
         //Wait until really ready
-        while (!context?.Database.CanConnect() ?? true)
+        while (!context.Database.CanConnect())
         {
             Task.Delay(100).Wait();
         }

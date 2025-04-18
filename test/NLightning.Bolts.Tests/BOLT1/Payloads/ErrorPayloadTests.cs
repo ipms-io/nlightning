@@ -1,8 +1,8 @@
 using System.Text;
+using NLightning.Common.Messages.Payloads;
 
 namespace NLightning.Bolts.Tests.BOLT1.Payloads;
 
-using Bolts.BOLT1.Payloads;
 using Common.BitUtils;
 using Common.Types;
 

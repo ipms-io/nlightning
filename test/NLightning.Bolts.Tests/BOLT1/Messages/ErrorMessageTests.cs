@@ -1,9 +1,9 @@
 using System.Text;
+using NLightning.Common.Messages;
+using NLightning.Common.Messages.Payloads;
 
 namespace NLightning.Bolts.Tests.BOLT1.Messages;
 
-using Bolts.BOLT1.Messages;
-using Bolts.BOLT1.Payloads;
 using Common.Types;
 using Utils;
 

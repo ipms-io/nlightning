@@ -1,11 +1,11 @@
 using System.Text;
+using NLightning.Common.Constants;
+using NLightning.Common.Interfaces;
 
 namespace NLightning.Bolts.Tests.Base;
 
 using Common.BitUtils;
 using Common.Types;
-using Constants;
-using Interfaces;
 using Mock;
 
 public class BaseMessageTests

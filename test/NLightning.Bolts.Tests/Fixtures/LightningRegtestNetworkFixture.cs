@@ -2,7 +2,7 @@ using Docker.DotNet;
 using Docker.DotNet.Models;
 using LNUnit.Setup;
 
-namespace NLightning.Bolts.Tests.Docker.Fixtures;
+namespace NLightning.Bolts.Tests.Fixtures;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class LightningRegtestNetworkFixture : IDisposable

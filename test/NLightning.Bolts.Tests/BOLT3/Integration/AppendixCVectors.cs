@@ -1,12 +1,12 @@
 using NBitcoin;
 using NBitcoin.Crypto;
+using NLightning.Common.Constants;
 using NLightning.Common.Enums;
 
 namespace NLightning.Bolts.Tests.BOLT3.Integration;
 
 using Common.Crypto.Hashes;
 using Common.Types;
-using Constants;
 
 public static class AppendixCVectors
 {

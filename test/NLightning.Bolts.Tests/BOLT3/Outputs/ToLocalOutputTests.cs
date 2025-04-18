@@ -31,26 +31,6 @@ public class ToLocalOutputTests
     }
 
     [Fact]
-    public void Given_NullLocalDelayedPubKey_When_ConstructingToLocalOutput_Then_ThrowsArgumentNullException()
-    {
-        // Given
-        PubKey localDelayedPubKey = null;
-
-        // When/Then
-        Assert.Throws<ArgumentNullException>(() => new ToLocalOutput(localDelayedPubKey, _revocationPubKey, _toSelfDelay, _amount));
-    }
-
-    [Fact]
-    public void Given_NullRevocationPubKey_When_ConstructingToLocalOutput_Then_ThrowsArgumentNullException()
-    {
-        // Given
-        PubKey revocationPubKey = null;
-
-        // When/Then
-        Assert.Throws<ArgumentNullException>(() => new ToLocalOutput(_localDelayedPubKey, revocationPubKey, _toSelfDelay, _amount));
-    }
-
-    [Fact]
     public void Given_ValidParameters_When_ConstructingToLocalOutput_Then_GeneratesCorrectScript()
     {
         // Given

@@ -1,14 +1,14 @@
 using NBitcoin;
+using NLightning.Common.Messages;
+using NLightning.Common.Messages.Payloads;
 
 namespace NLightning.Bolts.Tests.BOLT2.Messages;
 
-using Bolts.BOLT2.Messages;
-using Bolts.BOLT2.Payloads;
 using Common.Enums;
+using Common.Exceptions;
 using Common.Managers;
 using Common.TLVs;
 using Common.Types;
-using Exceptions;
 using TestCollections;
 using Utils;
 

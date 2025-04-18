@@ -1,14 +1,16 @@
 using System.Text.Json;
 using MessagePack;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace NLightning.Common.Services;
 
 using Exceptions;
 using Interfaces;
-using Managers;
+using Options;
 using Types;
 
-public class FeeService : IFeeService, IDisposable
+public class FeeService : IFeeService
 {
     private const string FEE_CACHE_FILE_NAME = "fee_cache.bin";
     private static readonly TimeSpan s_defaultCacheExpiration = TimeSpan.FromMinutes(5);
@@ -19,10 +21,12 @@ public class FeeService : IFeeService, IDisposable
     private static CancellationTokenSource? s_cts;
 
     private readonly HttpClient _httpClient;
+    private readonly ILogger<FeeService> _logger;
     private readonly TimeSpan _cacheTimeExpiration;
     private readonly string _cacheFilePath;
+    private readonly FeeOptions _feeOptions;
 
-    public FeeService(HttpClient httpClient)
+    public FeeService(IOptions<FeeOptions> feeOptions, HttpClient httpClient, ILogger<FeeService> logger)
     {
         // Never allow file to exist more than once
         if (s_backgroundTask is not null)
@@ -30,46 +34,60 @@ public class FeeService : IFeeService, IDisposable
             throw new WarningException("This class should behave like a Singleton. Please, initialize it only once.");
         }
 
+        _feeOptions = feeOptions.Value;
         _httpClient = httpClient;
-        _cacheFilePath = ParseFilePath();
-        _cacheTimeExpiration = ParseCacheTime(ConfigManager.Instance.FeeEstimationCacheExpiration);
+        _logger = logger;
+
+        _cacheFilePath = ParseFilePath(_feeOptions);
+        _cacheTimeExpiration = ParseCacheTime(_feeOptions.CacheExpiration);
 
         // Try to load from file initially
-        _ = LoadFromFileAsync(default);
+        _ = LoadFromFileAsync(CancellationToken.None);
     }
 
-    public async Task StartBackgroundRefreshAsync(CancellationToken cancellationToken = default)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
         if (s_backgroundTask != null)
         {
             throw new WarningException("You should not be calling this method multiple times.");
         }
 
-        try
+        if (s_backgroundTask != null)
         {
-            if (s_backgroundTask != null)
-            {
-                throw new WarningException("You should not be calling this method multiple times.");
-            }
-
-            s_cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
-            // Start the background task
-            s_backgroundTask = RunPeriodicRefreshAsync(s_cts.Token);
-
-            // If cache from file is not valid, refresh immediately
-            if (!IsCacheValid())
-            {
-                await RefreshFeeRateAsync(s_cts.Token);
-            }
+            throw new WarningException("You should not be calling this method multiple times.");
         }
-        catch (OperationCanceledException)
+
+        s_cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+        // Start the background task
+        s_backgroundTask = RunPeriodicRefreshAsync(s_cts.Token);
+
+        // If cache from file is not valid, refresh immediately
+        if (!IsCacheValid())
         {
-            // TODO: Task was canceled - this is expected but should log anyway
+            await RefreshFeeRateAsync(s_cts.Token);
         }
-        catch (Exception e)
+    }
+
+    public async Task StopAsync()
+    {
+        if (s_cts is null)
         {
-            throw new CriticalException("Unable to run FeeService background task.", e);
+            throw new InvalidOperationException("Service is not running");
+        }
+
+        await s_cts.CancelAsync();
+
+        if (s_backgroundTask is not null)
+        {
+            try
+            {
+                await s_backgroundTask;
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected during cancellation
+            }
         }
     }
 
@@ -98,37 +116,34 @@ public class FeeService : IFeeService, IDisposable
             var feeRate = await FetchFeeRateFromApiAsync(cancellationToken);
             s_cachedFeeRate.Satoshi = feeRate;
             s_lastFetchTime = DateTime.UtcNow;
-            await SaveToFileAsync(cancellationToken);
+            await SaveToFileAsync();
         }
-        catch (Exception)
+        catch (OperationCanceledException)
         {
-            // If fetch fails and we already have a cached value, keep using it
-            // TODO: Log the error
+            // Ignore cancellation
         }
-    }
-
-    public void Dispose()
-    {
-        s_cts?.Cancel();
-        s_cts?.Dispose();
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error fetching fee rate from API");
+        }
     }
 
     private async Task<long> FetchFeeRateFromApiAsync(CancellationToken cancellationToken)
     {
         HttpResponseMessage response;
 
-        if (ConfigManager.Instance.FeeEstimationMethod.Equals("GET", StringComparison.CurrentCultureIgnoreCase))
+        if (_feeOptions.Method.Equals("GET", StringComparison.CurrentCultureIgnoreCase))
         {
-            response = await _httpClient.GetAsync(ConfigManager.Instance.FeeEstimationUrl, cancellationToken);
+            response = await _httpClient.GetAsync(_feeOptions.Url, cancellationToken);
         }
         else // POST
         {
             var content = new StringContent(
-                ConfigManager.Instance.FeeEstimationBody,
+                _feeOptions.Body,
                 System.Text.Encoding.UTF8,
-                ConfigManager.Instance.FeeEstimationContentType);
+                _feeOptions.ContentType);
 
-            response = await _httpClient.PostAsync(ConfigManager.Instance.FeeEstimationUrl, content, cancellationToken);
+            response = await _httpClient.PostAsync(_feeOptions.Url, content, cancellationToken);
         }
 
         response.EnsureSuccessStatusCode();
@@ -139,28 +154,30 @@ public class FeeService : IFeeService, IDisposable
         var root = document.RootElement;
 
         // Extract the preferred fee rate from the JSON response
-        if (!root.TryGetProperty(ConfigManager.Instance.FeeEstimationPreferredFeeRate, out var feeRateElement))
+        if (!root.TryGetProperty(_feeOptions.PreferredFeeRate, out var feeRateElement))
         {
-            throw new InvalidOperationException($"Could not extract {ConfigManager.Instance.FeeEstimationPreferredFeeRate} from API response.");
+            throw new InvalidOperationException($"Could not extract {_feeOptions.PreferredFeeRate} from API response.");
         }
 
         // Parse the fee rate value
         if (!feeRateElement.TryGetDecimal(out var feeRate))
         {
-            throw new InvalidOperationException($"Could not extract {ConfigManager.Instance.FeeEstimationPreferredFeeRate} from API response.");
+            throw new InvalidOperationException($"Could not extract {_feeOptions.PreferredFeeRate} from API response.");
         }
 
         // Apply the multiplier to convert to sat/kw
-        if (decimal.TryParse(ConfigManager.Instance.FeeRateMultiplier, out var multiplier))
+        if (decimal.TryParse(_feeOptions.RateMultiplier, out var multiplier))
         {
             return (long)(feeRate * multiplier);
         }
 
-        throw new InvalidOperationException($"Could not extract {ConfigManager.Instance.FeeEstimationPreferredFeeRate} from API response.");
+        throw new InvalidOperationException($"Could not extract {_feeOptions.PreferredFeeRate} from API response.");
     }
 
     private async Task RunPeriodicRefreshAsync(CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Starting FeeService background task.");
+
         try
         {
             while (!cancellationToken.IsCancellationRequested)
@@ -177,16 +194,18 @@ public class FeeService : IFeeService, IDisposable
         }
         catch (OperationCanceledException)
         {
-            // TODO: Task was canceled - this is expected but should log anyway
+            _logger.LogInformation("Listener service shutdown requested");
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // TODO: Log any unexpected errors
+            _logger.LogError(ex, "Unhandled exception in listener service");
         }
     }
 
-    private async Task SaveToFileAsync(CancellationToken cancellationToken)
+    private async Task SaveToFileAsync()
     {
+        _logger.LogDebug("Saving fee rate to file {filePath}", _cacheFilePath);
+
         try
         {
             var cacheData = new FeeRateCacheData
@@ -196,37 +215,51 @@ public class FeeService : IFeeService, IDisposable
             };
 
             await using var fileStream = File.OpenWrite(_cacheFilePath);
-            await MessagePackSerializer.SerializeAsync(fileStream, cacheData, cancellationToken: cancellationToken);
+            await MessagePackSerializer.SerializeAsync(fileStream, cacheData, cancellationToken: CancellationToken.None);
         }
-        catch (Exception)
+        catch (OperationCanceledException)
         {
-            // TODO: Log the error
+            // Ignore cancellation
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error saving fee rate to file");
         }
     }
 
     private async Task LoadFromFileAsync(CancellationToken cancellationToken)
     {
+        _logger.LogDebug("Loading fee rate from file {filePath}", _cacheFilePath);
+
         try
         {
             if (!File.Exists(_cacheFilePath))
             {
+                _logger.LogDebug("Fee rate cache file does not exist. Skipping load.");
                 return;
             }
 
             await using var fileStream = File.OpenRead(_cacheFilePath);
-            var cacheData = await MessagePackSerializer.DeserializeAsync<FeeRateCacheData?>(fileStream, cancellationToken: cancellationToken);
+            var cacheData =
+                await MessagePackSerializer.DeserializeAsync<FeeRateCacheData?>(fileStream,
+                    cancellationToken: cancellationToken);
 
             if (cacheData == null)
             {
+                _logger.LogDebug("Fee rate cache file is empty. Skipping load.");
                 return;
             }
 
             s_cachedFeeRate = cacheData.FeeRate;
             s_lastFetchTime = cacheData.LastFetchTime;
         }
-        catch (Exception)
+        catch (OperationCanceledException)
         {
-            // TODO: Log the error
+            // Ignore cancellation
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error loading fee rate from file");
         }
     }
 
@@ -261,9 +294,9 @@ public class FeeService : IFeeService, IDisposable
         }
     }
 
-    private static string ParseFilePath()
+    private static string ParseFilePath(FeeOptions feeOptions)
     {
-        var filePath = ConfigManager.Instance.FeeEstimationCacheFile;
+        var filePath = feeOptions.CacheFile;
         if (string.IsNullOrWhiteSpace(filePath))
         {
             return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FEE_CACHE_FILE_NAME);

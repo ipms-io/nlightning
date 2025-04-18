@@ -1,7 +1,6 @@
-using NLightning.Common.Enums;
-
 namespace NLightning.Common.Managers;
 
+using Enums;
 using Types;
 
 public class ConfigManager
@@ -18,6 +17,14 @@ public class ConfigManager
     /// Network in which this node will be running
     /// </summary>
     public Network Network { get; set; } = Network.MAIN_NET;
+
+    /// <summary>
+    /// Global network timeout.
+    /// </summary>
+    /// <remarks>
+    /// The global network timeout is used for all network operations.
+    /// </remarks>
+    public TimeSpan NetworkTimeout = TimeSpan.FromSeconds(15);
 
     /// <summary>
     /// DustLimitAmount is the threshold below which outputs should not be generated for this node's commitment or
@@ -82,15 +89,4 @@ public class ConfigManager
     /// default_cltv_expiry is the default CLTV expiry for HTLC outputs.
     /// </summary>
     public ulong DefaultCltvExpiry { get; set; }
-
-    #region Fee Estimation
-    public string FeeEstimationUrl { get; set; } = "https://mempool.space/api/v1/fees/recommended";
-    public string FeeEstimationMethod { get; set; } = "GET";
-    public string FeeEstimationBody { get; set; } = string.Empty;
-    public string FeeEstimationContentType { get; set; } = "application/json";
-    public string FeeEstimationPreferredFeeRate { get; set; } = "fastestFee";
-    public string FeeRateMultiplier { get; set; } = "1000";
-    public string FeeEstimationCacheFile { get; set; } = "fee_estimation_cache.json";
-    public string FeeEstimationCacheExpiration { get; set; } = "5m"; // 5 minutes
-    #endregion
 }

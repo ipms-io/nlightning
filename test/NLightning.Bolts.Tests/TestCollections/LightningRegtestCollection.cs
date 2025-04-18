@@ -1,7 +1,6 @@
+using NLightning.Bolts.Tests.Fixtures;
+
 namespace NLightning.Bolts.Tests.TestCollections;
-
-using Docker.Fixtures;
-
 [CollectionDefinition(NAME)]
 public class LightningRegtestNetworkFixtureCollection : ICollectionFixture<LightningRegtestNetworkFixture>
 {

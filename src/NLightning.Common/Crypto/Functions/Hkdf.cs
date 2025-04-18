@@ -5,6 +5,7 @@ namespace NLightning.Common.Crypto.Functions;
 using Constants;
 using Hashes;
 using Primitives;
+// using NLightning.Common.Utils;
 
 /// <summary>
 /// HMAC-based Extract-and-Expand Key Derivation Function, defined in
@@ -18,6 +19,8 @@ internal sealed class Hkdf : IDisposable
 
     private readonly Sha256 _sha256 = new();
 
+    private bool _disposed;
+
     /// <summary>
     /// Takes a chainingKey byte sequence of length HashLen,
     /// and an inputKeyMaterial byte sequence with length
@@ -26,6 +29,8 @@ internal sealed class Hkdf : IDisposable
     /// </summary>
     public void ExtractAndExpand2(SecureMemory chainingKey, ReadOnlySpan<byte> inputKeyMaterial, Span<byte> output)
     {
+        // ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Hkdf));
+
         Debug.Assert(chainingKey.Length == CryptoConstants.SHA256_HASH_LEN);
         Debug.Assert(output.Length == 2 * CryptoConstants.SHA256_HASH_LEN);
 
@@ -47,6 +52,8 @@ internal sealed class Hkdf : IDisposable
     /// </summary>
     public void ExtractAndExpand3(SecureMemory chainingKey, ReadOnlySpan<byte> inputKeyMaterial, Span<byte> output)
     {
+        // ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Hkdf));
+
         Debug.Assert(chainingKey.Length == CryptoConstants.SHA256_HASH_LEN);
         Debug.Assert(output.Length == 3 * CryptoConstants.SHA256_HASH_LEN);
 
@@ -65,6 +72,8 @@ internal sealed class Hkdf : IDisposable
 
     private void HmacHash(ReadOnlySpan<byte> key, Span<byte> hmac, ReadOnlySpan<byte> data1 = default, ReadOnlySpan<byte> data2 = default)
     {
+        // ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Hkdf));
+
         Debug.Assert(key.Length == CryptoConstants.SHA256_HASH_LEN);
         Debug.Assert(hmac.Length == CryptoConstants.SHA256_HASH_LEN);
 
@@ -92,6 +101,13 @@ internal sealed class Hkdf : IDisposable
 
     public void Dispose()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         _sha256.Dispose();
+
+        _disposed = true;
     }
 }

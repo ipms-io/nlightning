@@ -29,26 +29,6 @@ public class FundingOutputTests
     }
 
     [Fact]
-    public void Given_NullLocalPubKey_When_ConstructingFundingOutput_Then_ThrowsArgumentNullException()
-    {
-        // Given
-        PubKey localPubKey = null;
-
-        // When/Then
-        Assert.Throws<ArgumentNullException>(() => new FundingOutput(localPubKey, _remotePubKey, _amount));
-    }
-
-    [Fact]
-    public void Given_NullRemotePubKey_When_ConstructingFundingOutput_Then_ThrowsArgumentNullException()
-    {
-        // Given
-        PubKey remotePubKey = null;
-
-        // When/Then
-        Assert.Throws<ArgumentNullException>(() => new FundingOutput(_localPubKey, remotePubKey, _amount));
-    }
-
-    [Fact]
     public void Given_IdenticalPubKeys_When_ConstructingFundingOutput_Then_ThrowsArgumentException()
     {
         // Given

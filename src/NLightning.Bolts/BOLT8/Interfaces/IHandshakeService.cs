@@ -10,11 +10,6 @@ internal interface IHandshakeService : IDisposable
     /// </summary>
     bool IsInitiator { get; }
 
-    /// <summary>
-    /// The Transport that is going to be returned by the handshake after all steps has been completed
-    /// </summary>
-    ITransport? Transport { get; }
-
     NBitcoin.PubKey? RemoteStaticPublicKey { get; }
 
     /// <summary>
@@ -22,6 +17,7 @@ internal interface IHandshakeService : IDisposable
     /// </summary>
     /// <param name="inMessage">Byte[] representation of In Message</param>
     /// <param name="outMessage">The buffer to write the message to</param>
+    /// <param name="transport"> The Transport that is going to be returned by the handshake after all steps has been completed</param>
     /// <returns>Number of bytes written to outMessage</returns>
-    int PerformStep(ReadOnlySpan<byte> inMessage, Span<byte> outMessage);
+    int PerformStep(ReadOnlySpan<byte> inMessage, Span<byte> outMessage, out ITransport? transport);
 }
