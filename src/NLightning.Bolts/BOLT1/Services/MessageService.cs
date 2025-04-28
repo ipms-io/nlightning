@@ -59,21 +59,11 @@ internal sealed class MessageService : IMessageService
     {
         try
         {
-            _messageFactory.DeserializeMessageAsync(stream).ContinueWith(task =>
+            var message = _messageFactory.DeserializeMessageAsync(stream).Result;
+            if (message is not null)
             {
-                if (task.IsFaulted)
-                {
-                    RaiseException(this, task.Exception.InnerExceptions[0]);
-                }
-                else
-                {
-                    var message = task.Result;
-                    if (message is not null)
-                    {
-                        MessageReceived?.Invoke(this, message);
-                    }
-                }
-            });
+                MessageReceived?.Invoke(this, message);
+            }
         }
         catch (Exception e)
         {

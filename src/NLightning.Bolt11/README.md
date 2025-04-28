@@ -11,7 +11,7 @@ The reason behind this is that for a Blazor app running fully on the browser we 
 
 ## Sample
 
-A sample project using this project in a Blazor WebAssembly environment can be found [here](../../samples/Bolt11.Decoder.Blazor).
+A sample project using this project in a Blazor WebAssembly environment can be found [here](https://github.com/ipms-io/NLightning-Samples/tree/main/Bolt11.Decoder.Blazor).
 
 A live version of the sample can be found at [bolt11.ipms.io](https://bolt11.ipms.io)
 
