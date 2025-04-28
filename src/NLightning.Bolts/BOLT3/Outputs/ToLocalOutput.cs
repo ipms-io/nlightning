@@ -2,8 +2,6 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT3.Outputs;
 
-using Exceptions;
-
 /// <summary>
 /// Represents a to_local output in a commitment transaction.
 /// </summary>

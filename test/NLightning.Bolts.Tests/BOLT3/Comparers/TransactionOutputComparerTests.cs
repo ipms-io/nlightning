@@ -13,6 +13,7 @@ public class TransactionOutputComparerTests
     private readonly Script _script3 = Script.FromHex("0014a1b2c3d4");
     private readonly PubKey _pubKey = new("034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa");
     private readonly PubKey _revocationPubKey = new("032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e668680991");
+    private readonly LightningMoney _anchorAmount = LightningMoney.Satoshis(330);
 
     [Fact]
     public void Given_NullOutputs_When_Comparing_Then_HandlesNullsCorrectly()
@@ -93,9 +94,12 @@ public class TransactionOutputComparerTests
     public void Given_HtlcOutputsWithSameAmountAndScript_When_Comparing_Then_SortsByCltvExpiry()
     {
         // Given
-        var htlc1 = new OfferedHtlcOutput(_revocationPubKey, _pubKey, _pubKey, new ReadOnlyMemory<byte>([0]), new LightningMoney(1000), 1);
-        var htlc2 = new OfferedHtlcOutput(_revocationPubKey, _pubKey, _pubKey, new ReadOnlyMemory<byte>([0]), new LightningMoney(1000), 2);
-        var htlc3 = new OfferedHtlcOutput(_revocationPubKey, _pubKey, _pubKey, new ReadOnlyMemory<byte>([0]), new LightningMoney(1000), 3);
+        var htlc1 = new OfferedHtlcOutput(_anchorAmount, _revocationPubKey, _pubKey, _pubKey,
+                                          new ReadOnlyMemory<byte>([0]), new LightningMoney(1000), 1);
+        var htlc2 = new OfferedHtlcOutput(_anchorAmount, _revocationPubKey, _pubKey, _pubKey,
+                                          new ReadOnlyMemory<byte>([0]), new LightningMoney(1000), 2);
+        var htlc3 = new OfferedHtlcOutput(_anchorAmount, _revocationPubKey, _pubKey, _pubKey,
+                                          new ReadOnlyMemory<byte>([0]), new LightningMoney(1000), 3);
         var outputs = new List<BaseOutput> { htlc3, htlc2, htlc1 };
         var comparer = TransactionOutputComparer.Instance;
 
@@ -113,8 +117,9 @@ public class TransactionOutputComparerTests
     {
         // Given
         var change1 = new ChangeOutput(_script1, new LightningMoney(1000));
-        var htlc1 = new OfferedHtlcOutput(_revocationPubKey, _pubKey, _pubKey, new ReadOnlyMemory<byte>([0]), new LightningMoney(1000), 500);
-        var toRemote = new ToRemoteOutput(_pubKey, new LightningMoney(2000));
+        var htlc1 = new OfferedHtlcOutput(_anchorAmount, _revocationPubKey, _pubKey, _pubKey,
+                                          new ReadOnlyMemory<byte>([0]), new LightningMoney(1000), 500);
+        var toRemote = new ToRemoteOutput(true, _pubKey, new LightningMoney(2000));
         var toLocal = new ToLocalOutput(_pubKey, _revocationPubKey, 144, new LightningMoney(3000));
         var outputs = new List<BaseOutput> { toLocal, toRemote, htlc1, change1 };
         var comparer = TransactionOutputComparer.Instance;
@@ -132,7 +137,7 @@ public class TransactionOutputComparerTests
         var compareScripts = string.Compare(
             change1.ScriptPubKey.ToHex(),
             htlc1.ScriptPubKey.ToHex(),
-            System.StringComparison.Ordinal);
+            StringComparison.Ordinal);
 
         if (compareScripts < 0)
             Assert.True(outputs.IndexOf(change1) < outputs.IndexOf(htlc1));

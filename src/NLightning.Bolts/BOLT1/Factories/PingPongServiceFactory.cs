@@ -1,6 +1,9 @@
+using Microsoft.Extensions.Options;
+
 namespace NLightning.Bolts.BOLT1.Factories;
 
-using Interfaces;
+using Common.Interfaces;
+using Common.Options;
 using Services;
 
 /// <summary>
@@ -9,11 +12,20 @@ using Services;
 /// <remarks>
 /// This class is used to create a ping pong service in test environments.
 /// </remarks>
-internal class PingPongServiceFactory : IPingPongServiceFactory
+public class PingPongServiceFactory : IPingPongServiceFactory
 {
-    /// <inheritdoc />
-    public IPingPongService CreatePingPongService(TimeSpan networkTimeout)
+    private readonly IMessageFactory _messageFactory;
+    private readonly IOptions<NodeOptions> _nodeOptions;
+
+    public PingPongServiceFactory(IMessageFactory messageFactory, IOptions<NodeOptions> nodeOptions)
     {
-        return new PingPongService(networkTimeout);
+        _messageFactory = messageFactory;
+        _nodeOptions = nodeOptions;
+    }
+
+    /// <inheritdoc />
+    public IPingPongService CreatePingPongService()
+    {
+        return new PingPongService(_messageFactory, _nodeOptions);
     }
 }

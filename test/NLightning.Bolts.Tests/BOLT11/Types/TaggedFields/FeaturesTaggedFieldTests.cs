@@ -1,8 +1,9 @@
+using NLightning.Common.Node;
+
 namespace NLightning.Bolts.Tests.BOLT11.Types.TaggedFields;
 
 using Bolts.BOLT11.Enums;
 using Bolts.BOLT11.Types.TaggedFields;
-using Bolts.BOLT9;
 using Common.BitUtils;
 
 public class FeaturesTaggedFieldTests
@@ -14,7 +15,7 @@ public class FeaturesTaggedFieldTests
     public void Constructor_FromValue_SetsPropertiesCorrectly(byte[] featureBits, short expectedLength)
     {
         // Arrange
-        var features = Features.DeserializeFromBytes([0x00]);
+        var features = FeatureSet.DeserializeFromBytes([0x00]);
         foreach (var featureBit in featureBits)
         {
             features.SetFeature(featureBit, true);
@@ -36,7 +37,7 @@ public class FeaturesTaggedFieldTests
     public void WriteToBitWriter_WritesCorrectData(byte[] featureBits, byte[] expectedData)
     {
         // Arrange
-        var features = Features.DeserializeFromBytes([0x00]);
+        var features = FeatureSet.DeserializeFromBytes([0x00]);
         foreach (var featureBit in featureBits)
         {
             features.SetFeature(featureBit, true);

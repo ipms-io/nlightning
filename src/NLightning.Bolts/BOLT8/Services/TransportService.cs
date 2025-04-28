@@ -1,49 +1,53 @@
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
 
 namespace NLightning.Bolts.BOLT8.Services;
 
-using Bolts.Interfaces;
-using Constants;
-using Exceptions;
+using Common.Constants;
+using Common.Interfaces;
 using Interfaces;
 using static ExceptionUtils;
 
-public sealed class TransportService : ITransportService
+internal sealed class TransportService : ITransportService
 {
-    private readonly TcpClient _tcpClient;
-    private readonly IHandshakeService? _handshakeService;
-    private readonly SemaphoreSlim _networkWriteSemaphore = new(1, 1);
-    private readonly TaskCompletionSource<bool> _tcs = new();
     private readonly CancellationTokenSource _cts = new();
+    private readonly ILogger _logger;
+    private readonly TimeSpan _networkTimeout;
+    private readonly SemaphoreSlim _networkWriteSemaphore = new(1, 1);
+    private readonly TcpClient _tcpClient;
+    private readonly TaskCompletionSource<bool> _tcs = new();
 
+    private IHandshakeService? _handshakeService;
     private ITransport? _transport;
     private bool _disposed;
 
     // event that will be called when a message is received
     public event EventHandler<MemoryStream>? MessageReceived;
+    public event EventHandler<Exception>? ExceptionRaised;
 
     public bool IsInitiator { get; }
     public bool IsConnected => _tcpClient.Connected;
-    public NBitcoin.PubKey RemoteStaticPublicKey
+    public NBitcoin.PubKey? RemoteStaticPublicKey { get; private set; }
+
+    public TransportService(ILogger logger, TimeSpan networkTimeout, bool isInitiator, ReadOnlySpan<byte> s,
+                            ReadOnlySpan<byte> rs, TcpClient tcpClient)
+        : this(logger, networkTimeout, new HandshakeService(isInitiator, s, rs), tcpClient)
     {
-        get
-        {
-            ThrowIfDisposed(_disposed, nameof(TransportService));
-            return _handshakeService?.RemoteStaticPublicKey ?? throw new InvalidOperationException("Handshake not completed");
-        }
+        _networkTimeout = networkTimeout;
     }
 
-    public TransportService(bool isInitiator, ReadOnlySpan<byte> s, ReadOnlySpan<byte> rs, TcpClient tcpClient) : this(new HandshakeService(isInitiator, s, rs), tcpClient)
-    { }
-
-    internal TransportService(IHandshakeService handshakeService, TcpClient tcpClient)
+    internal TransportService(ILogger logger, TimeSpan networkTimeout, IHandshakeService handshakeService,
+                              TcpClient tcpClient)
     {
         _handshakeService = handshakeService;
+        _logger = logger;
+        _networkTimeout = networkTimeout;
         _tcpClient = tcpClient;
+
         IsInitiator = handshakeService.IsInitiator;
     }
 
-    public async Task InitializeAsync(TimeSpan networkTimeout)
+    public async Task InitializeAsync()
     {
         ThrowIfDisposed(_disposed, nameof(TransportService));
         if (_handshakeService == null)
@@ -65,20 +69,24 @@ public sealed class TransportService : ITransportService
         {
             try
             {
+                _logger.LogTrace("We're initiator, writing Act One");
+
                 // Write Act One
-                var len = _handshakeService.PerformStep(ProtocolConstants.EMPTY_MESSAGE, writeBuffer);
+                var len = _handshakeService.PerformStep(ProtocolConstants.EMPTY_MESSAGE, writeBuffer, out _);
                 await stream.WriteAsync(writeBuffer.AsMemory()[..len], networkTimeoutCancellationTokenSource.Token);
                 await stream.FlushAsync(networkTimeoutCancellationTokenSource.Token);
 
                 // Read exactly 50 bytes
-                networkTimeoutCancellationTokenSource = new CancellationTokenSource(networkTimeout);
+                _logger.LogTrace("Reading Act Two");
+                networkTimeoutCancellationTokenSource = new CancellationTokenSource(_networkTimeout);
                 var readBuffer = new byte[50];
                 await stream.ReadExactlyAsync(readBuffer, networkTimeoutCancellationTokenSource.Token);
                 networkTimeoutCancellationTokenSource.Dispose();
 
                 // Read Act Two and Write Act Three
+                _logger.LogTrace("Writing Act Three");
                 writeBuffer = new byte[66];
-                len = _handshakeService.PerformStep(readBuffer, writeBuffer);
+                len = _handshakeService.PerformStep(readBuffer, writeBuffer, out _transport);
                 await stream.WriteAsync(writeBuffer.AsMemory()[..len]);
                 await stream.FlushAsync();
             }
@@ -93,25 +101,29 @@ public sealed class TransportService : ITransportService
 
             try
             {
+                _logger.LogTrace("We're NOT initiator, reading Act One");
+
                 // Read exactly 50 bytes
-                networkTimeoutCancellationTokenSource = new CancellationTokenSource(networkTimeout);
+                networkTimeoutCancellationTokenSource = new CancellationTokenSource(_networkTimeout);
                 var readBuffer = new byte[50];
                 await stream.ReadExactlyAsync(readBuffer, networkTimeoutCancellationTokenSource.Token);
 
                 // Read Act One and Write Act Two
-                var len = _handshakeService.PerformStep(readBuffer, writeBuffer);
+                _logger.LogTrace("Writing Act Two");
+                var len = _handshakeService.PerformStep(readBuffer, writeBuffer, out _);
                 await stream.WriteAsync(writeBuffer.AsMemory()[..len]);
                 await stream.FlushAsync();
 
                 // Read exactly 66 bytes
+                _logger.LogTrace("Reading Act Three");
                 act = 3;
-                networkTimeoutCancellationTokenSource = new CancellationTokenSource(networkTimeout);
+                networkTimeoutCancellationTokenSource = new CancellationTokenSource(_networkTimeout);
                 readBuffer = new byte[66];
                 await stream.ReadExactlyAsync(readBuffer, networkTimeoutCancellationTokenSource.Token);
                 networkTimeoutCancellationTokenSource.Dispose();
 
                 // Read Act Three
-                _ = _handshakeService.PerformStep(readBuffer, writeBuffer);
+                _ = _handshakeService.PerformStep(readBuffer, writeBuffer, out _transport);
             }
             catch (Exception e)
             {
@@ -119,33 +131,41 @@ public sealed class TransportService : ITransportService
             }
         }
 
-        // Listen to messages and raise event
-        _ = Task.Run(ReadResponseAsync);
-
         // Handshake completed
-        _transport = _handshakeService.Transport ?? throw new InvalidOperationException("Handshake not completed");
+        if (_transport is null)
+        {
+            throw new InvalidOperationException("Handshake not completed");
+        }
+        RemoteStaticPublicKey = _handshakeService.RemoteStaticPublicKey
+                                ?? throw new InvalidOperationException("RemoteStaticPublicKey is null");
+
+        // Listen to messages and raise event
+        _logger.LogTrace("Handshake completed, listening to messages");
+        _ = Task.Run(ReadResponseAsync, CancellationToken.None).ContinueWith(task =>
+        {
+            if (task.Exception?.InnerExceptions.Count > 0)
+            {
+                ExceptionRaised?.Invoke(this, task.Exception.InnerExceptions[0]);
+            }
+        }, TaskContinuationOptions.OnlyOnFaulted);
 
         // Dispose of the handshake service
         _handshakeService.Dispose();
+        _handshakeService = null;
     }
 
     public async Task WriteMessageAsync(IMessage message, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed(_disposed, nameof(TransportService));
 
-        if (!_tcpClient.Connected)
+        if (_tcpClient is null || !_tcpClient.Connected)
         {
             throw new InvalidOperationException("TcpClient is not connected");
         }
 
-        if (_transport == null)
+        if (_transport is null)
         {
             throw new InvalidOperationException("Handshake not completed");
-        }
-
-        if (!IsInitiator)
-        {
-            throw new InvalidOperationException("Responder cannot write messages");
         }
 
         // Serialize message
@@ -176,27 +196,66 @@ public sealed class TransportService : ITransportService
 
         while (!_cts.IsCancellationRequested)
         {
-            if (_transport == null)
+            try
             {
-                throw new InvalidOperationException("Handshake not completed");
-            }
+                ThrowIfDisposed(_disposed, nameof(TransportService));
+                if (_transport == null)
+                {
+                    throw new InvalidOperationException("Handshake not completed");
+                }
 
-            if (!_tcpClient.Connected)
+                if (_tcpClient is null || !_tcpClient.Connected)
+                {
+                    throw new InvalidOperationException("TcpClient is not connected");
+                }
+
+                // Read response
+                var stream = _tcpClient.GetStream();
+                var memory = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH].AsMemory();
+                var lenRead = await stream.ReadAsync(memory[..ProtocolConstants.MESSAGE_HEADER_SIZE], _cts.Token);
+                if (lenRead != 18)
+                {
+                    throw new ConnectionException("Peer sent wrong length");
+                }
+
+                var messageLen = _transport.ReadMessageLength(memory.Span[..ProtocolConstants.MESSAGE_HEADER_SIZE]);
+                if (messageLen > ProtocolConstants.MAX_MESSAGE_LENGTH)
+                {
+                    throw new ConnectionException("Peer sent message too long");
+                }
+
+                lenRead = await stream.ReadAsync(memory[..messageLen], _cts.Token);
+                if (lenRead != messageLen)
+                {
+                    throw new ConnectionException("Peer sent wrong body length");
+                }
+
+                messageLen = _transport.ReadMessagePayload(memory.Span[..messageLen], memory.Span);
+
+                // Raise event
+                var messageStream = new MemoryStream(memory.Span[..messageLen].ToArray());
+                MessageReceived?.Invoke(this, messageStream);
+            }
+            catch (OperationCanceledException)
             {
-                throw new InvalidOperationException("TcpClient is not connected");
+                // Ignore cancellation
             }
+            catch (ConnectionException)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                if (!_cts.IsCancellationRequested)
+                {
+                    if (_tcpClient is null || !_tcpClient.Connected)
+                    {
+                        throw new ConnectionException("Peer closed the connection");
+                    }
 
-            // Read response
-            var stream = _tcpClient.GetStream();
-            var memory = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH].AsMemory();
-            _ = await stream.ReadAsync(memory[..ProtocolConstants.MESSAGE_HEADER_SIZE], _cts.Token);
-            var messageLen = _transport.ReadMessageLength(memory.Span[..ProtocolConstants.MESSAGE_HEADER_SIZE]);
-            _ = await stream.ReadAsync(memory[..messageLen], _cts.Token);
-            messageLen = _transport.ReadMessagePayload(memory.Span[..messageLen], memory.Span);
-
-            // Raise event
-            var messageStream = new MemoryStream(memory.Span[..messageLen].ToArray());
-            MessageReceived?.Invoke(this, messageStream);
+                    throw new ConnectionException("Error reading response", e);
+                }
+            }
         }
 
         _tcs.TrySetResult(true);
@@ -211,21 +270,23 @@ public sealed class TransportService : ITransportService
 
     private void Dispose(bool disposing)
     {
-        if (!_disposed)
+        if (_disposed)
         {
-            if (disposing)
-            {
-                // Cancel and wait for an elegant shutdown
-                _cts.Cancel();
-                _tcs.Task.Wait(TimeSpan.FromSeconds(5));
-
-                _handshakeService?.Dispose();
-                _transport?.Dispose();
-                _tcpClient.Dispose();
-            }
-
-            _disposed = true;
+            return;
         }
+
+        if (disposing)
+        {
+            // Cancel and wait for an elegant shutdown
+            _cts.Cancel();
+            _tcs.Task.Wait(TimeSpan.FromSeconds(5));
+
+            _handshakeService?.Dispose();
+            _transport?.Dispose();
+            _tcpClient.Dispose();
+        }
+
+        _disposed = true;
     }
 
     ~TransportService()

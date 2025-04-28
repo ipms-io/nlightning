@@ -18,7 +18,7 @@ internal static class TaggedFieldFactory
     /// <param name="length">The length of the tagged field.</param>
     /// <returns>The tagged field.</returns>
     /// <exception cref="ArgumentException">Thrown when the tagged field type is unknown.</exception>
-    internal static ITaggedField CreateTaggedFieldFromBitReader(TaggedFieldTypes type, BitReader bitReader, short length)
+    internal static ITaggedField CreateTaggedFieldFromBitReader(TaggedFieldTypes type, BitReader bitReader, short length, Network network)
     {
         return type switch
         {
@@ -26,7 +26,7 @@ internal static class TaggedFieldFactory
             TaggedFieldTypes.ROUTING_INFO => RoutingInfoTaggedField.FromBitReader(bitReader, length),
             TaggedFieldTypes.FEATURES => FeaturesTaggedField.FromBitReader(bitReader, length),
             TaggedFieldTypes.EXPIRY_TIME => ExpiryTimeTaggedField.FromBitReader(bitReader, length),
-            TaggedFieldTypes.FALLBACK_ADDRESS => FallbackAddressTaggedField.FromBitReader(bitReader, length),
+            TaggedFieldTypes.FALLBACK_ADDRESS => FallbackAddressTaggedField.FromBitReader(bitReader, length, network),
             TaggedFieldTypes.DESCRIPTION => DescriptionTaggedField.FromBitReader(bitReader, length),
             TaggedFieldTypes.PAYMENT_SECRET => PaymentSecretTaggedField.FromBitReader(bitReader, length),
             TaggedFieldTypes.PAYEE_PUB_KEY => PayeePubKeyTaggedField.FromBitReader(bitReader, length),

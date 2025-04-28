@@ -1,6 +1,6 @@
 namespace NLightning.Bolts.BOLT2.Validators;
 
-using Constants;
+using Common.Constants;
 
 public static class TxCompleteValidator
 {

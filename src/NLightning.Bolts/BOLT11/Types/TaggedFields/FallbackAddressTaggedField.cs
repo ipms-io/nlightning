@@ -1,9 +1,9 @@
 using NBitcoin;
+using Network = NBitcoin.Network;
 
 namespace NLightning.Bolts.BOLT11.Types.TaggedFields;
 
 using Common.BitUtils;
-using Common.Managers;
 using Enums;
 using Interfaces;
 
@@ -81,17 +81,13 @@ internal sealed class FallbackAddressTaggedField : ITaggedField
     /// <summary>
     /// Reads a FallbackAddressTaggedField from a BitReader
     /// </summary>
-    /// <remarks>
-    /// This needs a ConfigManager to get the network
-    /// </remarks>
     /// <param name="bitReader">The BitReader to read from</param>
     /// <param name="length">The length of the field</param>
+    /// <param name="network">The network type</param>
     /// <returns>The FallbackAddressTaggedField</returns>
     /// <exception cref="ArgumentException">Thrown when the address is unknown or invalid</exception>
-    internal static FallbackAddressTaggedField FromBitReader(BitReader bitReader, short length)
+    internal static FallbackAddressTaggedField FromBitReader(BitReader bitReader, short length, Network network)
     {
-        var network = ConfigManager.Instance.Network;
-
         // Get Address Type
         var addressType = bitReader.ReadByteFromBits(5);
         var newLength = length - 1;

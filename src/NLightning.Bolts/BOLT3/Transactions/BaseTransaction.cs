@@ -2,17 +2,19 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT3.Transactions;
 
-using Common.Managers;
 using Comparers;
 using Constants;
 using Outputs;
+using Network = Common.Types.Network;
 
 public abstract class BaseTransaction
 {
     #region Private Fields
-    private Transaction _transaction;
-    private readonly TransactionBuilder _builder = ((NBitcoin.Network)ConfigManager.Instance.Network).CreateTransactionBuilder();
+    private readonly bool _hasAnchorOutput;
+    private readonly TransactionBuilder _builder;
     private readonly List<(Coin, Sequence)> _coins = [];
+
+    private Transaction _transaction;
     #endregion
 
     #region Protected Properties
@@ -32,30 +34,42 @@ public abstract class BaseTransaction
     #endregion
 
     #region Constructors
-    protected BaseTransaction(uint version, SigHash sigHash, params Coin[] coins)
-    {
-        _coins = coins.Select(c => (c, Sequence.Final)).ToList();
 
-        _transaction = Transaction.Create(ConfigManager.Instance.Network);
-        _transaction.Version = version;
-        _transaction.Inputs.AddRange(_coins.Select(c => new TxIn(c.Item1.Outpoint)));
+    protected BaseTransaction(bool hasAnchorOutput, Network network, uint version, SigHash sigHash, params Coin[] coins)
+    {
+        _hasAnchorOutput = hasAnchorOutput;
+
+        _builder = ((NBitcoin.Network)network).CreateTransactionBuilder();
         _builder.SetSigningOptions(sigHash, false);
         _builder.DustPrevention = false;
         _builder.SetVersion(version);
-    }
-    protected BaseTransaction(uint version, SigHash sigHash, params (Coin, Sequence)[] coins)
-    {
-        _transaction = Transaction.Create(ConfigManager.Instance.Network);
+
+        _coins = coins.Select(c => (c, Sequence.Final)).ToList();
+
+        _transaction = Transaction.Create(network);
         _transaction.Version = version;
+        _transaction.Inputs.AddRange(_coins.Select(c => new TxIn(c.Item1.Outpoint)));
+    }
+
+    protected BaseTransaction(bool hasAnchorOutput, Network network, uint version, SigHash sigHash,
+                              params (Coin, Sequence)[] coins)
+    {
+        _hasAnchorOutput = hasAnchorOutput;
+
+        _builder = ((NBitcoin.Network)network).CreateTransactionBuilder();
         _builder.SetSigningOptions(sigHash, false);
         _builder.DustPrevention = false;
         _builder.SetVersion(version);
 
         _coins.AddRange(coins);
+
+        _transaction = Transaction.Create(network);
+        _transaction.Version = version;
         foreach (var (coin, sequence) in _coins)
         {
             _transaction.Inputs.Add(coin.Outpoint, null, null, sequence);
         }
+
     }
     #endregion
 
@@ -140,7 +154,7 @@ public abstract class BaseTransaction
     protected int CalculateOutputWeight()
     {
         var outputWeight = WeightConstants.TRANSACTION_BASE_WEIGHT;
-        if (ConfigManager.Instance.IsOptionAnchorOutput)
+        if (_hasAnchorOutput)
         {
             outputWeight += 8; // Add 8 more bytes for (count_tx_out * 4)
         }
@@ -168,7 +182,7 @@ public abstract class BaseTransaction
                     outputWeight += changeOutput.ScriptPubKey.Length;
                     break;
                 case ToLocalOutput:
-                case ToRemoteOutput when ConfigManager.Instance.IsOptionAnchorOutput:
+                case ToRemoteOutput when _hasAnchorOutput:
                     outputWeight += WeightConstants.P2WSH_OUTPUT_WEIGHT;
                     break;
                 case ToRemoteOutput:

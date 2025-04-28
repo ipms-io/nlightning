@@ -1,10 +1,12 @@
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace NLightning.Bolts.BOLT1.Factories;
 
-using BOLT8.Interfaces;
 using BOLT8.Services;
-using Interfaces;
+using Common.Interfaces;
+using Common.Options;
 
 /// <summary>
 /// Factory for creating a transport service.
@@ -12,11 +14,23 @@ using Interfaces;
 /// <remarks>
 /// This class is used to create a transport service in test environments.
 /// </remarks>
-internal sealed class TransportServiceFactory : ITransportServiceFactory
+public sealed class TransportServiceFactory : ITransportServiceFactory
 {
+    private readonly ILoggerFactory _loggerFactory;
+    private readonly NodeOptions _nodeOptions;
+
+    public TransportServiceFactory(ILoggerFactory loggerFactory, IOptions<NodeOptions> nodeOptions)
+    {
+        _loggerFactory = loggerFactory;
+        _nodeOptions = nodeOptions.Value;
+    }
+
     /// <inheritdoc />
     public ITransportService CreateTransportService(bool isInitiator, ReadOnlySpan<byte> s, ReadOnlySpan<byte> rs, TcpClient tcpClient)
     {
-        return new TransportService(isInitiator, s, rs, tcpClient);
+        // Create a specific logger for the TransportService class
+        var logger = _loggerFactory.CreateLogger<TransportService>();
+
+        return new TransportService(logger, _nodeOptions.NetworkTimeout, isInitiator, s, rs, tcpClient);
     }
 }

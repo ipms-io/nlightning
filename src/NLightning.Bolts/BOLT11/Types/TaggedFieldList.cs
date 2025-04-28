@@ -139,8 +139,9 @@ internal class TaggedFieldList : List<ITaggedField>
     /// Get a new TaggedFieldList from a BitReader
     /// </summary>
     /// <param name="bitReader">The BitReader to read from</param>
+    /// <param name="network">The network type</param>
     /// <returns>A new TaggedFieldList</returns>
-    internal static TaggedFieldList FromBitReader(BitReader bitReader)
+    internal static TaggedFieldList FromBitReader(BitReader bitReader, Network network)
     {
         var taggedFields = new TaggedFieldList();
         while (bitReader.HasMoreBits(15))
@@ -160,7 +161,7 @@ internal class TaggedFieldList : List<ITaggedField>
             {
                 try
                 {
-                    var taggedField = TaggedFieldFactory.CreateTaggedFieldFromBitReader(type, bitReader, length);
+                    var taggedField = TaggedFieldFactory.CreateTaggedFieldFromBitReader(type, bitReader, length, network);
                     if (taggedField.IsValid())
                     {
                         try

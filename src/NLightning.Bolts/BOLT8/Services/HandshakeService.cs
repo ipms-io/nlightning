@@ -1,9 +1,10 @@
 namespace NLightning.Bolts.BOLT8.Services;
 
+using Common.Constants;
 using Common.Crypto.Functions;
-using Constants;
 using Interfaces;
 using States;
+using static ExceptionUtils;
 
 /// <summary>
 /// Initializes a new instance of the <see cref="HandshakeService"/> class.
@@ -11,41 +12,44 @@ using States;
 /// <param name="isInitiator">If we are initiating the connection</param>
 /// <param name="localStaticPrivateKey">Our local Private Key</param>
 /// <param name="staticPublicKey">If we are initiating, the remote Public Key, else our local Public Key</param>
-internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> localStaticPrivateKey, ReadOnlySpan<byte> staticPublicKey, IHandshakeState? handshakeState = null) : IHandshakeService
+internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> localStaticPrivateKey,
+                                       ReadOnlySpan<byte> staticPublicKey, IHandshakeState? handshakeState = null)
+    : IHandshakeService
 {
-    private readonly IHandshakeState _handshakeState = handshakeState ?? new HandshakeState(isInitiator, localStaticPrivateKey, staticPublicKey, new Ecdh());
+    private readonly IHandshakeState _handshakeState = handshakeState
+                                                       ?? new HandshakeState(isInitiator, localStaticPrivateKey,
+                                                                             staticPublicKey, new Ecdh());
 
     private byte _steps = 2;
+    private bool _disposed;
 
     /// <inheritdoc/>
     public bool IsInitiator => isInitiator;
-
-    /// <inheritdoc/>
-    public ITransport? Transport { get; private set; }
 
     public NBitcoin.PubKey? RemoteStaticPublicKey => _handshakeState.RemoteStaticPublicKey;
 
     /// <inheritdoc/>
     /// <exception cref="InvalidOperationException">Thrown when there's no more steps to complete</exception>
-    public int PerformStep(ReadOnlySpan<byte> inMessage, Span<byte> outMessage)
+    public int PerformStep(ReadOnlySpan<byte> inMessage, Span<byte> outMessage, out ITransport? transport)
     {
-        if (_steps == 2)
-        {
-            _steps--;
-            return IsInitiator
-                ? InitiatorWriteActOne(outMessage)
-                : ResponderReadActOneAndWriteActTwo(inMessage, outMessage);
-        }
+        ThrowIfDisposed(_disposed, nameof(HandshakeService));
 
-        if (_steps == 1)
+        switch (_steps)
         {
-            _steps--;
-            return IsInitiator
-                ? InitiatorReadActTwoAndWriteActThree(inMessage, outMessage)
-                : ResponderReadActThree(inMessage);
+            case 2:
+                _steps--;
+                transport = null;
+                return IsInitiator
+                    ? InitiatorWriteActOne(outMessage)
+                    : ResponderReadActOneAndWriteActTwo(inMessage, outMessage);
+            case 1:
+                _steps--;
+                return IsInitiator
+                    ? InitiatorReadActTwoAndWriteActThree(inMessage, outMessage, out transport)
+                    : ResponderReadActThree(inMessage, out transport);
+            default:
+                throw new InvalidOperationException("There's no more steps to complete");
         }
-
-        throw new InvalidOperationException("There's no more steps to complete");
     }
 
     #region Initiator Methods
@@ -65,16 +69,16 @@ internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> loca
     /// </summary>
     /// <param name="actTwoMessage">Byte[] representation of Act Two Message</param>
     /// <param name="outMessage">The buffer to write the message to</param>
+    /// <param name="transport"> The Transport that is going to be returned by the handshake after all steps has been completed</param>
     /// <returns>Number of bytes written to outMessage</returns>
-    private int InitiatorReadActTwoAndWriteActThree(ReadOnlySpan<byte> actTwoMessage, Span<byte> outMessage)
+    private int InitiatorReadActTwoAndWriteActThree(ReadOnlySpan<byte> actTwoMessage, Span<byte> outMessage,
+                                                    out ITransport? transport)
     {
-        int messageSize;
-
         // Read act two
         _ = _handshakeState.ReadMessage(actTwoMessage, outMessage);
 
         // Write act three
-        (messageSize, _, Transport) = _handshakeState.WriteMessage(ProtocolConstants.EMPTY_MESSAGE, outMessage);
+        (var messageSize, _, transport) = _handshakeState.WriteMessage(ProtocolConstants.EMPTY_MESSAGE, outMessage);
 
         return messageSize;
     }
@@ -100,14 +104,13 @@ internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> loca
     /// Responder reads act three
     /// </summary>
     /// <param name="actThreeMessage">Byte[] representation of Act Three Message</param>
+    /// <param name="transport"> The Transport that is going to be returned by the handshake after all steps has been completed</param>
     /// <returns>Number of bytes read from actThreeMessage</returns>
-    private int ResponderReadActThree(ReadOnlySpan<byte> actThreeMessage)
+    private int ResponderReadActThree(ReadOnlySpan<byte> actThreeMessage, out ITransport? transport)
     {
-        int messageSize;
-
         // Read act three
         var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        (messageSize, _, Transport) = _handshakeState.ReadMessage(actThreeMessage, messageBuffer);
+        (var messageSize, _, transport) = _handshakeState.ReadMessage(actThreeMessage, messageBuffer);
 
         return messageSize;
     }
@@ -115,6 +118,13 @@ internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> loca
 
     public void Dispose()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         _handshakeState.Dispose();
+
+        _disposed = true;
     }
 }

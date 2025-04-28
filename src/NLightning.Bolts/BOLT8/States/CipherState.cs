@@ -6,6 +6,7 @@ using Common.Constants;
 using Common.Crypto.Ciphers;
 using Common.Crypto.Functions;
 using Common.Crypto.Primitives;
+using static ExceptionUtils;
 
 /// <summary>
 /// A CipherState can encrypt and decrypt data based on its variables k
@@ -17,15 +18,19 @@ internal sealed class CipherState : IDisposable
 
     private readonly ChaCha20Poly1305 _cipher = new();
     private readonly Hkdf _hkdf = new();
+
     private SecureMemory? _ck;
     private SecureMemory? _k;
     private ulong _n;
+    private bool _disposed;
 
     /// <summary>
     /// Sets _k = key. Sets _ck = ck. Sets _n = 0.
     /// </summary>
     public void InitializeKeyAndChainingKey(ReadOnlySpan<byte> key, ReadOnlySpan<byte> chainingKey)
     {
+        ThrowIfDisposed(_disposed, nameof(CipherState));
+
         Debug.Assert(key.Length == CryptoConstants.PRIVKEY_LEN);
         Debug.Assert(chainingKey.Length == CryptoConstants.PRIVKEY_LEN);
 
@@ -43,6 +48,8 @@ internal sealed class CipherState : IDisposable
     /// </summary>
     public bool HasKeys()
     {
+        ThrowIfDisposed(_disposed, nameof(CipherState));
+
         return _k is not null && _ck is not null;
     }
 
@@ -51,6 +58,8 @@ internal sealed class CipherState : IDisposable
     /// </summary>
     public void SetNonce(ulong nonce)
     {
+        ThrowIfDisposed(_disposed, nameof(CipherState));
+
         _n = nonce;
     }
 
@@ -61,6 +70,8 @@ internal sealed class CipherState : IDisposable
     /// </summary>
     public int EncryptWithAd(ReadOnlySpan<byte> ad, ReadOnlySpan<byte> plaintext, Span<byte> ciphertext)
     {
+        ThrowIfDisposed(_disposed, nameof(CipherState));
+
         if (_n == MAX_NONCE)
         {
             throw new OverflowException("Nonce has reached its maximum value.");
@@ -83,6 +94,8 @@ internal sealed class CipherState : IDisposable
     /// </summary>
     public int DecryptWithAd(ReadOnlySpan<byte> ad, ReadOnlySpan<byte> ciphertext, Span<byte> plaintext)
     {
+        ThrowIfDisposed(_disposed, nameof(CipherState));
+
         // If nonce reaches its maximum value, rekey
         if (_n == MAX_NONCE)
         {
@@ -109,6 +122,8 @@ internal sealed class CipherState : IDisposable
     /// <returns>Number of bytes written to ciphertext</returns>
     public int Encrypt(ReadOnlySpan<byte> plaintext, Span<byte> ciphertext)
     {
+        ThrowIfDisposed(_disposed, nameof(CipherState));
+
         if (_n == MAX_NONCE)
         {
             Rekey();
@@ -125,6 +140,8 @@ internal sealed class CipherState : IDisposable
     /// <returns>Number of bytes written to plaintext</returns>
     public int Decrypt(ReadOnlySpan<byte> ciphertext, Span<byte> plaintext)
     {
+        ThrowIfDisposed(_disposed, nameof(CipherState));
+
         if (_n == MAX_NONCE)
         {
             Rekey();
@@ -137,6 +154,8 @@ internal sealed class CipherState : IDisposable
     /// </summary>
     public void Rekey()
     {
+        ThrowIfDisposed(_disposed, nameof(CipherState));
+
         if (!HasKeys())
         {
             throw new NullReferenceException("Keys are missing");
@@ -156,9 +175,16 @@ internal sealed class CipherState : IDisposable
 
     public void Dispose()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         _ck?.Dispose();
         _k?.Dispose();
         _hkdf.Dispose();
         _cipher.Dispose();
+
+        _disposed = true;
     }
 }

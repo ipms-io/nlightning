@@ -2,7 +2,7 @@ namespace NLightning.Common.Tests.Types;
 
 using Common.Types;
 
-using static Utils.TestUtils;
+using static Utils.TestExtensions;
 
 public class BigSizeTests
 {
@@ -376,7 +376,7 @@ public class BigSizeTests
                     throw new InvalidOperationException("Bytes line without Value line");
                 }
 
-                currentVector.Bytes = GetBytes(line[7..]);
+                currentVector.Bytes = line[7..].GetBytes();
             }
             else if (line.StartsWith("Error: "))
             {

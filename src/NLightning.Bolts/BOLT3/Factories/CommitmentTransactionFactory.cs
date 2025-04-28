@@ -1,19 +1,23 @@
+using Microsoft.Extensions.Options;
 using NBitcoin;
-using NLightning.Bolts.BOLT3.Outputs;
 
 namespace NLightning.Bolts.BOLT3.Factories;
 
 using Common.Interfaces;
+using Common.Options;
+using Outputs;
 using Transactions;
 using Types;
 
 public class CommitmentTransactionFactory
 {
     private readonly IFeeService _feeService;
+    private readonly NodeOptions _nodeOptions;
 
-    public CommitmentTransactionFactory(IFeeService feeService)
+    public CommitmentTransactionFactory(IFeeService feeService, IOptions<NodeOptions> nodeOptions)
     {
         _feeService = feeService;
+        _nodeOptions = nodeOptions.Value;
     }
 
     public CommitmentTransaction CreateCommitmentTransaction(FundingOutput fundingOutput, PubKey localPaymentBasepoint,
@@ -23,7 +27,9 @@ public class CommitmentTransactionFactory
                                                              CommitmentNumber commitmentNumber, bool isChannelFunder,
                                                              params BitcoinSecret[] secrets)
     {
-        var commitmentTransaction = new CommitmentTransaction(fundingOutput, localPaymentBasepoint,
+        var commitmentTransaction = new CommitmentTransaction(_nodeOptions.AnchorAmount, _nodeOptions.DustLimitAmount,
+                                                              _nodeOptions.MustTrimHtlcOutputs, _nodeOptions.Network,
+                                                              fundingOutput, localPaymentBasepoint,
                                                               remotePaymentBasepoint, localDelayedPubKey,
                                                               revocationPubKey, toLocalAmount, toRemoteAmount,
                                                               toSelfDelay, commitmentNumber, isChannelFunder);
@@ -44,7 +50,9 @@ public class CommitmentTransactionFactory
                                                              IEnumerable<ReceivedHtlcOutput> receivedHtlcs,
                                                              params BitcoinSecret[] secrets)
     {
-        var commitmentTransaction = new CommitmentTransaction(fundingOutput, localPaymentBasepoint,
+        var commitmentTransaction = new CommitmentTransaction(_nodeOptions.AnchorAmount, _nodeOptions.DustLimitAmount,
+                                                              _nodeOptions.MustTrimHtlcOutputs, _nodeOptions.Network,
+                                                              fundingOutput, localPaymentBasepoint,
                                                               remotePaymentBasepoint, localDelayedPubKey,
                                                               revocationPubKey, toLocalAmount, toRemoteAmount,
                                                               toSelfDelay, commitmentNumber, isChannelFunder);

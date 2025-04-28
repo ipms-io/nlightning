@@ -4,16 +4,15 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT11;
 
-using BOLT9;
 using Common.BitUtils;
 using Common.Constants;
 using Common.Crypto.Hashes;
 using Common.Managers;
+using Common.Node;
 using Common.Types;
 using Constants;
 using Encoders;
 using Enums;
-using Exceptions;
 using Types;
 using Types.TaggedFields;
 
@@ -135,8 +134,8 @@ public partial class Invoice
     /// <remarks>
     /// The features are used to specify the features the payer should support
     /// </remarks>
-    /// <seealso cref="BOLT9.Features"/>
-    public Features? Features
+    /// <seealso cref="FeatureSet"/>
+    public FeatureSet? Features
     {
         get
         {
@@ -340,6 +339,7 @@ public partial class Invoice
     #endregion
 
     #region Constructors
+
     /// <summary>
     /// The base constructor for the invoice
     /// </summary>
@@ -347,22 +347,25 @@ public partial class Invoice
     /// <param name="description">The description of the invoice</param>
     /// <param name="paymentHash">The payment hash of the invoice</param>
     /// <param name="paymentSecret">The payment secret of the invoice</param>
+    /// <param name="network">The network the invoice is created for</param>
     /// <remarks>
-    /// The invoice is created with the given amount of millisatoshis, a description, the payment hash and the payment secret.
+    /// The invoice is created with the given amount of millisatoshis, a description, the payment hash and the
+    /// payment secret.
     /// </remarks>
     /// <seealso cref="Network"/>
-    public Invoice(ulong amountMilliSats, string description, uint256 paymentHash, uint256 paymentSecret)
+    public Invoice(ulong amountMilliSats, string description, uint256 paymentHash, uint256 paymentSecret,
+                   Network network)
     {
         AmountMilliSats = amountMilliSats;
-        Network = ConfigManager.Instance.Network;
+        Network = network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Signature = new CompactSignature(0, new byte[64]);
 
         // Set Required Fields
+        Description = description;
         PaymentHash = paymentHash;
         PaymentSecret = paymentSecret;
-        Description = description;
 
         _taggedFields.Changed += OnTaggedFieldsChanged;
     }
@@ -374,22 +377,25 @@ public partial class Invoice
     /// <param name="descriptionHash">The description hash of the invoice</param>
     /// <param name="paymentHash">The payment hash of the invoice</param>
     /// <param name="paymentSecret">The payment secret of the invoice</param>
+    /// <param name="network">The network the invoice is created for</param>
     /// <remarks>
-    /// The invoice is created with the given amount of millisatoshis, a description hash, the payment hash and the payment secret.
+    /// The invoice is created with the given amount of millisatoshis, a description hash, the payment hash and the
+    /// payment secret.
     /// </remarks>
     /// <seealso cref="Network"/>
-    public Invoice(ulong amountMilliSats, uint256 descriptionHash, uint256 paymentHash, uint256 paymentSecret)
+    public Invoice(ulong amountMilliSats, uint256 descriptionHash, uint256 paymentHash, uint256 paymentSecret,
+                   Network network)
     {
         AmountMilliSats = amountMilliSats;
-        Network = ConfigManager.Instance.Network;
+        Network = network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Signature = new CompactSignature(0, new byte[64]);
 
         // Set Required Fields
+        DescriptionHash = descriptionHash;
         PaymentHash = paymentHash;
         PaymentSecret = paymentSecret;
-        DescriptionHash = descriptionHash;
 
         _taggedFields.Changed += OnTaggedFieldsChanged;
     }
@@ -426,10 +432,12 @@ public partial class Invoice
     /// <param name="taggedFields">The tagged fields of the invoice</param>
     /// <param name="signature">The invoice signature</param>
     /// <remarks>
-    /// The invoice is created with the given human-readable part, network, amount of millisatoshis, timestamp and tagged fields.
+    /// The invoice is created with the given human-readable part, network, amount of millisatoshis,
+    /// timestamp and tagged fields.
     /// </remarks>
     /// <seealso cref="Network"/>
-    private Invoice(string invoiceString, string humanReadablePart, Network network, ulong amountMilliSats, long timestamp, TaggedFieldList taggedFields, CompactSignature signature)
+    private Invoice(string invoiceString, string humanReadablePart, Network network, ulong amountMilliSats,
+        long timestamp, TaggedFieldList taggedFields, CompactSignature signature)
     {
         _invoiceString = invoiceString;
 
@@ -445,6 +453,7 @@ public partial class Invoice
     #endregion
 
     #region Static Constructors
+
     /// <summary>
     /// Creates a new invoice with the given amount of satoshis
     /// </summary>
@@ -452,13 +461,16 @@ public partial class Invoice
     /// <param name="description">The description of the invoice</param>
     /// <param name="paymentHash">The payment hash of the invoice</param>
     /// <param name="paymentSecret">The payment secret of the invoice</param>
+    /// <param name="network">The network the invoice is created for</param>
     /// <remarks>
-    /// The invoice is created with the given amount of satoshis, a description, the payment hash and the payment secret.
+    /// The invoice is created with the given amount of satoshis, a description, the payment hash and the
+    /// payment secret.
     /// </remarks>
     /// <returns>The invoice</returns>
-    public static Invoice InSatoshis(ulong amountSats, string description, uint256 paymentHash, uint256 paymentSecret)
+    public static Invoice InSatoshis(ulong amountSats, string description, uint256 paymentHash, uint256 paymentSecret,
+                                     Network network)
     {
-        return new Invoice(amountSats * 1_000, description, paymentHash, paymentSecret);
+        return new Invoice(amountSats * 1_000, description, paymentHash, paymentSecret, network);
     }
 
     /// <summary>
@@ -468,31 +480,39 @@ public partial class Invoice
     /// <param name="descriptionHash">The description hash of the invoice</param>
     /// <param name="paymentHash">The payment hash of the invoice</param>
     /// <param name="paymentSecret">The payment secret of the invoice</param>
+    /// <param name="network">The network the invoice is created for</param>
     /// <remarks>
-    /// The invoice is created with the given amount of satoshis, a description hash, the payment hash and the payment secret.
+    /// The invoice is created with the given amount of satoshis, a description hash, the payment hash and the
+    /// payment secret.
     /// </remarks>
     /// <returns>The invoice</returns>
-    public static Invoice InSatoshis(ulong amountSats, uint256 descriptionHash, uint256 paymentHash, uint256 paymentSecret)
+    public static Invoice InSatoshis(ulong amountSats, uint256 descriptionHash, uint256 paymentHash,
+                                     uint256 paymentSecret, Network network)
     {
-        return new Invoice(amountSats * 1_000, descriptionHash, paymentHash, paymentSecret);
+        return new Invoice(amountSats * 1_000, descriptionHash, paymentHash, paymentSecret, network);
     }
 
     /// <summary>
     /// Decodes an invoice from a string
     /// </summary>
     /// <param name="invoiceString">The invoice string</param>
+    /// <param name="expectedNetwork">The expected network of the invoice</param>
     /// <returns>The invoice</returns>
     /// <exception cref="InvoiceSerializationException">If something goes wrong in the decoding process</exception>
-    public static Invoice Decode(string invoiceString)
+    public static Invoice Decode(string? invoiceString, Network? expectedNetwork = null)
     {
-        if (string.IsNullOrWhiteSpace(invoiceString))
-            throw new InvoiceSerializationException("Invoice string was empty");
+        InvoiceSerializationException.ThrowIfNullOrWhiteSpace(invoiceString);
 
         try
         {
             Bech32Encoder.DecodeLightningInvoice(invoiceString, out var data, out var signature, out var hrp);
 
             var network = GetNetwork(invoiceString);
+            if (expectedNetwork != null && network != expectedNetwork)
+            {
+                throw new InvoiceSerializationException("Expected network does not match");
+            }
+
             var amount = ConvertHumanReadableToMilliSatoshis(hrp);
 
             // Initialize the BitReader buffer
@@ -500,11 +520,12 @@ public partial class Invoice
 
             var timestamp = bitReader.ReadInt64FromBits(35);
 
-            var taggedFields = TaggedFieldList.FromBitReader(bitReader);
+            var taggedFields = TaggedFieldList.FromBitReader(bitReader, network);
 
             // TODO: Check feature bits
 
-            var invoice = new Invoice(invoiceString, hrp, network, amount, timestamp, taggedFields, new CompactSignature(signature[^1], signature[..^1]));
+            var invoice = new Invoice(invoiceString, hrp, network, amount, timestamp, taggedFields,
+                                      new CompactSignature(signature[^1], signature[..^1]));
 
             // Get pubkey from tagged fields
             if (taggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField? pubkeyTaggedField))
@@ -727,12 +748,14 @@ public partial class Invoice
         var nBitcoinHash = new uint256(hash);
 
         // Sign the hash
-        using var key = new Key(SecureKeyManager.GetPrivateKey());
+        using var key = new Key(SecureKeyManager.GetPrivateKeyBytes());
         return key.SignCompact(nBitcoinHash, false);
     }
 
     private static Network GetNetwork(string? invoiceString)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(invoiceString);
+
         if (!s_supportedNetworks.TryGetValue(invoiceString.Substring(2, 4), out var network)
             && !s_supportedNetworks.TryGetValue(invoiceString.Substring(2, 3), out network)
             && !s_supportedNetworks.TryGetValue(invoiceString.Substring(2, 2), out network))

@@ -54,11 +54,3 @@ It needs to be initialized before using any functionality that relies on key sec
 // Initialize SecureKeyManager with the virtual node key
 SecureKeyManager.Initialize(virtualNodeKey.ToBytes());
 ```
-
-#### ConfigManager
-This class handles application-wide configuration settings, including selecting the appropriate Lightning Network.
-
-```csharp
-// Set the network configuration
-ConfigManager.Instance.Network = NLightning.Common.Types.Network.REG_TEST;
-```

@@ -5,8 +5,6 @@ namespace NLightning.Bolts.BOLT3.Outputs;
 
 using Common.Constants;
 using Common.Crypto.Hashes;
-using Common.Managers;
-using Exceptions;
 
 /// <summary>
 /// Represents an offered HTLC output in a commitment transaction.
@@ -16,18 +14,21 @@ public class OfferedHtlcOutput : BaseHtlcOutput
     public override ScriptType ScriptType => ScriptType.P2WPKH;
 
     [SetsRequiredMembers]
-    public OfferedHtlcOutput(PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey,
-                             ReadOnlyMemory<byte> paymentHash, LightningMoney amount, ulong? cltvExpiry = null)
-        : base(GenerateToRemoteHtlcScript(revocationPubKey, remoteHtlcPubKey, localHtlcPubKey, paymentHash), amount)
+    public OfferedHtlcOutput(LightningMoney anchorAmount, PubKey revocationPubKey, PubKey remoteHtlcPubKey,
+                             PubKey localHtlcPubKey, ReadOnlyMemory<byte> paymentHash, LightningMoney amount,
+                             ulong cltvExpiry)
+        : base(GenerateToRemoteHtlcScript(anchorAmount, revocationPubKey, remoteHtlcPubKey, localHtlcPubKey,
+                                          paymentHash),
+               amount)
     {
         RevocationPubKey = revocationPubKey;
         RemoteHtlcPubKey = remoteHtlcPubKey;
         LocalHtlcPubKey = localHtlcPubKey;
         PaymentHash = paymentHash;
-        CltvExpiry = cltvExpiry ?? ConfigManager.Instance.DefaultCltvExpiry;
+        CltvExpiry = cltvExpiry;
     }
 
-    private static Script GenerateToRemoteHtlcScript(PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey, ReadOnlyMemory<byte> paymentHash)
+    private static Script GenerateToRemoteHtlcScript(LightningMoney anchorAmount, PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey, ReadOnlyMemory<byte> paymentHash)
     {
         // Hash the revocationPubKey
         using var sha256 = new Sha256();
@@ -67,7 +68,7 @@ public class OfferedHtlcOutput : BaseHtlcOutput
             OpcodeType.OP_ENDIF
         ];
 
-        if (ConfigManager.Instance.IsOptionAnchorOutput)
+        if (!anchorAmount.IsZero)
         {
             ops.AddRange([
                 OpcodeType.OP_1,

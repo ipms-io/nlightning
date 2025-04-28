@@ -1,11 +1,13 @@
 namespace NLightning.Bolts.BOLT2.Validators;
 
-using Constants;
-using Payloads;
+using Common.Constants;
+using Common.Messages.Payloads;
 
 public static class TxAddOutputValidator
 {
-    public static void Validate(bool isInitiator, TxAddOutputPayload output, int currentOutputCount, Func<ulong, bool> isSerialIdUnique, Func<byte[], bool> isStandardScript, ulong dustLimit)
+    public static void Validate(bool isInitiator, TxAddOutputPayload output, int currentOutputCount,
+                                Func<ulong, bool> isSerialIdUnique, Func<byte[], bool> isStandardScript,
+                                LightningMoney dustLimit)
     {
         if (isInitiator && (output.SerialId & 1) != 0) // Ensure even serial_id for initiator
         {

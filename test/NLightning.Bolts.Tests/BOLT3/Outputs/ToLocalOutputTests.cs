@@ -7,10 +7,12 @@ using Common.Types;
 
 public class ToLocalOutputTests
 {
-    private readonly PubKey _localDelayedPubKey = new PubKey("034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa");
-    private readonly PubKey _revocationPubKey = new PubKey("032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e668680991");
+    private readonly PubKey _localDelayedPubKey =
+        new("034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa");
+    private readonly PubKey _revocationPubKey =
+        new("032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e668680991");
     private readonly uint _toSelfDelay = 144; // Typical delay value (1 day)
-    private readonly LightningMoney _amount = new LightningMoney(1000000);
+    private readonly LightningMoney _amount = LightningMoney.Satoshis(1_000);
 
     [Fact]
     public void Given_ValidParameters_When_ConstructingToLocalOutput_Then_PropertiesAreSetCorrectly()
@@ -28,26 +30,6 @@ public class ToLocalOutputTests
         Assert.Equal(ScriptType.P2WSH, toLocalOutput.ScriptType);
         Assert.NotNull(toLocalOutput.RedeemScript);
         Assert.NotNull(toLocalOutput.ScriptPubKey);
-    }
-
-    [Fact]
-    public void Given_NullLocalDelayedPubKey_When_ConstructingToLocalOutput_Then_ThrowsArgumentNullException()
-    {
-        // Given
-        PubKey localDelayedPubKey = null;
-
-        // When/Then
-        Assert.Throws<ArgumentNullException>(() => new ToLocalOutput(localDelayedPubKey, _revocationPubKey, _toSelfDelay, _amount));
-    }
-
-    [Fact]
-    public void Given_NullRevocationPubKey_When_ConstructingToLocalOutput_Then_ThrowsArgumentNullException()
-    {
-        // Given
-        PubKey revocationPubKey = null;
-
-        // When/Then
-        Assert.Throws<ArgumentNullException>(() => new ToLocalOutput(_localDelayedPubKey, revocationPubKey, _toSelfDelay, _amount));
     }
 
     [Fact]
@@ -120,7 +102,8 @@ public class ToLocalOutputTests
     {
         // Given
         var alternateDelayedPubKey = new PubKey("02f5559c428d3a3e3579adc6516fdb4d3be6fb96290f1a0b4f873a16fa4c397c07");
-        var alternateRevocationPubKey = new PubKey("0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798");
+        var alternateRevocationPubKey =
+            new PubKey("0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798");
         var alternateDelay = 432u; // 3 days
 
         // When
@@ -142,8 +125,10 @@ public class ToLocalOutputTests
     public void Given_ToLocalOutputs_When_ComparingThem_Then_UsesTransactionOutputComparer()
     {
         // Given
-        var output1 = new ToLocalOutput(_localDelayedPubKey, _revocationPubKey, _toSelfDelay, new LightningMoney(1000000));
-        var output2 = new ToLocalOutput(_localDelayedPubKey, _revocationPubKey, _toSelfDelay, new LightningMoney(2000000));
+        var output1 = new ToLocalOutput(_localDelayedPubKey, _revocationPubKey, _toSelfDelay,
+                                        LightningMoney.Satoshis(1_000));
+        var output2 = new ToLocalOutput(_localDelayedPubKey, _revocationPubKey, _toSelfDelay,
+                                        LightningMoney.Satoshis(2_000));
 
         // When
         var comparison = output1.CompareTo(output2);

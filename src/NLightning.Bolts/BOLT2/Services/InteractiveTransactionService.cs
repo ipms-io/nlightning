@@ -1,14 +1,21 @@
 namespace NLightning.Bolts.BOLT2.Services;
 
-using Payloads;
+using Common.Interfaces;
+using Common.Messages.Payloads;
 using Validators;
 
-public class InteractiveTransactionService(bool isInitiator, ulong dustLimit)
+public class InteractiveTransactionService : IInteractiveTransactionService
 {
+    private readonly LightningMoney _dustLimitAmount;
+    private readonly bool _isInitiator;
     private readonly Dictionary<ulong, TxAddInputPayload> _inputs = [];
     private readonly Dictionary<ulong, TxAddOutputPayload> _outputs = [];
-    private readonly bool _isInitiator = isInitiator;
-    private readonly ulong _dustLimit = dustLimit;
+
+    public InteractiveTransactionService(LightningMoney dustLimitAmount, bool isInitiator)
+    {
+        _dustLimitAmount = dustLimitAmount;
+        _isInitiator = isInitiator;
+    }
 
     public void AddInput(TxAddInputPayload input)
     {
@@ -18,7 +25,8 @@ public class InteractiveTransactionService(bool isInitiator, ulong dustLimit)
 
     public void AddOutput(TxAddOutputPayload output)
     {
-        TxAddOutputValidator.Validate(_isInitiator, output, _outputs.Count, IsSerialIdUnique, IsStandardScript, _dustLimit);
+        TxAddOutputValidator.Validate(_isInitiator, output, _outputs.Count, IsSerialIdUnique, IsStandardScript,
+                                      _dustLimitAmount);
         _outputs.Add(output.SerialId, output);
     }
 

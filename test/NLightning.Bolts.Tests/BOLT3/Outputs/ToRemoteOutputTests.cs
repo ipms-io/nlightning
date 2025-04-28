@@ -3,7 +3,6 @@ using NBitcoin;
 namespace NLightning.Bolts.Tests.BOLT3.Outputs;
 
 using Bolts.BOLT3.Outputs;
-using Common.Managers;
 using Common.Types;
 
 public class ToRemoteOutputTests
@@ -15,9 +14,8 @@ public class ToRemoteOutputTests
     public void Given_ValidParameters_When_ConstructingToRemoteOutput_Then_PropertiesAreSetCorrectly()
     {
         // Given
-
         // When
-        var toRemoteOutput = new ToRemoteOutput(_remotePubKey, _amount);
+        var toRemoteOutput = new ToRemoteOutput(false, _remotePubKey, _amount);
 
         // Then
         Assert.Equal(_remotePubKey, toRemoteOutput.RemotePubKey);
@@ -27,69 +25,39 @@ public class ToRemoteOutputTests
     }
 
     [Fact]
-    public void Given_NullRemotePubKey_When_ConstructingToRemoteOutput_Then_ThrowsArgumentNullException()
-    {
-        // Given
-        PubKey remotePubKey = null;
-
-        // When/Then
-        Assert.Throws<ArgumentNullException>(() => new ToRemoteOutput(remotePubKey, _amount));
-    }
-
-    [Fact]
     public void Given_OptionAnchorOutputFalse_When_ConstructingToRemoteOutput_Then_UsesP2WPKH()
     {
         // Given
-        var previousIsOptionAnchorOutput = ConfigManager.Instance.IsOptionAnchorOutput;
-        ConfigManager.Instance.IsOptionAnchorOutput = false;
+        // When
+        var toRemoteOutput = new ToRemoteOutput(false, _remotePubKey, _amount);
 
-        try
-        {
-            // When
-            var toRemoteOutput = new ToRemoteOutput(_remotePubKey, _amount);
-
-            // Then
-            Assert.Equal(ScriptType.P2WPKH, toRemoteOutput.ScriptType);
-            Assert.Equal(_remotePubKey.WitHash.ScriptPubKey, toRemoteOutput.RedeemScript);
-        }
-        finally
-        {
-            ConfigManager.Instance.IsOptionAnchorOutput = previousIsOptionAnchorOutput;
-        }
+        // Then
+        Assert.Equal(ScriptType.P2WPKH, toRemoteOutput.ScriptType);
+        Assert.Equal(_remotePubKey.WitHash.ScriptPubKey, toRemoteOutput.RedeemScript);
     }
 
     [Fact]
     public void Given_OptionAnchorOutputTrue_When_ConstructingToRemoteOutput_Then_UsesP2WSH()
     {
         // Given
-        var previousIsOptionAnchorOutput = ConfigManager.Instance.IsOptionAnchorOutput;
-        ConfigManager.Instance.IsOptionAnchorOutput = true;
+        // When
+        var toRemoteOutput = new ToRemoteOutput(true, _remotePubKey, _amount);
 
-        try
-        {
-            // When
-            var toRemoteOutput = new ToRemoteOutput(_remotePubKey, _amount);
+        // Then
+        Assert.Equal(ScriptType.P2WSH, toRemoteOutput.ScriptType);
 
-            // Then
-            Assert.Equal(ScriptType.P2WSH, toRemoteOutput.ScriptType);
-
-            // Check script structure
-            var scriptString = toRemoteOutput.RedeemScript.ToString();
-            Assert.Contains(_remotePubKey.ToHex(), scriptString);
-            Assert.Contains("CHECKSIGVERIFY", scriptString);
-            Assert.Contains("CSV", scriptString);
-        }
-        finally
-        {
-            ConfigManager.Instance.IsOptionAnchorOutput = previousIsOptionAnchorOutput;
-        }
+        // Check script structure
+        var scriptString = toRemoteOutput.RedeemScript.ToString();
+        Assert.Contains(_remotePubKey.ToHex(), scriptString);
+        Assert.Contains("CHECKSIGVERIFY", scriptString);
+        Assert.Contains("CSV", scriptString);
     }
 
     [Fact]
     public void Given_ToRemoteOutput_When_ToCoinCalled_Then_ReturnsCorrectScriptCoin()
     {
         // Given
-        var toRemoteOutput = new ToRemoteOutput(_remotePubKey, _amount)
+        var toRemoteOutput = new ToRemoteOutput(true, _remotePubKey, _amount)
         {
             TxId = uint256.Parse("8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be"),
             Index = 1
@@ -113,7 +81,7 @@ public class ToRemoteOutputTests
         var zeroAmount = new LightningMoney(0);
 
         // When
-        var toRemoteOutput = new ToRemoteOutput(_remotePubKey, zeroAmount);
+        var toRemoteOutput = new ToRemoteOutput(true, _remotePubKey, zeroAmount);
 
         // Then
         Assert.Equal(zeroAmount, toRemoteOutput.Amount);
@@ -124,8 +92,8 @@ public class ToRemoteOutputTests
     public void Given_ToRemoteOutputs_When_ComparingThem_Then_UsesTransactionOutputComparer()
     {
         // Given
-        var output1 = new ToRemoteOutput(_remotePubKey, new LightningMoney(1000000));
-        var output2 = new ToRemoteOutput(_remotePubKey, new LightningMoney(2000000));
+        var output1 = new ToRemoteOutput(true, _remotePubKey, new LightningMoney(1000000));
+        var output2 = new ToRemoteOutput(true, _remotePubKey, new LightningMoney(2000000));
 
         // When
         var comparison = output1.CompareTo(output2);
@@ -141,8 +109,8 @@ public class ToRemoteOutputTests
         var remotePubKey2 = new PubKey("034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa");
 
         // When
-        var output1 = new ToRemoteOutput(_remotePubKey, _amount);
-        var output2 = new ToRemoteOutput(remotePubKey2, _amount);
+        var output1 = new ToRemoteOutput(true, _remotePubKey, _amount);
+        var output2 = new ToRemoteOutput(true, remotePubKey2, _amount);
 
         // Then
         Assert.NotEqual(output1.RedeemScript, output2.RedeemScript);

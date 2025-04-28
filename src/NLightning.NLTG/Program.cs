@@ -1,53 +1,106 @@
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using NLightning.NLTG.Extensions;
+using NLightning.NLTG.Helpers;
+using NLightning.NLTG.Utilities;
 using Serilog;
 
-namespace NLightning.NLTG;
-
-using Parsers;
-
-class Program
+try
 {
-    static void Main(string[] args)
+    // Bootstrap logger for startup messages
+    Log.Logger = new LoggerConfiguration()
+        .WriteTo.Console()
+        .CreateBootstrapLogger();
+
+    // Get network for PID file path
+    var network = CommandLineHelper.GetNetwork(args);
+    var pidFilePath = DaemonUtility.GetPidFilePath(network);
+
+    // Check for stop command
+    if (CommandLineHelper.IsStopRequested(args))
     {
+        var stopped = DaemonUtility.StopDaemon(pidFilePath, Log.Logger);
+        return stopped ? 0 : 1;
+    }
+
+    // Check for status command
+    if (CommandLineHelper.IsStatusRequested(args))
+    {
+        ReportDaemonStatus(pidFilePath);
+        return 0;
+    }
+
+    // Check if help is requested
+    if (CommandLineHelper.IsHelpRequested(args))
+    {
+        CommandLineHelper.ShowUsage();
+        return 0;
+    }
+
+    // Read configuration file to check for daemon setting
+    var initialConfig = NltgConfigurationExtensions.ReadInitialConfiguration(args);
+
+    // Start as daemon if requested
+    if (DaemonUtility.StartDaemonIfRequested(args, initialConfig, pidFilePath, Log.Logger))
+    {
+        // Parent process exits immediately after starting daemon
+        return 0;
+    }
+
+    Log.Information("Starting NLTG...");
+
+    // Create and run host
+    await Host.CreateDefaultBuilder(args)
+        .ConfigureNltg(initialConfig)
+        .ConfigureNltgServices()
+        .RunConsoleAsync();
+
+    return 0;
+}
+catch (Exception e)
+{
+    Log.Fatal(e, "Application terminated unexpectedly");
+    return 1;
+}
+finally
+{
+    Log.CloseAndFlush();
+}
+
+static void ReportDaemonStatus(string pidFilePath)
+{
+    try
+    {
+        if (!File.Exists(pidFilePath))
+        {
+            Console.WriteLine("NLTG daemon is not running");
+            return;
+        }
+
+        var pidText = File.ReadAllText(pidFilePath).Trim();
+        if (!int.TryParse(pidText, out var pid))
+        {
+            Console.WriteLine("Invalid PID in file, daemon may not be running");
+            return;
+        }
+
         try
         {
-            // Set up the DI container
-            var services = new ServiceCollection();
+            var process = System.Diagnostics.Process.GetProcessById(pid);
+            var runTime = DateTime.Now - process.StartTime;
 
-            // Configure logging to use Serilog
-            services.AddLogging(builder => builder.AddSerilog());
-
-            // Initialize the options and logger from provided args
-            var (options, loggerConfig) = ArgumentOptionParser.Initialize(args);
-
-            // Check if the configuration file exists
-            if (File.Exists(options.ConfigFile))
-            {
-                // Parse the configuration file
-                (options, loggerConfig) = FileOptionParser.MergeWithFile(options.ConfigFile, options, loggerConfig);
-            }
-            else if (options.IsConfigFileDefault) // Create config with passed args only if it's in the default location
-            {
-                options.SaveToFile();
-            }
-            else
-            {
-                throw new Exception($"Config file not found: {options.ConfigFile}");
-            }
-
-            Log.Logger = loggerConfig.CreateLogger();
-
-            Log.Logger.Information("Using config file: {ConfigFile}", options.ConfigFile);
-
-            // Build the service provider
-            var serviceProvider = services.BuildServiceProvider();
-
-            Log.Logger.Information("Config file .");
-            Log.Logger.Debug("Log file: {LogFile}", options.LogFile);
+            Console.WriteLine("NLTG daemon is running");
+            Console.WriteLine($"PID: {pid}");
+            Console.WriteLine($"Started: {process.StartTime}");
+            Console.WriteLine($"Uptime: {runTime.Days}d {runTime.Hours}h {runTime.Minutes}m");
+            Console.WriteLine($"Memory: {process.WorkingSet64 / (1024 * 1024)} MB");
         }
-        catch (Exception e)
+        catch (ArgumentException)
         {
-            Console.WriteLine($"ERROR: {e.Message}");
+            Console.WriteLine("NLTG daemon is not running (stale PID file)");
         }
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine($"Error checking daemon status: {e.Message}");
     }
 }

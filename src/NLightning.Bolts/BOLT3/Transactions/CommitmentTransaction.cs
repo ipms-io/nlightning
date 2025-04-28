@@ -3,10 +3,10 @@ using NBitcoin.Crypto;
 
 namespace NLightning.Bolts.BOLT3.Transactions;
 
-using Common.Managers;
 using Constants;
 using Outputs;
 using Types;
+using Network = Common.Types.Network;
 
 /// <summary>
 /// Represents a commitment transaction.
@@ -14,7 +14,10 @@ using Types;
 public class CommitmentTransaction : BaseTransaction
 {
     #region Private Fields
+    private readonly LightningMoney _anchorAmount;
+    private readonly LightningMoney _dustLimitAmount;
     private readonly bool _isChannelFunder;
+    private readonly bool _mustTrimHtlcOutputs;
 
     private LightningMoney _toFunderAmount;
     #endregion
@@ -35,6 +38,10 @@ public class CommitmentTransaction : BaseTransaction
     /// <summary>
     /// Initializes a new instance of the <see cref="CommitmentTransaction"/> class.
     /// </summary>
+    /// <param name="anchorAmount">The anchor amount.</param>
+    /// <param name="network">The network type.</param>
+    /// <param name="mustTrimHtlcOutputs">Indicates if HTLC outputs must be trimmed.</param>
+    /// <param name="dustLimitAmount"></param>
     /// <param name="fundingOutput">The funding coin.</param>
     /// <param name="localPaymentBasepoint">The local public key.</param>
     /// <param name="remotePaymentBasepoint">The remote public key.</param>
@@ -45,12 +52,14 @@ public class CommitmentTransaction : BaseTransaction
     /// <param name="toSelfDelay">The to_self_delay in blocks.</param>
     /// <param name="commitmentNumber">The commitment number object.</param>
     /// <param name="isChannelFunder">Indicates if the local node is the channel funder.</param>
-    internal CommitmentTransaction(FundingOutput fundingOutput, PubKey localPaymentBasepoint,
-                                   PubKey remotePaymentBasepoint, PubKey localDelayedPubKey, PubKey revocationPubKey,
-                                   LightningMoney toLocalAmount, LightningMoney toRemoteAmount, uint toSelfDelay,
-                                   CommitmentNumber commitmentNumber, bool isChannelFunder)
-        : base(TransactionConstants.COMMITMENT_TRANSACTION_VERSION, SigHash.All, (fundingOutput.ToCoin(),
-                                                                                  commitmentNumber.CalculateSequence()))
+    internal CommitmentTransaction(LightningMoney anchorAmount, LightningMoney dustLimitAmount,
+                                   bool mustTrimHtlcOutputs, Network network, FundingOutput fundingOutput,
+                                   PubKey localPaymentBasepoint, PubKey remotePaymentBasepoint,
+                                   PubKey localDelayedPubKey, PubKey revocationPubKey, LightningMoney toLocalAmount,
+                                   LightningMoney toRemoteAmount, uint toSelfDelay, CommitmentNumber commitmentNumber,
+                                   bool isChannelFunder)
+        : base(!anchorAmount.IsZero, network, TransactionConstants.COMMITMENT_TRANSACTION_VERSION, SigHash.All,
+               (fundingOutput.ToCoin(), commitmentNumber.CalculateSequence()))
     {
         ArgumentNullException.ThrowIfNull(localPaymentBasepoint);
         ArgumentNullException.ThrowIfNull(remotePaymentBasepoint);
@@ -62,7 +71,10 @@ public class CommitmentTransaction : BaseTransaction
             throw new ArgumentException("Both toLocalAmount and toRemoteAmount cannot be zero.");
         }
 
+        _anchorAmount = anchorAmount;
+        _dustLimitAmount = dustLimitAmount;
         _isChannelFunder = isChannelFunder;
+        _mustTrimHtlcOutputs = mustTrimHtlcOutputs;
         CommitmentNumber = commitmentNumber;
 
         // Set locktime
@@ -89,20 +101,20 @@ public class CommitmentTransaction : BaseTransaction
         AddOutput(ToLocalOutput);
 
         // to_remote output
-        ToRemoteOutput = new ToRemoteOutput(remotePaymentBasepoint, remoteAmount);
+        ToRemoteOutput = new ToRemoteOutput(!anchorAmount.IsZero, remotePaymentBasepoint, remoteAmount);
         AddOutput(ToRemoteOutput);
 
-        if (!ConfigManager.Instance.IsOptionAnchorOutput || ConfigManager.Instance.AnchorAmount == LightningMoney.Zero)
+        if (anchorAmount == LightningMoney.Zero)
         {
             return;
         }
 
         // Local anchor output
-        LocalAnchorOutput = new ToAnchorOutput(fundingOutput.LocalPubKey, ConfigManager.Instance.AnchorAmount);
+        LocalAnchorOutput = new ToAnchorOutput(fundingOutput.LocalPubKey, anchorAmount);
         AddOutput(LocalAnchorOutput);
 
         // Remote anchor output
-        RemoteAnchorOutput = new ToAnchorOutput(fundingOutput.RemotePubKey, ConfigManager.Instance.AnchorAmount);
+        RemoteAnchorOutput = new ToAnchorOutput(fundingOutput.RemotePubKey, anchorAmount);
         AddOutput(RemoteAnchorOutput);
     }
     #endregion
@@ -171,10 +183,10 @@ public class CommitmentTransaction : BaseTransaction
         }
 
         // Deduct anchor fee from the funder amount
-        if (ConfigManager.Instance.IsOptionAnchorOutput && !_toFunderAmount.IsZero)
+        if (!_anchorAmount.IsZero && !_toFunderAmount.IsZero)
         {
-            _toFunderAmount -= ConfigManager.Instance.AnchorAmount;
-            _toFunderAmount -= ConfigManager.Instance.AnchorAmount;
+            _toFunderAmount -= _anchorAmount;
+            _toFunderAmount -= _anchorAmount;
         }
 
         // Trim Local and Remote outputs
@@ -188,29 +200,29 @@ public class CommitmentTransaction : BaseTransaction
         }
 
         // Trim HTLCs
-        if (ConfigManager.Instance.MustTrimHtlcOutputs)
+        if (_mustTrimHtlcOutputs)
         {
-            var offeredHtlcWeight = ConfigManager.Instance.IsOptionAnchorOutput
-                ? WeightConstants.HTLC_TIMEOUT_WEIGHT_ANCHORS
-                : WeightConstants.HTLC_TIMEOUT_WEIGHT_NO_ANCHORS;
+            var offeredHtlcWeight = _anchorAmount.IsZero
+                ? WeightConstants.HTLC_TIMEOUT_WEIGHT_NO_ANCHORS
+                : WeightConstants.HTLC_TIMEOUT_WEIGHT_ANCHORS;
             var offeredHtlcFee = offeredHtlcWeight * currentFeePerKw.Satoshi / 1000L;
             foreach (var offeredHtlcOutput in OfferedHtlcOutputs)
             {
                 var htlcAmount = offeredHtlcOutput.Amount - offeredHtlcFee;
-                if (htlcAmount < ConfigManager.Instance.DustLimitAmount)
+                if (htlcAmount < _dustLimitAmount)
                 {
                     RemoveOutput(offeredHtlcOutput);
                 }
             }
 
-            var receivedHtlcWeight = ConfigManager.Instance.IsOptionAnchorOutput
-                ? WeightConstants.HTLC_SUCCESS_WEIGHT_ANCHORS
-                : WeightConstants.HTLC_SUCCESS_WEIGHT_NO_ANCHORS;
+            var receivedHtlcWeight = _anchorAmount.IsZero
+                ? WeightConstants.HTLC_SUCCESS_WEIGHT_NO_ANCHORS
+                : WeightConstants.HTLC_SUCCESS_WEIGHT_ANCHORS;
             var receivedHtlcFee = receivedHtlcWeight * currentFeePerKw.Satoshi / 1000L;
             foreach (var receivedHtlcOutput in ReceivedHtlcOutputs)
             {
                 var htlcAmount = receivedHtlcOutput.Amount - receivedHtlcFee;
-                if (htlcAmount < ConfigManager.Instance.DustLimitAmount)
+                if (htlcAmount < _dustLimitAmount)
                 {
                     RemoveOutput(receivedHtlcOutput);
                 }
@@ -218,7 +230,7 @@ public class CommitmentTransaction : BaseTransaction
         }
 
         // Anchors are always needed, except when one of the outputs is zero and there's no htlc output
-        if (ConfigManager.Instance.IsOptionAnchorOutput && !Outputs.Any(o => o is BaseHtlcOutput))
+        if (!_anchorAmount.IsZero && !Outputs.Any(o => o is BaseHtlcOutput))
         {
             if (ToLocalOutput.Amount.IsZero)
             {
@@ -246,7 +258,7 @@ public class CommitmentTransaction : BaseTransaction
     #region Private Methods
     private void SetLocalAndRemoteAmounts(BaseOutput funderOutput, BaseOutput otherOutput)
     {
-        if (_toFunderAmount >= ConfigManager.Instance.DustLimitAmount)
+        if (_toFunderAmount >= _dustLimitAmount)
         {
             if (_toFunderAmount != funderOutput.Amount)
             {
@@ -267,7 +279,7 @@ public class CommitmentTransaction : BaseTransaction
         }
 
         RemoveOutput(otherOutput);
-        if (otherOutput.Amount >= ConfigManager.Instance.DustLimitAmount)
+        if (otherOutput.Amount >= _dustLimitAmount)
         {
             AddOutput(otherOutput);
         }
@@ -297,7 +309,7 @@ public class CommitmentTransaction : BaseTransaction
             receivedHtlcOutput.Index = Outputs.IndexOf(receivedHtlcOutput);
         }
 
-        if (ConfigManager.Instance.IsOptionAnchorOutput)
+        if (!_anchorAmount.IsZero)
         {
             if (LocalAnchorOutput is not null)
             {

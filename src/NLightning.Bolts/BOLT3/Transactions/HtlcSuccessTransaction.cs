@@ -1,18 +1,18 @@
 using NBitcoin;
-using NLightning.Common.Interfaces;
 
 namespace NLightning.Bolts.BOLT3.Transactions;
 
 using Outputs;
+using Network = Common.Types.Network;
 
 public class HtlcSuccessTransaction : BaseHtlcTransaction
 {
     public byte[] PaymentPreimage { get; }
 
-    public HtlcSuccessTransaction(IFeeService feeService, BaseHtlcOutput output, PubKey revocationPubKey,
-                                  PubKey localDelayedPubKey, ulong toSelfDelay, ulong amountMilliSats,
-                                  byte[] paymentPreimage)
-        : base(feeService, output, revocationPubKey, localDelayedPubKey, toSelfDelay, amountMilliSats)
+    public HtlcSuccessTransaction(Network network, bool hasAnchorOutputs, BaseHtlcOutput output,
+                                  PubKey revocationPubKey, PubKey localDelayedPubKey, ulong toSelfDelay,
+                                  ulong amountMilliSats, byte[] paymentPreimage)
+        : base(hasAnchorOutputs, network, output, revocationPubKey, localDelayedPubKey, toSelfDelay, amountMilliSats)
     {
         SetLockTime(0);
         PaymentPreimage = paymentPreimage;

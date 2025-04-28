@@ -10,8 +10,10 @@ public class CommitmentNumberTests
     private const ulong EXPECTED_OBSCURING_FACTOR = 0x2bb038521914UL;
     private const ulong EXPECTED_OBSCURED_VALUE = INITIAL_COMMITMENT_NUMBER ^ EXPECTED_OBSCURING_FACTOR;
 
-    private readonly PubKey _localPaymentBasepoint = new PubKey("034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa");
-    private readonly PubKey _remotePaymentBasepoint = new PubKey("032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e668680991");
+    private readonly PubKey _localPaymentBasepoint =
+        new("034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa");
+    private readonly PubKey _remotePaymentBasepoint =
+        new("032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e668680991");
 
     [Fact]
     public void Given_ValidParameters_When_ConstructingCommitmentNumber_Then_PropertiesAreSetCorrectly()
@@ -19,7 +21,8 @@ public class CommitmentNumberTests
         // Given
 
         // When
-        var commitmentNumber = new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint, INITIAL_COMMITMENT_NUMBER);
+        var commitmentNumber = new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint,
+                                                    INITIAL_COMMITMENT_NUMBER);
 
         // Then
         Assert.Equal(INITIAL_COMMITMENT_NUMBER, commitmentNumber.Value);
@@ -31,7 +34,8 @@ public class CommitmentNumberTests
     {
         // Given
         const ulong EXPECTED_COMMITMENT_NUMBER = INITIAL_COMMITMENT_NUMBER + 1;
-        var commitmentNumber = new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint, INITIAL_COMMITMENT_NUMBER);
+        var commitmentNumber = new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint,
+                                                    INITIAL_COMMITMENT_NUMBER);
 
         // When
         commitmentNumber.Increment();
@@ -57,7 +61,8 @@ public class CommitmentNumberTests
     public void Given_CommitmentNumber_When_CalculatingObscuredValue_Then_ReturnsXORedValue()
     {
         // Given
-        var commitmentNumber = new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint, INITIAL_COMMITMENT_NUMBER);
+        var commitmentNumber = new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint,
+                                                    INITIAL_COMMITMENT_NUMBER);
 
         // When
         var obscuredValue = commitmentNumber.ObscuredValue;
@@ -71,7 +76,8 @@ public class CommitmentNumberTests
     {
         // Given
         const uint EXPECTED_LOCKTIME = (uint)((0x20 << 24) | (EXPECTED_OBSCURED_VALUE & 0xFFFFFF));
-        var commitmentNumber = new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint, INITIAL_COMMITMENT_NUMBER);
+        var commitmentNumber = new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint,
+                                                    INITIAL_COMMITMENT_NUMBER);
 
         // When
         var lockTime = commitmentNumber.CalculateLockTime();
@@ -85,7 +91,8 @@ public class CommitmentNumberTests
     {
         // Given
         const uint EXPECTED_SEQUENCE = (uint)((0x80U << 24) | ((EXPECTED_OBSCURED_VALUE >> 24) & 0xFFFFFF));
-        var commitmentNumber = new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint, INITIAL_COMMITMENT_NUMBER);
+        var commitmentNumber = new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint,
+                                                    INITIAL_COMMITMENT_NUMBER);
 
         // When
         var sequence = commitmentNumber.CalculateSequence();
