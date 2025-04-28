@@ -501,8 +501,7 @@ public partial class Invoice
     /// <exception cref="InvoiceSerializationException">If something goes wrong in the decoding process</exception>
     public static Invoice Decode(string? invoiceString, Network? expectedNetwork = null)
     {
-        if (string.IsNullOrWhiteSpace(invoiceString))
-            throw new InvoiceSerializationException("Invoice string was empty");
+        InvoiceSerializationException.ThrowIfNullOrWhiteSpace(invoiceString);
 
         try
         {
@@ -755,10 +754,7 @@ public partial class Invoice
 
     private static Network GetNetwork(string? invoiceString)
     {
-        if (string.IsNullOrWhiteSpace(invoiceString))
-        {
-            throw new ArgumentException("Invoice string was empty", nameof(invoiceString));
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(invoiceString);
 
         if (!s_supportedNetworks.TryGetValue(invoiceString.Substring(2, 4), out var network)
             && !s_supportedNetworks.TryGetValue(invoiceString.Substring(2, 3), out network)

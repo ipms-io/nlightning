@@ -16,8 +16,8 @@ internal sealed class Transport : ITransport
 
     public Transport(bool initiator, CipherState c1, CipherState c2)
     {
-        ThrowIfNull(c1, nameof(c1));
-        ThrowIfNull(c2, nameof(c2));
+        ArgumentNullException.ThrowIfNull(c1, nameof(c1));
+        ArgumentNullException.ThrowIfNull(c2, nameof(c2));
 
         _initiator = initiator;
         _sendingKey = c1;

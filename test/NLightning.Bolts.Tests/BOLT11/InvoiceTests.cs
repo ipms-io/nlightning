@@ -223,7 +223,7 @@ public class InvoiceTests
 
         // When / Then
         var ex = Assert.Throws<InvoiceSerializationException>(() => Invoice.Decode(invalidInvoice));
-        Assert.Contains("Invoice string was empty", ex.Message);
+        Assert.Contains("Error serializing invoice", ex.Message);
     }
 
     [Fact]
