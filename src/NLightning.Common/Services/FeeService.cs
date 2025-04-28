@@ -83,6 +83,7 @@ public class FeeService : IFeeService
             try
             {
                 await s_backgroundTask;
+                s_backgroundTask = null;
             }
             catch (OperationCanceledException)
             {
@@ -132,37 +133,47 @@ public class FeeService : IFeeService
     {
         HttpResponseMessage response;
 
-        if (_feeEstimationOptions.Method.Equals("GET", StringComparison.CurrentCultureIgnoreCase))
+        try
         {
-            response = await _httpClient.GetAsync(_feeEstimationOptions.Url, cancellationToken);
-        }
-        else // POST
-        {
-            var content = new StringContent(
-                _feeEstimationOptions.Body,
-                System.Text.Encoding.UTF8,
-                _feeEstimationOptions.ContentType);
+            if (_feeEstimationOptions.Method.Equals("GET", StringComparison.CurrentCultureIgnoreCase))
+            {
+                response = await _httpClient.GetAsync(_feeEstimationOptions.Url, cancellationToken);
+            }
+            else // POST
+            {
+                var content = new StringContent(
+                    _feeEstimationOptions.Body,
+                    System.Text.Encoding.UTF8,
+                    _feeEstimationOptions.ContentType);
 
-            response = await _httpClient.PostAsync(_feeEstimationOptions.Url, content, cancellationToken);
+                response = await _httpClient.PostAsync(_feeEstimationOptions.Url, content, cancellationToken);
+            }
+        }
+        catch (Exception e)
+        {
+            throw new InvalidOperationException("Error fetching from API", e);
         }
 
         response.EnsureSuccessStatusCode();
         var jsonResponseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
 
         // Parse the JSON response
-        using var document = await JsonDocument.ParseAsync(jsonResponseStream, cancellationToken: cancellationToken);
+        using var document =
+            await JsonDocument.ParseAsync(jsonResponseStream, cancellationToken: cancellationToken);
         var root = document.RootElement;
 
         // Extract the preferred fee rate from the JSON response
         if (!root.TryGetProperty(_feeEstimationOptions.PreferredFeeRate, out var feeRateElement))
         {
-            throw new InvalidOperationException($"Could not extract {_feeEstimationOptions.PreferredFeeRate} from API response.");
+            throw new InvalidOperationException(
+                $"Could not extract {_feeEstimationOptions.PreferredFeeRate} from API response.");
         }
 
         // Parse the fee rate value
         if (!feeRateElement.TryGetDecimal(out var feeRate))
         {
-            throw new InvalidOperationException($"Could not extract {_feeEstimationOptions.PreferredFeeRate} from API response.");
+            throw new InvalidOperationException(
+                $"Could not extract {_feeEstimationOptions.PreferredFeeRate} from API response.");
         }
 
         // Apply the multiplier to convert to sat/kw
@@ -171,7 +182,8 @@ public class FeeService : IFeeService
             return (long)(feeRate * multiplier);
         }
 
-        throw new InvalidOperationException($"Could not extract {_feeEstimationOptions.PreferredFeeRate} from API response.");
+        throw new InvalidOperationException(
+            $"Could not extract {_feeEstimationOptions.PreferredFeeRate} from API response.");
     }
 
     private async Task RunPeriodicRefreshAsync(CancellationToken cancellationToken)
@@ -216,10 +228,6 @@ public class FeeService : IFeeService
 
             await using var fileStream = File.OpenWrite(_cacheFilePath);
             await MessagePackSerializer.SerializeAsync(fileStream, cacheData, cancellationToken: CancellationToken.None);
-        }
-        catch (OperationCanceledException)
-        {
-            // Ignore cancellation
         }
         catch (Exception e)
         {

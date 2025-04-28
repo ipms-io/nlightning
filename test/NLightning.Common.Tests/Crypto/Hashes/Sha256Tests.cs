@@ -1,7 +1,7 @@
 namespace NLightning.Common.Tests.Crypto.Hashes;
 
 using Common.Crypto.Hashes;
-using static Utils.TestUtils;
+using static Utils.TestExtensions;
 
 /// <summary>
 /// Test our SHA256 implementation against the test vector available at
@@ -50,7 +50,7 @@ public class Sha256Tests
                     throw new InvalidOperationException("Msg line without Len line");
                 }
 
-                currentVector.Msg = GetBytes(line[6..]);
+                currentVector.Msg = line[6..].GetBytes();
 
                 if (currentVector.Msg.Length != currentVector.Len / 8)
                 {
@@ -69,7 +69,7 @@ public class Sha256Tests
                     throw new InvalidOperationException("MD line without Msg line");
                 }
 
-                currentVector.Md = GetBytes(line[5..]);
+                currentVector.Md = line[5..].GetBytes();
                 testVectors.Add(currentVector);
             }
         }
