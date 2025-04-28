@@ -1,6 +1,9 @@
+using Microsoft.Extensions.Options;
+
 namespace NLightning.Bolts.BOLT1.Factories;
 
 using Common.Interfaces;
+using Common.Options;
 using Services;
 
 /// <summary>
@@ -12,15 +15,17 @@ using Services;
 public class PingPongServiceFactory : IPingPongServiceFactory
 {
     private readonly IMessageFactory _messageFactory;
+    private readonly IOptions<NodeOptions> _nodeOptions;
 
-    public PingPongServiceFactory(IMessageFactory messageFactory)
+    public PingPongServiceFactory(IMessageFactory messageFactory, IOptions<NodeOptions> nodeOptions)
     {
         _messageFactory = messageFactory;
+        _nodeOptions = nodeOptions;
     }
 
     /// <inheritdoc />
     public IPingPongService CreatePingPongService()
     {
-        return new PingPongService(_messageFactory);
+        return new PingPongService(_messageFactory, _nodeOptions);
     }
 }

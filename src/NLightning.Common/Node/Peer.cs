@@ -1,14 +1,12 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace NLightning.Common.Node;
 
 using Constants;
 using Exceptions;
 using Interfaces;
-using Managers;
 using Messages;
-using Options;
+using Models;
 using TLVs;
 using Types;
 
@@ -21,12 +19,11 @@ using Types;
 public sealed class Peer
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private readonly FeatureOptions _features;
+    private readonly ILogger<Peer> _logger;
+    private readonly IMessageFactory _messageFactory;
     private readonly IMessageService _messageService;
     private readonly IPingPongService _pingPongService;
-    private readonly IMessageFactory _messageFactory;
-    private readonly ILogger<Peer> _logger;
-    private readonly NodeOptions _nodeOptions;
-    private readonly bool _isInbound;
 
     private bool _isInitialized;
 
@@ -40,23 +37,23 @@ public sealed class Peer
     /// <summary>
     /// Initializes a new instance of the <see cref="Peer"/> class.
     /// </summary>
-    /// <param name="messageService">The message service.</param>
-    /// <param name="pingPongService">The ping pong service.</param>
+    /// <param name="features">The feature options</param>
     /// <param name="logger">A logger</param>
     /// <param name="messageFactory">The message factory</param>
-    /// <param name="nodeOptions">The node options</param>
+    /// <param name="messageService">The message service.</param>
+    /// <param name="networkTimeout">Network timeout</param>
     /// <param name="peerAddress">Peer address</param>
-    /// <param name="isInbound">A value indicating whether the peer is inbound.</param>
+    /// <param name="pingPongService">The ping pong service.</param>
     /// <exception cref="ConnectionException">Thrown when the connection to the peer fails.</exception>
-    internal Peer(IMessageService messageService, IPingPongService pingPongService, IMessageFactory messageFactory,
-                  ILogger<Peer> logger, IOptions<NodeOptions> nodeOptions, PeerAddress peerAddress, bool isInbound)
+    internal Peer(FeatureOptions features, ILogger<Peer> logger, IMessageFactory messageFactory,
+                  IMessageService messageService, TimeSpan networkTimeout, PeerAddress peerAddress,
+                  IPingPongService pingPongService)
     {
+        _features = features;
+        _logger = logger;
+        _messageFactory = messageFactory;
         _messageService = messageService;
         _pingPongService = pingPongService;
-        _messageFactory = messageFactory;
-        _logger = logger;
-        _nodeOptions = nodeOptions.Value;
-        _isInbound = isInbound;
 
         PeerAddress = peerAddress;
 
@@ -66,13 +63,13 @@ public sealed class Peer
 
         // Always send an init message upon connection
         logger.LogTrace("[Peer] Sending init message to peer {peer}", PeerAddress.PubKey);
-        var initMessage = _messageFactory.CreateInitMessage(_nodeOptions);
+        var initMessage = _messageFactory.CreateInitMessage();
         _messageService.SendMessageAsync(initMessage, _cancellationTokenSource.Token).Wait();
 
         // Wait for an init message
         logger.LogTrace("[Peer] Waiting for init message from peer {peer}", PeerAddress.PubKey);
         // Set timeout to close connection if the other peer doesn't send an init message
-        Task.Delay(ConfigManager.Instance.NetworkTimeout, _cancellationTokenSource.Token).ContinueWith(task =>
+        Task.Delay(networkTimeout, _cancellationTokenSource.Token).ContinueWith(task =>
         {
             if (!task.IsCanceled && !_isInitialized)
             {
@@ -142,20 +139,21 @@ public sealed class Peer
         }
 
         // Check if Features are compatible
-        if (!_nodeOptions.GetNodeFeatures().IsCompatible(initMessage.Payload.FeatureSet))
+        if (!_features.GetNodeFeatures().IsCompatible(initMessage.Payload.FeatureSet))
         {
             DisconnectWithException(new ConnectionException("Peer is not compatible"));
             return;
         }
 
         // Check if Chains are compatible
-        if (initMessage.Extension != null && initMessage.Extension.TryGetTlv(TlvConstants.NETWORKS, out var networksTlv))
+        if (initMessage.Extension != null
+            && initMessage.Extension.TryGetTlv(TlvConstants.NETWORKS, out var networksTlv))
         {
             // Check if ChainHash contained in networksTlv.ChainHashes exists in our ChainHashes
             var networkChainHashes = ((NetworksTlv)networksTlv!).ChainHashes;
             if (networkChainHashes != null)
             {
-                if (networkChainHashes.Any(chainHash => !_nodeOptions.ChainHashes.Contains(chainHash)))
+                if (networkChainHashes.Any(chainHash => !_features.ChainHashes.Contains(chainHash)))
                 {
                     DisconnectWithException(new ConnectionException("Peer chain is not compatible"));
                     return;
@@ -163,7 +161,7 @@ public sealed class Peer
             }
         }
 
-        NodeOptions.GetNodeOptions(initMessage.Payload.FeatureSet, initMessage.Extension);
+        FeatureOptions.GetNodeOptions(initMessage.Payload.FeatureSet, initMessage.Extension);
 
         _logger.LogTrace("[Peer] Message from peer {peer} is correct (init)", PeerAddress.PubKey);
 

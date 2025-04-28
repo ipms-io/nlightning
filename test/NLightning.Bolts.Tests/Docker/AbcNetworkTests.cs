@@ -5,6 +5,7 @@ using Lnrpc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
+using NLightning.Common.Models;
 using ServiceStack;
 using ServiceStack.Text;
 using Xunit.Abstractions;
@@ -24,7 +25,7 @@ using Utils;
 
 // ReSharper disable AccessToDisposedClosure
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
-[Collection(SecureKeyAndConfigAndRegtestCollection.NAME)]
+[Collection(SecureKeyAndRegtestCollection.NAME)]
 public class AbcNetworkTests
 {
     private readonly LightningRegtestNetworkFixture _lightningRegtestNetworkFixture;
@@ -46,20 +47,21 @@ public class AbcNetworkTests
 
         var nodeOptions = new OptionsWrapper<NodeOptions>(new NodeOptions
         {
-            ChainHashes = [ChainConstants.REGTEST],
-            DataLossProtect = FeatureSupport.OPTIONAL,
-            StaticRemoteKey = FeatureSupport.OPTIONAL,
-            PaymentSecret = FeatureSupport.OPTIONAL
+            Features = new FeatureOptions
+            {
+                ChainHashes = [ChainConstants.REGTEST],
+                DataLossProtect = FeatureSupport.OPTIONAL,
+                StaticRemoteKey = FeatureSupport.OPTIONAL,
+                PaymentSecret = FeatureSupport.OPTIONAL
+            }
         });
         var loggerFactory = new LoggerFactory();
-        var messageFactory = new MessageFactory();
+        var messageFactory = new MessageFactory(nodeOptions);
 
-        var peerManager = new PeerManager(new PeerFactory(loggerFactory, messageFactory,
-                                                          new MessageServiceFactory(messageFactory),
-                                                          new PingPongServiceFactory(messageFactory),
-                                                          new TransportServiceFactory(loggerFactory),
-                                                          nodeOptions),
-                                          new Mock<ILogger<PeerManager>>().Object);
+        var peerManager = new PeerManager(new Mock<ILogger<PeerManager>>().Object, nodeOptions,
+            new PeerFactory(loggerFactory, messageFactory, new MessageServiceFactory(messageFactory),
+                            new PingPongServiceFactory(messageFactory, nodeOptions),
+                            new TransportServiceFactory(loggerFactory, nodeOptions), nodeOptions));
 
         var aliceHost = new IPEndPoint((await Dns.GetHostAddressesAsync(alice.Host
                                                                              .SplitOnFirst("//")[1]
@@ -77,7 +79,6 @@ public class AbcNetworkTests
 
         // Cleanup
         peerManager.DisconnectPeer(new PubKey(alice.LocalNodePubKeyBytes));
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
@@ -103,20 +104,21 @@ public class AbcNetworkTests
 
             var nodeOptions = new OptionsWrapper<NodeOptions>(new NodeOptions
             {
-                ChainHashes = [ChainConstants.REGTEST],
-                DataLossProtect = FeatureSupport.OPTIONAL,
-                StaticRemoteKey = FeatureSupport.OPTIONAL,
-                PaymentSecret = FeatureSupport.OPTIONAL
+                Features = new FeatureOptions
+                {
+                    ChainHashes = [ChainConstants.REGTEST],
+                    DataLossProtect = FeatureSupport.OPTIONAL,
+                    StaticRemoteKey = FeatureSupport.OPTIONAL,
+                    PaymentSecret = FeatureSupport.OPTIONAL
+                }
             });
             var loggerFactory = new LoggerFactory();
-            var messageFacotry = new MessageFactory();
+            var messageFactory = new MessageFactory(nodeOptions);
 
-            var peerManager = new PeerManager(new PeerFactory(loggerFactory, messageFacotry,
-                    new MessageServiceFactory(messageFacotry),
-                    new PingPongServiceFactory(messageFacotry),
-                    new TransportServiceFactory(loggerFactory),
-                    nodeOptions),
-                new Mock<ILogger<PeerManager>>().Object);
+            var peerManager = new PeerManager(new Mock<ILogger<PeerManager>>().Object, nodeOptions,
+                new PeerFactory(loggerFactory, messageFactory, new MessageServiceFactory(messageFactory),
+                                new PingPongServiceFactory(messageFactory, nodeOptions),
+                                new TransportServiceFactory(loggerFactory, nodeOptions), nodeOptions));
 
             var acceptTask = Task.Run(async () =>
             {
@@ -151,8 +153,6 @@ public class AbcNetworkTests
         {
             listener.Dispose();
             PortPoolUtil.ReleasePort(availablePort);
-
-            ConfigManagerUtil.ResetConfigManager();
         }
     }
 

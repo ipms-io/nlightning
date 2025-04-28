@@ -3,14 +3,13 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
-using NLightning.Common.Interfaces;
-using NLightning.Common.Managers;
-using NLightning.NLTG.Interfaces;
-using Serilog;
 
 namespace NLightning.NLTG.Services;
 
+using Common.Interfaces;
+using Common.Managers;
 using Common.Options;
+using Interfaces;
 
 public class NltgDaemonService : BackgroundService
 {
@@ -32,15 +31,15 @@ public class NltgDaemonService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var network = _configuration["network"] ?? _configuration["n"] ?? "mainnet";
-        var isDaemon = _configuration.GetValue<bool>("Daemon");
+        var network = _configuration["network"] ?? _configuration["n"] ?? _nodeOptions.Network;
+        var isDaemon = _configuration.GetValue<bool?>("daemon") ?? _configuration.GetValue<bool?>("daemon-child") ?? _nodeOptions.Daemon;
 
         _logger.LogInformation("NLTG Daemon started on {Network} network", network);
         _logger.LogDebug("Running in daemon mode: {IsDaemon}", isDaemon);
 
         var key = new Key();
         SecureKeyManager.Initialize(key.ToBytes());
-        Log.Logger.Debug("lncli connect {pubKey}@docker.for.mac.host.internal:9735", key.PubKey.ToString());
+        _logger.LogDebug("lncli connect {pubKey}@docker.for.mac.host.internal:9735", key.PubKey.ToString());
 
         try
         {
@@ -57,16 +56,16 @@ public class NltgDaemonService : BackgroundService
         }
         catch (OperationCanceledException)
         {
-            _logger.LogInformation("Service shutdown requested");
+            _logger.LogInformation("Stopping NLTG daemon service");
         }
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Stopping NLTG daemon service");
+        _logger.LogInformation("NLTG shutdown requested");
 
-        await _feeService.StopAsync();
-        await _tcpListenerService.StopAsync();
-        await base.StopAsync(cancellationToken);
+        await Task.WhenAll(_feeService.StopAsync(), _tcpListenerService.StopAsync(), base.StopAsync(cancellationToken));
+
+        _logger.LogInformation("NLTG daemon service stopped");
     }
 }

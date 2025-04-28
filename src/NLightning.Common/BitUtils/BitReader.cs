@@ -82,7 +82,7 @@ public class BitReader(byte[] buffer)
 
     public byte ReadByteFromBits(int bits)
     {
-        var bytes = new byte[sizeof(byte)];
+        Span<byte> bytes = stackalloc byte[sizeof(byte)];
         ReadBits(bytes, bits);
         var mask = (1 << bits) - 1;
         return (byte)((bytes[0] >> (sizeof(byte) * 8 - bits)) & mask);
@@ -90,12 +90,12 @@ public class BitReader(byte[] buffer)
 
     public short ReadInt16FromBits(int bits, bool bigEndian = true)
     {
-        var bytes = new byte[sizeof(short)];
+        Span<byte> bytes = stackalloc byte[sizeof(short)];
         ReadBits(bytes, bits);
 
         if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
         {
-            Array.Reverse(bytes);
+            bytes.Reverse();
         }
 
         var mask = (1 << bits) - 1;
@@ -104,12 +104,12 @@ public class BitReader(byte[] buffer)
 
     public ushort ReadUInt16FromBits(int bits, bool bigEndian = true)
     {
-        var bytes = new byte[sizeof(ushort)];
+        Span<byte> bytes = stackalloc byte[sizeof(ushort)];
         ReadBits(bytes, bits);
 
         if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
         {
-            Array.Reverse(bytes);
+            bytes.Reverse();
         }
 
         var mask = (1 << bits) - 1;
@@ -118,12 +118,12 @@ public class BitReader(byte[] buffer)
 
     public int ReadInt32FromBits(int bits, bool bigEndian = true)
     {
-        var bytes = new byte[sizeof(int)];
+        Span<byte> bytes = stackalloc byte[sizeof(int)];
         ReadBits(bytes, bits);
 
         if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
         {
-            Array.Reverse(bytes);
+            bytes.Reverse();
         }
 
         var mask = bits != 32 ? (1 << bits) - 1 : -1;
@@ -132,12 +132,12 @@ public class BitReader(byte[] buffer)
 
     public long ReadInt64FromBits(int bits, bool bigEndian = true)
     {
-        var bytes = new byte[sizeof(long)];
+        Span<byte> bytes = stackalloc byte[sizeof(long)];
         ReadBits(bytes, bits);
 
         if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
         {
-            Array.Reverse(bytes);
+            bytes.Reverse();
         }
 
         return BinaryPrimitives.ReadInt64LittleEndian(bytes) >> (sizeof(long) * 8 - bits);

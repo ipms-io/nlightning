@@ -1,9 +1,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using NLightning.NLTG.Helpers;
 using Serilog;
 
 namespace NLightning.NLTG.Extensions;
+
+using Helpers;
 
 public static class NltgConfigurationExtensions
 {
@@ -23,7 +24,7 @@ public static class NltgConfigurationExtensions
                 // Read from current configuration
                 loggerConfig
                     .ReadFrom.Configuration(configuration)
-                    .Enrich.With<ClassNameEnricher>(); ;
+                    .Enrich.With<ClassNameEnricher>();
             });
     }
 
@@ -113,41 +114,54 @@ public static class NltgConfigurationExtensions
                  "Serilog": {
                    "Using": [ "Serilog.Sinks.Console", "Serilog.Sinks.File" ],
                    "MinimumLevel": {
-                     "Default": "Debug",
+                     "Default": "Error",
                      "Override": {
-                       "Default": "Information",
-                       "System": "Warning",
-                       "Microsoft": "Error",
+                       "NLightning": "Information",
+                       "System": "Warning"
                      }
                    },
                    "WriteTo": [
-                     { "Name": "Console" },
+                     {
+                       "Name": "Console",
+                       "Args": {
+                         "outputTemplate": "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] [{ClassName}] {Message:lj}{NewLine}{Exception}"
+                       }
+                     },
                      {
                        "Name": "File",
                        "Args": {
                          "path": "logs/log-.txt",
                          "rollingInterval": "Month",
                          "retainedFileCountLimit": 12,
-                         "fileSizeLimitBytes": 104857600,
-                         "shared": true,
-                         "flushToDiskInterval": "00:00:01"
+                         "outputTemplate": "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] [{ClassName}] {Message:lj}{NewLine}{Exception}"
                        }
                      }
                    ],
-                   "Enrich": [ "FromLogContext", "WithMachineName", "WithThreadId" ]
+                   "Enrich": [ "FromLogContext", "WithMachineName", "WithThreadId", "ClassName" ]
                  },
-                 "Daemon": false,
-                 "DnsBootstrapServers": [
-                   "nlseed.nlightn.ing"
-                 ],
-                   "FeeEstimation": {
-                     "Url": "https://mempool.space/api/v1/fees/recommended",
-                     "Method": "GET",
-                     "ContentType": "application/json",
-                     "PreferredFeeRate": "fastestFee",
-                     "CacheExpiration": "5m",
-                     "RateMultiplier": 1000,
-                     "CacheFile": "fee_estimation_cache.bin"
+                 "Node": {
+                   "Network": "regtest",
+                   "Daemon": false,
+                   "DnsSeedServers": [
+                     "nlseed.nlightn.ing",
+                     "nodes.lightning.directory",
+                     "lseed.bitcoinstats.com"
+                   ],
+                   "ListenAddresses": [
+                     "0.0.0.0:9735"
+                   ],
+                   "Features": {
+                     "StaticRemoteKey": "COMPULSORY"
+                   }
+                 },
+                 "FeeEstimation": {
+                   "Url": "https://mempool.space/api/v1/fees/recommended",
+                   "Method": "GET",
+                   "ContentType": "application/json",
+                   "PreferredFeeRate": "fastestFee",
+                   "CacheExpiration": "5m",
+                   "RateMultiplier": 1000,
+                   "CacheFile": "fee_estimation_cache.bin"
                  }
                }
                """;

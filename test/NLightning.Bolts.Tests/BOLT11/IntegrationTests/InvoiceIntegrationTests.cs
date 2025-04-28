@@ -8,17 +8,15 @@ using Bolts.BOLT11.Enums;
 using Bolts.BOLT11.Types;
 using Common.Crypto.Hashes;
 using Common.Exceptions;
-using Common.Managers;
 using Common.Node;
 using Common.Types;
 using TestCollections;
 using static Utils.TestUtils;
 
 [Collection(SecureKeyManagerCollection.NAME)]
-public class InvoiceIntegrationTests : IDisposable
+public class InvoiceIntegrationTests
 {
     private static readonly PubKey s_expectedPayeePubkey = new("03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad");
-    private readonly Network _originalConfigNetwork = Network.MAIN_NET;
 
     [Fact]
     public void Given_ValidInvoiceString_When_Decoding_Then_InvoiceIsCorrect()
@@ -30,9 +28,7 @@ public class InvoiceIntegrationTests : IDisposable
         foreach (var testInvoice in testInvoices)
         {
             // Arrange
-            ConfigManager.Instance.Network = testInvoice.ExpectedNetwork!.Value;
-
-            var invoice = Invoice.Decode(testInvoice.INVOICE_STRING);
+            var invoice = Invoice.Decode(testInvoice.INVOICE_STRING, testInvoice.ExpectedNetwork);
 
             // Assert
             Assert.Equal(testInvoice.ExpectedNetwork, invoice.Network);
@@ -109,8 +105,6 @@ public class InvoiceIntegrationTests : IDisposable
     public void Given_InvalidInvoiceString_When_Decoding_Then_ExceptionIsThrown(string errorMessage, string? invoiceString)
     {
         // Arrange
-        ConfigManager.Instance.Network = NBitcoin.Network.Main;
-
         // Act & Assert
         var exception = Assert.Throws<InvoiceSerializationException>(() => Invoice.Decode(invoiceString));
         Assert.Equal("Error decoding invoice", exception.Message);
@@ -394,10 +388,5 @@ public class InvoiceIntegrationTests : IDisposable
         }
 
         return testInvoice;
-    }
-
-    public void Dispose()
-    {
-        ConfigManager.Instance.Network = _originalConfigNetwork;
     }
 }

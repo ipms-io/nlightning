@@ -1,25 +1,30 @@
+using Microsoft.Extensions.Options;
 using NBitcoin;
 
 namespace NLightning.Bolts.BOLT3.Factories;
 
 using Common.Interfaces;
+using Common.Options;
 using Transactions;
 
 public class FundingTransactionFactory
 {
     private readonly IFeeService _feeService;
+    private readonly NodeOptions _nodeOptions;
 
-    public FundingTransactionFactory(IFeeService feeService)
+    public FundingTransactionFactory(IFeeService feeService, IOptions<NodeOptions> nodeOptions)
     {
         _feeService = feeService;
+        _nodeOptions = nodeOptions.Value;
     }
 
     public FundingTransaction CreateFundingTransaction(PubKey localFundingPubKey, PubKey remoteFundingPubKey,
-                                                       LightningMoney fundingSatoshis, Script changeScript, Coin[] coins,
-                                                       params BitcoinSecret[] secrets)
+                                                       LightningMoney fundingSatoshis, Script changeScript,
+                                                       Coin[] coins, params BitcoinSecret[] secrets)
     {
-        var fundingTx = new FundingTransaction(localFundingPubKey, remoteFundingPubKey, fundingSatoshis, changeScript,
-                                               coins);
+        var fundingTx = new FundingTransaction(_nodeOptions.DustLimitAmount, _nodeOptions.HasAnchorOutputs,
+                                               _nodeOptions.Network, localFundingPubKey, remoteFundingPubKey,
+                                               fundingSatoshis, changeScript, coins);
 
         fundingTx.ConstructTransaction(_feeService.GetCachedFeeRatePerKw());
 
@@ -30,10 +35,12 @@ public class FundingTransactionFactory
 
     public FundingTransaction CreateFundingTransaction(PubKey localFundingPubKey, PubKey remoteFundingPubKey,
                                                        LightningMoney fundingSatoshis, Script redeemScript,
-                                                       Script changeScript, Coin[] coins, params BitcoinSecret[] secrets)
+                                                       Script changeScript, Coin[] coins,
+                                                       params BitcoinSecret[] secrets)
     {
-        var fundingTx = new FundingTransaction(localFundingPubKey, remoteFundingPubKey, fundingSatoshis, redeemScript,
-                                               changeScript, coins);
+        var fundingTx = new FundingTransaction(_nodeOptions.DustLimitAmount, _nodeOptions.HasAnchorOutputs,
+                                               _nodeOptions.Network, localFundingPubKey, remoteFundingPubKey,
+                                               fundingSatoshis, redeemScript, changeScript, coins);
 
         fundingTx.ConstructTransaction(_feeService.GetCachedFeeRatePerKw());
 

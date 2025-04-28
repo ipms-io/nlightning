@@ -5,12 +5,8 @@ namespace NLightning.Bolts.Tests.BOLT3.Transactions;
 using Bolts.BOLT3.Transactions;
 using Common.Enums;
 using Common.Interfaces;
-using Common.Managers;
 using Common.Types;
-using TestCollections;
-using Utils;
 
-[Collection(ConfigManagerCollection.NAME)]
 public class FundingTransactionTests
 {
     private readonly PubKey _localPubKey = new("034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa");
@@ -28,11 +24,14 @@ public class FundingTransactionTests
     private readonly BitcoinSecret _privateKey =
         new(new Key(Convert.FromHexString("6bd078650fcee8444e4e09825227b801a1ca928debb750eb36e6d56124bb20e8")),
             NBitcoin.Network.TestNet);
+    private readonly LightningMoney _defaultDustLimitAmount = LightningMoney.Satoshis(540);
 
     public FundingTransactionTests()
     {
         var feeServiceMock = new Mock<IFeeService>();
-        feeServiceMock.Setup(x => x.GetCachedFeeRatePerKw()).Returns(new LightningMoney(15000, LightningMoneyUnit.SATOSHI));
+        feeServiceMock
+            .Setup(x => x.GetCachedFeeRatePerKw())
+            .Returns(new LightningMoney(15000, LightningMoneyUnit.SATOSHI));
     }
 
     [Fact]
@@ -40,33 +39,29 @@ public class FundingTransactionTests
     {
         // Given
         // When
-        var fundingTransaction = new FundingTransaction(_localPubKey, _remotePubKey, _fundingAmount, _changeScript,
-                                                        _coins);
+        var fundingTransaction = new FundingTransaction(_defaultDustLimitAmount, false, Network.MAIN_NET, _localPubKey,
+                                                        _remotePubKey, _fundingAmount, _changeScript, _coins);
 
         // Then
         Assert.NotNull(fundingTransaction.FundingOutput);
         Assert.NotNull(fundingTransaction.ChangeOutput);
         Assert.Equal(_fundingAmount, fundingTransaction.FundingOutput.Amount);
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public void Given_ValidParametersWithRedeemScript_When_ConstructingFundingTransaction_Then_PropertiesAreSetCorrectly()
     {
         // Given
-
         // When
-        var fundingTx = new FundingTransaction(_localPubKey, _remotePubKey, _fundingAmount, _redeemScript,
-                                               _changeScript, _coins);
+        var fundingTransaction = new FundingTransaction(_defaultDustLimitAmount, false, Network.MAIN_NET, _localPubKey,
+                                                        _remotePubKey, _fundingAmount, _redeemScript, _changeScript,
+                                                        _coins);
 
         // Then
-        Assert.NotNull(fundingTx.FundingOutput);
-        Assert.NotNull(fundingTx.ChangeOutput);
-        Assert.Equal(_fundingAmount, fundingTx.FundingOutput.Amount);
-        Assert.Equal(_redeemScript, fundingTx.ChangeOutput.RedeemScript);
-
-        ConfigManagerUtil.ResetConfigManager();
+        Assert.NotNull(fundingTransaction.FundingOutput);
+        Assert.NotNull(fundingTransaction.ChangeOutput);
+        Assert.Equal(_fundingAmount, fundingTransaction.FundingOutput.Amount);
+        Assert.Equal(_redeemScript, fundingTransaction.ChangeOutput.RedeemScript);
     }
 
     [Fact]
@@ -76,12 +71,12 @@ public class FundingTransactionTests
         var pubKey2 = _localPubKey; // Same as pubKey1
 
         // When/Then
-        var exception = Assert.Throws<ArgumentException>(() => new FundingTransaction(_localPubKey, pubKey2,
-                                                                                      _fundingAmount, _changeScript,
-                                                                                      _coins));
+        var exception = Assert.Throws<ArgumentException>(() =>
+        {
+            return new FundingTransaction(_defaultDustLimitAmount, false, Network.MAIN_NET, _localPubKey, pubKey2,
+                                          _fundingAmount, _changeScript, _coins);
+        });
         Assert.Contains("Public keys must be different", exception.Message);
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
@@ -91,32 +86,31 @@ public class FundingTransactionTests
         var amount = LightningMoney.Zero;
 
         // When/Then
-        var exception = Assert.Throws<ArgumentException>(() => new FundingTransaction(_localPubKey, _remotePubKey,
-                                                                                       amount, _changeScript, _coins));
+        var exception = Assert.Throws<ArgumentException>(() =>
+        {
+            return new FundingTransaction(_defaultDustLimitAmount, false, Network.MAIN_NET, _localPubKey, _remotePubKey,
+                                          amount, _changeScript, _coins);
+        });
         Assert.Contains("Funding amount must be greater than zero", exception.Message);
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public void Given_UnsignedTransaction_When_GetSignedTransactionCalled_Then_ThrowsInvalidOperationException()
     {
         // Given
-        var fundingTx = new FundingTransaction(_localPubKey, _remotePubKey, _fundingAmount, _changeScript, _coins);
+        var fundingTx = new FundingTransaction(_defaultDustLimitAmount, false, Network.MAIN_NET, _localPubKey,
+                                               _remotePubKey, _fundingAmount, _changeScript, _coins);
 
         // When/Then
         Assert.Throws<InvalidOperationException>(() => fundingTx.GetSignedTransaction());
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public void Given_ValidTransaction_When_SignTransaction_Then_OutputsHaveCorrectProperties()
     {
         // Given
-        ConfigManager.Instance.DustLimitAmount = LightningMoney.FromUnit(546, LightningMoneyUnit.SATOSHI);
-
-        var fundingTx = new FundingTransaction(_localPubKey, _remotePubKey, _fundingAmount, _changeScript, _coins);
+        var fundingTx = new FundingTransaction(LightningMoney.Satoshis(546), false, Network.MAIN_NET, _localPubKey,
+                                               _remotePubKey, _fundingAmount, _changeScript, _coins);
         fundingTx.ConstructTransaction(LightningMoney.FromUnit(10, LightningMoneyUnit.SATOSHI));
 
         // When
@@ -130,18 +124,15 @@ public class FundingTransactionTests
 
         // The change amount should be: input (200000) - funding (100000) - fee (500) = 995
         Assert.Equal(LightningMoney.FromUnit(995, LightningMoneyUnit.SATOSHI), fundingTx.ChangeOutput.Amount);
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public void Given_ValidTransactionButNoChange_When_SignTransaction_Then_OnlyFundingOutputHasTxId()
     {
         // Given
-        ConfigManager.Instance.DustLimitAmount = LightningMoney.FromUnit(900, LightningMoneyUnit.SATOSHI);
-
-        var fundingTx = new FundingTransaction(_localPubKey, _remotePubKey, _fundingAmount, _changeScript, _coins);
-        fundingTx.ConstructTransaction(LightningMoney.FromUnit(300, LightningMoneyUnit.SATOSHI));
+        var fundingTx = new FundingTransaction(LightningMoney.Satoshis(900), false, Network.MAIN_NET, _localPubKey,
+                                               _remotePubKey, _fundingAmount, _changeScript, _coins);
+        fundingTx.ConstructTransaction(LightningMoney.Satoshis(300));
 
         // When
         fundingTx.SignTransaction(_privateKey);
@@ -151,15 +142,14 @@ public class FundingTransactionTests
         Assert.Equal(fundingTx.TxId, fundingTx.FundingOutput.TxId);
         Assert.Equal(0, fundingTx.FundingOutput.Index);
         Assert.Equal(LightningMoney.Zero, fundingTx.ChangeOutput.Amount);
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public void Given_SignedTransaction_When_GetSignedTransactionCalled_Then_ReturnsFinalizedTransaction()
     {
         // Given
-        var fundingTx = new FundingTransaction(_localPubKey, _remotePubKey, _fundingAmount, _changeScript, _coins);
+        var fundingTx = new FundingTransaction(_defaultDustLimitAmount, false, Network.MAIN_NET, _localPubKey,
+                                               _remotePubKey, _fundingAmount, _changeScript, _coins);
         fundingTx.ConstructTransaction(LightningMoney.FromUnit(500, LightningMoneyUnit.SATOSHI));
         fundingTx.SignTransaction(_privateKey);
 
@@ -169,7 +159,5 @@ public class FundingTransactionTests
         // Then
         Assert.NotNull(signedTx);
         Assert.Equal(fundingTx.TxId, signedTx.GetHash());
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 }

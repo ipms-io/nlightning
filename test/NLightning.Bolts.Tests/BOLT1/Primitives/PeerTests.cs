@@ -10,42 +10,37 @@ using Common.Enums;
 using Common.Exceptions;
 using Common.Factories;
 using Common.Interfaces;
-using Common.Managers;
 using Common.Messages;
 using Common.Messages.Payloads;
+using Common.Models;
 using Common.Node;
 using Common.Options;
 using Common.Types;
-using TestCollections;
-using Utils;
 
-[Collection(ConfigManagerCollection.NAME)]
 public class PeerTests
 {
-    private readonly Mock<IMessageService> _mockMessageService = new();
-    private readonly Mock<IPingPongService> _mockPingPongService = new();
-    private readonly MessageFactory _messageFactory = new();
-    private readonly Mock<ILogger<Peer>> _mockLogger = new();
-    private readonly IOptions<NodeOptions> _nodeOptions = new OptionsWrapper<NodeOptions>(new NodeOptions());
-    private readonly PeerAddress _peerAddress = new(new Key().PubKey, "127.0.0.1", 1234);
+    private static readonly Mock<IMessageService> s_mockMessageService = new();
+    private static readonly Mock<IPingPongService> s_mockPingPongService = new();
+    private static readonly Mock<ILogger<Peer>> s_mockLogger = new();
+    private static readonly NodeOptions s_nodeOptions = new();
+    private static readonly MessageFactory s_messageFactory = new(Options.Create(s_nodeOptions));
+    private static readonly PeerAddress s_peerAddress = new(new Key().PubKey, "127.0.0.1", 1234);
 
     [Fact]
     public void Given_OutboundPeer_When_Constructing_Then_InitMessageIsSent()
     {
         // Arrange
-        const bool IS_INBOUND = false;
-
-        _mockMessageService.Setup(m => m.SendMessageAsync(It.IsAny<InitMessage>(), It.IsAny<CancellationToken>()))
+        s_mockMessageService.Setup(m => m.SendMessageAsync(It.IsAny<InitMessage>(), It.IsAny<CancellationToken>()))
                            .Returns(Task.CompletedTask)
                            .Verifiable();
-        _mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
+        s_mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
 
         // Act
-        _ = new Peer(_mockMessageService.Object, _mockPingPongService.Object, _messageFactory, _mockLogger.Object,
-                     _nodeOptions, _peerAddress, IS_INBOUND);
+        _ = new Peer(s_nodeOptions.Features, s_mockLogger.Object, s_messageFactory, s_mockMessageService.Object,
+                     s_nodeOptions.NetworkTimeout, s_peerAddress, s_mockPingPongService.Object);
 
         // Assert
-        _mockMessageService.Verify();
+        s_mockMessageService.Verify();
     }
 
     [Fact]
@@ -53,12 +48,12 @@ public class PeerTests
     {
         // Arrange
         // Simulate the message service being disconnected
-        _mockMessageService.Setup(m => m.IsConnected).Returns(false);
+        s_mockMessageService.Setup(m => m.IsConnected).Returns(false);
 
         // Act & Assert
         var exception = Assert.Throws<ConnectionException>(() =>
-            new Peer(_mockMessageService.Object, _mockPingPongService.Object, _messageFactory, _mockLogger.Object,
-                     _nodeOptions, _peerAddress, false)
+            new Peer(s_nodeOptions.Features, s_mockLogger.Object, s_messageFactory, s_mockMessageService.Object,
+                     s_nodeOptions.NetworkTimeout, s_peerAddress, s_mockPingPongService.Object)
         );
 
         Assert.Equal("Failed to connect to peer", exception.Message);
@@ -68,33 +63,26 @@ public class PeerTests
     public async Task Given_InboundPeer_When_InitMessageIsNotReceivedWithinTimeout_Then_Disconnects()
     {
         // Arrange
-        var disconnectEventRaised = false;
-        _mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
+        s_mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
+        var peer = new Peer(s_nodeOptions.Features, s_mockLogger.Object, s_messageFactory, s_mockMessageService.Object,
+                            TimeSpan.FromSeconds(1), s_peerAddress, s_mockPingPongService.Object);
 
-        ConfigManager.Instance.NetworkTimeout = TimeSpan.FromSeconds(1);
-
-        var peer = new Peer(_mockMessageService.Object, _mockPingPongService.Object, _messageFactory,
-                            _mockLogger.Object, _nodeOptions, _peerAddress, true);
-        peer.DisconnectEvent += (_, _) => disconnectEventRaised = true;
-
-        // Act
-        await Task.Delay(ConfigManager.Instance.NetworkTimeout.Add(TimeSpan.FromSeconds(1)));
-
-        // Assert
-        Assert.True(disconnectEventRaised);
-
-        ConfigManagerUtil.ResetConfigManager();
+        // Act & Assert
+        await Assert.RaisesAnyAsync(
+            e => peer.DisconnectEvent += e,
+            e => peer.DisconnectEvent -= e,
+            async () => await Task.Delay(TimeSpan.FromSeconds(2)));
     }
 
     [Fact]
     public void Given_InboundPeer_When_ReceivingValidInitMessage_Then_IsInitialized()
     {
         // Arrange
-        var initMessage = _messageFactory.CreateInitMessage(_nodeOptions.Value);
-        _mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
+        var initMessage = s_messageFactory.CreateInitMessage();
+        s_mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
 
-        var peer = new Peer(_mockMessageService.Object, _mockPingPongService.Object, _messageFactory,
-                            _mockLogger.Object, _nodeOptions, _peerAddress, true);
+        var peer = new Peer(s_nodeOptions.Features, s_mockLogger.Object, s_messageFactory, s_mockMessageService.Object,
+                            s_nodeOptions.NetworkTimeout, s_peerAddress, s_mockPingPongService.Object);
 
         // Act
         var method = peer.GetType().GetMethod("HandleMessage", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -113,11 +101,11 @@ public class PeerTests
     {
         // Arrange
         var disconnectEventRaised = false;
-        var pingMessage = _messageFactory.CreatePingMessage();
-        _mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
+        var pingMessage = s_messageFactory.CreatePingMessage();
+        s_mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
 
-        var peer = new Peer(_mockMessageService.Object, _mockPingPongService.Object, _messageFactory,
-                            _mockLogger.Object, _nodeOptions, _peerAddress, true);
+        var peer = new Peer(s_nodeOptions.Features, s_mockLogger.Object, s_messageFactory, s_mockMessageService.Object,
+                            s_nodeOptions.NetworkTimeout, s_peerAddress, s_mockPingPongService.Object);
         peer.DisconnectEvent += (_, _) => disconnectEventRaised = true;
 
         // Act
@@ -134,14 +122,14 @@ public class PeerTests
     {
         // Arrange
         var disconnectEventRaised = false;
-        var features = _nodeOptions.Value.GetNodeFeatures();
+        var features = s_nodeOptions.Features.GetNodeFeatures();
         features.SetFeature(Feature.OPTION_ZEROCONF, true);
-        var initMessage = new InitMessage(new InitPayload(features), _nodeOptions.Value.GetInitTlvs());
+        var initMessage = new InitMessage(new InitPayload(features), s_nodeOptions.Features.GetInitTlvs());
 
-        _mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
+        s_mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
 
-        var peer = new Peer(_mockMessageService.Object, _mockPingPongService.Object, _messageFactory,
-                            _mockLogger.Object, _nodeOptions, _peerAddress, true);
+        var peer = new Peer(s_nodeOptions.Features, s_mockLogger.Object, s_messageFactory, s_mockMessageService.Object,
+                            s_nodeOptions.NetworkTimeout, s_peerAddress, s_mockPingPongService.Object);
         peer.DisconnectEvent += (_, _) => disconnectEventRaised = true;
 
         // Act
@@ -160,14 +148,18 @@ public class PeerTests
         var disconnectEventRaised = false;
         var otherNodeOptions = new NodeOptions
         {
-            ChainHashes = [ChainConstants.REGTEST]
+            Features = new FeatureOptions
+            {
+                ChainHashes = [ChainConstants.REGTEST]
+            }
         };
-        var initMessage = _messageFactory.CreateInitMessage(otherNodeOptions);
+        var otherMessageFactory = new MessageFactory(Options.Create(otherNodeOptions));
+        var initMessage = otherMessageFactory.CreateInitMessage();
 
-        _mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
+        s_mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
 
-        var peer = new Peer(_mockMessageService.Object, _mockPingPongService.Object, _messageFactory,
-                            _mockLogger.Object, _nodeOptions, _peerAddress, true);
+        var peer = new Peer(s_nodeOptions.Features, s_mockLogger.Object, s_messageFactory, s_mockMessageService.Object,
+                            s_nodeOptions.NetworkTimeout, s_peerAddress, s_mockPingPongService.Object);
         peer.DisconnectEvent += (_, _) => disconnectEventRaised = true;
 
         // Act
@@ -183,16 +175,15 @@ public class PeerTests
     public void Given_Peer_When_ReceivingPingMessage_Then_SendsPongMessage()
     {
         // Arrange
-        const bool IS_INBOUND = false;
-        var pingMessage = _messageFactory.CreatePingMessage();
-        _mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
+        var pingMessage = s_messageFactory.CreatePingMessage();
+        s_mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
 
-        _mockMessageService.Setup(m => m.SendMessageAsync(It.IsAny<PongMessage>(), It.IsAny<CancellationToken>()))
+        s_mockMessageService.Setup(m => m.SendMessageAsync(It.IsAny<PongMessage>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask)
             .Verifiable();
 
-        var peer = new Peer(_mockMessageService.Object, _mockPingPongService.Object, _messageFactory,
-                            _mockLogger.Object, _nodeOptions, _peerAddress, IS_INBOUND);
+        var peer = new Peer(s_nodeOptions.Features, s_mockLogger.Object, s_messageFactory, s_mockMessageService.Object,
+                            s_nodeOptions.NetworkTimeout, s_peerAddress, s_mockPingPongService.Object);
 
         var field = peer.GetType().GetField("_isInitialized", BindingFlags.NonPublic | BindingFlags.Instance);
         Assert.NotNull(field);
@@ -204,18 +195,18 @@ public class PeerTests
         method.Invoke(peer, [peer, pingMessage]);
 
         // Assert
-        _mockMessageService.Verify();
+        s_mockMessageService.Verify();
     }
 
     [Fact]
     public void Given_Peer_When_ReceivingPongMessage_Then_PingPongServiceHandlesPong()
     {
         // Arrange
-        var pongMessage = _messageFactory.CreatePongMessage(new PingMessage(new PingPayload { NumPongBytes = 1 }));
-        _mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
+        var pongMessage = s_messageFactory.CreatePongMessage(new PingMessage(new PingPayload { NumPongBytes = 1 }));
+        s_mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
 
-        var peer = new Peer(_mockMessageService.Object, _mockPingPongService.Object, _messageFactory,
-                            _mockLogger.Object, _nodeOptions, _peerAddress, false);
+        var peer = new Peer(s_nodeOptions.Features, s_mockLogger.Object, s_messageFactory, s_mockMessageService.Object,
+                            s_nodeOptions.NetworkTimeout, s_peerAddress, s_mockPingPongService.Object);
 
         var field = peer.GetType().GetField("_isInitialized", BindingFlags.NonPublic | BindingFlags.Instance);
         Assert.NotNull(field);
@@ -227,6 +218,6 @@ public class PeerTests
         method.Invoke(peer, [peer, pongMessage]);
 
         // Assert
-        _mockPingPongService.Verify(p => p.HandlePong(It.IsAny<PongMessage>()), Times.Once());
+        s_mockPingPongService.Verify(p => p.HandlePong(It.IsAny<PongMessage>()), Times.Once());
     }
 }

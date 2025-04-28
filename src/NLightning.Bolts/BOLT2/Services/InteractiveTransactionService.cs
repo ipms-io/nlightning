@@ -1,36 +1,44 @@
 namespace NLightning.Bolts.BOLT2.Services;
 
-using Common.Managers;
+using Common.Interfaces;
 using Common.Messages.Payloads;
 using Validators;
 
-public class InteractiveTransactionService(bool isInitiator)
+public class InteractiveTransactionService : IInteractiveTransactionService
 {
+    private readonly LightningMoney _dustLimitAmount;
+    private readonly bool _isInitiator;
     private readonly Dictionary<ulong, TxAddInputPayload> _inputs = [];
     private readonly Dictionary<ulong, TxAddOutputPayload> _outputs = [];
 
+    public InteractiveTransactionService(LightningMoney dustLimitAmount, bool isInitiator)
+    {
+        _dustLimitAmount = dustLimitAmount;
+        _isInitiator = isInitiator;
+    }
+
     public void AddInput(TxAddInputPayload input)
     {
-        TxAddInputValidator.Validate(isInitiator, input, _inputs.Count, IsValidPrevTx, IsUniqueInput, IsSerialIdUnique);
+        TxAddInputValidator.Validate(_isInitiator, input, _inputs.Count, IsValidPrevTx, IsUniqueInput, IsSerialIdUnique);
         _inputs.Add(input.SerialId, input);
     }
 
     public void AddOutput(TxAddOutputPayload output)
     {
-        TxAddOutputValidator.Validate(isInitiator, output, _outputs.Count, IsSerialIdUnique, IsStandardScript,
-                                      ConfigManager.Instance.DustLimitAmount);
+        TxAddOutputValidator.Validate(_isInitiator, output, _outputs.Count, IsSerialIdUnique, IsStandardScript,
+                                      _dustLimitAmount);
         _outputs.Add(output.SerialId, output);
     }
 
     public void RemoveInput(TxRemoveInputPayload input)
     {
-        TxRemoveInputValidator.Validate(isInitiator, input, IsSerialIdPresent);
+        TxRemoveInputValidator.Validate(_isInitiator, input, IsSerialIdPresent);
         _inputs.Remove(input.SerialId);
     }
 
     public void RemoveOutput(TxRemoveOutputPayload output)
     {
-        TxRemoveOutputValidator.Validate(isInitiator, output, IsSerialIdPresent);
+        TxRemoveOutputValidator.Validate(_isInitiator, output, IsSerialIdPresent);
         _outputs.Remove(output.SerialId);
     }
 

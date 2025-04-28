@@ -49,7 +49,6 @@
     <Compile Include="..\NLightning.Common\Factories\Crypto\CryptoFactory.cs" LinkBase="Common\Factories"/>
     <Compile Include="..\NLightning.Common\Formatters\LightningFormatter.cs" LinkBase="Common\Formatters"/>
     <Compile Include="..\NLightning.Common\Interfaces\Crypto\*.cs" LinkBase="Common\Interfaces"/>
-    <Compile Include="..\NLightning.Common\Managers\ConfigManager.cs" LinkBase="Common\Managers"/>
     <Compile Include="..\NLightning.Common\Managers\SecureKeyManager.cs" LinkBase="Common\Managers"/>
     <Compile Include="..\NLightning.Common\Node\FeatureSet.cs" LinkBase="Common\Node"/>
     <Compile Include="..\NLightning.Common\Types\BigSize.cs" LinkBase="Common\Types"/>

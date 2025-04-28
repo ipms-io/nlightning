@@ -1,16 +1,17 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NLightning.Bolts.BOLT1.Factories;
-using NLightning.Bolts.BOLT1.Managers;
-using NLightning.Common.Factories;
-using NLightning.Common.Interfaces;
-using NLightning.Common.Options;
-using NLightning.Common.Services;
-using NLightning.NLTG.Interfaces;
-using NLightning.NLTG.Services;
 
 namespace NLightning.NLTG.Extensions;
+
+using Bolts.BOLT1.Factories;
+using Bolts.BOLT1.Managers;
+using Common.Factories;
+using Common.Interfaces;
+using Common.Options;
+using Common.Services;
+using Interfaces;
+using Services;
 
 public static class NltgServiceExtensions
 {
@@ -53,14 +54,18 @@ public static class NltgServiceExtensions
             // Transient services (new instance each time)
 
             // Register options with values from configuration
+            services.AddOptions<FeeEstimationOptions>().BindConfiguration("FeeEstimation").ValidateOnStart();
             services.AddOptions<NodeOptions>()
-                .Configure<IConfiguration>((options, config) =>
+                .BindConfiguration("Node")
+                .PostConfigure(options =>
                 {
-                    // Default values are set in the NodeOptions class itself
-                    // Override with configuration values if present
-                    config.GetSection("Node").Bind(options);
+                    var configuredAddresses = configuration.GetSection("Node:ListenAddresses").Get<string[]?>();
+                    if (configuredAddresses is { Length: > 0 })
+                    {
+                        options.ListenAddresses = configuredAddresses.ToList();
+                    }
                 })
-                .ValidateOnStart(); // Ensures validation happens at startup
+                .ValidateOnStart();
         });
     }
 }

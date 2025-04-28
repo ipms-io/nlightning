@@ -235,9 +235,9 @@ public static class EndianBitConverter
         // pad with zero if the length is less than 8
         if (padWithZero && bytes.Length < 8)
         {
-            var paddedBytes = new byte[8];
-            bytes.CopyTo(paddedBytes, 8 - bytes.Length);
-            bytes = paddedBytes;
+            Span<byte> paddedBytes = stackalloc byte[8];
+            bytes.CopyTo(paddedBytes[(8 - bytes.Length)..]);
+            bytes = paddedBytes.ToArray();
         }
 
         if (!BitConverter.IsLittleEndian)
@@ -259,9 +259,9 @@ public static class EndianBitConverter
         // pad with zero if the length is less than 8
         if (padWithZero && bytes.Length < 8)
         {
-            var paddedBytes = new byte[8];
-            bytes.CopyTo(paddedBytes, 8 - bytes.Length);
-            bytes = paddedBytes;
+            Span<byte> paddedBytes = stackalloc byte[8];
+            bytes.CopyTo(paddedBytes[(8 - bytes.Length)..]);
+            bytes = paddedBytes.ToArray();
         }
 
         if (!BitConverter.IsLittleEndian)
@@ -283,9 +283,9 @@ public static class EndianBitConverter
         // pad with zero if the length is less than 4
         if (padWithZero && bytes.Length < 4)
         {
-            var paddedBytes = new byte[4];
-            bytes.CopyTo(paddedBytes, 4 - bytes.Length);
-            bytes = paddedBytes;
+            Span<byte> paddedBytes = stackalloc byte[4];
+            bytes.CopyTo(paddedBytes[(4 - bytes.Length)..]);
+            bytes = paddedBytes.ToArray();
         }
 
         if (!BitConverter.IsLittleEndian)
@@ -307,9 +307,9 @@ public static class EndianBitConverter
         // pad with zero if the length is less than 4
         if (padWithZero && bytes.Length < 4)
         {
-            var paddedBytes = new byte[4];
-            bytes.CopyTo(paddedBytes, 4 - bytes.Length);
-            bytes = paddedBytes;
+            Span<byte> paddedBytes = stackalloc byte[4];
+            bytes.CopyTo(paddedBytes[(4 - bytes.Length)..]);
+            bytes = paddedBytes.ToArray();
         }
 
         if (!BitConverter.IsLittleEndian)
@@ -331,9 +331,9 @@ public static class EndianBitConverter
         // pad with zero if the length is less than 2
         if (padWithZero && bytes.Length < 2)
         {
-            var paddedBytes = new byte[2];
-            bytes.CopyTo(paddedBytes, 2 - bytes.Length);
-            bytes = paddedBytes;
+            Span<byte> paddedBytes = stackalloc byte[2];
+            bytes.CopyTo(paddedBytes[(2 - bytes.Length)..]);
+            bytes = paddedBytes.ToArray();
         }
 
         if (!BitConverter.IsLittleEndian)
@@ -355,9 +355,9 @@ public static class EndianBitConverter
         // pad with zero if the length is less than 2
         if (padWithZero && bytes.Length < 2)
         {
-            var paddedBytes = new byte[2];
-            bytes.CopyTo(paddedBytes, 2 - bytes.Length);
-            bytes = paddedBytes;
+            Span<byte> paddedBytes = stackalloc byte[2];
+            bytes.CopyTo(paddedBytes[(2 - bytes.Length)..]);
+            bytes = paddedBytes.ToArray();
         }
 
         if (!BitConverter.IsLittleEndian)
@@ -381,9 +381,9 @@ public static class EndianBitConverter
         // pad with zero if the length is less than 8
         if (padWithZero && bytes.Length < 8)
         {
-            var paddedBytes = new byte[8];
-            bytes.CopyTo(paddedBytes, 8 - bytes.Length);
-            bytes = paddedBytes;
+            Span<byte> paddedBytes = stackalloc byte[8];
+            bytes.CopyTo(paddedBytes[(8 - bytes.Length)..]);
+            bytes = paddedBytes.ToArray();
         }
 
         if (BitConverter.IsLittleEndian)
@@ -405,9 +405,9 @@ public static class EndianBitConverter
         // pad with zero if the length is less than 8
         if (padWithZero && bytes.Length < 8)
         {
-            var paddedBytes = new byte[8];
-            bytes.CopyTo(paddedBytes, 8 - bytes.Length);
-            bytes = paddedBytes;
+            Span<byte> paddedBytes = stackalloc byte[8];
+            bytes.CopyTo(paddedBytes[(8 - bytes.Length)..]);
+            bytes = paddedBytes.ToArray();
         }
 
         if (BitConverter.IsLittleEndian)
@@ -429,9 +429,9 @@ public static class EndianBitConverter
         // pad with zero if the length is less than 4
         if (padWithZero && bytes.Length < 4)
         {
-            var paddedBytes = new byte[4];
-            bytes.CopyTo(paddedBytes, 4 - bytes.Length);
-            bytes = paddedBytes;
+            Span<byte> paddedBytes = stackalloc byte[4];
+            bytes.CopyTo(paddedBytes[(4 - bytes.Length)..]);
+            bytes = paddedBytes.ToArray();
         }
 
         if (BitConverter.IsLittleEndian)
@@ -453,9 +453,9 @@ public static class EndianBitConverter
         // pad with zero if the length is less than 4
         if (padWithZero && bytes.Length < 4)
         {
-            var paddedBytes = new byte[4];
-            bytes.CopyTo(paddedBytes, 4 - bytes.Length);
-            bytes = paddedBytes;
+            Span<byte> paddedBytes = stackalloc byte[4];
+            bytes.CopyTo(paddedBytes[(4 - bytes.Length)..]);
+            bytes = paddedBytes.ToArray();
         }
 
         if (BitConverter.IsLittleEndian)
@@ -477,9 +477,9 @@ public static class EndianBitConverter
         // pad with zero if the length is less than 2
         if (padWithZero && bytes.Length < 2)
         {
-            var paddedBytes = new byte[2];
-            bytes.CopyTo(paddedBytes, 2 - bytes.Length);
-            bytes = paddedBytes;
+            Span<byte> paddedBytes = stackalloc byte[2];
+            bytes.CopyTo(paddedBytes[(2 - bytes.Length)..]);
+            bytes = paddedBytes.ToArray();
         }
 
         if (BitConverter.IsLittleEndian)
@@ -501,9 +501,9 @@ public static class EndianBitConverter
         // pad with zero if the length is less than 2
         if (padWithZero && bytes.Length < 2)
         {
-            var paddedBytes = new byte[2];
-            bytes.CopyTo(paddedBytes, 2 - bytes.Length);
-            bytes = paddedBytes;
+            Span<byte> paddedBytes = stackalloc byte[2];
+            bytes.CopyTo(paddedBytes[(2 - bytes.Length)..]);
+            bytes = paddedBytes.ToArray();
         }
 
         if (BitConverter.IsLittleEndian)

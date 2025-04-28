@@ -178,6 +178,7 @@ Global
 		{D80680EA-8B09-44BA-A9EE-435C93D298B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D80680EA-8B09-44BA-A9EE-435C93D298B1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D80680EA-8B09-44BA-A9EE-435C93D298B1}.Debug.Wasm|Any CPU.ActiveCfg = Debug|Any CPU
+		{D80680EA-8B09-44BA-A9EE-435C93D298B1}.Debug.Wasm|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

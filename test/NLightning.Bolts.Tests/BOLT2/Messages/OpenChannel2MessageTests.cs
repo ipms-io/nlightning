@@ -1,26 +1,29 @@
 using NBitcoin;
-using NLightning.Common.Messages;
-using NLightning.Common.Messages.Payloads;
 
 namespace NLightning.Bolts.Tests.BOLT2.Messages;
 
 using Common.Enums;
 using Common.Exceptions;
-using Common.Managers;
+using Common.Messages;
+using Common.Messages.Payloads;
 using Common.TLVs;
 using Common.Types;
-using TestCollections;
 using Utils;
 
-[Collection(ConfigManagerCollection.NAME)]
 public class OpenChannel2MessageTests
 {
+    private readonly LightningMoney _expectedDustLimitAmount = LightningMoney.Satoshis(1);
+    private readonly ushort _expectedToSelfDelay = 1;
+    private readonly LightningMoney _expectedHtlcMinimumAmount = LightningMoney.Satoshis(1);
+    private readonly LightningMoney _expectedMaxHtlcValueInFlightAmount = LightningMoney.Satoshis(1_000);
+    private readonly ushort _expectedMaxAcceptedHtlcs = 2;
+    private readonly ushort _expectedLocktime = 1;
+
     #region Deserialize
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsOpenChannel2Payload()
     {
         // Arrange
-        SetUpConfigManagerOptions();
         var expectedChannelId = ChannelId.Zero;
         const uint EXPECTED_FUNDING_FEERATE = 1000;
         const uint EXPECTED_COMMITMENT_FEERATE = 2000;
@@ -41,17 +44,17 @@ public class OpenChannel2MessageTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(ConfigManager.Instance.Network.ChainHash, result.Payload.ChainHash);
+        Assert.Equal(Network.MAIN_NET.ChainHash, result.Payload.ChainHash);
         Assert.Equal(expectedChannelId, result.Payload.TemporaryChannelId);
         Assert.Equal(EXPECTED_FUNDING_FEERATE, result.Payload.FundingFeeRatePerKw);
         Assert.Equal(EXPECTED_COMMITMENT_FEERATE, result.Payload.CommitmentFeeRatePerKw);
         Assert.Equal(expectedFundingSatoshis, result.Payload.FundingAmount);
-        Assert.Equal(ConfigManager.Instance.DustLimitAmount, result.Payload.DustLimitAmount);
-        Assert.Equal(ConfigManager.Instance.MaxHtlcValueInFlightAmount, result.Payload.MaxHtlcValueInFlightAmount);
-        Assert.Equal(ConfigManager.Instance.HtlcMinimumAmount, result.Payload.HtlcMinimumAmount);
-        Assert.Equal(ConfigManager.Instance.ToSelfDelay, result.Payload.ToSelfDelay);
-        Assert.Equal(ConfigManager.Instance.MaxAcceptedHtlcs, result.Payload.MaxAcceptedHtlcs);
-        Assert.Equal(ConfigManager.Instance.Locktime, result.Payload.Locktime);
+        Assert.Equal(_expectedDustLimitAmount, result.Payload.DustLimitAmount);
+        Assert.Equal(_expectedMaxHtlcValueInFlightAmount, result.Payload.MaxHtlcValueInFlightAmount);
+        Assert.Equal(_expectedHtlcMinimumAmount, result.Payload.HtlcMinimumAmount);
+        Assert.Equal(_expectedToSelfDelay, result.Payload.ToSelfDelay);
+        Assert.Equal(_expectedMaxAcceptedHtlcs, result.Payload.MaxAcceptedHtlcs);
+        Assert.Equal(_expectedLocktime, result.Payload.Locktime);
         Assert.Equal(expectedFundingPubKey, result.Payload.FundingPubKey);
         Assert.Equal(expectedRevocationBasepoint, result.Payload.RevocationBasepoint);
         Assert.Equal(expectedPaymentBasePoint, result.Payload.PaymentBasepoint);
@@ -61,15 +64,12 @@ public class OpenChannel2MessageTests
         Assert.Equal(expectedSecondPerCommitmentPoint, result.Payload.SecondPerCommitmentPoint);
         Assert.Equal(expectedChannelFlags, result.Payload.ChannelFlags);
         Assert.Null(result.Extension);
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsOpenChannel2PayloadWithExtensions()
     {
         // Arrange
-        SetUpConfigManagerOptions();
         var expectedChannelId = ChannelId.Zero;
         const uint EXPECTED_FUNDING_FEERATE = 1000;
         const uint EXPECTED_COMMITMENT_FEERATE = 2000;
@@ -92,17 +92,17 @@ public class OpenChannel2MessageTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(ConfigManager.Instance.Network.ChainHash, result.Payload.ChainHash);
+        Assert.Equal(Network.MAIN_NET.ChainHash, result.Payload.ChainHash);
         Assert.Equal(expectedChannelId, result.Payload.TemporaryChannelId);
         Assert.Equal(EXPECTED_FUNDING_FEERATE, result.Payload.FundingFeeRatePerKw);
         Assert.Equal(EXPECTED_COMMITMENT_FEERATE, result.Payload.CommitmentFeeRatePerKw);
         Assert.Equal(expectedFundingSatoshis, result.Payload.FundingAmount);
-        Assert.Equal(ConfigManager.Instance.DustLimitAmount, result.Payload.DustLimitAmount);
-        Assert.Equal(ConfigManager.Instance.MaxHtlcValueInFlightAmount, result.Payload.MaxHtlcValueInFlightAmount);
-        Assert.Equal(ConfigManager.Instance.HtlcMinimumAmount, result.Payload.HtlcMinimumAmount);
-        Assert.Equal(ConfigManager.Instance.ToSelfDelay, result.Payload.ToSelfDelay);
-        Assert.Equal(ConfigManager.Instance.MaxAcceptedHtlcs, result.Payload.MaxAcceptedHtlcs);
-        Assert.Equal(ConfigManager.Instance.Locktime, result.Payload.Locktime);
+        Assert.Equal(_expectedDustLimitAmount, result.Payload.DustLimitAmount);
+        Assert.Equal(_expectedMaxHtlcValueInFlightAmount, result.Payload.MaxHtlcValueInFlightAmount);
+        Assert.Equal(_expectedHtlcMinimumAmount, result.Payload.HtlcMinimumAmount);
+        Assert.Equal(_expectedToSelfDelay, result.Payload.ToSelfDelay);
+        Assert.Equal(_expectedMaxAcceptedHtlcs, result.Payload.MaxAcceptedHtlcs);
+        Assert.Equal(_expectedLocktime, result.Payload.Locktime);
         Assert.Equal(expectedFundingPubKey, result.Payload.FundingPubKey);
         Assert.Equal(expectedRevocationBasepoint, result.Payload.RevocationBasepoint);
         Assert.Equal(expectedPaymentBasePoint, result.Payload.PaymentBasepoint);
@@ -117,21 +117,16 @@ public class OpenChannel2MessageTests
         Assert.NotNull(result.ChannelTypeTlv);
         Assert.Equal(expectedChannelTypeTlv, result.ChannelTypeTlv);
         Assert.NotNull(result.RequireConfirmedInputsTlv);
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public async Task Given_InvalidStream_When_DeserializeAsync_Then_ThrowsSerializationException()
     {
         // Arrange
-        SetUpConfigManagerOptions();
         var invalidStream = new MemoryStream("6FE28C0AB6F1B372C1A6A246AE63F74F931E8365E15A089C68D61900000000000000000000000000000000000000000000000000000000000000000000000000000003E8000007D000000000000186A0000000000000000100000000000F424000000000000003E8000100020000000102C93CA7DCA44D2E45E3CC5419D92750F7FB3A0F180852B73A621F4051C0193A750315525220B88467A0EE3A111AE49FFDC337136EF51031CFC1C9883B7D1CBD653403A6BD98A33A52CD9D339EE20B4627AC60EC45C897E4FF182CC22ABA372C8D31C10280A3001FE999B1FE9842317CE29F71B9BB5888448A2CF5E115BFC808BA4568CE03798E7EFC8C950FCD6C9E3AF4BBAD16A26F14C838E99651F637DDD73DDC88531B0326550F5AE41511E767AFE0A9C7E20A73174875A6D1EE4E9E128CBB1FB0099F6103A92B07CBAE641DCFD482825233AECC2D5012913B48040131DB3222670C2BFFCD000010".ToByteArray());
 
         // Act & Assert
         await Assert.ThrowsAsync<MessageSerializationException>(() => OpenChannel2Message.DeserializeAsync(invalidStream));
-
-        ConfigManagerUtil.ResetConfigManager();
     }
     #endregion
 
@@ -140,7 +135,6 @@ public class OpenChannel2MessageTests
     public async Task Given_ValidPayload_When_SerializeAsync_Then_WritesCorrectDataToStream()
     {
         // Arrange
-        SetUpConfigManagerOptions();
         var channelId = ChannelId.Zero;
         const uint FUNDING_FEERATE = 1000;
         const uint COMMITMENT_FEERATE = 2000;
@@ -154,11 +148,13 @@ public class OpenChannel2MessageTests
         var secondPerCommitmentPoint = new PubKey("03a92b07cbae641dcfd482825233aecc2d5012913b48040131db3222670c2bffcd".ToByteArray());
         var channelFlags = new ChannelFlags();
 
-        var message = new OpenChannel2Message(new OpenChannel2Payload(channelId, FUNDING_FEERATE, COMMITMENT_FEERATE,
-                                                                      fundingSatoshis, fundingPubKey, revocationBasepoint,
-                                                                      paymentBasePoint, delayedPaymentBasepoint,
-                                                                      htlcBasepoint, firstPerCommitmentPoint,
-                                                                      secondPerCommitmentPoint, channelFlags));
+        var message = new OpenChannel2Message(
+            new OpenChannel2Payload(_expectedDustLimitAmount, _expectedHtlcMinimumAmount, _expectedLocktime,
+                                    _expectedMaxHtlcValueInFlightAmount, _expectedMaxAcceptedHtlcs, Network.MAIN_NET,
+                                    _expectedToSelfDelay, channelId, FUNDING_FEERATE, COMMITMENT_FEERATE,
+                                    fundingSatoshis, fundingPubKey, revocationBasepoint, paymentBasePoint,
+                                    delayedPaymentBasepoint, htlcBasepoint, firstPerCommitmentPoint,
+                                    secondPerCommitmentPoint, channelFlags));
         var stream = new MemoryStream();
         var expectedBytes = "00406FE28C0AB6F1B372C1A6A246AE63F74F931E8365E15A089C68D61900000000000000000000000000000000000000000000000000000000000000000000000000000003E8000007D000000000000186A0000000000000000100000000000F424000000000000003E8000100020000000102C93CA7DCA44D2E45E3CC5419D92750F7FB3A0F180852B73A621F4051C0193A750315525220B88467A0EE3A111AE49FFDC337136EF51031CFC1C9883B7D1CBD653403A6BD98A33A52CD9D339EE20B4627AC60EC45C897E4FF182CC22ABA372C8D31C10280A3001FE999B1FE9842317CE29F71B9BB5888448A2CF5E115BFC808BA4568CE03798E7EFC8C950FCD6C9E3AF4BBAD16A26F14C838E99651F637DDD73DDC88531B0326550F5AE41511E767AFE0A9C7E20A73174875A6D1EE4E9E128CBB1FB0099F6103A92B07CBAE641DCFD482825233AECC2D5012913B48040131DB3222670C2BFFCD00".ToByteArray();
 
@@ -170,15 +166,12 @@ public class OpenChannel2MessageTests
 
         // Assert
         Assert.Equal(expectedBytes, result);
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public async Task Given_ValidExtension_When_SerializeAsync_Then_WritesCorrectDataToStream()
     {
         // Arrange
-        SetUpConfigManagerOptions();
         var channelId = ChannelId.Zero;
         const uint FUNDING_FEERATE = 1000;
         const uint COMMITMENT_FEERATE = 2000;
@@ -195,12 +188,14 @@ public class OpenChannel2MessageTests
         var channelTypeTlv = new ChannelTypeTlv([0x01, 0x02]);
         var requireConfirmedInputsTlv = new RequireConfirmedInputsTlv();
 
-        var message = new OpenChannel2Message(new OpenChannel2Payload(channelId, FUNDING_FEERATE, COMMITMENT_FEERATE,
-                                                                      fundingSatoshis, fundingPubKey, revocationBasepoint,
-                                                                      paymentBasePoint, delayedPaymentBasepoint,
-                                                                      htlcBasepoint, firstPerCommitmentPoint,
-                                                                      secondPerCommitmentPoint, channelFlags),
-                                              upfrontShutdownScriptTlv, channelTypeTlv, requireConfirmedInputsTlv);
+        var message = new OpenChannel2Message(
+            new OpenChannel2Payload(_expectedDustLimitAmount, _expectedHtlcMinimumAmount, _expectedLocktime,
+                                    _expectedMaxHtlcValueInFlightAmount, _expectedMaxAcceptedHtlcs, Network.MAIN_NET,
+                                    _expectedToSelfDelay, channelId, FUNDING_FEERATE, COMMITMENT_FEERATE,
+                                    fundingSatoshis, fundingPubKey, revocationBasepoint, paymentBasePoint,
+                                    delayedPaymentBasepoint, htlcBasepoint, firstPerCommitmentPoint,
+                                    secondPerCommitmentPoint, channelFlags),
+            upfrontShutdownScriptTlv, channelTypeTlv, requireConfirmedInputsTlv);
         var stream = new MemoryStream();
         var expectedBytes = "00406FE28C0AB6F1B372C1A6A246AE63F74F931E8365E15A089C68D61900000000000000000000000000000000000000000000000000000000000000000000000000000003E8000007D000000000000186A0000000000000000100000000000F424000000000000003E8000100020000000102C93CA7DCA44D2E45E3CC5419D92750F7FB3A0F180852B73A621F4051C0193A750315525220B88467A0EE3A111AE49FFDC337136EF51031CFC1C9883B7D1CBD653403A6BD98A33A52CD9D339EE20B4627AC60EC45C897E4FF182CC22ABA372C8D31C10280A3001FE999B1FE9842317CE29F71B9BB5888448A2CF5E115BFC808BA4568CE03798E7EFC8C950FCD6C9E3AF4BBAD16A26F14C838E99651F637DDD73DDC88531B0326550F5AE41511E767AFE0A9C7E20A73174875A6D1EE4E9E128CBB1FB0099F6103A92B07CBAE641DCFD482825233AECC2D5012913B48040131DB3222670C2BFFCD0000232102C93CA7DCA44D2E45E3CC5419D92750F7FB3A0F180852B73A621F4051C0193A75AC010201020200".ToByteArray();
 
@@ -212,19 +207,6 @@ public class OpenChannel2MessageTests
 
         // Assert
         Assert.Equal(expectedBytes, result);
-
-        ConfigManagerUtil.ResetConfigManager();
     }
     #endregion
-
-    private static void SetUpConfigManagerOptions()
-    {
-        ConfigManager.Instance.DustLimitAmount = LightningMoney.FromUnit(1, LightningMoneyUnit.SATOSHI);
-        ConfigManager.Instance.ToSelfDelay = 1;
-        ConfigManager.Instance.HtlcMinimumAmount = LightningMoney.FromUnit(1, LightningMoneyUnit.SATOSHI);
-        ConfigManager.Instance.MaxHtlcValueInFlightAmount = LightningMoney.FromUnit(1000, LightningMoneyUnit.SATOSHI);
-        ConfigManager.Instance.MaxAcceptedHtlcs = 2;
-        ConfigManager.Instance.Locktime = 1;
-        ConfigManager.Instance.Network = Network.MAIN_NET;
-    }
 }

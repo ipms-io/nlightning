@@ -1,12 +1,13 @@
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NBitcoin;
 
 namespace NLightning.Bolts.BOLT1.Managers;
 
 using Common.Interfaces;
-using Common.Managers;
 using Common.Node;
+using Common.Options;
 
 /// <summary>
 /// Service for managing peers.
@@ -15,10 +16,20 @@ using Common.Node;
 /// This class is used to manage peers in the network.
 /// </remarks>
 /// <seealso cref="IPeerManager" />
-public sealed class PeerManager(IPeerFactory peerFactory, ILogger<PeerManager> logger) : IPeerManager
+public sealed class PeerManager : IPeerManager
 {
-    private readonly Dictionary<PubKey, Peer> _peers = [];
     private readonly Dictionary<ChannelId, PubKey> _channels = [];
+    private readonly ILogger<PeerManager> _logger;
+    private readonly IOptions<NodeOptions> _nodeOptions;
+    private readonly IPeerFactory _peerFactory;
+    private readonly Dictionary<PubKey, Peer> _peers = [];
+
+    public PeerManager(ILogger<PeerManager> logger, IOptions<NodeOptions> nodeOptions, IPeerFactory peerFactory)
+    {
+        _logger = logger;
+        _nodeOptions = nodeOptions;
+        _peerFactory = peerFactory;
+    }
 
     /// <inheritdoc />
     /// <exception cref="ConnectionException">Thrown when the connection to the peer fails.</exception>
@@ -29,7 +40,7 @@ public sealed class PeerManager(IPeerFactory peerFactory, ILogger<PeerManager> l
         try
         {
             await tcpClient.ConnectAsync(peerAddress.Host, peerAddress.Port,
-                                         new CancellationTokenSource(ConfigManager.Instance.NetworkTimeout).Token);
+                                         new CancellationTokenSource(_nodeOptions.Value.NetworkTimeout).Token);
         }
         catch (OperationCanceledException)
         {
@@ -40,11 +51,11 @@ public sealed class PeerManager(IPeerFactory peerFactory, ILogger<PeerManager> l
             throw new ConnectionException($"Failed to connect to peer {peerAddress.Host}:{peerAddress.Port}", e);
         }
 
-        var peer = await peerFactory.CreateConnectedPeerAsync(peerAddress, tcpClient);
+        var peer = await _peerFactory.CreateConnectedPeerAsync(peerAddress, tcpClient);
         peer.DisconnectEvent += (_, _) =>
         {
             _peers.Remove(peerAddress.PubKey);
-            logger.LogInformation("Peer {Peer} disconnected", peerAddress.PubKey);
+            _logger.LogInformation("Peer {Peer} disconnected", peerAddress.PubKey);
         };
 
         _peers.Add(peerAddress.PubKey, peer);
@@ -55,11 +66,11 @@ public sealed class PeerManager(IPeerFactory peerFactory, ILogger<PeerManager> l
     public async Task AcceptPeerAsync(TcpClient tcpClient)
     {
         // Create the peer
-        var peer = await peerFactory.CreateConnectingPeerAsync(tcpClient);
+        var peer = await _peerFactory.CreateConnectingPeerAsync(tcpClient);
         peer.DisconnectEvent += (_, _) =>
         {
             _peers.Remove(peer.PeerAddress.PubKey);
-            logger.LogError("{Peer} disconnected", peer.PeerAddress.PubKey);
+            _logger.LogError("{Peer} disconnected", peer.PeerAddress.PubKey);
         };
 
         _peers.Add(peer.PeerAddress.PubKey, peer);
@@ -74,7 +85,7 @@ public sealed class PeerManager(IPeerFactory peerFactory, ILogger<PeerManager> l
         }
         else
         {
-            logger.LogWarning("Peer {Peer} not found", pubKey);
+            _logger.LogWarning("Peer {Peer} not found", pubKey);
         }
     }
 }

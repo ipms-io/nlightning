@@ -56,5 +56,8 @@ internal sealed class InitializedPartiesUtil
         // Get rk
         var c2 = ((CipherState?)InitiatorTransport.GetType().GetField("_receivingKey", flags)?.GetValue(InitiatorTransport) ?? throw new MissingFieldException("_receivingKey")) ?? throw new NullReferenceException("_receivingKey");
         InitiatorRk = ((SecureMemory?)c2.GetType().GetField("_k", flags)?.GetValue(c2) ?? throw new MissingFieldException("_receivingKey._k")) ?? throw new NullReferenceException("_receivingKey._k");
+
+        initiator.Dispose();
+        responder.Dispose();
     }
 }

@@ -3,25 +3,22 @@ using NBitcoin.Crypto;
 
 namespace NLightning.Bolts.BOLT3.Transactions;
 
-using Common.Interfaces;
-using Common.Managers;
 using Constants;
 using Outputs;
+using Network = Common.Types.Network;
 
 public abstract class BaseHtlcTransaction : BaseTransaction
 {
-    private readonly IFeeService _feeService;
     public HtlcResolutionOutput HtlcResolutionOutput { get; }
 
-    protected BaseHtlcTransaction(IFeeService feeService, BaseHtlcOutput htlcOutput, PubKey revocationPubKey,
+    protected BaseHtlcTransaction(bool hasAnchorOutputs, Network network, BaseHtlcOutput htlcOutput, PubKey revocationPubKey,
                                   PubKey localDelayedPubKey, ulong toSelfDelay, ulong amountMilliSats)
-        : base(TransactionConstants.HTLC_TRANSACTION_VERSION,
-               ConfigManager.Instance.IsOptionAnchorOutput
+        : base(hasAnchorOutputs, network, TransactionConstants.HTLC_TRANSACTION_VERSION,
+               hasAnchorOutputs
                    ? SigHash.Single | SigHash.AnyoneCanPay
                    : SigHash.All,
-               (htlcOutput.ToCoin(), new Sequence(ConfigManager.Instance.IsOptionAnchorOutput ? 1 : 0)))
+               (htlcOutput.ToCoin(), new Sequence(hasAnchorOutputs ? 1 : 0)))
     {
-        _feeService = feeService;
         HtlcResolutionOutput = new HtlcResolutionOutput(revocationPubKey, localDelayedPubKey, toSelfDelay, amountMilliSats);
     }
 

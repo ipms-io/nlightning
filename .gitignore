@@ -8,6 +8,12 @@ test-results.trx
 # dotenv files
 .env
 
+# Configuration files
+**/appsettings*.json
+**/*.Development.json
+**/*.Production.json
+**/*.Staging.json
+
 # User-specific files
 *.rsuser
 *.suo
@@ -499,3 +505,6 @@ api/
 .log/
 tmp/
 log/
+
+# Fee Cache File
+fee_estimation_cache.bin

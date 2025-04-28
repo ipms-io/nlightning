@@ -2,14 +2,19 @@ namespace NLightning.Common.Types;
 
 using Constants;
 
-public readonly struct Network(string name) : IEquatable<Network>
+public readonly struct Network : IEquatable<Network>
 {
     public static readonly Network MAIN_NET = new(NetworkConstants.MAINNET);
     public static readonly Network TEST_NET = new(NetworkConstants.TESTNET);
     public static readonly Network REG_TEST = new(NetworkConstants.REGTEST);
     public static readonly Network SIG_NET = new(NetworkConstants.SIGNET);
 
-    public string Name { get; } = name;
+    public string Name { get; }
+
+    public Network(string name)
+    {
+        Name = name;
+    }
 
     public ChainHash ChainHash
     {

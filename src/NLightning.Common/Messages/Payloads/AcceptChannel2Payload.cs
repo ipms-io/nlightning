@@ -6,7 +6,6 @@ using BitUtils;
 using Enums;
 using Exceptions;
 using Interfaces;
-using Managers;
 using Types;
 
 /// <summary>
@@ -14,7 +13,6 @@ using Types;
 /// </summary>
 /// <remarks>
 /// Initializes a new instance of the AcceptChannel2Payload class.
-/// This class depends on the initialized singleton class <see cref="Common.Managers.ConfigManager"/>.
 /// </remarks>
 public class AcceptChannel2Payload : IMessagePayload
 {
@@ -93,16 +91,18 @@ public class AcceptChannel2Payload : IMessagePayload
     /// </summary>
     public PubKey FirstPerCommitmentPoint { get; set; }
 
-    public AcceptChannel2Payload(ChannelId temporaryChannelId, LightningMoney fundingAmount, PubKey fundingPubKey,
-                                 PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint,
-                                 PubKey htlcBasepoint, PubKey firstPerCommitmentPoint)
+    public AcceptChannel2Payload(LightningMoney dustLimitAmount, LightningMoney htlcMinimumAmount,
+                                 LightningMoney maxHtlcValueInFlight, ushort maxAcceptedHtlcs, uint minimumDepth,
+                                 ushort toSelfDelay, ChannelId temporaryChannelId, LightningMoney fundingAmount,
+                                 PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint,
+                                 PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint)
     {
-        DustLimitAmount = ConfigManager.Instance.DustLimitAmount;
-        MaxHtlcValueInFlightAmount = ConfigManager.Instance.MaxHtlcValueInFlightAmount;
-        HtlcMinimumAmount = ConfigManager.Instance.HtlcMinimumAmount;
-        MinimumDepth = ConfigManager.Instance.MinimumDepth;
-        ToSelfDelay = ConfigManager.Instance.ToSelfDelay;
-        MaxAcceptedHtlcs = ConfigManager.Instance.MaxAcceptedHtlcs;
+        DustLimitAmount = dustLimitAmount;
+        MaxHtlcValueInFlightAmount = maxHtlcValueInFlight;
+        HtlcMinimumAmount = htlcMinimumAmount;
+        MaxAcceptedHtlcs = maxAcceptedHtlcs;
+        MinimumDepth = minimumDepth;
+        ToSelfDelay = toSelfDelay;
         TemporaryChannelId = temporaryChannelId;
         FundingAmount = fundingAmount;
         FundingPubKey = fundingPubKey;

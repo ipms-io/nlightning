@@ -15,7 +15,8 @@ public class PeerAddressTests
         var peerAddress = new Common.Types.PeerAddress(address);
 
         // Assert
-        Assert.Equal("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7", peerAddress.PubKey.ToString());
+        Assert.Equal("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7",
+                     peerAddress.PubKey.ToString());
         Assert.Equal(IPAddress.Parse("127.0.0.1"), peerAddress.Host);
         Assert.Equal(8080, peerAddress.Port);
     }

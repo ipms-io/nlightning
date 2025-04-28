@@ -24,9 +24,9 @@ public class FeeService : IFeeService
     private readonly ILogger<FeeService> _logger;
     private readonly TimeSpan _cacheTimeExpiration;
     private readonly string _cacheFilePath;
-    private readonly FeeOptions _feeOptions;
+    private readonly FeeEstimationOptions _feeEstimationOptions;
 
-    public FeeService(IOptions<FeeOptions> feeOptions, HttpClient httpClient, ILogger<FeeService> logger)
+    public FeeService(IOptions<FeeEstimationOptions> feeOptions, HttpClient httpClient, ILogger<FeeService> logger)
     {
         // Never allow file to exist more than once
         if (s_backgroundTask is not null)
@@ -34,12 +34,12 @@ public class FeeService : IFeeService
             throw new WarningException("This class should behave like a Singleton. Please, initialize it only once.");
         }
 
-        _feeOptions = feeOptions.Value;
+        _feeEstimationOptions = feeOptions.Value;
         _httpClient = httpClient;
         _logger = logger;
 
-        _cacheFilePath = ParseFilePath(_feeOptions);
-        _cacheTimeExpiration = ParseCacheTime(_feeOptions.CacheExpiration);
+        _cacheFilePath = ParseFilePath(_feeEstimationOptions);
+        _cacheTimeExpiration = ParseCacheTime(_feeEstimationOptions.CacheExpiration);
 
         // Try to load from file initially
         _ = LoadFromFileAsync(CancellationToken.None);
@@ -132,18 +132,18 @@ public class FeeService : IFeeService
     {
         HttpResponseMessage response;
 
-        if (_feeOptions.Method.Equals("GET", StringComparison.CurrentCultureIgnoreCase))
+        if (_feeEstimationOptions.Method.Equals("GET", StringComparison.CurrentCultureIgnoreCase))
         {
-            response = await _httpClient.GetAsync(_feeOptions.Url, cancellationToken);
+            response = await _httpClient.GetAsync(_feeEstimationOptions.Url, cancellationToken);
         }
         else // POST
         {
             var content = new StringContent(
-                _feeOptions.Body,
+                _feeEstimationOptions.Body,
                 System.Text.Encoding.UTF8,
-                _feeOptions.ContentType);
+                _feeEstimationOptions.ContentType);
 
-            response = await _httpClient.PostAsync(_feeOptions.Url, content, cancellationToken);
+            response = await _httpClient.PostAsync(_feeEstimationOptions.Url, content, cancellationToken);
         }
 
         response.EnsureSuccessStatusCode();
@@ -154,24 +154,24 @@ public class FeeService : IFeeService
         var root = document.RootElement;
 
         // Extract the preferred fee rate from the JSON response
-        if (!root.TryGetProperty(_feeOptions.PreferredFeeRate, out var feeRateElement))
+        if (!root.TryGetProperty(_feeEstimationOptions.PreferredFeeRate, out var feeRateElement))
         {
-            throw new InvalidOperationException($"Could not extract {_feeOptions.PreferredFeeRate} from API response.");
+            throw new InvalidOperationException($"Could not extract {_feeEstimationOptions.PreferredFeeRate} from API response.");
         }
 
         // Parse the fee rate value
         if (!feeRateElement.TryGetDecimal(out var feeRate))
         {
-            throw new InvalidOperationException($"Could not extract {_feeOptions.PreferredFeeRate} from API response.");
+            throw new InvalidOperationException($"Could not extract {_feeEstimationOptions.PreferredFeeRate} from API response.");
         }
 
         // Apply the multiplier to convert to sat/kw
-        if (decimal.TryParse(_feeOptions.RateMultiplier, out var multiplier))
+        if (decimal.TryParse(_feeEstimationOptions.RateMultiplier, out var multiplier))
         {
             return (long)(feeRate * multiplier);
         }
 
-        throw new InvalidOperationException($"Could not extract {_feeOptions.PreferredFeeRate} from API response.");
+        throw new InvalidOperationException($"Could not extract {_feeEstimationOptions.PreferredFeeRate} from API response.");
     }
 
     private async Task RunPeriodicRefreshAsync(CancellationToken cancellationToken)
@@ -194,11 +194,11 @@ public class FeeService : IFeeService
         }
         catch (OperationCanceledException)
         {
-            _logger.LogInformation("Listener service shutdown requested");
+            _logger.LogInformation("Stopping fee service");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled exception in listener service");
+            _logger.LogError(ex, "Unhandled exception in fee service");
         }
     }
 
@@ -294,9 +294,9 @@ public class FeeService : IFeeService
         }
     }
 
-    private static string ParseFilePath(FeeOptions feeOptions)
+    private static string ParseFilePath(FeeEstimationOptions feeEstimationOptions)
     {
-        var filePath = feeOptions.CacheFile;
+        var filePath = feeEstimationOptions.CacheFile;
         if (string.IsNullOrWhiteSpace(filePath))
         {
             return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FEE_CACHE_FILE_NAME);

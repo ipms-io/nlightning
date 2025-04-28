@@ -5,7 +5,6 @@ namespace NLightning.Bolts.Tests.BOLT11.Types.TaggedFields;
 using Bolts.BOLT11.Enums;
 using Bolts.BOLT11.Types.TaggedFields;
 using Common.BitUtils;
-using Common.Managers;
 
 public class FallbackAddressTaggedFieldTests
 {
@@ -59,11 +58,10 @@ public class FallbackAddressTaggedFieldTests
     public void FromBitReader_CreatesCorrectlyFromBitReader(string expectedAddress, short bitLength, byte[] bytes)
     {
         // Arrange
-        ConfigManager.Instance.Network = Common.Types.Network.MAIN_NET;
         var bitReader = new BitReader(bytes);
 
         // Act
-        var taggedField = FallbackAddressTaggedField.FromBitReader(bitReader, bitLength);
+        var taggedField = FallbackAddressTaggedField.FromBitReader(bitReader, bitLength, Network.Main);
 
         // Assert
         Assert.Equal(expectedAddress, taggedField.Value.ToString());
@@ -89,6 +87,6 @@ public class FallbackAddressTaggedFieldTests
         var bitReader = new BitReader(invalidData);
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => FallbackAddressTaggedField.FromBitReader(bitReader, 4));
+        Assert.Throws<ArgumentException>(() => FallbackAddressTaggedField.FromBitReader(bitReader, 4, Network.Main));
     }
 }

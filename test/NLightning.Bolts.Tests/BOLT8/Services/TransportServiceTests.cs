@@ -8,13 +8,10 @@ namespace NLightning.Bolts.Tests.BOLT8.Services;
 using Bolts.BOLT8.Interfaces;
 using Bolts.BOLT8.Services;
 using Common.Exceptions;
-using Common.Managers;
 using Mock;
-using TestCollections;
 using Tests.Utils;
 
 // ReSharper disable AccessToDisposedClosure
-[Collection(ConfigManagerCollection.NAME)]
 public class TransportServiceTests
 {
     private readonly Mock<ILogger> _mockLogger = new();
@@ -23,7 +20,6 @@ public class TransportServiceTests
     public async Task Given_TransportServiceAsInitiator_When_InitializeIsCalled_Then_HandshakeServicePerformStepIsCalledTwice()
     {
         // Arrange
-        ConfigManager.Instance.NetworkTimeout = TimeSpan.FromSeconds(30);
         var availablePort = await PortPoolUtil.GetAvailablePortAsync();
         var tcpListener = new TcpListener(IPAddress.Loopback, availablePort);
         tcpListener.Start();
@@ -32,7 +28,9 @@ public class TransportServiceTests
         {
             var handshakeServiceMock = new Mock<FakeHandshakeService>();
             var steps = 2;
-            handshakeServiceMock.Setup(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny)).Returns((byte[] inMessage, out byte[] outMessage) =>
+            handshakeServiceMock
+                .Setup(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny))
+                .Returns((byte[] inMessage, out byte[] outMessage) =>
             {
                 ITransport? transport = null;
                 switch (steps)
@@ -77,21 +75,21 @@ public class TransportServiceTests
                 await stream.ReadExactlyAsync(buffer);
             });
             await tcpClient1.ConnectAsync(IPEndPoint.Parse(tcpListener.LocalEndpoint.ToEndpointString()));
-            var transportService = new TransportService(_mockLogger.Object, handshakeServiceMock.Object, tcpClient1);
+            var transportService = new TransportService(_mockLogger.Object, TimeSpan.FromSeconds(30),
+                                                        handshakeServiceMock.Object, tcpClient1);
 
             // Act
             await transportService.InitializeAsync();
             await acceptTask;
 
             // Assert
-            handshakeServiceMock.Verify(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny), Times.Exactly(2));
+            handshakeServiceMock.Verify(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny),
+                                        Times.Exactly(2));
         }
         finally
         {
             tcpListener.Dispose();
             PortPoolUtil.ReleasePort(availablePort);
-
-            ConfigManagerUtil.ResetConfigManager();
         }
     }
 
@@ -99,25 +97,23 @@ public class TransportServiceTests
     public async Task Given_TransportServiceAsInitiator_When_InitializeIsCalledAndTcpClinetIsDisconnected_Then_ThrowsInvalidOperationException()
     {
         // Arrange
-        ConfigManager.Instance.NetworkTimeout = TimeSpan.FromSeconds(30);
         var handshakeServiceMock = new Mock<FakeHandshakeService>();
         var tcpClient1 = new TcpClient();
-        var transportService = new TransportService(_mockLogger.Object, handshakeServiceMock.Object, tcpClient1);
+        var transportService = new TransportService(_mockLogger.Object, TimeSpan.FromSeconds(30),
+                                                    handshakeServiceMock.Object, tcpClient1);
 
         // Act
-        var exception = await Assert.ThrowsAnyAsync<InvalidOperationException>(() => transportService.InitializeAsync());
+        var exception = await Assert
+            .ThrowsAnyAsync<InvalidOperationException>(() => transportService.InitializeAsync());
 
         // Assert
         Assert.Equal("TcpClient is not connected", exception.Message);
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public async Task Given_TransportService_When_TimeoutOccurs_Then_ThrowsConnectionTimeoutException()
     {
         // Arrange
-        ConfigManager.Instance.NetworkTimeout = TimeSpan.Zero;
         var availablePort = await PortPoolUtil.GetAvailablePortAsync();
         var tcpListener = new TcpListener(IPAddress.Loopback, availablePort);
         tcpListener.Start();
@@ -126,7 +122,9 @@ public class TransportServiceTests
         {
             var handshakeServiceMock = new Mock<FakeHandshakeService>();
             var steps = 2;
-            handshakeServiceMock.Setup(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny)).Returns((byte[] inMessage, out byte[] outMessage) =>
+            handshakeServiceMock
+                .Setup(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny))
+                .Returns((byte[] inMessage, out byte[] outMessage) =>
             {
                 if (steps != 2)
                 {
@@ -155,10 +153,12 @@ public class TransportServiceTests
                 await stream.WriteAsync(buffer);
             });
             await tcpClient1.ConnectAsync(IPEndPoint.Parse(tcpListener.LocalEndpoint.ToEndpointString()));
-            var transportService = new TransportService(_mockLogger.Object, handshakeServiceMock.Object, tcpClient1);
+            var transportService = new TransportService(_mockLogger.Object, TimeSpan.Zero, handshakeServiceMock.Object,
+                                                        tcpClient1);
 
             // Act
-            var exception = await Assert.ThrowsAnyAsync<ConnectionTimeoutException>(() => transportService.InitializeAsync());
+            var exception = await Assert
+                .ThrowsAnyAsync<ConnectionTimeoutException>(() => transportService.InitializeAsync());
             await acceptTask;
 
             // Assert
@@ -168,8 +168,6 @@ public class TransportServiceTests
         {
             tcpListener.Dispose();
             PortPoolUtil.ReleasePort(availablePort);
-
-            ConfigManagerUtil.ResetConfigManager();
         }
     }
 }

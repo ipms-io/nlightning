@@ -1,8 +1,10 @@
+using Microsoft.Extensions.Options;
+
 namespace NLightning.Bolts.BOLT1.Services;
 
 using Common.Interfaces;
-using Common.Managers;
 using Common.Messages;
+using Common.Options;
 
 /// <summary>
 /// Service for managing the ping pong protocol.
@@ -12,8 +14,9 @@ using Common.Messages;
 /// </remarks>
 internal class PingPongService : IPingPongService
 {
-    private readonly Random _random = new();
     private readonly IMessageFactory _messageFactory;
+    private readonly NodeOptions _nodeOptions;
+    private readonly Random _random = new();
 
     private TaskCompletionSource<bool> _pongReceivedTaskSource = new();
     private PingMessage _pingMessage;
@@ -24,9 +27,10 @@ internal class PingPongService : IPingPongService
     /// <inheritdoc />
     public event EventHandler<Exception>? DisconnectEvent;
 
-    public PingPongService(IMessageFactory messageFactory)
+    public PingPongService(IMessageFactory messageFactory, IOptions<NodeOptions> nodeOptions)
     {
         _messageFactory = messageFactory;
+        _nodeOptions = nodeOptions.Value;
         _pingMessage = (PingMessage)messageFactory.CreatePingMessage();
     }
 
@@ -44,7 +48,7 @@ internal class PingPongService : IPingPongService
 
             using var pongTimeoutTokenSource = CancellationTokenSource
                 .CreateLinkedTokenSource(cancellationToken,
-                                         new CancellationTokenSource(ConfigManager.Instance.NetworkTimeout).Token);
+                                         new CancellationTokenSource(_nodeOptions.NetworkTimeout).Token);
 
             var task = await Task.WhenAny(_pongReceivedTaskSource.Task, Task.Delay(-1, pongTimeoutTokenSource.Token));
             if (task.IsFaulted)
@@ -59,7 +63,7 @@ internal class PingPongService : IPingPongService
                 continue;
             }
 
-            await Task.Delay(_random.Next(30000, 300000), cancellationToken);
+            await Task.Delay(_random.Next(30_000, 300_000), cancellationToken);
 
             _pongReceivedTaskSource = new TaskCompletionSource<bool>();
             _pingMessage = (PingMessage)_messageFactory.CreatePingMessage();

@@ -7,12 +7,8 @@ using Bolts.BOLT3.Outputs;
 using Bolts.BOLT3.Transactions;
 using Bolts.BOLT3.Types;
 using Common.Enums;
-using Common.Managers;
 using Common.Types;
-using TestCollections;
-using Utils;
 
-[Collection(ConfigManagerCollection.NAME)]
 public class CommitmentTransactionTests
 {
     private const uint TO_SELF_DELAY = 144;
@@ -27,6 +23,7 @@ public class CommitmentTransactionTests
     private readonly LightningMoney _toRemoteAmount = new(2_000, LightningMoneyUnit.SATOSHI);
     private readonly CommitmentNumber _commitmentNumber;
     private readonly BitcoinSecret _privateKey = new(new Key(Convert.FromHexString("6bd078650fcee8444e4e09825227b801a1ca928debb750eb36e6d56124bb20e8")), NBitcoin.Network.TestNet);
+    private readonly LightningMoney _defaultDustLimitAmount = LightningMoney.Satoshis(540);
 
     public CommitmentTransactionTests()
     {
@@ -44,11 +41,8 @@ public class CommitmentTransactionTests
     public void Given_ValidParametersAsChannelFunder_When_ConstructingCommitmentTransaction_Then_PropertiesAreSetCorrectly()
     {
         // Given
-        ConfigManager.Instance.IsOptionAnchorOutput = false;
-        const bool IS_CHANNEL_FUNDER = true;
-
         // When
-        var commitmentTx = CreateCommitmentTransaction(IS_CHANNEL_FUNDER);
+        var commitmentTx = CreateCommitmentTransaction(true, LightningMoney.Zero, _defaultDustLimitAmount);
 
         // Then
         Assert.Equal(_commitmentNumber, commitmentTx.CommitmentNumber);
@@ -60,19 +54,14 @@ public class CommitmentTransactionTests
 
         Assert.Equal(LightningMoney.Zero, commitmentTx.ToLocalOutput.Amount);
         Assert.Equal(_toRemoteAmount, commitmentTx.ToRemoteOutput.Amount);
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public void Given_ValidParametersAsNonFunder_When_ConstructingCommitmentTransaction_Then_PropertiesAreSetCorrectly()
     {
         // Given
-        ConfigManager.Instance.IsOptionAnchorOutput = false;
-        const bool IS_CHANNEL_FUNDER = false;
-
         // When
-        var commitmentTx = CreateCommitmentTransaction(IS_CHANNEL_FUNDER);
+        var commitmentTx = CreateCommitmentTransaction(false, LightningMoney.Zero, _defaultDustLimitAmount);
 
         // Then
         Assert.Equal(_commitmentNumber, commitmentTx.CommitmentNumber);
@@ -84,28 +73,22 @@ public class CommitmentTransactionTests
 
         Assert.Equal(_toLocalAmount, commitmentTx.ToLocalOutput.Amount);
         Assert.Equal(LightningMoney.Zero, commitmentTx.ToRemoteOutput.Amount);
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public void Given_AnchorOutputsEnabled_When_ConstructingCommitmentTransaction_Then_CreatesAnchorOutputs()
     {
         // Given
-        ConfigManager.Instance.IsOptionAnchorOutput = true;
-        ConfigManager.Instance.AnchorAmount = new LightningMoney(330, LightningMoneyUnit.SATOSHI);
-        const bool IS_CHANNEL_FUNDER = true;
+        var expectedAnchorAmount = LightningMoney.Satoshis(330);
 
         // When
-        var commitmentTx = CreateCommitmentTransaction(IS_CHANNEL_FUNDER);
+        var commitmentTx = CreateCommitmentTransaction(true, expectedAnchorAmount, _defaultDustLimitAmount);
 
         // Then
         Assert.NotNull(commitmentTx.LocalAnchorOutput);
         Assert.NotNull(commitmentTx.RemoteAnchorOutput);
-        Assert.Equal(ConfigManager.Instance.AnchorAmount, commitmentTx.LocalAnchorOutput.Amount);
-        Assert.Equal(ConfigManager.Instance.AnchorAmount, commitmentTx.RemoteAnchorOutput.Amount);
-
-        ConfigManagerUtil.ResetConfigManager();
+        Assert.Equal(expectedAnchorAmount, commitmentTx.LocalAnchorOutput.Amount);
+        Assert.Equal(expectedAnchorAmount, commitmentTx.RemoteAnchorOutput.Amount);
     }
 
     [Fact]
@@ -114,34 +97,27 @@ public class CommitmentTransactionTests
         // Given
 
         // When/Then
-        var exception = Assert.Throws<ArgumentException>(() => new CommitmentTransaction(_fundingOutput,
-                                                                                         _localPaymentBasepoint,
-                                                                                         _remotePaymentBasepoint,
-                                                                                         _localDelayedPubKey,
-                                                                                         _revocationPubKey,
-                                                                                         LightningMoney.Zero,
-                                                                                         LightningMoney.Zero,
-                                                                                         TO_SELF_DELAY,
-                                                                                         _commitmentNumber,
-                                                                                         true));
+        var exception = Assert.Throws<ArgumentException>(() =>
+        {
+            return new CommitmentTransaction(LightningMoney.Zero, LightningMoney.Satoshis(800), false, Network.MAIN_NET,
+                                             _fundingOutput, _localPaymentBasepoint, _remotePaymentBasepoint,
+                                             _localDelayedPubKey, _revocationPubKey, LightningMoney.Zero,
+                                             LightningMoney.Zero, TO_SELF_DELAY, _commitmentNumber, true);
+        });
 
         Assert.Contains("Both toLocalAmount and toRemoteAmount cannot be zero", exception.Message);
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public void Given_AmountBelowDustLimitForFunder_When_SigningTransaction_Then_RemovesToLocalOutput()
     {
         // Given
-        ConfigManager.Instance.IsOptionAnchorOutput = false;
-        ConfigManager.Instance.DustLimitAmount = new LightningMoney(800, LightningMoneyUnit.SATOSHI);
-        const bool IS_CHANNEL_FUNDER = true;
         // ToLocalAmount and ToRemoteAmount are inverted to simulate the dust limit
-        var commitmentTx = new CommitmentTransaction(_fundingOutput, _localPaymentBasepoint,
+        var commitmentTx = new CommitmentTransaction(LightningMoney.Zero, LightningMoney.Satoshis(800), false,
+                                                     Network.MAIN_NET, _fundingOutput, _localPaymentBasepoint,
                                                      _remotePaymentBasepoint, _localDelayedPubKey, _revocationPubKey,
                                                      _toRemoteAmount, _toLocalAmount, TO_SELF_DELAY, _commitmentNumber,
-                                                     IS_CHANNEL_FUNDER);
+                                                     true);
 
         commitmentTx.ConstructTransaction(new LightningMoney(2_000, LightningMoneyUnit.SATOSHI));
 
@@ -153,18 +129,13 @@ public class CommitmentTransactionTests
         Assert.Single(signedTx.Outputs); // Only toRemote output remains
         Assert.Equal(LightningMoney.Zero, commitmentTx.ToLocalOutput.Amount); // ToLocal output was removed
         Assert.Equal(commitmentTx.TxId, commitmentTx.ToRemoteOutput.TxId);
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public void Given_AmountBelowDustLimitForNonFunder_When_SigningTransaction_Then_RemovesToRemoteOutput()
     {
         // Given
-        ConfigManager.Instance.IsOptionAnchorOutput = false;
-        ConfigManager.Instance.DustLimitAmount = new LightningMoney(800, LightningMoneyUnit.SATOSHI);
-        const bool IS_CHANNEL_FUNDER = false;
-        var commitmentTx = CreateCommitmentTransaction(IS_CHANNEL_FUNDER);
+        var commitmentTx = CreateCommitmentTransaction(false, LightningMoney.Zero, LightningMoney.Satoshis(800));
         commitmentTx.ConstructTransaction(new LightningMoney(2_000, LightningMoneyUnit.SATOSHI));
 
         // When
@@ -175,23 +146,19 @@ public class CommitmentTransactionTests
         Assert.Single(signedTx.Outputs); // Only toLocal output remains
         Assert.Equal(LightningMoney.Zero, commitmentTx.ToRemoteOutput.Amount); // ToRemote output was removed
         Assert.Equal(commitmentTx.TxId, commitmentTx.ToLocalOutput.TxId);
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public void Given_AddedHtlcOutputs_When_SigningTransaction_Then_OutputsHaveCorrectProperties()
     {
         // Given
-        ConfigManager.Instance.IsOptionAnchorOutput = false;
-        const bool IS_CHANNEL_FUNDER = true;
-        var commitmentTx = CreateCommitmentTransaction(IS_CHANNEL_FUNDER);
+        var commitmentTx = CreateCommitmentTransaction(true, LightningMoney.Zero, _defaultDustLimitAmount);
 
-        var htlcOffered = new OfferedHtlcOutput(_localPaymentBasepoint, _revocationPubKey, _localPaymentBasepoint,
-                                                new ReadOnlyMemory<byte>([0]),
+        var htlcOffered = new OfferedHtlcOutput(LightningMoney.Zero, _localPaymentBasepoint, _revocationPubKey,
+                                                _localPaymentBasepoint, new ReadOnlyMemory<byte>([0]),
                                                 new LightningMoney(500, LightningMoneyUnit.SATOSHI), 500);
-        var htlcReceived = new ReceivedHtlcOutput(_localPaymentBasepoint, _revocationPubKey, _localPaymentBasepoint,
-                                                  new ReadOnlyMemory<byte>([0]),
+        var htlcReceived = new ReceivedHtlcOutput(LightningMoney.Zero, _localPaymentBasepoint, _revocationPubKey,
+                                                  _localPaymentBasepoint, new ReadOnlyMemory<byte>([0]),
                                                   new LightningMoney(400, LightningMoneyUnit.SATOSHI), 500);
 
         commitmentTx.AddOfferedHtlcOutput(htlcOffered);
@@ -209,27 +176,23 @@ public class CommitmentTransactionTests
         Assert.Equal(commitmentTx.TxId, commitmentTx.OfferedHtlcOutputs[0].TxId);
         Assert.Single(commitmentTx.ReceivedHtlcOutputs);
         Assert.Equal(commitmentTx.TxId, commitmentTx.ReceivedHtlcOutputs[0].TxId);
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public void Given_UnsignedTransaction_When_GetSignedTransactionCalled_Then_ThrowsInvalidOperationException()
     {
         // Given
-        var commitmentTx = CreateCommitmentTransaction(true);
+        var commitmentTx = CreateCommitmentTransaction(true, LightningMoney.Satoshis(330), _defaultDustLimitAmount);
 
         // When/Then
         Assert.Throws<InvalidOperationException>(() => commitmentTx.GetSignedTransaction());
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public void Given_SignedTransaction_When_GetSignedTransactionCalled_Then_ReturnsFinalizedTransaction()
     {
         // Given
-        var commitmentTx = CreateCommitmentTransaction(true);
+        var commitmentTx = CreateCommitmentTransaction(true, LightningMoney.Satoshis(330), _defaultDustLimitAmount);
         commitmentTx.ConstructTransaction(new LightningMoney(1_000, LightningMoneyUnit.SATOSHI));
         commitmentTx.SignTransaction(_privateKey);
 
@@ -239,15 +202,13 @@ public class CommitmentTransactionTests
         // Then
         Assert.NotNull(signedTx);
         Assert.Equal(commitmentTx.TxId, signedTx.GetHash());
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
     [Fact]
     public void Given_RemoteSignature_When_AppendRemoteSignatureAndSign_Then_SignsTransaction()
     {
         // Given
-        var commitmentTx = CreateCommitmentTransaction(true);
+        var commitmentTx = CreateCommitmentTransaction(true, LightningMoney.Satoshis(330), _defaultDustLimitAmount);
         var remoteSignature = new ECDSASignature(Convert.FromHexString("3045022100c3127b33dcc741dd6b05b1e63cbd1a9a7d816f37af9b6756fa2376b056f032370220408b96279808fe57eb7e463710804cdf4f108388bc5cf722d8c848d2c7f9f3b0"));
 
         // When
@@ -256,14 +217,14 @@ public class CommitmentTransactionTests
 
         // Then
         Assert.NotNull(transaction);
-
-        ConfigManagerUtil.ResetConfigManager();
     }
 
-    private CommitmentTransaction CreateCommitmentTransaction(bool isChannelFunder)
+    private CommitmentTransaction CreateCommitmentTransaction(bool isChannelFunder, LightningMoney anchorAmount,
+                                                              LightningMoney dustLimitAmount)
     {
-        return new CommitmentTransaction(_fundingOutput, _localPaymentBasepoint, _remotePaymentBasepoint,
-                                         _localDelayedPubKey, _revocationPubKey, _toLocalAmount, _toRemoteAmount,
-                                         TO_SELF_DELAY, _commitmentNumber, isChannelFunder);
+        return new CommitmentTransaction(anchorAmount, dustLimitAmount, false, Network.MAIN_NET, _fundingOutput,
+                                         _localPaymentBasepoint, _remotePaymentBasepoint, _localDelayedPubKey,
+                                         _revocationPubKey, _toLocalAmount, _toRemoteAmount, TO_SELF_DELAY,
+                                         _commitmentNumber, isChannelFunder);
     }
 }

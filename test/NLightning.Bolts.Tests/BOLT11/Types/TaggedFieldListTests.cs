@@ -4,6 +4,7 @@ using Bolts.BOLT11.Enums;
 using Bolts.BOLT11.Interfaces;
 using Bolts.BOLT11.Types;
 using Common.BitUtils;
+using Common.Types;
 using Mocks;
 
 public class TaggedFieldListTests
@@ -318,7 +319,7 @@ public class TaggedFieldListTests
         // Given
         var bitReader = new BitReader([]); // defaults to HasMoreBits = false
         // When
-        var list = TaggedFieldList.FromBitReader(bitReader);
+        var list = TaggedFieldList.FromBitReader(bitReader, Network.MAIN_NET);
 
         // Then
         Assert.Empty(list);

@@ -6,7 +6,6 @@ using BitUtils;
 using Enums;
 using Exceptions;
 using Interfaces;
-using Managers;
 using Types;
 
 /// <summary>
@@ -14,7 +13,6 @@ using Types;
 /// </summary>
 /// <remarks>
 /// Initializes a new instance of the OpenChannel2Payload class.
-/// This class depends on the initialized singleton class <see cref="Common.Managers.ConfigManager"/>.
 /// </remarks>
 public class OpenChannel2Payload : IMessagePayload
 {
@@ -120,15 +118,21 @@ public class OpenChannel2Payload : IMessagePayload
     /// </summary>
     public ChannelFlags ChannelFlags { get; set; }
 
-    public OpenChannel2Payload(ChannelId temporaryChannelId, uint fundingFeeRatePerKw, uint commitmentFeeRatePerKw, ulong fundingAmount, PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint, PubKey firstPerCommitmentPoint, PubKey secondPerCommitmentPoint, ChannelFlags channelFlags)
+    public OpenChannel2Payload(LightningMoney dustLimitAmount, LightningMoney htlcMinimumAmount, uint locktime,
+                               LightningMoney maxHtlcValueInFlight, ushort maxAcceptedHtlcs, Network network,
+                               ushort toSelfDelay, ChannelId temporaryChannelId, uint fundingFeeRatePerKw,
+                               uint commitmentFeeRatePerKw, ulong fundingAmount, PubKey fundingPubKey,
+                               PubKey revocationBasepoint, PubKey paymentBasepoint, PubKey delayedPaymentBasepoint,
+                               PubKey htlcBasepoint, PubKey firstPerCommitmentPoint, PubKey secondPerCommitmentPoint,
+                               ChannelFlags channelFlags)
     {
-        ChainHash = ConfigManager.Instance.Network.ChainHash;
-        DustLimitAmount = ConfigManager.Instance.DustLimitAmount;
-        MaxHtlcValueInFlightAmount = ConfigManager.Instance.MaxHtlcValueInFlightAmount;
-        HtlcMinimumAmount = ConfigManager.Instance.HtlcMinimumAmount;
-        ToSelfDelay = ConfigManager.Instance.ToSelfDelay;
-        MaxAcceptedHtlcs = ConfigManager.Instance.MaxAcceptedHtlcs;
-        Locktime = ConfigManager.Instance.Locktime;
+        ChainHash = network.ChainHash;
+        DustLimitAmount = dustLimitAmount;
+        MaxHtlcValueInFlightAmount = maxHtlcValueInFlight;
+        HtlcMinimumAmount = htlcMinimumAmount;
+        ToSelfDelay = toSelfDelay;
+        MaxAcceptedHtlcs = maxAcceptedHtlcs;
+        Locktime = locktime;
         TemporaryChannelId = temporaryChannelId;
         FundingFeeRatePerKw = fundingFeeRatePerKw;
         CommitmentFeeRatePerKw = commitmentFeeRatePerKw;

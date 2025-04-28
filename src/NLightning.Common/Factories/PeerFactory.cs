@@ -19,7 +19,7 @@ public class PeerFactory : IPeerFactory
     private readonly IMessageServiceFactory _messageServiceFactory;
     private readonly IPingPongServiceFactory _pingPongServiceFactory;
     private readonly ITransportServiceFactory _transportServiceFactory;
-    private readonly IOptions<NodeOptions> _nodeOptions;
+    private readonly NodeOptions _nodeOptions;
 
     public PeerFactory(ILoggerFactory loggerFactory, IMessageFactory messageFactory,
                        IMessageServiceFactory messageServiceFactory, IPingPongServiceFactory pingPongServiceFactory,
@@ -30,7 +30,7 @@ public class PeerFactory : IPeerFactory
         _messageServiceFactory = messageServiceFactory;
         _pingPongServiceFactory = pingPongServiceFactory;
         _transportServiceFactory = transportServiceFactory;
-        _nodeOptions = nodeOptions;
+        _nodeOptions = nodeOptions.Value;
     }
 
     /// <summary>
@@ -64,7 +64,8 @@ public class PeerFactory : IPeerFactory
         // Create the ping pong service
         var pingPongService = _pingPongServiceFactory.CreatePingPongService();
 
-        return new Peer(messageService, pingPongService, _messageFactory, logger, _nodeOptions, peerAddress, false);
+        return new Peer(_nodeOptions.Features, logger, _messageFactory, messageService, _nodeOptions.NetworkTimeout,
+                        peerAddress, pingPongService);
     }
 
     public async Task<Peer> CreateConnectingPeerAsync(TcpClient tcpClient)
@@ -103,6 +104,7 @@ public class PeerFactory : IPeerFactory
 
         var peerAddress = new PeerAddress(transportService.RemoteStaticPublicKey, ipAddress, port);
 
-        return new Peer(messageService, pingPongService, _messageFactory, logger, _nodeOptions, peerAddress, true);
+        return new Peer(_nodeOptions.Features, logger, _messageFactory, messageService, _nodeOptions.NetworkTimeout,
+                        peerAddress, pingPongService);
     }
 }

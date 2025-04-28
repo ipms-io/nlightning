@@ -3,12 +3,11 @@ using NBitcoin.Crypto;
 
 namespace NLightning.Common.Interfaces;
 
-using Options;
 using Types;
 
 public interface IMessageFactory
 {
-    IMessage CreateInitMessage(NodeOptions options);
+    IMessage CreateInitMessage();
     IMessage CreateWarningMessage(string message, ChannelId? channelId);
     IMessage CreateWarningMessage(byte[] data, ChannelId? channelId);
     IMessage CreateStfuMessage(ChannelId channelId, bool initiator);

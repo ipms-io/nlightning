@@ -1,6 +1,7 @@
-using NLightning.Bolts.Tests.Fixtures;
-
 namespace NLightning.Bolts.Tests.TestCollections;
+
+using Fixtures;
+
 [CollectionDefinition(NAME)]
 public class LightningRegtestNetworkFixtureCollection : ICollectionFixture<LightningRegtestNetworkFixture>
 {

@@ -1,28 +1,29 @@
 using System.Net;
 using System.Net.Sockets;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace NLightning.NLTG.Services;
 
 using Common.Interfaces;
+using Common.Options;
 using Interfaces;
 
 public class TcpListenerService : ITcpListenerService
 {
     private readonly ILogger<TcpListenerService> _logger;
-    private readonly IConfiguration _configuration;
+    private readonly NodeOptions _nodeOptions;
     private readonly IPeerManager _peerManager;
     private readonly List<TcpListener> _listeners = [];
 
     private CancellationTokenSource? _cts;
     private Task? _listeningTask;
 
-    public TcpListenerService(ILogger<TcpListenerService> logger, IConfiguration configuration,
+    public TcpListenerService(ILogger<TcpListenerService> logger, IOptions<NodeOptions> nodeOptions,
                               IPeerManager peerManager)
     {
         _logger = logger;
-        _configuration = configuration;
+        _nodeOptions = nodeOptions.Value;
         _peerManager = peerManager;
     }
 
@@ -30,9 +31,7 @@ public class TcpListenerService : ITcpListenerService
     {
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        var listenAddresses = _configuration.GetSection("ListenAddress").Get<string[]>() ?? [];
-
-        foreach (var address in listenAddresses)
+        foreach (var address in _nodeOptions.ListenAddresses)
         {
             var parts = address.Split(':');
             if (parts.Length != 2 || !int.TryParse(parts[1], out var port))
@@ -124,7 +123,7 @@ public class TcpListenerService : ITcpListenerService
         }
         catch (OperationCanceledException)
         {
-            _logger.LogInformation("Listener service shutdown requested");
+            _logger.LogInformation("Stopping listener service");
         }
         catch (Exception e)
         {

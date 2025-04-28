@@ -8,7 +8,6 @@ using Bolts.BOLT11.Constants;
 using Bolts.BOLT11.Types;
 using Common.Constants;
 using Common.Exceptions;
-using Common.Managers;
 using Common.Types;
 using TestCollections;
 
@@ -99,10 +98,8 @@ public class InvoiceTests
     public void Given_Amount_When_InvoiceIsCreatedWithInSatoshis_Then_AmountIsCorrect(string network, ulong amountSats, string expectedHumanReadablePart)
     {
         // Arrange
-        ConfigManager.Instance.Network = network;
-
         // Act
-        var invoice = Invoice.InSatoshis(amountSats, "test", s_testPaymentHash, s_testPaymentSecret);
+        var invoice = Invoice.InSatoshis(amountSats, "test", s_testPaymentHash, s_testPaymentSecret, network);
 
         // Assert
         Assert.Equal(expectedHumanReadablePart, invoice.HumanReadablePart);
@@ -206,8 +203,7 @@ public class InvoiceTests
     public void Given_NewInvoice_When_EncodeCalled_Then_ReturnsNonEmptyString()
     {
         // Given
-        ConfigManager.Instance.Network = Network.MAIN_NET;
-        var invoice = new Invoice(1000, "TestDesc", uint256.One, uint256.Zero)
+        var invoice = new Invoice(1000, "TestDesc", uint256.One, uint256.Zero, Network.MAIN_NET)
         {
             PayeePubKey = new PubKey("020202020202020202020202020202020202020202020202020202020202020202")
         };
@@ -245,10 +241,9 @@ public class InvoiceTests
     {
         // Given
         const string INVOICE_STRING = "lnbc20m1pvjluezsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygshp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppj3a24vwu6r8ejrss3axul8rxldph2q7z99qrsgqz6qsgww34xlatfj6e3sngrwfy3ytkt29d2qttr8qz2mnedfqysuqypgqex4haa2h8fx3wnypranf3pdwyluftwe680jjcfp438u82xqphf75ym";
-        ConfigManager.Instance.Network = Network.MAIN_NET;
 
         // When
-        var invoice = Invoice.Decode(INVOICE_STRING);
+        var invoice = Invoice.Decode(INVOICE_STRING, Network.MAIN_NET);
 
         // Then
         Assert.Equal(2000000000U, invoice.AmountMilliSats);

@@ -24,7 +24,7 @@ public class FeeServiceTests
 
         s_httpMessageHandlerMock = new Mock<HttpMessageHandler>();
         var httpClient = new HttpClient(s_httpMessageHandlerMock.Object);
-        s_feeService = new FeeService(new OptionsWrapper<FeeOptions>(new FeeOptions()), httpClient,
+        s_feeService = new FeeService(new OptionsWrapper<FeeEstimationOptions>(new FeeEstimationOptions()), httpClient,
                                       new Mock<ILogger<FeeService>>().Object);
     }
 

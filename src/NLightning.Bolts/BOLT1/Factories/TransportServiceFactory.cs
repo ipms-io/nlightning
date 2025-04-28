@@ -1,10 +1,12 @@
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace NLightning.Bolts.BOLT1.Factories;
 
 using BOLT8.Services;
 using Common.Interfaces;
+using Common.Options;
 
 /// <summary>
 /// Factory for creating a transport service.
@@ -15,10 +17,12 @@ using Common.Interfaces;
 public sealed class TransportServiceFactory : ITransportServiceFactory
 {
     private readonly ILoggerFactory _loggerFactory;
+    private readonly NodeOptions _nodeOptions;
 
-    public TransportServiceFactory(ILoggerFactory loggerFactory)
+    public TransportServiceFactory(ILoggerFactory loggerFactory, IOptions<NodeOptions> nodeOptions)
     {
         _loggerFactory = loggerFactory;
+        _nodeOptions = nodeOptions.Value;
     }
 
     /// <inheritdoc />
@@ -27,6 +31,6 @@ public sealed class TransportServiceFactory : ITransportServiceFactory
         // Create a specific logger for the TransportService class
         var logger = _loggerFactory.CreateLogger<TransportService>();
 
-        return new TransportService(logger, isInitiator, s, rs, tcpClient);
+        return new TransportService(logger, _nodeOptions.NetworkTimeout, isInitiator, s, rs, tcpClient);
     }
 }

@@ -5,7 +5,6 @@ namespace NLightning.Bolts.BOLT3.Outputs;
 
 using Common.Constants;
 using Common.Crypto.Hashes;
-using Common.Managers;
 
 /// <summary>
 /// Represents a received HTLC output in a commitment transaction.
@@ -15,20 +14,23 @@ public class ReceivedHtlcOutput : BaseHtlcOutput
     public override ScriptType ScriptType => ScriptType.P2WSH;
 
     [SetsRequiredMembers]
-    public ReceivedHtlcOutput(PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey,
-                              ReadOnlyMemory<byte> paymentHash, LightningMoney amount, ulong? cltvExpiry = null)
-        : base(GenerateToLocalHtlcScript(revocationPubKey, remoteHtlcPubKey, localHtlcPubKey, paymentHash,
-                                         cltvExpiry ?? ConfigManager.Instance.DefaultCltvExpiry),
+    public ReceivedHtlcOutput(LightningMoney anchorAmount, PubKey revocationPubKey, PubKey remoteHtlcPubKey,
+                              PubKey localHtlcPubKey, ReadOnlyMemory<byte> paymentHash, LightningMoney amount,
+                              ulong cltvExpiry)
+        : base(GenerateToLocalHtlcScript(anchorAmount, revocationPubKey, remoteHtlcPubKey, localHtlcPubKey, paymentHash,
+                                         cltvExpiry),
                amount)
     {
         RevocationPubKey = revocationPubKey;
         RemoteHtlcPubKey = remoteHtlcPubKey;
         LocalHtlcPubKey = localHtlcPubKey;
         PaymentHash = paymentHash;
-        CltvExpiry = cltvExpiry ?? ConfigManager.Instance.DefaultCltvExpiry;
+        CltvExpiry = cltvExpiry;
     }
 
-    private static Script GenerateToLocalHtlcScript(PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey, ReadOnlyMemory<byte> paymentHash, ulong cltvExpiry)
+    private static Script GenerateToLocalHtlcScript(LightningMoney anchorAmount, PubKey revocationPubKey,
+                                                    PubKey remoteHtlcPubKey, PubKey localHtlcPubKey,
+                                                    ReadOnlyMemory<byte> paymentHash, ulong cltvExpiry)
     {
         // Hash the revocationPubKey
         using var sha256 = new Sha256();
@@ -71,7 +73,7 @@ public class ReceivedHtlcOutput : BaseHtlcOutput
             OpcodeType.OP_ENDIF
         ];
 
-        if (ConfigManager.Instance.IsOptionAnchorOutput)
+        if (!anchorAmount.IsZero)
         {
             ops.AddRange([
                 OpcodeType.OP_1,

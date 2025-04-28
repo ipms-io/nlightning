@@ -27,29 +27,30 @@ public class PeerManagerTests
     private readonly Mock<ILogger<Peer>> _mockPeerLogger = new();
     private readonly Mock<IPeerFactory> _mockPeerFactory = new();
     private readonly Mock<IMessageFactory> _mockMessageFactory = new();
-    private readonly IOptions<NodeOptions> _nodeOptions = new OptionsWrapper<NodeOptions>(new NodeOptions());
+    private static readonly NodeOptions s_nodeOptions = new();
+    private readonly IOptions<NodeOptions> _nodeOptionsWrapper = new OptionsWrapper<NodeOptions>(s_nodeOptions);
 
     public PeerManagerTests()
     {
         _mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
         _mockPeerFactory.Setup(f => f.CreateConnectedPeerAsync(It.IsAny<PeerAddress>(), It.IsAny<TcpClient>()))
             .ReturnsAsync((PeerAddress peerAddres, TcpClient _) =>
-                new Peer(_mockMessageService.Object, _mockPingPongService.Object, _mockMessageFactory.Object,
-                         _mockPeerLogger.Object, _nodeOptions, peerAddres, false));
+                new Peer(s_nodeOptions.Features, _mockPeerLogger.Object, _mockMessageFactory.Object,
+                         _mockMessageService.Object, s_nodeOptions.NetworkTimeout, peerAddres,
+                         _mockPingPongService.Object));
     }
 
     [Fact]
     public async Task Given_ValidPeerAddress_When_ConnectToPeerAsync_IsCalled_Then_PeerIsAdded()
     {
         // Arrange
-        ConfigManagerUtil.ResetConfigManager();
         var availablePort = await PortPoolUtil.GetAvailablePortAsync();
         var tcpListener = new TcpListener(IPAddress.Loopback, availablePort);
         tcpListener.Start();
 
         try
         {
-            var peerService = new PeerManager(_mockPeerFactory.Object, _mockLogger.Object);
+            var peerService = new PeerManager(_mockLogger.Object, _nodeOptionsWrapper, _mockPeerFactory.Object);
             var peerAddress = new PeerAddress(_pubKey, tcpListener.LocalEndpoint.ToEndpointString());
             var acceptTask = Task.Run(async () =>
             {
@@ -82,7 +83,7 @@ public class PeerManagerTests
 
         try
         {
-            var peerService = new PeerManager(_mockPeerFactory.Object, _mockLogger.Object);
+            var peerService = new PeerManager(_mockLogger.Object, _nodeOptionsWrapper, _mockPeerFactory.Object);
 
             var peerAddress = new PeerAddress(_pubKey, IPAddress.Loopback.ToString(), availablePort);
 
@@ -101,22 +102,20 @@ public class PeerManagerTests
     public async Task Given_ValidTcpClient_When_AcceptPeerAsync_IsCalled_Then_PeerIsAdded()
     {
         // Arrange
-        ConfigManagerUtil.ResetConfigManager();
-
         var pubkey = new Key().PubKey;
 
         _mockPeerFactory.Setup(f => f.CreateConnectingPeerAsync(It.IsAny<TcpClient>()))
-                       .ReturnsAsync((TcpClient _) => new Peer(_mockMessageService.Object,
-                                                               _mockPingPongService.Object,
-                                                               _mockMessageFactory.Object, _mockPeerLogger.Object,
-                                                               _nodeOptions,
-                                                               new PeerAddress(pubkey, "127.0.0.1:9735"), true));
+                       .ReturnsAsync((TcpClient _) => new Peer(s_nodeOptions.Features, _mockPeerLogger.Object,
+                                                               _mockMessageFactory.Object, _mockMessageService.Object,
+                                                               s_nodeOptions.NetworkTimeout,
+                                                               new PeerAddress(pubkey, "127.0.0.1:9735"),
+                                                               _mockPingPongService.Object));
 
-        var peerService = new PeerManager(_mockPeerFactory.Object, _mockLogger.Object);
+        var peerService = new PeerManager(_mockLogger.Object, _nodeOptionsWrapper, _mockPeerFactory.Object);
         var tcpClient = new TcpClient();
 
         // Act
-        await peerService.AcceptPeerAsync(tcpClient!);
+        await peerService.AcceptPeerAsync(tcpClient);
 
         // Assert
         var field = peerService.GetType().GetField("_peers", BindingFlags.NonPublic | BindingFlags.Instance);

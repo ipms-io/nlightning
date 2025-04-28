@@ -8,6 +8,8 @@
     <IsTestProject>true</IsTestProject>
     <Configurations>Debug;Release;Debug.Native;Debug.Wasm;Release.Native;Release.Wasm</Configurations>
     <Platforms>AnyCPU</Platforms>
+    <VSTestBlame>true</VSTestBlame>
+    <VSTestNoLogo>true</VSTestNoLogo>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))">

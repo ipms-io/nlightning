@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using NBitcoin;
 using NBitcoin.Crypto;
 
@@ -18,22 +19,27 @@ using Types;
 /// </summary>
 public class MessageFactory : IMessageFactory
 {
+    private readonly NodeOptions _nodeOptions;
+
+    public MessageFactory(IOptions<NodeOptions> nodeOptions)
+    {
+        _nodeOptions = nodeOptions.Value;
+    }
+
     #region Init Message
     /// <summary>
     /// Create an Init message.
     /// </summary>
-    /// <param name="options">The node options.</param>
     /// <returns>The Init message.</returns>
     /// <seealso cref="InitMessage"/>
-    /// <seealso cref="NodeOptions"/>
     /// <seealso cref="InitPayload"/>
-    public IMessage CreateInitMessage(NodeOptions options)
+    public IMessage CreateInitMessage()
     {
         // Get features from options
-        var features = options.GetNodeFeatures();
+        var features = _nodeOptions.Features.GetNodeFeatures();
         var payload = new InitPayload(features);
 
-        return new InitMessage(payload, options.GetInitTlvs());
+        return new InitMessage(payload, _nodeOptions.Features.GetInitTlvs());
     }
     #endregion
 
@@ -156,7 +162,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="TxAddInputPayload"/>
     public IMessage CreateTxAddInputMessage(ChannelId channelId, ulong serialId, byte[] prevTx, uint prevTxVout,
-                                                   uint sequence)
+                                            uint sequence)
     {
         var payload = new TxAddInputPayload(channelId, serialId, prevTx, prevTxVout, sequence);
 
@@ -258,7 +264,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="TxInitRbfPayload"/>
     public IMessage CreateTxInitRbfMessage(ChannelId channelId, uint locktime, uint feerate,
-                                                  long fundingOutputContrubution, bool requireConfirmedInputs)
+                                           long fundingOutputContrubution, bool requireConfirmedInputs)
     {
         FundingOutputContributionTlv? fundingOutputContrubutionTlv = null;
         RequireConfirmedInputsTlv? requireConfirmedInputsTlv = null;
@@ -292,7 +298,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="FundingOutputContributionTlv"/>
     /// <seealso cref="RequireConfirmedInputsTlv"/>
     public IMessage CreateTxAckRbfMessage(ChannelId channelId, long fundingOutputContrubution,
-                                                 bool requireConfirmedInputs)
+                                          bool requireConfirmedInputs)
     {
         FundingOutputContributionTlv? fundingOutputContrubutionTlv = null;
         RequireConfirmedInputsTlv? requireConfirmedInputsTlv = null;
@@ -343,7 +349,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="ShortChannelId"/>
     /// <seealso cref="ChannelReadyPayload"/>
     public IMessage CreateChannelReadyMessage(ChannelId channelId, PubKey secondPerCommitmentPoint,
-                                                     ShortChannelId? shortChannelId = null)
+                                              ShortChannelId? shortChannelId = null)
     {
         var payload = new ChannelReadyPayload(channelId, secondPerCommitmentPoint);
 
@@ -382,7 +388,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="ECDSASignature"/>
     /// <seealso cref="ClosingSignedPayload"/>
     public IMessage CreateClosingSignedMessage(ChannelId channelId, ulong feeSatoshis, ECDSASignature signature,
-                                                      ulong minFeeSatoshis, ulong maxFeeSatoshis)
+                                               ulong minFeeSatoshis, ulong maxFeeSatoshis)
     {
         var payload = new ClosingSignedPayload(channelId, feeSatoshis, signature);
 
@@ -415,18 +421,21 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="Script"/>
     /// <seealso cref="OpenChannel2Payload"/>
     public IMessage CreateOpenChannel2Message(ChannelId temporaryChannelId, uint fundingFeeRatePerKw,
-                                                     uint commitmentFeeRatePerKw, ulong fundingSatoshis,
-                                                     PubKey fundingPubKey, PubKey revocationBasepoint,
-                                                     PubKey paymentBasepoint, PubKey delayedPaymentBasepoint,
-                                                     PubKey htlcBasepoint, PubKey firstPerCommitmentPoint,
-                                                     PubKey secondPerCommitmentPoint, ChannelFlags channelFlags,
-                                                     Script? shutdownScriptPubkey = null, byte[]? channelType = null,
-                                                     bool requireConfirmedInputs = false)
+                                              uint commitmentFeeRatePerKw, ulong fundingSatoshis, PubKey fundingPubKey,
+                                              PubKey revocationBasepoint, PubKey paymentBasepoint,
+                                              PubKey delayedPaymentBasepoint, PubKey htlcBasepoint,
+                                              PubKey firstPerCommitmentPoint, PubKey secondPerCommitmentPoint,
+                                              ChannelFlags channelFlags, Script? shutdownScriptPubkey = null,
+                                              byte[]? channelType = null, bool requireConfirmedInputs = false)
     {
-        var payload = new OpenChannel2Payload(temporaryChannelId, fundingFeeRatePerKw, commitmentFeeRatePerKw,
-                                              fundingSatoshis, fundingPubKey, revocationBasepoint, paymentBasepoint,
-                                              delayedPaymentBasepoint, htlcBasepoint, firstPerCommitmentPoint,
-                                              secondPerCommitmentPoint, channelFlags);
+        var payload = new OpenChannel2Payload(_nodeOptions.DustLimitAmount, _nodeOptions.HtlcMinimumAmount,
+                                              _nodeOptions.Locktime, _nodeOptions.MaxHtlcValueInFlight,
+                                              _nodeOptions.MaxAcceptedHtlcs, _nodeOptions.Network,
+                                              _nodeOptions.ToSelfDelay, temporaryChannelId, fundingFeeRatePerKw,
+                                              commitmentFeeRatePerKw, fundingSatoshis, fundingPubKey,
+                                              revocationBasepoint, paymentBasepoint, delayedPaymentBasepoint,
+                                              htlcBasepoint, firstPerCommitmentPoint, secondPerCommitmentPoint,
+                                              channelFlags);
 
         return new OpenChannel2Message(payload,
                                        shutdownScriptPubkey is null
@@ -459,15 +468,17 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="Script"/>
     /// <seealso cref="AcceptChannel2Payload"/>
     public IMessage CreateAcceptChannel2Message(ChannelId temporaryChannelId, ulong fundingSatoshis,
-                                                     PubKey fundingPubKey, PubKey revocationBasepoint,
-                                                     PubKey paymentBasepoint, PubKey delayedPaymentBasepoint,
-                                                     PubKey htlcBasepoint, PubKey firstPerCommitmentPoint,
-                                                     Script? shutdownScriptPubkey = null, byte[]? channelType = null,
-                                                     bool requireConfirmedInputs = false)
+                                                PubKey fundingPubKey, PubKey revocationBasepoint,
+                                                PubKey paymentBasepoint, PubKey delayedPaymentBasepoint,
+                                                PubKey htlcBasepoint, PubKey firstPerCommitmentPoint,
+                                                Script? shutdownScriptPubkey = null, byte[]? channelType = null,
+                                                bool requireConfirmedInputs = false)
     {
-        var payload = new AcceptChannel2Payload(temporaryChannelId, fundingSatoshis, fundingPubKey, revocationBasepoint,
-                                                paymentBasepoint, delayedPaymentBasepoint, htlcBasepoint,
-                                                firstPerCommitmentPoint);
+        var payload = new AcceptChannel2Payload(_nodeOptions.DustLimitAmount, _nodeOptions.HtlcMinimumAmount,
+                                                _nodeOptions.MaxHtlcValueInFlight, _nodeOptions.MaxAcceptedHtlcs,
+                                                _nodeOptions.MinimumDepth, _nodeOptions.ToSelfDelay, temporaryChannelId,
+                                                fundingSatoshis, fundingPubKey, revocationBasepoint, paymentBasepoint,
+                                                delayedPaymentBasepoint, htlcBasepoint, firstPerCommitmentPoint);
 
         return new AcceptChannel2Message(payload,
                                        shutdownScriptPubkey is null
@@ -494,7 +505,9 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="UpdateAddHtlcMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="UpdateAddHtlcPayload"/>
-    public IMessage CreateUpdateAddHtlcMessage(ChannelId channelId, ulong id, ulong amountMsat, ReadOnlyMemory<byte> paymentHash, uint cltvExpiry, ReadOnlyMemory<byte>? onionRoutingPacket = null)
+    public IMessage CreateUpdateAddHtlcMessage(ChannelId channelId, ulong id, ulong amountMsat,
+                                               ReadOnlyMemory<byte> paymentHash, uint cltvExpiry,
+                                               ReadOnlyMemory<byte>? onionRoutingPacket = null)
     {
         var payload = new UpdateAddHtlcPayload(channelId, id, amountMsat, paymentHash, cltvExpiry, onionRoutingPacket);
 
@@ -546,7 +559,8 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="ECDSASignature"/>
     /// <seealso cref="CommitmentSignedPayload"/>
-    public IMessage CreateCommitmentSignedMessage(ChannelId channelId, ECDSASignature signature, IEnumerable<ECDSASignature> htlcSignatures)
+    public IMessage CreateCommitmentSignedMessage(ChannelId channelId, ECDSASignature signature,
+                                                  IEnumerable<ECDSASignature> htlcSignatures)
     {
         var payload = new CommitmentSignedPayload(channelId, signature, htlcSignatures);
 
@@ -564,7 +578,8 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="ECDSASignature"/>
     /// <seealso cref="RevokeAndAckPayload"/>
-    public IMessage CreateCommitmentSignedMessage(ChannelId channelId, ReadOnlyMemory<byte> perCommitmentSecret, PubKey nextPerCommitmentPoint)
+    public IMessage CreateCommitmentSignedMessage(ChannelId channelId, ReadOnlyMemory<byte> perCommitmentSecret,
+                                                  PubKey nextPerCommitmentPoint)
     {
         var payload = new RevokeAndAckPayload(channelId, perCommitmentSecret, nextPerCommitmentPoint);
 
@@ -598,7 +613,8 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="UpdateFailMalformedHtlcMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="UpdateFailMalformedHtlcPayload"/>
-    public IMessage CreateUpdateFailMalformedHtlcMessage(ChannelId channelId, ulong id, ReadOnlyMemory<byte> sha256OfOnion, ushort failureCode)
+    public IMessage CreateUpdateFailMalformedHtlcMessage(ChannelId channelId, ulong id,
+                                                         ReadOnlyMemory<byte> sha256OfOnion, ushort failureCode)
     {
         var payload = new UpdateFailMalformedHtlcPayload(channelId, id, sha256OfOnion, failureCode);
 
@@ -618,9 +634,9 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="ChannelReestablishPayload"/>
     public IMessage CreateChannelReestablishMessage(ChannelId channelId, ulong nextCommitmentNumber,
-                                                                ulong nextRevocationNumber,
-                                                                ReadOnlyMemory<byte> yourLastPerCommitmentSecret,
-                                                                PubKey myCurrentPerCommitmentPoint)
+                                                    ulong nextRevocationNumber,
+                                                    ReadOnlyMemory<byte> yourLastPerCommitmentSecret,
+                                                    PubKey myCurrentPerCommitmentPoint)
     {
         var payload = new ChannelReestablishPayload(channelId, nextCommitmentNumber, nextRevocationNumber,
                                                     yourLastPerCommitmentSecret, myCurrentPerCommitmentPoint);

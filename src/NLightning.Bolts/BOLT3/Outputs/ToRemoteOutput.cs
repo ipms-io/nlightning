@@ -2,32 +2,34 @@ using NBitcoin;
 
 namespace NLightning.Bolts.BOLT3.Outputs;
 
-using Common.Managers;
-
 /// <summary>
 /// Represents a to_remote output in a commitment transaction.
 /// </summary>
 public class ToRemoteOutput : BaseOutput
 {
-    public override ScriptType ScriptType => ConfigManager.Instance.IsOptionAnchorOutput
+    private readonly bool _hasAnchorOutputs;
+
+    public override ScriptType ScriptType => _hasAnchorOutputs
         ? ScriptType.P2WSH
         : ScriptType.P2WPKH;
 
     public PubKey RemotePubKey { get; }
 
-    public ToRemoteOutput(PubKey remotePubKey, LightningMoney amount)
-        : base(GenerateToRemoteScript(remotePubKey), amount)
+    public ToRemoteOutput(bool hasAnchorOutputs, PubKey remotePubKey, LightningMoney amount)
+        : base(GenerateToRemoteScript(hasAnchorOutputs, remotePubKey), amount)
     {
         ArgumentNullException.ThrowIfNull(remotePubKey);
+
+        _hasAnchorOutputs = hasAnchorOutputs;
 
         RemotePubKey = remotePubKey;
     }
 
-    private static Script GenerateToRemoteScript(PubKey remotePubKey)
+    private static Script GenerateToRemoteScript(bool hasAnchorOutputs, PubKey remotePubKey)
     {
         ArgumentNullException.ThrowIfNull(remotePubKey);
 
-        if (ConfigManager.Instance.IsOptionAnchorOutput)
+        if (hasAnchorOutputs)
         {
             /* The following script can be read as:
              ** spendingPubKey = the pubkey trying to sign this spend

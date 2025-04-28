@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.Extensions.Options;
 
 namespace NLightning.Bolts.Tests.BOLT1.Services;
 
@@ -6,10 +7,11 @@ using Bolts.BOLT1.Services;
 using Common.Factories;
 using Common.Interfaces;
 using Common.Messages.Payloads;
+using Common.Options;
 
 public class MessageServiceTests
 {
-    private readonly MessageFactory _messageFactory = new();
+    private readonly MessageFactory _messageFactory = new(Options.Create(new NodeOptions()));
 
     [Fact]
     public async Task Given_Message_When_SendMessageAsync_IsCalled_Then_TransportServiceWritesMessage()
@@ -23,7 +25,8 @@ public class MessageServiceTests
         await messageService.SendMessageAsync(messageMock.Object);
 
         // Assert
-        transportServiceMock.Verify(t => t.WriteMessageAsync(messageMock.Object, It.IsAny<CancellationToken>()), Times.Once());
+        transportServiceMock.Verify(t => t.WriteMessageAsync(messageMock.Object, It.IsAny<CancellationToken>()),
+                                    Times.Once());
     }
 
     [Fact]
@@ -46,7 +49,8 @@ public class MessageServiceTests
             e => messageService.MessageReceived -= (sender, message) => EventCallback(sender, message, e),
             async () =>
             {
-                var method = messageService.GetType().GetMethod("ReceiveMessage", BindingFlags.NonPublic | BindingFlags.Instance);
+                var method = messageService.GetType().GetMethod("ReceiveMessage",
+                                                                BindingFlags.NonPublic | BindingFlags.Instance);
                 Assert.NotNull(method);
                 method.Invoke(messageService, [messageService, stream]);
                 await tcs.Task;

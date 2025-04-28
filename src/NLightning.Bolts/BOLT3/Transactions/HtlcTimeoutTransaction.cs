@@ -1,13 +1,15 @@
 using NBitcoin;
-using NLightning.Bolts.BOLT3.Outputs;
-using NLightning.Common.Interfaces;
 
 namespace NLightning.Bolts.BOLT3.Transactions;
+
+using Outputs;
+using Network = Common.Types.Network;
 public class HtlcTimeoutTransaction : BaseHtlcTransaction
 {
-    public HtlcTimeoutTransaction(IFeeService feeService, BaseHtlcOutput output, PubKey revocationPubKey,
-                                  PubKey localDelayedPubKey, uint cltvEpiry, ulong toSelfDelay, ulong amountMilliSats)
-        : base(feeService, output, revocationPubKey, localDelayedPubKey, toSelfDelay, amountMilliSats)
+    public HtlcTimeoutTransaction(bool hasAnchorOutputs, Network network, BaseHtlcOutput output,
+                                   PubKey revocationPubKey, PubKey localDelayedPubKey, uint cltvEpiry,
+                                   ulong toSelfDelay, ulong amountMilliSats)
+        : base(hasAnchorOutputs, network, output, revocationPubKey, localDelayedPubKey, toSelfDelay, amountMilliSats)
     {
         SetLockTime(cltvEpiry);
     }

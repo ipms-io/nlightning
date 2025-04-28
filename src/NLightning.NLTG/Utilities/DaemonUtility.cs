@@ -41,7 +41,7 @@ public partial class DaemonUtility
         // Check configuration file (lowest priority)
         if (!isDaemonRequested)
         {
-            isDaemonRequested = configuration.GetValue<bool>("Daemon");
+            isDaemonRequested = configuration.GetValue<bool>("Node:Daemon");
         }
 
         if (!isDaemonRequested)
@@ -301,10 +301,21 @@ public partial class DaemonUtility
             {
                 var process = Process.GetProcessById(pid);
                 logger.Information("Stopping daemon process with PID {PID}", pid);
-                process.Kill();
+
+                // Send SIGTERM instead of Kill for graceful shutdown
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // Windows - send Ctrl+C or use taskkill /PID {pid} /F
+                    SendCtrlEvent(process);
+                }
+                else
+                {
+                    // Unix/macOS - send SIGTERM
+                    SendSignal(pid, 15); // SIGTERM is 15
+                }
 
                 // Wait for exit
-                var exited = process.WaitForExit(5000);
+                var exited = process.WaitForExit(TimeSpan.FromSeconds(10));
                 if (exited)
                 {
                     logger.Information("Daemon process stopped successfully");
@@ -312,7 +323,16 @@ public partial class DaemonUtility
                     return true;
                 }
 
-                logger.Warning("Daemon process did not exit within timeout");
+                // If graceful shutdown fails, force kill as last resort
+                logger.Warning("Daemon process did not exit gracefully, forcing termination");
+                process.Kill();
+                exited = process.WaitForExit(5000);
+                if (exited)
+                {
+                    File.Delete(pidFilePath);
+                    return true;
+                }
+
                 return false;
             }
             catch (ArgumentException)
@@ -327,6 +347,16 @@ public partial class DaemonUtility
             logger.Error(ex, "Error stopping daemon");
             return false;
         }
+    }
+
+    private static void SendSignal(int pid, int signal)
+    {
+        Process.Start("kill", $"-{signal} {pid}").WaitForExit();
+    }
+
+    private static void SendCtrlEvent(Process process)
+    {
+        Process.Start("taskkill", $"/PID {process.Id}").WaitForExit();
     }
 
     #region Native Methods
