@@ -41,32 +41,23 @@ public class MessageServiceTests
         stream.Position = 0;
         var pingPayload = pingMessage.Payload as PingPayload ?? throw new Exception("Unable to converto payload");
 
-        var tcs = new TaskCompletionSource<bool>();
-
         // Act & Assert
-        var receivedMessage = await Assert.RaisesAnyAsync<IMessage?>(
-            e => messageService.MessageReceived += (sender, message) => EventCallback(sender, message, e),
-            e => messageService.MessageReceived -= (sender, message) => EventCallback(sender, message, e),
-            async () =>
+        var receivedMessage = Assert.RaisesAny<IMessage?>(
+            e => messageService.MessageReceived += e,//(sender, message) => EventCallback(sender, message, e),
+            e => messageService.MessageReceived -= e,//(sender, message) => EventCallback(sender, message, e),
+            () =>
             {
-                var method = messageService.GetType().GetMethod("ReceiveMessage",
-                                                                BindingFlags.NonPublic | BindingFlags.Instance);
+                var method = messageService
+                    .GetType()
+                    .GetMethod("ReceiveMessage", BindingFlags.NonPublic | BindingFlags.Instance);
                 Assert.NotNull(method);
                 method.Invoke(messageService, [messageService, stream]);
-                await tcs.Task;
             });
 
         Assert.NotNull(receivedMessage.Arguments);
         var receivedPayload = receivedMessage.Arguments.Payload as PingPayload;
         Assert.NotNull(receivedPayload);
         Assert.Equal(pingPayload.BytesLength, receivedPayload.BytesLength);
-
-        return;
-        void EventCallback(object? sender, IMessage? message, EventHandler<IMessage?> testHandler)
-        {
-            Assert.True(tcs.TrySetResult(true));
-            testHandler(sender, message);
-        }
     }
 
     [Fact]
