@@ -81,9 +81,6 @@ internal sealed class FallbackAddressTaggedField : ITaggedField
     /// <summary>
     /// Reads a FallbackAddressTaggedField from a BitReader
     /// </summary>
-    /// <remarks>
-    /// This needs a ConfigManager to get the network
-    /// </remarks>
     /// <param name="bitReader">The BitReader to read from</param>
     /// <param name="length">The length of the field</param>
     /// <param name="network">The network type</param>
