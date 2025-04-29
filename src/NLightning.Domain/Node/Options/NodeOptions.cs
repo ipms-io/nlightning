@@ -1,13 +1,15 @@
 namespace NLightning.Domain.Node.Options;
 
 using Money;
+using Protocol.Constants;
+using ValueObjects;
 
 public class NodeOptions
 {
     /// <summary>
     /// The network to connect to. Can be "mainnet", "testnet", or "regtest"
     /// </summary>
-    public string Network { get; set; } = "mainnet";
+    public Network Network { get; set; } = NetworkConstants.MAINNET;
 
     /// <summary>
     /// True if NLTG should run in Daemon mode (background)

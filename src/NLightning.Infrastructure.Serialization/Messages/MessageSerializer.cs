@@ -45,12 +45,6 @@ public class MessageSerializer : IMessageSerializer
         }
 
         return null;
-
-        // case MessageTypes.OPEN_CHANNEL:
-        // case MessageTypes.ACCEPT_CHANNEL:
-        // case MessageTypes.FUNDING_CREATED:
-        // case MessageTypes.FUNDING_SIGNED:
-        //     throw new InvalidMessageException("You must use OpenChannel2 flow");
     }
 
     public async Task<IMessage?> DeserializeMessageAsync(Stream stream)

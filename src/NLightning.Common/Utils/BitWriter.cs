@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 
@@ -19,7 +20,7 @@ public class BitWriter : IBitWriter
 
         TotalBits = totalBits;
         var totalBytes = (totalBits + 7) / 8;
-        _buffer = new byte[totalBytes];
+        _buffer = ArrayPool<byte>.Shared.Rent(totalBytes);
     }
 
     public void GrowByBits(int additionalBits)
@@ -227,5 +228,10 @@ public class BitWriter : IBitWriter
         }
 
         return bytes;
+    }
+
+    public void Dispose()
+    {
+        ArrayPool<byte>.Shared.Return(_buffer);
     }
 }
