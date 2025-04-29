@@ -1,9 +1,10 @@
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 
 namespace NLightning.Common.BitUtils;
 
-public class BitWriter
+public class BitWriter : IDisposable
 {
     private int _bitOffset;
     private byte[] _buffer;
@@ -17,7 +18,7 @@ public class BitWriter
 
         TotalBits = totalBits;
         var totalBytes = (totalBits + 7) / 8;
-        _buffer = new byte[totalBytes];
+        _buffer = ArrayPool<byte>.Shared.Rent(totalBytes);
     }
 
     public void GrowByBits(int additionalBits)
@@ -225,5 +226,10 @@ public class BitWriter
         }
 
         return bytes;
+    }
+
+    public void Dispose()
+    {
+        ArrayPool<byte>.Shared.Return(_buffer);
     }
 }
