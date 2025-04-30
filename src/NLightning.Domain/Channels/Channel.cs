@@ -1,3 +1,8 @@
+using NBitcoin;
+using NLightning.Common.Interfaces;
+using NLightning.Domain.Bitcoin.Transactions;
+using ISecretStorageService = NLightning.Domain.Protocol.Services.ISecretStorageService;
+
 namespace NLightning.Domain.Channels;
 
 using Enums;
@@ -5,16 +10,34 @@ using ValueObjects;
 
 public class Channel
 {
+    private readonly ISecretStorageService _secretStorageService;
+
     public ChannelId ChannelId { get; }
+    public PubKey FirstPerCommitmentPoint { get; set; }
+    public bool IsInitiator { get; }
+    public uint MinimumDepth { get; set; }
+    public PubKey PeerFundingPubKey { get; set; }
+    public Script? PeerShutdownScriptPubKey { get; set; }
     public ShortChannelId? ShortChannelId { get; private set; }
     public ChannelState State { get; private set; }
-    public bool IsInitiator { get; }
 
-    public Channel(ChannelId channelId, bool isInitiator)
+    public ITransaction? FundingTransaction { get; set; }
+    public ITransaction? CommitmentTransaction { get; set; }
+
+    public Channel(ChannelId channelId, PubKey firstPerCommitmentPoint, bool isInitiator, uint minimumDepth, PubKey peerFundingPubKey,
+                   Script? peerShutdownScriptPubKey, ISecretStorageService secretStorageService)
     {
+        _secretStorageService = secretStorageService;
+
         ChannelId = channelId;
+        FirstPerCommitmentPoint = firstPerCommitmentPoint;
         IsInitiator = isInitiator;
-        State = ChannelState.Opening; // Initial state
+        State = ChannelState.V1Opening; // Initial state
+        MinimumDepth = minimumDepth;
+        PeerFundingPubKey = peerFundingPubKey;
+        PeerShutdownScriptPubKey = peerShutdownScriptPubKey;
+
+        State = ChannelState.None; // Initial state
     }
 
     public void AssignShortChannelId(ShortChannelId shortChannelId)

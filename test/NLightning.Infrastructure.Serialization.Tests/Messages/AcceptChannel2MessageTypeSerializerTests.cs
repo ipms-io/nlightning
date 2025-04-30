@@ -50,7 +50,7 @@ public class AcceptChannel2MessageTypeSerializerTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(expectedChannelId, result.Payload.TemporaryChannelId);
+        Assert.Equal(expectedChannelId, result.Payload.ChannelId);
         Assert.Equal(expectedFundingSatoshis, result.Payload.FundingAmount);
         Assert.Equal(_expectedDustLimitAmount, result.Payload.DustLimitAmount);
         Assert.Equal(_expectedMaxHtlcValueInFlightAmount, result.Payload.MaxHtlcValueInFlightAmount);
@@ -89,7 +89,7 @@ public class AcceptChannel2MessageTypeSerializerTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(expectedChannelId, result.Payload.TemporaryChannelId);
+        Assert.Equal(expectedChannelId, result.Payload.ChannelId);
         Assert.Equal(expectedFundingSatoshis, result.Payload.FundingAmount);
         Assert.Equal(_expectedDustLimitAmount, result.Payload.DustLimitAmount);
         Assert.Equal(_expectedMaxHtlcValueInFlightAmount, result.Payload.MaxHtlcValueInFlightAmount);

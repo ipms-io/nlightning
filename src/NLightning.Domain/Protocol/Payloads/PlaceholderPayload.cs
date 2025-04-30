@@ -1,6 +1,7 @@
 namespace NLightning.Domain.Protocol.Payloads;
 
 using Interfaces;
+using ValueObjects;
 
 /// <summary>
 /// Placeholder payload for messages that will be deserialized later.
@@ -8,10 +9,13 @@ using Interfaces;
 /// <remarks>
 /// DON'T USE THIS PAYLOAD IN REAL MESSAGES!
 /// </remarks>
-internal sealed class PlaceholderPayload : IMessagePayload
+internal sealed class PlaceholderPayload : IChannelMessagePayload
 {
-    public Task SerializeAsync(Stream stream)
+    public ChannelId ChannelId
     {
-        throw new NotImplementedException("This class should be just a placeholder.");
+        get
+        {
+            throw new NotImplementedException("This class should be just a placeholder.");
+        }
     }
 }

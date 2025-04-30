@@ -20,5 +20,7 @@ public static class CryptoConstants
     public const int PRIVKEY_LEN = 32;
     public const int PUBKEY_LEN = 33;
 
+    public const long FIRST_PER_COMMITMENT_INDEX = 281474976710655;
+
     public const int MAX_SIGNATURE_SIZE = 64;
 }

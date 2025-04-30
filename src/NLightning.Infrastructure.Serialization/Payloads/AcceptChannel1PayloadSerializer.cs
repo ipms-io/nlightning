@@ -33,7 +33,7 @@ public class AcceptChannel1PayloadSerializer : IPayloadSerializer<AcceptChannel1
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
-        await channelIdSerializer.SerializeAsync(acceptChannel1Payload.TemporaryChannelId, stream);
+        await channelIdSerializer.SerializeAsync(acceptChannel1Payload.ChannelId, stream);
 
         // Serialize other types
         await stream

@@ -56,4 +56,6 @@ public class NodeOptions
     public ushort ToSelfDelay { get; set; }
     public LightningMoney MaxHtlcValueInFlight { get; set; } = LightningMoney.Satoshis(1_000_000);
     public uint MinimumDepth { get; set; } = 3;
+    public LightningMoney MinimumChannelSize { get; set; } = LightningMoney.Satoshis(20_000);
+    public LightningMoney ChannelReserveAmount { get; set; } = LightningMoney.Satoshis(546);
 }

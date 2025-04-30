@@ -18,13 +18,13 @@ public class FeatureSet
     private static readonly Dictionary<Feature, Feature[]> s_featureDependencies = new()
     {
         // This   \/                          Depends on this \/
-        { Feature.GossipQueriesEx,               [Feature.GossipQueries] },
-        { Feature.PaymentSecret,                  [Feature.VarOnionOptin] },
-        { Feature.BasicMpp,                       [Feature.PaymentSecret] },
-        { Feature.OptionAnchorOutputs,           [Feature.OptionStaticRemoteKey] },
+        { Feature.GossipQueriesEx,            [Feature.GossipQueries] },
+        { Feature.PaymentSecret,              [Feature.VarOnionOptin] },
+        { Feature.BasicMpp,                   [Feature.PaymentSecret] },
+        { Feature.OptionAnchorOutputs,        [Feature.OptionStaticRemoteKey] },
         { Feature.OptionAnchorsZeroFeeHtlcTx, [Feature.OptionStaticRemoteKey] },
-        { Feature.OptionRouteBlinding,           [Feature.VarOnionOptin] },
-        { Feature.OptionZeroconf,                 [Feature.OptionScidAlias] },
+        { Feature.OptionRouteBlinding,        [Feature.VarOnionOptin] },
+        { Feature.OptionZeroconf,             [Feature.OptionScidAlias] },
     };
 
     internal BitArray FeatureFlags;
@@ -115,6 +115,18 @@ public class FeatureSet
     }
 
     /// <summary>
+    /// Checks if a feature is set either as compulsory or optional.
+    /// </summary>
+    /// <param name="feature">Feature to check.</param>
+    /// <param name="isCompulsory">If the feature is compulsory.</param>
+    /// <returns>true if the feature is set, false otherwise.</returns>
+    public bool IsFeatureSet(Feature feature)
+    {
+        var bitPosition = (int)feature;
+
+        return IsFeatureSet(bitPosition) || IsFeatureSet(bitPosition - 1);
+    }
+    /// <summary>
     /// Checks if a feature is set.
     /// </summary>
     /// <param name="feature">Feature to check.</param>
@@ -176,20 +188,27 @@ public class FeatureSet
     /// Check if this feature set is compatible with the other provided feature set.
     /// </summary>
     /// <param name="other">The other feature set to check compatibility with.</param>
+    /// <param name="negotiatedFeatureSet">The resulting negotiated feature set.</param>
     /// <returns>true if the feature sets are compatible, false otherwise.</returns>
     /// <remarks>
     /// The other feature set must support the var_onion_optin feature.
     /// The other feature set must have all dependencies set.
     /// </remarks>
-    public bool IsCompatible(FeatureSet other)
+    public bool IsCompatible(FeatureSet other, out FeatureSet? negotiatedFeatureSet)
     {
         // Check if the other node supports var_onion_optin
         if (!other.IsFeatureSet(Feature.VarOnionOptin, false) && !other.IsFeatureSet(Feature.VarOnionOptin, true))
         {
+            negotiatedFeatureSet = null;
             return false;
         }
 
-        for (var i = 1; i < FeatureFlags.Length; i += 2)
+        // Check which one is bigger and iterate on it
+        var maxLength = Math.Max(FeatureFlags.Length, other.FeatureFlags.Length);
+
+        // Create a temporary feature set to store the negotiated features
+        negotiatedFeatureSet = new FeatureSet();
+        for (var i = 1; i < maxLength; i += 2)
         {
             var isLocalOptionalSet = IsFeatureSet(i, false);
             var isLocalCompulsorySet = IsFeatureSet(i, true);
@@ -202,7 +221,13 @@ public class FeatureSet
                 // If the feature is unknown and even, close the connection
                 if (isOtherCompulsorySet)
                 {
+                    negotiatedFeatureSet = null;
                     return false;
+                }
+
+                if (isOtherOptionalSet)
+                {
+                    negotiatedFeatureSet.SetFeature(i, false);
                 }
             }
             else
@@ -210,19 +235,36 @@ public class FeatureSet
                 // If the local feature is compulsory, the other feature should also be set (either optional or compulsory)
                 if (isLocalCompulsorySet && !(isOtherOptionalSet || isOtherCompulsorySet))
                 {
+                    negotiatedFeatureSet = null;
                     return false;
                 }
 
                 // If the other feature is compulsory, the local feature should also be set (either optional or compulsory)
                 if (isOtherCompulsorySet && !(isLocalOptionalSet || isLocalCompulsorySet))
                 {
+                    negotiatedFeatureSet = null;
                     return false;
+                }
+
+                if (isOtherCompulsorySet || isLocalCompulsorySet)
+                {
+                    negotiatedFeatureSet.SetFeature(i, true);
+                }
+                else if (isLocalOptionalSet || isOtherOptionalSet)
+                {
+                    negotiatedFeatureSet.SetFeature(i, false);
                 }
             }
         }
 
         // Check if all the other node's dependencies are set
-        return other.AreDependenciesSet();
+        if (other.AreDependenciesSet())
+        {
+            return true;
+        }
+
+        negotiatedFeatureSet = null;
+        return false;
     }
 
     /// <summary>

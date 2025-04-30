@@ -11,7 +11,7 @@ public static class TransactionConstants
 
     public const int COMMITMENT_TRANSACTION_INPUT_WEIGHT = WeightConstants.WITNESS_HEADER
                                                          + WeightConstants.MULTISIG_WITNESS_WEIGHT
-                                                         + (4 * WeightConstants.P2WSH_INTPUT_WEIGHT);
+                                                         + (4 * WeightConstants.P2WSH_INPUT_WEIGHT);
 
     public const int TX_ID_LENGTH = 32;
 }

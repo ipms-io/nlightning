@@ -6,6 +6,7 @@ using Domain.Exceptions;
 using Domain.Factories;
 using Domain.Node.Options;
 using Domain.Protocol.Constants;
+using Domain.Protocol.Managers;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Services;
@@ -21,12 +22,13 @@ using Interfaces;
 public sealed class Peer : IPeer
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();
-    private readonly FeatureOptions _features;
+    private readonly IChannelManager _channelManager;
     private readonly ILogger<Peer> _logger;
     private readonly IMessageFactory _messageFactory;
     private readonly IMessageService _messageService;
     private readonly IPingPongService _pingPongService;
 
+    private FeatureOptions _features;
     private bool _isInitialized;
 
     /// <summary>
@@ -39,6 +41,7 @@ public sealed class Peer : IPeer
     /// <summary>
     /// Initializes a new instance of the <see cref="Peer"/> class.
     /// </summary>
+    /// <param name="channelManager">The channel manager</param>
     /// <param name="features">The feature options</param>
     /// <param name="logger">A logger</param>
     /// <param name="messageFactory">The message factory</param>
@@ -47,10 +50,11 @@ public sealed class Peer : IPeer
     /// <param name="peerAddress">Peer address</param>
     /// <param name="pingPongService">The ping pong service.</param>
     /// <exception cref="ConnectionException">Thrown when the connection to the peer fails.</exception>
-    internal Peer(FeatureOptions features, ILogger<Peer> logger, IMessageFactory messageFactory,
-                  IMessageService messageService, TimeSpan networkTimeout, Protocol.Models.PeerAddress peerAddress,
-                  IPingPongService pingPongService)
+    internal Peer(IChannelManager channelManager, FeatureOptions features, ILogger<Peer> logger,
+                  IMessageFactory messageFactory, IMessageService messageService, TimeSpan networkTimeout,
+                  Protocol.Models.PeerAddress peerAddress, IPingPongService pingPongService)
     {
+        _channelManager = channelManager;
         _features = features;
         _logger = logger;
         _messageFactory = messageFactory;
@@ -64,12 +68,12 @@ public sealed class Peer : IPeer
         _pingPongService.DisconnectEvent += HandleException;
 
         // Always send an init message upon connection
-        logger.LogTrace("[Peer] Sending init message to peer {peer}", PeerAddress.PubKey);
+        logger.LogTrace("Sending init message to peer {peer}", PeerAddress.PubKey);
         var initMessage = _messageFactory.CreateInitMessage();
         _messageService.SendMessageAsync(initMessage, _cancellationTokenSource.Token).Wait();
 
         // Wait for an init message
-        logger.LogTrace("[Peer] Waiting for init message from peer {peer}", PeerAddress.PubKey);
+        logger.LogTrace("Waiting for init message from peer {peer}", PeerAddress.PubKey);
         // Set timeout to close connection if the other peer doesn't send an init message
         Task.Delay(networkTimeout, _cancellationTokenSource.Token).ContinueWith(task =>
         {
@@ -107,7 +111,7 @@ public sealed class Peer : IPeer
 
         if (!_isInitialized)
         {
-            _logger.LogTrace("[Peer] Received message from peer {peer} but was not initialized", PeerAddress.PubKey);
+            _logger.LogTrace("Received message from peer {peer} but was not initialized", PeerAddress.PubKey);
             HandleInitialization(message);
         }
         else
@@ -115,12 +119,26 @@ public sealed class Peer : IPeer
             switch (message.Type)
             {
                 case MessageTypes.PING:
-                    _logger.LogTrace("[Peer] Received ping message from peer {peer}", PeerAddress.PubKey);
+                    _logger.LogTrace("Received ping message from peer {peer}", PeerAddress.PubKey);
                     _ = HandlePingAsync(message);
                     break;
                 case MessageTypes.PONG:
-                    _logger.LogTrace("[Peer] Received pong message from peer {peer}", PeerAddress.PubKey);
+                    _logger.LogTrace("Received pong message from peer {peer}", PeerAddress.PubKey);
                     _pingPongService.HandlePong(message);
+                    break;
+                case MessageTypes.OPEN_CHANNEL:
+                case MessageTypes.ACCEPT_CHANNEL:
+                case MessageTypes.FUNDING_CREATED:
+                case MessageTypes.FUNDING_SIGNED:
+                    if (message is IChannelMessage channelMessage)
+                    {
+                        _ = HandleChannelMessageAsync(channelMessage);
+                    }
+                    else
+                    {
+                        DisconnectWithException(new ChannelException(
+                            $"Message from peer {PeerAddress.PubKey} can't be boxed to IChannelMessage"));
+                    }
                     break;
             }
         }
@@ -141,7 +159,8 @@ public sealed class Peer : IPeer
         }
 
         // Check if Features are compatible
-        if (!_features.GetNodeFeatures().IsCompatible(initMessage.Payload.FeatureSet))
+        if (!_features.GetNodeFeatures().IsCompatible(initMessage.Payload.FeatureSet, out var negotiatedFeatures)
+            || negotiatedFeatures is null)
         {
             DisconnectWithException(new ConnectionException("Peer is not compatible"));
             return;
@@ -163,9 +182,9 @@ public sealed class Peer : IPeer
             }
         }
 
-        FeatureOptions.GetNodeOptions(initMessage.Payload.FeatureSet, initMessage.Extension);
+        _features = FeatureOptions.GetNodeOptions(negotiatedFeatures, initMessage.Extension);
 
-        _logger.LogTrace("[Peer] Message from peer {peer} is correct (init)", PeerAddress.PubKey);
+        _logger.LogTrace("Message from peer {peer} is correct (init)", PeerAddress.PubKey);
 
         StartPingPongService();
 
@@ -200,13 +219,33 @@ public sealed class Peer : IPeer
             }
         });
 
-        _logger.LogInformation("[Peer] Ping service started for peer {peer}", PeerAddress.PubKey);
+        _logger.LogInformation("Ping service started for peer {peer}", PeerAddress.PubKey);
     }
 
     private async Task HandlePingAsync(IMessage pingMessage)
     {
         var pongMessage = _messageFactory.CreatePongMessage(pingMessage);
         await _messageService.SendMessageAsync(pongMessage);
+    }
+
+    private async Task HandleChannelMessageAsync(IChannelMessage message)
+    {
+        try
+        {
+            _logger.LogTrace("Received channel message ({messageType}) from peer {peer}",
+                             Enum.GetName(typeof(MessageTypes), message.Type), PeerAddress.PubKey);
+
+            var replyMessage = _channelManager.HandleChannelMessage(message, _features);
+            if (replyMessage is not null)
+            {
+                await _messageService.SendMessageAsync(replyMessage, _cancellationTokenSource.Token);
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error handling channel message ({messageType}) from peer {peer}",
+                Enum.GetName(typeof(MessageTypes), message.Type), PeerAddress.PubKey);
+        }
     }
 
     public void Disconnect()

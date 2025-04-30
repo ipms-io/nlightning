@@ -21,7 +21,6 @@ using Models;
 /// <seealso cref="IPeerManager" />
 public sealed class PeerManager : IPeerManager
 {
-    private readonly Dictionary<ChannelId, PubKey> _channels = [];
     private readonly ILogger<PeerManager> _logger;
     private readonly IOptions<NodeOptions> _nodeOptions;
     private readonly IPeerFactory _peerFactory;

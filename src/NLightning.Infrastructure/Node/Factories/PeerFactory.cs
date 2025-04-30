@@ -15,6 +15,7 @@ using Models;
 
 public class PeerFactory : IPeerFactory
 {
+    private readonly IChannelManager _channelManager;
     private readonly ILoggerFactory _loggerFactory;
     private readonly IMessageFactory _messageFactory;
     private readonly IMessageServiceFactory _messageServiceFactory;
@@ -23,11 +24,12 @@ public class PeerFactory : IPeerFactory
     private readonly ITransportServiceFactory _transportServiceFactory;
     private readonly NodeOptions _nodeOptions;
 
-    public PeerFactory(ILoggerFactory loggerFactory, IMessageFactory messageFactory,
+    public PeerFactory(IChannelManager channelManager, ILoggerFactory loggerFactory, IMessageFactory messageFactory,
                        IMessageServiceFactory messageServiceFactory, IPingPongServiceFactory pingPongServiceFactory,
                        ISecureKeyManager secureKeyManager, ITransportServiceFactory transportServiceFactory,
                        IOptions<NodeOptions> nodeOptions)
     {
+        _channelManager = channelManager;
         _loggerFactory = loggerFactory;
         _messageFactory = messageFactory;
         _messageServiceFactory = messageServiceFactory;
@@ -68,8 +70,8 @@ public class PeerFactory : IPeerFactory
         // Create the ping pong service
         var pingPongService = _pingPongServiceFactory.CreatePingPongService();
 
-        return new Peer(_nodeOptions.Features, logger, _messageFactory, messageService, _nodeOptions.NetworkTimeout,
-                        peerAddress, pingPongService);
+        return new Peer(_channelManager, _nodeOptions.Features, logger, _messageFactory, messageService,
+                        _nodeOptions.NetworkTimeout, peerAddress, pingPongService);
     }
 
     public async Task<Peer> CreateConnectingPeerAsync(TcpClient tcpClient)
@@ -108,7 +110,7 @@ public class PeerFactory : IPeerFactory
 
         var peerAddress = new Protocol.Models.PeerAddress(transportService.RemoteStaticPublicKey, ipAddress, port);
 
-        return new Peer(_nodeOptions.Features, logger, _messageFactory, messageService, _nodeOptions.NetworkTimeout,
-                        peerAddress, pingPongService);
+        return new Peer(_channelManager, _nodeOptions.Features, logger, _messageFactory, messageService,
+                        _nodeOptions.NetworkTimeout, peerAddress, pingPongService);
     }
 }

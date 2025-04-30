@@ -27,6 +27,12 @@ public readonly struct ChannelId : IValueObject, IEquatable<ChannelId>
     }
 
     #region Overrides
+
+    public override string ToString()
+    {
+        return Convert.ToHexString(_value);
+    }
+
     public override bool Equals(object? obj)
     {
         if (obj is ChannelId other)

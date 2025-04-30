@@ -16,14 +16,14 @@ public class AcceptChannel2Payload(PubKey delayedPaymentBasepoint, LightningMone
                                    PubKey firstPerCommitmentPoint, LightningMoney fundingAmount, PubKey fundingPubKey,
                                    PubKey htlcBasepoint, LightningMoney htlcMinimumAmount, ushort maxAcceptedHtlcs,
                                    LightningMoney maxHtlcValueInFlight, uint minimumDepth, PubKey paymentBasepoint,
-                                   PubKey revocationBasepoint, ChannelId temporaryChannelId, ushort toSelfDelay)
+                                   PubKey revocationBasepoint, ChannelId channelId, ushort toSelfDelay)
     : IMessagePayload
 {
     /// <summary>
     /// The temporary_channel_id is used to identify this channel on a per-peer basis until the funding transaction
     /// is established, at which point it is replaced by the channel_id, which is derived from the funding transaction.
     /// </summary>
-    public ChannelId TemporaryChannelId { get; } = temporaryChannelId;
+    public ChannelId ChannelId { get; } = channelId;
 
     /// <summary>
     /// funding_satoshis is the amount the acceptor is putting into the channel.

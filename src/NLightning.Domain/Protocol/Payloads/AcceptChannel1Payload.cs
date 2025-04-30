@@ -18,7 +18,7 @@ public class AcceptChannel1Payload : IMessagePayload
     /// The temporary_channel_id is used to identify this channel on a per-peer basis until the funding transaction
     /// is established, at which point it is replaced by the channel_id, which is derived from the funding transaction.
     /// </summary>
-    public ChannelId TemporaryChannelId { get; set; }
+    public ChannelId ChannelId { get; set; }
 
     /// <summary>
     /// dust_limit_satoshis is the threshold below which outputs should not be generated for this node's commitment or
@@ -90,14 +90,14 @@ public class AcceptChannel1Payload : IMessagePayload
     /// </summary>
     public PubKey FirstPerCommitmentPoint { get; set; }
 
-    public AcceptChannel1Payload(ChannelId temporaryChannelId, LightningMoney dustLimitAmount,
+    public AcceptChannel1Payload(ChannelId channelId, LightningMoney dustLimitAmount,
                                  LightningMoney maxHtlcValueInFlight, LightningMoney channelReserveAmount,
                                  LightningMoney htlcMinimumAmount, uint minimumDepth, ushort toSelfDelay,
                                  ushort maxAcceptedHtlcs, PubKey fundingPubKey, PubKey revocationBasepoint,
                                  PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint,
                                  PubKey firstPerCommitmentPoint)
     {
-        TemporaryChannelId = temporaryChannelId;
+        ChannelId = channelId;
         DustLimitAmount = dustLimitAmount;
         MaxHtlcValueInFlightAmount = maxHtlcValueInFlight;
         ChannelReserveAmount = channelReserveAmount;

@@ -19,9 +19,8 @@ public class SecretStorageService : ISecretStorageService
     private readonly StoredSecret?[] _knownSecrets = new StoredSecret?[49];
     private readonly ICryptoProvider _cryptoProvider = CryptoFactory.GetCryptoProvider();
 
-    /// <summary>
-    /// Inserts a new secret and verifies it against existing secrets
-    /// </summary>
+    /// <inheritdoc/>
+    /// <exception cref="ArgumentException">Thrown when the secret is not the correct size</exception>
     public bool InsertSecret(ReadOnlySpan<byte> secret, ulong index)
     {
         if (secret is not { Length: SECRET_SIZE })
@@ -77,9 +76,8 @@ public class SecretStorageService : ISecretStorageService
         return true;
     }
 
-    /// <summary>
-    /// Derives an old secret from a known higher-level secret
-    /// </summary>
+    /// <inheritdoc/>
+    /// <exception cref="InvalidOperationException">Thrown when the secret cannot be derived</exception>
     public void DeriveOldSecret(ulong index, Span<byte> derivedSecret)
     {
         // Try to find a base secret that can derive this one

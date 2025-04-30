@@ -4,11 +4,11 @@ namespace NLightning.Infrastructure.Bitcoin.Transactions;
 
 using Outputs;
 
-public class HtlcSuccessTransaction : BaseHtlcTransaction
+public class BaseHtlcSuccessTransaction : BaseHtlcTransaction
 {
     public byte[] PaymentPreimage { get; }
 
-    public HtlcSuccessTransaction(Network network, bool hasAnchorOutputs, BaseHtlcOutput output,
+    public BaseHtlcSuccessTransaction(Network network, bool hasAnchorOutputs, BaseHtlcOutput output,
                                   PubKey revocationPubKey, PubKey localDelayedPubKey, ulong toSelfDelay,
                                   ulong amountMilliSats, byte[] paymentPreimage)
         : base(hasAnchorOutputs, network, output, revocationPubKey, localDelayedPubKey, toSelfDelay, amountMilliSats)

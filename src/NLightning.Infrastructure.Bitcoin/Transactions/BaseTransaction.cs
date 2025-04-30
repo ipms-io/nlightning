@@ -3,25 +3,26 @@ using NBitcoin;
 namespace NLightning.Infrastructure.Bitcoin.Transactions;
 
 using Comparers;
+using Domain.Bitcoin.Transactions;
 using Domain.Money;
 using Domain.Protocol.Constants;
 using Outputs;
 
-public abstract class BaseTransaction
+public abstract class BaseTransaction : ITransaction
 {
     #region Private Fields
     private readonly bool _hasAnchorOutput;
     private readonly TransactionBuilder _builder;
     private readonly List<(Coin, Sequence)> _coins = [];
 
-    private Transaction _transaction;
+    private NBitcoin.Transaction _transaction;
     #endregion
 
     #region Protected Properties
     protected List<BaseOutput> Outputs { get; private set; } = [];
     protected LightningMoney CalculatedFee { get; } = LightningMoney.Zero;
     protected bool Finalized { get; private set; }
-    protected Transaction FinalizedTransaction => Finalized
+    protected NBitcoin.Transaction FinalizedTransaction => Finalized
         ? _transaction
         : throw new Exception("Transaction not finalized.");
     #endregion
@@ -46,7 +47,7 @@ public abstract class BaseTransaction
 
         _coins = coins.Select(c => (c, Sequence.Final)).ToList();
 
-        _transaction = Transaction.Create(network);
+        _transaction = NBitcoin.Transaction.Create(network);
         _transaction.Version = version;
         _transaction.Inputs.AddRange(_coins.Select(c => new TxIn(c.Item1.Outpoint)));
     }
@@ -63,7 +64,7 @@ public abstract class BaseTransaction
 
         _coins.AddRange(coins);
 
-        _transaction = Transaction.Create(network);
+        _transaction = NBitcoin.Transaction.Create(network);
         _transaction.Version = version;
         foreach (var (coin, sequence) in _coins)
         {
@@ -216,26 +217,26 @@ public abstract class BaseTransaction
 
             if (coin.ScriptPubKey.IsScriptType(ScriptType.P2PKH))
             {
-                inputWeight += 4 * Math.Max(WeightConstants.P2PKH_INTPUT_WEIGHT, input.ToBytes().Length);
+                inputWeight += 4 * Math.Max(WeightConstants.P2PKH_INPUT_WEIGHT, input.ToBytes().Length);
             }
             else if (coin.ScriptPubKey.IsScriptType(ScriptType.P2SH))
             {
-                inputWeight += 4 * Math.Max(WeightConstants.P2SH_INTPUT_WEIGHT, input.ToBytes().Length);
+                inputWeight += 4 * Math.Max(WeightConstants.P2SH_INPUT_WEIGHT, input.ToBytes().Length);
                 inputWeight += input.WitScript.ToBytes().Length;
             }
             else if (coin.ScriptPubKey.IsScriptType(ScriptType.P2WPKH))
             {
-                inputWeight += 4 * Math.Max(WeightConstants.P2WPKH_INTPUT_WEIGHT, input.ToBytes().Length);
+                inputWeight += 4 * Math.Max(WeightConstants.P2WPKH_INPUT_WEIGHT, input.ToBytes().Length);
                 inputWeight += input.WitScript.ToBytes().Length;
             }
             else if (coin.ScriptPubKey.IsScriptType(ScriptType.P2WSH))
             {
-                inputWeight += 4 * Math.Max(WeightConstants.P2WSH_INTPUT_WEIGHT, input.ToBytes().Length);
+                inputWeight += 4 * Math.Max(WeightConstants.P2WSH_INPUT_WEIGHT, input.ToBytes().Length);
                 inputWeight += Math.Max(WeightConstants.MULTISIG_WITNESS_WEIGHT, input.WitScript.ToBytes().Length);
             }
             else
             {
-                inputWeight += 4 * Math.Max(WeightConstants.P2UNKOWN_S_INTPUT_WEIGHT, input.ToBytes().Length);
+                inputWeight += 4 * Math.Max(WeightConstants.P2UNKNOWN_S_INPUT_WEIGHT, input.ToBytes().Length);
                 inputWeight += input.WitScript.ToBytes().Length;
             }
         }
