@@ -78,7 +78,7 @@ public class InvoiceTests
         var invalidNetwork = (Network)"invalid";
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new Invoice(invalidNetwork, 1000));
+        Assert.Throws<ArgumentException>(() => new Invoice(invalidNetwork, LightningMoney.Satoshis(1_000)));
     }
 
     [Theory]
@@ -181,7 +181,7 @@ public class InvoiceTests
     {
         // Given
         var now = DateTimeOffset.UtcNow;
-        var invoice = new Invoice(Network.MAIN_NET, 0, now.ToUnixTimeSeconds());
+        var invoice = new Invoice(Network.MAIN_NET, LightningMoney.Zero, now.ToUnixTimeSeconds());
 
         // By default, if no expiry tag is set, ExpiryDate = timestamp + DEFAULT_EXPIRATION_SECONDS
         var defaultExpiry = now.AddSeconds(InvoiceConstants.DEFAULT_EXPIRATION_SECONDS);
@@ -203,7 +203,8 @@ public class InvoiceTests
     public void Given_NewInvoice_When_EncodeCalled_Then_ReturnsNonEmptyString()
     {
         // Given
-        var invoice = new Invoice(1000, "TestDesc", uint256.One, uint256.Zero, Network.MAIN_NET)
+        var invoice = new Invoice(LightningMoney.Satoshis(1_000), "TestDesc", uint256.One, uint256.Zero,
+                                  Network.MAIN_NET)
         {
             PayeePubKey = new PubKey("020202020202020202020202020202020202020202020202020202020202020202")
         };
@@ -246,7 +247,7 @@ public class InvoiceTests
         var invoice = Invoice.Decode(INVOICE_STRING, Network.MAIN_NET);
 
         // Then
-        Assert.Equal(2000000000U, invoice.AmountMilliSats);
+        Assert.Equal(2000000000U, invoice.Amount.MilliSatoshi);
     }
     #endregion
 }

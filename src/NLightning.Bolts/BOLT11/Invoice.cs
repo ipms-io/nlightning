@@ -7,6 +7,7 @@ namespace NLightning.Bolts.BOLT11;
 using Common.BitUtils;
 using Common.Constants;
 using Common.Crypto.Hashes;
+using Common.Enums;
 using Common.Interfaces;
 using Common.Node;
 using Common.Types;
@@ -54,9 +55,9 @@ public partial class Invoice
     public Network Network { get; }
 
     /// <summary>
-    /// The amount of millisatoshis the invoice is for
+    /// The amount for the invoice
     /// </summary>
-    public ulong AmountMilliSats { get; }
+    public LightningMoney Amount { get; }
 
     /// <summary>
     /// The timestamp of the invoice
@@ -75,11 +76,6 @@ public partial class Invoice
     /// The human-readable part of the invoice
     /// </summary>
     public string HumanReadablePart { get; }
-
-    /// <summary>
-    /// The amount of satoshis the invoice is for
-    /// </summary>
-    public ulong AmountSats => AmountMilliSats * 1_000;
     #endregion
 
     #region Public Properties from Tagged Fields
@@ -348,7 +344,7 @@ public partial class Invoice
     /// <summary>
     /// The base constructor for the invoice
     /// </summary>
-    /// <param name="amountMilliSats">The amount of millisatoshis the invoice is for</param>
+    /// <param name="amount">The amount of the invoice</param>
     /// <param name="description">The description of the invoice</param>
     /// <param name="paymentHash">The payment hash of the invoice</param>
     /// <param name="paymentSecret">The payment secret of the invoice</param>
@@ -359,12 +355,12 @@ public partial class Invoice
     /// payment secret.
     /// </remarks>
     /// <seealso cref="Network"/>
-    public Invoice(ulong amountMilliSats, string description, uint256 paymentHash, uint256 paymentSecret,
+    public Invoice(LightningMoney amount, string description, uint256 paymentHash, uint256 paymentSecret,
                    Network network, ISecureKeyManager? secureKeyManager = null)
     {
         _secureKeyManager = secureKeyManager;
 
-        AmountMilliSats = amountMilliSats;
+        Amount = amount;
         Network = network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -381,7 +377,7 @@ public partial class Invoice
     /// <summary>
     /// The base constructor for the invoice
     /// </summary>
-    /// <param name="amountMilliSats">The amount of millisatoshis the invoice is for</param>
+    /// <param name="amount">The amount of the invoice</param>
     /// <param name="descriptionHash">The description hash of the invoice</param>
     /// <param name="paymentHash">The payment hash of the invoice</param>
     /// <param name="paymentSecret">The payment secret of the invoice</param>
@@ -392,12 +388,12 @@ public partial class Invoice
     /// payment secret.
     /// </remarks>
     /// <seealso cref="Network"/>
-    public Invoice(ulong amountMilliSats, uint256 descriptionHash, uint256 paymentHash, uint256 paymentSecret,
+    public Invoice(LightningMoney amount, uint256 descriptionHash, uint256 paymentHash, uint256 paymentSecret,
                    Network network, ISecureKeyManager? secureKeyManager = null)
     {
         _secureKeyManager = secureKeyManager;
 
-        AmountMilliSats = amountMilliSats;
+        Amount = amount;
         Network = network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -415,15 +411,15 @@ public partial class Invoice
     /// This constructor is used by tests
     /// </summary>
     /// <param name="network">The network the invoice is created for</param>
-    /// <param name="amountMilliSats">The amount of millisatoshis the invoice is for</param>
+    /// <param name="amount">The amount of the invoice</param>
     /// <param name="timestamp">The timestamp of the invoice</param>
     /// <remarks>
     /// The invoice is created with the given network, amount of millisatoshis and timestamp.
     /// </remarks>
     /// <seealso cref="Network"/>
-    internal Invoice(Network network, ulong? amountMilliSats = 0, long? timestamp = null)
+    internal Invoice(Network network, LightningMoney? amount = null, long? timestamp = null)
     {
-        AmountMilliSats = amountMilliSats ?? 0;
+        Amount = amount ?? LightningMoney.Zero;
         Network = network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -438,7 +434,7 @@ public partial class Invoice
     /// <param name="invoiceString">The invoice string</param>
     /// <param name="humanReadablePart">The human-readable part of the invoice</param>
     /// <param name="network">The network the invoice is created for</param>
-    /// <param name="amountMilliSats">The amount of millisatoshis the invoice is for</param>
+    /// <param name="amount">The amount of the invoice</param>
     /// <param name="timestamp">The timestamp of the invoice</param>
     /// <param name="taggedFields">The tagged fields of the invoice</param>
     /// <param name="signature">The invoice signature</param>
@@ -447,14 +443,14 @@ public partial class Invoice
     /// timestamp and tagged fields.
     /// </remarks>
     /// <seealso cref="Network"/>
-    private Invoice(string invoiceString, string humanReadablePart, Network network, ulong amountMilliSats,
+    private Invoice(string invoiceString, string humanReadablePart, Network network, LightningMoney amount,
                     long timestamp, TaggedFieldList taggedFields, CompactSignature signature)
     {
         _invoiceString = invoiceString;
 
         Network = network;
         HumanReadablePart = humanReadablePart;
-        AmountMilliSats = amountMilliSats;
+        Amount = amount;
         Timestamp = timestamp;
         _taggedFields = taggedFields;
         Signature = signature;
@@ -481,7 +477,7 @@ public partial class Invoice
     public static Invoice InSatoshis(ulong amountSats, string description, uint256 paymentHash, uint256 paymentSecret,
                                      Network network)
     {
-        return new Invoice(amountSats * 1_000, description, paymentHash, paymentSecret, network);
+        return new Invoice(LightningMoney.Satoshis(amountSats), description, paymentHash, paymentSecret, network);
     }
 
     /// <summary>
@@ -500,7 +496,7 @@ public partial class Invoice
     public static Invoice InSatoshis(ulong amountSats, uint256 descriptionHash, uint256 paymentHash,
                                      uint256 paymentSecret, Network network)
     {
-        return new Invoice(amountSats * 1_000, descriptionHash, paymentHash, paymentSecret, network);
+        return new Invoice(LightningMoney.Satoshis(amountSats), descriptionHash, paymentHash, paymentSecret, network);
     }
 
     /// <summary>
@@ -638,9 +634,9 @@ public partial class Invoice
     {
         StringBuilder sb = new(InvoiceConstants.PREFIX);
         sb.Append(GetPrefix(Network));
-        if (AmountMilliSats > 0)
+        if (!Amount.IsZero)
         {
-            ConvertMilliSatoshisToHumanReadable(AmountMilliSats, sb);
+            ConvertAmountToHumanReadable(Amount, sb);
         }
         return sb.ToString();
     }
@@ -657,16 +653,16 @@ public partial class Invoice
         };
     }
 
-    private static void ConvertMilliSatoshisToHumanReadable(ulong millisatoshis, StringBuilder sb)
+    private static void ConvertAmountToHumanReadable(LightningMoney amount, StringBuilder sb)
     {
-        var btcAmount = millisatoshis / InvoiceConstants.BTC_IN_MILLISATOSHIS;
+        var btcAmount = amount.ToUnit(LightningMoneyUnit.BTC);
 
         // Start with the smallest multiplier
         var tempAmount = btcAmount * 1_000_000_000_000m; // Start with pico
         char? suffix = InvoiceConstants.MULTIPLIER_PICO;
 
         // Try nano
-        if (millisatoshis % 10 == 0)
+        if (amount.MilliSatoshi % 10 == 0)
         {
             var nanoAmount = btcAmount * 1_000_000_000m;
             if (nanoAmount == decimal.Truncate(nanoAmount))
@@ -677,7 +673,7 @@ public partial class Invoice
         }
 
         // Try micro
-        if (millisatoshis % 1_000 == 0)
+        if (amount.MilliSatoshi % 1_000 == 0)
         {
             var microAmount = btcAmount * 1_000_000m;
             if (microAmount == decimal.Truncate(microAmount))
@@ -688,7 +684,7 @@ public partial class Invoice
         }
 
         // Try milli
-        if (millisatoshis % 1_000_000 == 0)
+        if (amount.MilliSatoshi % 1_000_000 == 0)
         {
             var milliAmount = btcAmount * 1000m;
             if (milliAmount == decimal.Truncate(milliAmount))
@@ -699,7 +695,7 @@ public partial class Invoice
         }
 
         // Try full BTC
-        if (millisatoshis % 1_000_000_000 == 0)
+        if (amount.MilliSatoshi % 1_000_000_000 == 0)
         {
             if (btcAmount == decimal.Truncate(btcAmount))
             {

@@ -49,8 +49,9 @@ await builder.Build().RunAsync();
 @if (invoice != null)
 {
     <p>Payment Hash: @invoice.PaymentHash</p>
-    <p>Amount MilliSats: @invoice.AmountMilliSats</p>
-    <p>Amount Sats: @invoice.AmountSats</p>
+    <p>Amount MilliSats: @invoice.Amount.MilliSatoshi</p>
+    <p>Amount Sats: @invoice.Amount.Satoshi</p>
+    <p>Amount BTC: @invoice.Amount</p>
     <p>Description: @invoice.Description</p>
 }
 

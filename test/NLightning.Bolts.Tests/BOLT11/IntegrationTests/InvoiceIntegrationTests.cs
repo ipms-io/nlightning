@@ -30,7 +30,7 @@ public class InvoiceIntegrationTests
 
             // Assert
             Assert.Equal(testInvoice.ExpectedNetwork, invoice.Network);
-            Assert.Equal(testInvoice.ExpectedAmountMilliSats, invoice.AmountMilliSats);
+            Assert.Equal(testInvoice.ExpectedAmountMilliSats, invoice.Amount.MilliSatoshi);
             Assert.Equal(testInvoice.ExpectedTimestamp, invoice.Timestamp);
 
             foreach (var taggedField in testInvoice.EXPECTED_TAGGED_FIELDS)

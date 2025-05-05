@@ -42,8 +42,8 @@ var invoice = Invoice.Decode(invoice_string);
 
 // Get properties of the invoice
 Console.WriteLine("Here's a few props from the invoice:")
-Console.WriteLine(invoice.AmountMillisats);
-Console.WriteLine(invoice.AmountSats);
+Console.WriteLine(invoice.Amount.MilliSatoshi);
+Console.WriteLine(invoice.Amount.Satoshi);
 Console.WriteLine(invoice.PaymentHash);
 Console.WriteLine("A list with all the props can be found at: https://nlightning.ipms.io/api/NLightning.Bolts.BOLT11.Invoice.html#properties");
 ```
@@ -76,8 +76,9 @@ await builder.Build().RunAsync();
 @if (invoice != null)
 {
     <p>Payment Hash: @invoice.PaymentHash</p>
-    <p>Amount MilliSats: @invoice.AmountMilliSats</p>
-    <p>Amount Sats: @invoice.AmountSats</p>
+    <p>Amount MilliSats: @invoice.Amount.MilliSatoshi</p>
+    <p>Amount Sats: @invoice.Amount.Satoshi</p>
+    <p>Amount BTC: @invoice.Amount</p>
     <p>Description: @invoice.Description</p>
 }
 
