@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using NBitcoin;
 using NBitcoin.Crypto;
+using NLightning.Common.Managers;
 
 namespace NLightning.Common.Factories;
 
@@ -396,6 +397,50 @@ public class MessageFactory : IMessageFactory
     }
 
     /// <summary>
+    /// Create a OpenChannel1 message.
+    /// </summary>
+    /// <param name="temporaryChannelId">The temporary channel id.</param>
+    /// <param name="fundingAmount">The amount of satoshis we're adding to the channel.</param>
+    /// <param name="pushAmount">The amount of satoshis we're pushing to the other side.</param>
+    /// <param name="channelReserveAmount">The channel reserve amount.</param>
+    /// <param name="feeRatePerKw">The fee rate per kw.</param>
+    /// <param name="maxAcceptedHtlcs">The max accepted htlcs.</param>
+    /// <param name="revocationBasepoint">The revocation pubkey.</param>
+    /// <param name="paymentBasepoint">The payment pubkey.</param>
+    /// <param name="delayedPaymentBasepoint">The delayed payment pubkey.</param>
+    /// <param name="htlcBasepoint">The htlc pubkey.</param>
+    /// <param name="firstPerCommitmentPoint">The first per commitment pubkey.</param>
+    /// <param name="channelFlags">The flags for the channel.</param>
+    /// <param name="upfrontShutdownScriptTlv">The upfront shutdown script tlv.</param>
+    /// <param name="channelTypeTlv">The channel type tlv.</param>
+    /// <returns>The OpenChannel1 message.</returns>
+    /// <seealso cref="OpenChannel1Message"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="LightningMoney"/>
+    /// <seealso cref="PubKey"/>
+    /// <seealso cref="UpfrontShutdownScriptTlv"/>
+    /// <seealso cref="ChannelTypeTlv"/>
+    public IMessage CreateOpenChannel1Message(ChannelId temporaryChannelId, LightningMoney fundingAmount,
+                                              LightningMoney pushAmount, LightningMoney channelReserveAmount,
+                                              LightningMoney feeRatePerKw, ushort maxAcceptedHtlcs,
+                                              PubKey revocationBasepoint, PubKey paymentBasepoint,
+                                              PubKey delayedPaymentBasepoint, PubKey htlcBasepoint,
+                                              PubKey firstPerCommitmentPoint, ChannelFlags channelFlags,
+                                              UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv,
+                                              ChannelTypeTlv? channelTypeTlv)
+    {
+        var payload = new OpenChannel1Payload(_nodeOptions.Network.ChainHash, temporaryChannelId, fundingAmount,
+                                              pushAmount, _nodeOptions.DustLimitAmount,
+                                              _nodeOptions.MaxHtlcValueInFlight, channelReserveAmount,
+                                              _nodeOptions.HtlcMinimumAmount, feeRatePerKw, _nodeOptions.ToSelfDelay,
+                                              maxAcceptedHtlcs, SecureKeyManager.GetPrivateKey().PubKey,
+                                              revocationBasepoint, paymentBasepoint, delayedPaymentBasepoint,
+                                              htlcBasepoint, firstPerCommitmentPoint, channelFlags);
+
+        return new OpenChannel1Message(payload, upfrontShutdownScriptTlv, channelTypeTlv);
+    }
+
+    /// <summary>
     /// Create a OpenChannel2 message.
     /// </summary>
     /// <param name="temporaryChannelId">The temporary channel id.</param>
@@ -448,6 +493,45 @@ public class MessageFactory : IMessageFactory
     }
 
     /// <summary>
+    /// Create a AcceptChannel1 message.
+    /// </summary>
+    /// <param name="temporaryChannelId">The temporary channel id.</param>
+    /// <param name="channelReserveAmount">The channel reserve amount.</param>
+    /// <param name="minimumDepth">The minimum depth.</param>
+    /// <param name="maxAcceptedHtlcs">The max accepted htlcs.</param>
+    /// <param name="revocationBasepoint">The revocation pubkey.</param>
+    /// <param name="paymentBasepoint">The payment pubkey.</param>
+    /// <param name="delayedPaymentBasepoint">The delayed payment pubkey.</param>
+    /// <param name="htlcBasepoint">The htlc pubkey.</param>
+    /// <param name="firstPerCommitmentPoint">The first per commitment pubkey.</param>
+    /// <param name="upfrontShutdownScriptTlv">The upfront shutdown script tlv.</param>
+    /// <param name="channelTypeTlv">The channel type tlv.</param>
+    /// <returns>The AcceptChannel1 message.</returns>
+    /// <seealso cref="AcceptChannel1Message"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="LightningMoney"/>
+    /// <seealso cref="PubKey"/>
+    /// <seealso cref="UpfrontShutdownScriptTlv"/>
+    /// <seealso cref="ChannelTypeTlv"/>
+    public IMessage CreateAcceptChannel1Message(ChannelId temporaryChannelId, LightningMoney channelReserveAmount,
+                                                uint minimumDepth, ushort maxAcceptedHtlcs,
+                                                PubKey revocationBasepoint, PubKey paymentBasepoint,
+                                                PubKey delayedPaymentBasepoint, PubKey htlcBasepoint,
+                                                PubKey firstPerCommitmentPoint,
+                                                UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv,
+                                                ChannelTypeTlv? channelTypeTlv)
+    {
+        var payload = new AcceptChannel1Payload(temporaryChannelId, _nodeOptions.DustLimitAmount,
+                                                _nodeOptions.MaxHtlcValueInFlight, channelReserveAmount,
+                                                _nodeOptions.HtlcMinimumAmount, minimumDepth, _nodeOptions.ToSelfDelay,
+                                                maxAcceptedHtlcs, SecureKeyManager.GetPrivateKey().PubKey,
+                                                revocationBasepoint, paymentBasepoint, delayedPaymentBasepoint,
+                                                htlcBasepoint, firstPerCommitmentPoint);
+
+        return new AcceptChannel1Message(payload, upfrontShutdownScriptTlv, channelTypeTlv);
+    }
+
+    /// <summary>
     /// Create a AcceptChannel2 message.
     /// </summary>
     /// <param name="temporaryChannelId">The temporary channel id.</param>
@@ -488,6 +572,43 @@ public class MessageFactory : IMessageFactory
                                            null
                                            : new ChannelTypeTlv(channelType),
                                        requireConfirmedInputs ? new RequireConfirmedInputsTlv() : null);
+    }
+
+    /// <summary>
+    /// Create a FundingCreated message.
+    /// </summary>
+    /// <param name="temporaryChannelId">The temporary channel id.</param>
+    /// <param name="fundingTxId">The funding transaction id.</param>
+    /// <param name="fundingOutputIndex">The funding output index.</param>
+    /// <param name="signature">The signature for the funding transaction.</param>
+    /// <returns>The FundingCreated message.</returns>
+    /// <seealso cref="FundingCreatedMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="ECDSASignature"/>
+    /// <seealso cref="FundingCreatedPayload"/>
+    public IMessage CreatedFundingCreatedMessage(ChannelId temporaryChannelId, ReadOnlySpan<byte> fundingTxId,
+                                                 ushort fundingOutputIndex, ECDSASignature signature)
+    {
+        var payload = new FundingCreatedPayload(temporaryChannelId, fundingTxId, fundingOutputIndex, signature);
+
+        return new FundingCreatedMessage(payload);
+    }
+
+    /// <summary>
+    /// Create a FundingSigned message.
+    /// </summary>
+    /// <param name="channelId">The channel id.</param>
+    /// <param name="signature"></param>
+    /// <returns>The FundingSigned message.</returns>
+    /// <seealso cref="FundingCreatedMessage"/>
+    /// <seealso cref="ChannelId"/>
+    /// <seealso cref="ECDSASignature"/>
+    /// <seealso cref="FundingCreatedPayload"/>
+    public IMessage CreatedFundingSignedMessage(ChannelId channelId, ECDSASignature signature)
+    {
+        var payload = new FundingSignedPayload(channelId, signature);
+
+        return new FundingSignedMessage(payload);
     }
     #endregion
 
@@ -671,6 +792,14 @@ public class MessageFactory : IMessageFactory
                 return await PingMessage.DeserializeAsync(stream);                      // 18  -> 0x12
             case MessageTypes.PONG:
                 return await PongMessage.DeserializeAsync(stream);                      // 19  -> 0x13
+            case MessageTypes.OPEN_CHANNEL:
+                return await OpenChannel1Message.DeserializeAsync(stream);              // 32  -> 0x20
+            case MessageTypes.ACCEPT_CHANNEL:
+                return await AcceptChannel1Message.DeserializeAsync(stream);            // 33  -> 0x21
+            case MessageTypes.FUNDING_CREATED:
+                return await FundingCreatedMessage.DeserializeAsync(stream);            // 34  -> 0x22
+            case MessageTypes.FUNDING_SIGNED:
+                return await FundingSignedMessage.DeserializeAsync(stream);             // 35  -> 0x23
             case MessageTypes.CHANNEL_READY:
                 return await ChannelReadyMessage.DeserializeAsync(stream);              // 36  -> 0x24
             case MessageTypes.SHUTDOWN:
@@ -715,12 +844,6 @@ public class MessageFactory : IMessageFactory
                 return await UpdateFailMalformedHtlcMessage.DeserializeAsync(stream);   // 135 -> 0x87
             case MessageTypes.CHANNEL_REESTABLISH:
                 return await ChannelReestablishMessage.DeserializeAsync(stream);        // 136 -> 0x88
-
-            case MessageTypes.OPEN_CHANNEL:
-            case MessageTypes.ACCEPT_CHANNEL:
-            case MessageTypes.FUNDING_CREATED:
-            case MessageTypes.FUNDING_SIGNED:
-                throw new InvalidMessageException("You must use OpenChannel2 flow");
 
             default:
                 {
