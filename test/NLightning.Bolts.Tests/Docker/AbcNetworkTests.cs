@@ -5,7 +5,7 @@ using Lnrpc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
-using NLightning.Common.Models;
+using NLightning.Bolts.Tests.Mock;
 using ServiceStack;
 using ServiceStack.Text;
 using Xunit.Abstractions;
@@ -17,7 +17,7 @@ using Bolts.BOLT1.Managers;
 using Common.Constants;
 using Common.Enums;
 using Common.Factories;
-using Common.Managers;
+using Common.Models;
 using Common.Options;
 using TestCollections;
 using Tests.Fixtures;
@@ -25,7 +25,7 @@ using Utils;
 
 // ReSharper disable AccessToDisposedClosure
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
-[Collection(SecureKeyAndRegtestCollection.NAME)]
+[Collection(LightningRegtestNetworkFixtureCollection.NAME)]
 public class AbcNetworkTests
 {
     private readonly LightningRegtestNetworkFixture _lightningRegtestNetworkFixture;
@@ -39,8 +39,9 @@ public class AbcNetworkTests
     [Fact]
     public async Task NLightning_BOLT8_Test_Connect_Alice()
     {
-        // Arrange
-        var hex = BitConverter.ToString(SecureKeyManager.GetPrivateKey().PubKey.ToBytes()).Replace("-", "");
+        // Arrange 
+        var secureKeyManager = new FakeSecureKeyManager();
+        var hex = Convert.ToHexString(secureKeyManager.GetNodeKey().PubKey.ToBytes());
 
         var alice = _lightningRegtestNetworkFixture.Builder?.LNDNodePool?.ReadyNodes.First(x => x.LocalAlias == "alice");
         Assert.NotNull(alice);
@@ -60,7 +61,7 @@ public class AbcNetworkTests
 
         var peerManager = new PeerManager(new Mock<ILogger<PeerManager>>().Object, nodeOptions,
             new PeerFactory(loggerFactory, messageFactory, new MessageServiceFactory(messageFactory),
-                            new PingPongServiceFactory(messageFactory, nodeOptions),
+                            new PingPongServiceFactory(messageFactory, nodeOptions), secureKeyManager,
                             new TransportServiceFactory(loggerFactory, nodeOptions), nodeOptions));
 
         var aliceHost = new IPEndPoint((await Dns.GetHostAddressesAsync(alice.Host
@@ -85,6 +86,7 @@ public class AbcNetworkTests
     public async Task NLightning_BOLT8_Test_Bob_Connect()
     {
         // Arrange
+        var secureKeyManager = new FakeSecureKeyManager();
         var availablePort = await PortPoolUtil.GetAvailablePortAsync();
         var listener = new TcpListener(IPAddress.Any, availablePort);
         listener.Start();
@@ -94,7 +96,7 @@ public class AbcNetworkTests
             // Get ip from host
             var hostAddress = Environment.GetEnvironmentVariable("HOST_ADDRESS") ?? "host.docker.internal";
 
-            var hex = BitConverter.ToString(SecureKeyManager.GetPrivateKey().PubKey.ToBytes()).Replace("-", "");
+            var hex = Convert.ToHexString(secureKeyManager.GetNodeKey().PubKey.ToBytes());
 
             var bob = _lightningRegtestNetworkFixture
                 .Builder?
@@ -117,7 +119,7 @@ public class AbcNetworkTests
 
             var peerManager = new PeerManager(new Mock<ILogger<PeerManager>>().Object, nodeOptions,
                 new PeerFactory(loggerFactory, messageFactory, new MessageServiceFactory(messageFactory),
-                                new PingPongServiceFactory(messageFactory, nodeOptions),
+                                new PingPongServiceFactory(messageFactory, nodeOptions), secureKeyManager,
                                 new TransportServiceFactory(loggerFactory, nodeOptions), nodeOptions));
 
             var acceptTask = Task.Run(async () =>

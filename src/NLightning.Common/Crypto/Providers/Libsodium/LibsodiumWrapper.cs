@@ -69,5 +69,33 @@ internal static partial class LibsodiumWrapper
     [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
     internal static partial void sodium_munlock(IntPtr addr, ulong len);
     #endregion
+
+    #region AEAD XChaCha20 Poly1305
+    [LibraryImport(NAME)]
+    [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    internal static partial int crypto_aead_xchacha20poly1305_ietf_encrypt(ref byte c, out long clenP, ref byte m,
+                                                                           long mLen, ref byte ad, long adLen,
+                                                                           IntPtr nSec, ref byte nPub, ref byte k);
+
+    [LibraryImport(NAME)]
+    [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    internal static partial int crypto_aead_xchacha20poly1305_ietf_decrypt(ref byte m, out long mLenP, IntPtr nSec,
+                                                                           ref byte c, long clen, ref byte ad,
+                                                                           long adLen, ref byte nPub, ref byte k);
+    #endregion
+
+    #region Argon2 Key Derivation
+    [LibraryImport(NAME)]
+    [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    internal static partial int crypto_pwhash(ref byte outBuf, ulong outLen,
+                                              [MarshalAs(UnmanagedType.LPStr)] string passwd, ulong passwdLen,
+                                              ref byte salt, ulong opslimit, ulong memlimit, int alg);
+    #endregion
+
+    #region Random Bytes
+    [LibraryImport(NAME)]
+    [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    internal static partial void randombytes_buf(ref byte buf, UIntPtr size);
+    #endregion
 }
 #endif

@@ -10,7 +10,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>1.0.0</Version>
+    <Version>2.0.0</Version>
     <Configurations>Debug;Debug.Native;Debug.Wasm;Release;Release.Native;Release.Wasm</Configurations>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
@@ -21,8 +21,8 @@
     <Copyright>Copyright © Níckolas Goline 2024</Copyright>
     <RepositoryUrl>https://github.com/ipms-io/nlightning</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>1.0.0</AssemblyVersion>
-    <FileVersion>1.0.0</FileVersion>
+    <AssemblyVersion>2.0.0</AssemblyVersion>
+    <FileVersion>2.0.0</FileVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <Icon>logo.png</Icon>
     <PackageTags>lightning,invoice,bolt11,encoder,decoder</PackageTags>
@@ -48,8 +48,8 @@
     <Compile Include="..\NLightning.Common\Extensions\BitArrayExtension.cs" LinkBase="Common\Extensions"/>
     <Compile Include="..\NLightning.Common\Factories\Crypto\CryptoFactory.cs" LinkBase="Common\Factories"/>
     <Compile Include="..\NLightning.Common\Formatters\LightningFormatter.cs" LinkBase="Common\Formatters"/>
-    <Compile Include="..\NLightning.Common\Interfaces\Crypto\*.cs" LinkBase="Common\Interfaces"/>
-    <Compile Include="..\NLightning.Common\Managers\SecureKeyManager.cs" LinkBase="Common\Managers"/>
+    <Compile Include="..\NLightning.Common\Interfaces\Crypto\*.cs" LinkBase="Common\Interfaces\Crypto"/>
+    <Compile Include="..\NLightning.Common\Interfaces\ISecureKeyManager.cs" LinkBase="Common\Interfaces"/>
     <Compile Include="..\NLightning.Common\Node\FeatureSet.cs" LinkBase="Common\Node"/>
     <Compile Include="..\NLightning.Common\Types\BigSize.cs" LinkBase="Common\Types"/>
     <Compile Include="..\NLightning.Common\Types\ChainHash.cs" LinkBase="Common\Types"/>
@@ -94,7 +94,10 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(PublishAot)' == 'true' Or $(Configuration.Contains('.Native'))">
-    <Compile Include="..\NLightning.Common\Crypto\Providers\Native\*.cs" LinkBase="Common\Crypto\Providers\Native"/>
+    <Compile Include="..\NLightning.Common\Crypto\Providers\Native\**\*.cs" LinkBase="Common\Crypto\Providers\Native"/>
+    
+    <PackageReference Include="Portable.BouncyCastle" Version="1.8.6.7" />
+    <PackageReference Include="Konscious.Security.Cryptography.Argon2" Version="1.3.1" />
   </ItemGroup>
 
   <!-- Check if this is being used in non-AOT and non-WASM projects -->

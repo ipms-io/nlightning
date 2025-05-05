@@ -13,11 +13,9 @@ using Common.Interfaces;
 using Common.Node;
 using Common.Options;
 using Common.Types;
-using TestCollections;
 using Utils;
 
 // ReSharper disable AccessToDisposedClosure
-[Collection(SecureKeyManagerCollection.NAME)]
 public class PeerManagerTests
 {
     private readonly PubKey _pubKey = new("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7");

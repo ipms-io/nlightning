@@ -1,9 +1,14 @@
 #if CRYPTO_NATIVE
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Text;
+using Konscious.Security.Cryptography;
+using Org.BouncyCastle.Crypto.Parameters;
 
 namespace NLightning.Common.Crypto.Providers.Native;
 
+using Ciphers;
+using Common.Constants;
 using Constants;
 using Interfaces.Crypto;
 
@@ -26,11 +31,12 @@ internal sealed partial class NativeCryptoProvider: ICryptoProvider
         _ = _sha256.GetHashAndReset(result);
     }
 
-    public int AeadChacha20Poly1305IetfEncrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> publicNonce,
+    public int AeadChaCha20Poly1305IetfEncrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> publicNonce,
                                                 ReadOnlySpan<byte> secureNonce, ReadOnlySpan<byte> authenticationData,
                                                 ReadOnlySpan<byte> message, Span<byte> cipher, out long cipherLength)
     {
-        try{
+        try
+        {
             using var chaCha20Poly1305 = new ChaCha20Poly1305(key);
             
             chaCha20Poly1305.Encrypt(publicNonce, message, cipher[..message.Length],
@@ -47,7 +53,7 @@ internal sealed partial class NativeCryptoProvider: ICryptoProvider
         }
     }
 
-    public int AeadChacha20Poly1305IetfDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> publicNonce,
+    public int AeadChaCha20Poly1305IetfDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> publicNonce,
                                                 ReadOnlySpan<byte> secureNonce, ReadOnlySpan<byte> authenticationData,
                                                 ReadOnlySpan<byte> cipher, Span<byte> clearTextMessage,
                                                 out long messageLength)
@@ -99,6 +105,122 @@ internal sealed partial class NativeCryptoProvider: ICryptoProvider
             // TODO: Log somewhere that Memory unlock is not available on this platform.
             // but don't fail so the process can continue
         // }
+    }
+
+    public int AeadXChaCha20Poly1305IetfEncrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> nonce, 
+                                                ReadOnlySpan<byte> additionalData, ReadOnlySpan<byte> plainText, 
+                                                Span<byte> cipherText, out long cipherTextLength)
+    {
+        try
+        {
+            if (key.Length != XChaCha20Constants.KEY_SIZE)
+                throw new ArgumentException("Key must be 32 bytes", nameof(key));
+            if (nonce.Length != XChaCha20Constants.NONCE_SIZE)
+                throw new ArgumentException("Nonce must be 24 bytes", nameof(nonce));
+
+            // subkey (hchacha20(key, nonce[0:15]))
+            Span<byte> subkey = stackalloc byte[XChaCha20Constants.SUBKEY_SIZE];
+            HChaCha20.CreateSubkey(key, nonce, subkey);
+
+            // nonce (chacha20_nonce = "\x00\x00\x00\x00" + nonce[16:23])
+            Span<byte> chaChaNonce = stackalloc byte[12];
+            "\0\0\0\0"u8.ToArray().CopyTo(chaChaNonce[..4]);
+            nonce[16..].CopyTo(chaChaNonce[4..]);
+
+            // chacha20_encrypt(subkey, chacha20_nonce, plaintext, blk_ctr)
+            var keyMaterial = new KeyParameter(subkey.ToArray());
+            var parameters = new ParametersWithIV(keyMaterial, chaChaNonce.ToArray());
+
+            var chaCha20Poly1305 = new Org.BouncyCastle.Crypto.Modes.ChaCha20Poly1305();
+            chaCha20Poly1305.Init(true, parameters);
+
+            // if additional data present
+            if (additionalData != null)
+            {
+                chaCha20Poly1305.ProcessAadBytes(additionalData.ToArray(), 0, additionalData.Length);
+            }
+
+            var cipherTextBytes = new byte[cipherText.Length];
+            cipherTextLength = chaCha20Poly1305.ProcessBytes(plainText.ToArray(), 0, plainText.Length,
+                                                             cipherTextBytes, 0);
+            chaCha20Poly1305.DoFinal(cipherTextBytes, (int)cipherTextLength);
+            
+            cipherTextBytes.CopyTo(cipherText);
+            cipherTextLength = cipherTextBytes.Length;
+
+            return 0;
+        }
+        catch (Exception e)
+        {
+            throw new CryptographicException("Encryption failed.", e);
+        }
+    }
+
+    public int AeadXChaCha20Poly1305IetfDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> nonce, 
+                                                ReadOnlySpan<byte> additionalData, ReadOnlySpan<byte> cipherText, 
+                                                Span<byte> plainText, out long plainTextLength)
+    {
+        try
+        {
+            if (key.Length != XChaCha20Constants.KEY_SIZE)
+                throw new ArgumentException("Key must be 32 bytes", nameof(key));
+            if (nonce.Length != XChaCha20Constants.NONCE_SIZE)
+                throw new ArgumentException("Nonce must be 24 bytes", nameof(nonce));
+
+            // subkey (hchacha20(key, nonce[0:15]))
+            Span<byte> subkey = stackalloc byte[XChaCha20Constants.SUBKEY_SIZE];
+            HChaCha20.CreateSubkey(key, nonce, subkey);
+
+            // nonce (chacha20_nonce = "\x00\x00\x00\x00" + nonce[16:23])
+            Span<byte> chaChaNonce = stackalloc byte[12];
+            "\0\0\0\0"u8.ToArray().CopyTo(chaChaNonce[..4]);
+            nonce[16..].CopyTo(chaChaNonce[4..]);
+
+            // chacha20_encrypt(subkey, chacha20_nonce, plaintext, blk_ctr)
+            var keyMaterial = new KeyParameter(subkey.ToArray());
+            var parameters = new ParametersWithIV(keyMaterial, chaChaNonce.ToArray());
+
+            var chaCha20Poly1305 = new Org.BouncyCastle.Crypto.Modes.ChaCha20Poly1305();
+            chaCha20Poly1305.Init(false, parameters);
+
+            // if additional data present
+            if (additionalData != null)
+            {
+                chaCha20Poly1305.ProcessAadBytes(additionalData.ToArray(), 0, additionalData.Length);
+            }
+
+            var plainTextBytes = new byte[plainText.Length];
+            plainTextLength = chaCha20Poly1305.ProcessBytes(cipherText.ToArray(), 0, cipherText.Length,
+                plainTextBytes, 0);
+            chaCha20Poly1305.DoFinal(plainTextBytes, (int)plainTextLength);
+            
+            plainTextBytes.CopyTo(plainText);
+            plainTextLength = plainTextBytes.Length;
+
+            return 0;
+        }
+        catch (Exception e)
+        {
+            throw new CryptographicException("Decryption failed.", e);
+        }
+    }
+
+    public int DeriveKeyFromPasswordUsingArgon2I(Span<byte> key, string password, ReadOnlySpan<byte> salt, ulong opsLimit, ulong memLimit)
+    {
+        using var argon2 = new Argon2id(Encoding.UTF8.GetBytes(password));
+        argon2.Salt = salt.ToArray();
+        argon2.Iterations = (int)opsLimit;
+        argon2.MemorySize = (int)(memLimit / 1024); // memLimit is in bytes, MemorySize is in KB
+        argon2.DegreeOfParallelism = Environment.ProcessorCount;
+
+        var derived = argon2.GetBytes(key.Length);
+        derived.CopyTo(key);
+        return 0;
+    }
+
+    public void RandomBytes(Span<byte> buffer)
+    {
+        new Random().NextBytes(buffer);
     }
 
     public void MemoryFree(IntPtr ptr)

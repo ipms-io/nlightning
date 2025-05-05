@@ -52,7 +52,7 @@ public static class NltgConfigurationExtensions
 
     public static IConfiguration ReadInitialConfiguration(string[] args)
     {
-        // Get network from command line or environment variable first
+        // Get network from the command line or environment variable first
         var initialConfig = new ConfigurationBuilder()
             .AddCommandLine(args)
             .AddEnvironmentVariables("NLTG_")

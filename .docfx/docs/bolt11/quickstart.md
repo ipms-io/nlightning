@@ -5,7 +5,7 @@ It can be used to decode and/or encode BOLT11 invoices.
 
 ## Available Packages
 
-We've decided to have 2 packages, one for desktop/server development, and one for Blazor WebAssembly development.
+We've decided to have two packages, one for desktop/server development, and one for Blazor WebAssembly development.
 
 The reason behind this is that for a Blazor app running fully on the browser we don't have access to native libsodium.
 
@@ -30,27 +30,33 @@ dotnet add package NLightning.Bolt11
 ```csharp
 // add the using directive
 using NLightning.Bolts.BOLT11;
+using NLightning.Common.Types
+
+var expectedNetwork = Network.MAIN_NET;
 
 // decode the invoice string
-var invoice = Invoice.Decode(invoice_string);
+var invoice = Invoice.Decode(invoice_string, network);
 
 // Get properties of the invoice
 Console.WriteLine("Here's a few props from the invoice:")
-Console.WriteLine(invoice.AmountMillisats);
-Console.WriteLine(invoice.AmountSats);
+Console.WriteLine(invoice.Amount.MilliSatoshi);
+Console.WriteLine(invoice.Amount.Satoshi);
+Console.WriteLine(invoice.Amount); // In Bitcoin
 Console.WriteLine(invoice.PaymentHash);
 Console.WriteLine("A list with all the props can be found at: https://nlightning.ipms.io/api/NLightning.Bolts.BOLT11.Invoice.html#properties");
 ```
 
-### Configuration
-Before working with BOLT11 invoices, you might need to set up some configuration values.
-Two important static helper classes are used in this process:
-
-#### SecureKeyManager
-This class is responsible for securely managing cryptographic keys.
-It needs to be initialized before using any functionality that relies on key security.
+### Encoding
 
 ```csharp
-// Initialize SecureKeyManager with the virtual node key
-SecureKeyManager.Initialize(virtualNodeKey.ToBytes());
-```
+// add the using directive
+using NBitcoin;
+using NLightning.Bolts.BOLT11;
+using NLightning.Common.Types;
+using Network = NLightning.Common.Types.Network;
+
+// create a new invoice
+var invoice = new Invoice(LightningMoney.Satoshis(100), "my description", uint256.One, uint256.Zero, Network.MAIN_NET);
+
+// get invoice string
+var invoiceString = invoice.Encode(new Key());

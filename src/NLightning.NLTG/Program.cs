@@ -1,8 +1,11 @@
 using Microsoft.Extensions.Hosting;
+using NBitcoin;
 using NLightning.NLTG.Extensions;
 using NLightning.NLTG.Helpers;
+using NLightning.NLTG.Managers;
 using NLightning.NLTG.Utilities;
 using Serilog;
+using Network = NLightning.Common.Types.Network;
 
 try
 {
@@ -11,14 +14,14 @@ try
         .WriteTo.Console()
         .CreateBootstrapLogger();
 
-    // Get network for PID file path
+    // Get network for the PID file path
     var network = CommandLineHelper.GetNetwork(args);
-    var pidFilePath = DaemonUtility.GetPidFilePath(network);
+    var pidFilePath = DaemonUtils.GetPidFilePath(network);
 
-    // Check for stop command
+    // Check for the stop command
     if (CommandLineHelper.IsStopRequested(args))
     {
-        var stopped = DaemonUtility.StopDaemon(pidFilePath, Log.Logger);
+        var stopped = DaemonUtils.StopDaemon(pidFilePath, Log.Logger);
         return stopped ? 0 : 1;
     }
 
@@ -36,13 +39,49 @@ try
         return 0;
     }
 
-    // Read configuration file to check for daemon setting
+    // Read the configuration file to check for daemon setting
     var initialConfig = NltgConfigurationExtensions.ReadInitialConfiguration(args);
 
-    // Start as daemon if requested
-    if (DaemonUtility.StartDaemonIfRequested(args, initialConfig, pidFilePath, Log.Logger))
+    string? password = null;
+
+    // Try to get password from args or prompt
+    if (args.Contains("--password"))
     {
-        // Parent process exits immediately after starting daemon
+        var idx = Array.IndexOf(args, "--password");
+        if (idx >= 0 && idx + 1 < args.Length)
+            password = args[idx + 1];
+    }
+    if (string.IsNullOrWhiteSpace(password))
+    {
+        password = ConsoleUtils.ReadPassword("Enter password for key encryption: ");
+    }
+    if (string.IsNullOrWhiteSpace(password))
+    {
+        Log.Error("Password cannot be empty.");
+        return 1;
+    }
+
+    SecureKeyManager keyManager;
+    var keyFilePath = SecureKeyManager.GetKeyFilePath(network);
+    if (!File.Exists(keyFilePath))
+    {
+        // Creates new key
+        var key = new Key();
+        keyManager = new SecureKeyManager(key.ToBytes(), new Network(network), keyFilePath);
+        keyManager.SaveToFile(password);
+        Console.WriteLine($"New key created and saved to {keyFilePath}");
+    }
+    else
+    {
+        // Load the existing key
+        keyManager = SecureKeyManager.FromFilePath(keyFilePath, new Network(network), password);
+        Console.WriteLine($"Loaded key from {keyFilePath}");
+    }
+
+    // Start as a daemon if requested
+    if (DaemonUtils.StartDaemonIfRequested(args, initialConfig, pidFilePath, Log.Logger))
+    {
+        // The parent process exits immediately after starting the daemon
         return 0;
     }
 
@@ -51,7 +90,7 @@ try
     // Create and run host
     await Host.CreateDefaultBuilder(args)
         .ConfigureNltg(initialConfig)
-        .ConfigureNltgServices()
+        .ConfigureNltgServices(keyManager)
         .RunConsoleAsync();
 
     return 0;

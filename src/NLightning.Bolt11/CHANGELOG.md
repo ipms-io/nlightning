@@ -2,11 +2,56 @@
 
 All notable changes to this project will be documented in this file.
 
+## v2.0.0
+
+Removal of `SecureKeyManager` static class and introduction of `ISecureKeyManager` interface.
+
+Introduction of `LightningMoney` class to represent amounts in the invoice.
+
+### Removed
+
+- Removed `SecureKeyManager` class;
+
+### Added
+
+- Added `ISecureKeyManager` interface;
+- Added `ToString(Key nodeKey)` method to generate the invoice string using a specific key;
+- Added `Encode(Key nodeKey)` method to encode the invoice using a specific key;
+
+### Changed
+
+- Invoice public constructors now may receive a `ISecureKeyManager` implementation;
+
+### Breaking Changes
+
+- `Encode` now rely on the `ISecureKeyManager` being passed on the constructors to encode the invoice;
+- `ToString` now rely on the `ISecureKeyManager` being passed on the constructors to generate the invoice string;
+- Invoice public constructors now receive a `LightningMoney` object instead of `ulong`;
+- Removed `AmountMilliSats` and `AmountSats` in favor of the `Amount` property;
+
+## v1.0.0
+
+Removal of `ConfigManager` static class.
+
+### Removed
+
+- Removed `ConfigManager` class;
+- Removed obsolete `NLightning.Bolt11.Invoice` class;
+
+### Changed
+
+- Decode method can receive a `Network` object to check if the invoice is valid for the network;
+
+### Breaking Changes
+
+- Invoice public constructors now need to receive a `Network` object;
+- Invoice static constructors now need to receive a `Network` object;
+
 ## v0.2.4
 
 Update `BitReader` and `BitWriter` to be fully managed
 
-## Changed
+### Changed
 
 - Dropped `unsafe` modifier from `BitReader` and `BitWriter`
 - Refactored `BitReader` and `BitWriter` to use managed objects

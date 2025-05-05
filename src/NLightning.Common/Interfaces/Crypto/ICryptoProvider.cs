@@ -11,10 +11,10 @@ internal interface ICryptoProvider : IDisposable
     #endregion
 
     #region AeadChacha20Poly1305Ietf
-    int AeadChacha20Poly1305IetfEncrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> publicNonce,
+    int AeadChaCha20Poly1305IetfEncrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> publicNonce,
                                          ReadOnlySpan<byte> secureNonce, ReadOnlySpan<byte> authenticationData,
                                          ReadOnlySpan<byte> plainText, Span<byte> cipherText, out long cipherTextLength);
-    int AeadChacha20Poly1305IetfDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> publicNonce,
+    int AeadChaCha20Poly1305IetfDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> publicNonce,
                                          ReadOnlySpan<byte> secureNonce, ReadOnlySpan<byte> authenticationData,
                                          ReadOnlySpan<byte> cipherText, Span<byte> plainText, out long plainTextLength);
     #endregion
@@ -25,5 +25,24 @@ internal interface ICryptoProvider : IDisposable
     void MemoryFree(IntPtr ptr);
     void MemoryZero(IntPtr ptr, ulong len);
     void MemoryUnlock(IntPtr addr, ulong len);
+    #endregion
+
+    #region AeadXChaCha20Poly1305Ietf
+    int AeadXChaCha20Poly1305IetfEncrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> nonce,
+                                         ReadOnlySpan<byte> additionalData, ReadOnlySpan<byte> plainText,
+                                         Span<byte> cipherText, out long cipherTextLength);
+
+    int AeadXChaCha20Poly1305IetfDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> nonce,
+                                         ReadOnlySpan<byte> additionalData, ReadOnlySpan<byte> cipherText,
+                                         Span<byte> plainText, out long plainTextLength);
+    #endregion
+
+    #region Key Derivation From Password
+    int DeriveKeyFromPasswordUsingArgon2I(Span<byte> key, string password, ReadOnlySpan<byte> salt, ulong opsLimit,
+                                          ulong memLimit);
+    #endregion
+
+    #region Random
+    void RandomBytes(Span<byte> buffer);
     #endregion
 }

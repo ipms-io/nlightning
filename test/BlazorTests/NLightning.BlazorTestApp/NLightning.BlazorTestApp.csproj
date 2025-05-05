@@ -22,6 +22,10 @@
 
   <ItemGroup>
     <Compile Include="../../NLightning.Common.Tests/Vectors/AeadChacha20Poly1305Ietf.cs" LinkBase="Vectors"/>
+    <Compile Include="..\..\NLightning.Common.Tests\Vectors\AeadXChacha20Poly1305Ietf.cs">
+      <LinkBase>Vectors/</LinkBase>
+      <Link>Vectors\AeadXChacha20Poly1305Ietf.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

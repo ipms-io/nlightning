@@ -7,7 +7,8 @@ namespace NLightning.Bolts.BOLT11;
 using Common.BitUtils;
 using Common.Constants;
 using Common.Crypto.Hashes;
-using Common.Managers;
+using Common.Enums;
+using Common.Interfaces;
 using Common.Node;
 using Common.Types;
 using Constants;
@@ -40,6 +41,8 @@ public partial class Invoice
     [GeneratedRegex(@"^[a-z]+((\d+)([munp])?)?$")]
     private static partial Regex AmountRegex();
 
+    private readonly ISecureKeyManager? _secureKeyManager;
+
     private TaggedFieldList _taggedFields { get; } = [];
 
     private string? _invoiceString;
@@ -52,9 +55,9 @@ public partial class Invoice
     public Network Network { get; }
 
     /// <summary>
-    /// The amount of millisatoshis the invoice is for
+    /// The amount for the invoice
     /// </summary>
-    public ulong AmountMilliSats { get; }
+    public LightningMoney Amount { get; }
 
     /// <summary>
     /// The timestamp of the invoice
@@ -73,11 +76,6 @@ public partial class Invoice
     /// The human-readable part of the invoice
     /// </summary>
     public string HumanReadablePart { get; }
-
-    /// <summary>
-    /// The amount of satoshis the invoice is for
-    /// </summary>
-    public ulong AmountSats => AmountMilliSats * 1_000;
     #endregion
 
     #region Public Properties from Tagged Fields
@@ -186,9 +184,10 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGetAll(TaggedFieldTypes.FALLBACK_ADDRESS, out List<FallbackAddressTaggedField> fallbackAddress)
-                ? fallbackAddress.Select(x => x.Value).ToList()
-                : null;
+            return _taggedFields
+                .TryGetAll(TaggedFieldTypes.FALLBACK_ADDRESS, out List<FallbackAddressTaggedField> fallbackAddress)
+                    ? fallbackAddress.Select(x => x.Value).ToList()
+                    : null;
         }
         set
         {
@@ -278,9 +277,10 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.DESCRIPTION_HASH, out DescriptionHashTaggedField? descriptionHash)
-                ? descriptionHash!.Value
-                : null;
+            return _taggedFields
+                .TryGet(TaggedFieldTypes.DESCRIPTION_HASH, out DescriptionHashTaggedField? descriptionHash)
+                    ? descriptionHash!.Value
+                    : null;
         }
         internal set
         {
@@ -301,9 +301,10 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY, out MinFinalCltvExpiryTaggedField? minFinalCltvExpiry)
-                ? minFinalCltvExpiry!.Value
-                : null;
+            return _taggedFields
+                .TryGet(TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY, out MinFinalCltvExpiryTaggedField? minFinalCltvExpiry)
+                    ? minFinalCltvExpiry!.Value
+                    : null;
         }
         set
         {
@@ -343,20 +344,23 @@ public partial class Invoice
     /// <summary>
     /// The base constructor for the invoice
     /// </summary>
-    /// <param name="amountMilliSats">The amount of millisatoshis the invoice is for</param>
+    /// <param name="amount">The amount of the invoice</param>
     /// <param name="description">The description of the invoice</param>
     /// <param name="paymentHash">The payment hash of the invoice</param>
     /// <param name="paymentSecret">The payment secret of the invoice</param>
     /// <param name="network">The network the invoice is created for</param>
+    /// <param name="secureKeyManager">Secure key manager</param>
     /// <remarks>
     /// The invoice is created with the given amount of millisatoshis, a description, the payment hash and the
     /// payment secret.
     /// </remarks>
     /// <seealso cref="Network"/>
-    public Invoice(ulong amountMilliSats, string description, uint256 paymentHash, uint256 paymentSecret,
-                   Network network)
+    public Invoice(LightningMoney amount, string description, uint256 paymentHash, uint256 paymentSecret,
+                   Network network, ISecureKeyManager? secureKeyManager = null)
     {
-        AmountMilliSats = amountMilliSats;
+        _secureKeyManager = secureKeyManager;
+
+        Amount = amount;
         Network = network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -373,20 +377,23 @@ public partial class Invoice
     /// <summary>
     /// The base constructor for the invoice
     /// </summary>
-    /// <param name="amountMilliSats">The amount of millisatoshis the invoice is for</param>
+    /// <param name="amount">The amount of the invoice</param>
     /// <param name="descriptionHash">The description hash of the invoice</param>
     /// <param name="paymentHash">The payment hash of the invoice</param>
     /// <param name="paymentSecret">The payment secret of the invoice</param>
     /// <param name="network">The network the invoice is created for</param>
+    /// <param name="secureKeyManager">Secure key manager</param>
     /// <remarks>
     /// The invoice is created with the given amount of millisatoshis, a description hash, the payment hash and the
     /// payment secret.
     /// </remarks>
     /// <seealso cref="Network"/>
-    public Invoice(ulong amountMilliSats, uint256 descriptionHash, uint256 paymentHash, uint256 paymentSecret,
-                   Network network)
+    public Invoice(LightningMoney amount, uint256 descriptionHash, uint256 paymentHash, uint256 paymentSecret,
+                   Network network, ISecureKeyManager? secureKeyManager = null)
     {
-        AmountMilliSats = amountMilliSats;
+        _secureKeyManager = secureKeyManager;
+
+        Amount = amount;
         Network = network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -404,15 +411,15 @@ public partial class Invoice
     /// This constructor is used by tests
     /// </summary>
     /// <param name="network">The network the invoice is created for</param>
-    /// <param name="amountMilliSats">The amount of millisatoshis the invoice is for</param>
+    /// <param name="amount">The amount of the invoice</param>
     /// <param name="timestamp">The timestamp of the invoice</param>
     /// <remarks>
     /// The invoice is created with the given network, amount of millisatoshis and timestamp.
     /// </remarks>
     /// <seealso cref="Network"/>
-    internal Invoice(Network network, ulong? amountMilliSats = 0, long? timestamp = null)
+    internal Invoice(Network network, LightningMoney? amount = null, long? timestamp = null)
     {
-        AmountMilliSats = amountMilliSats ?? 0;
+        Amount = amount ?? LightningMoney.Zero;
         Network = network;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -427,7 +434,7 @@ public partial class Invoice
     /// <param name="invoiceString">The invoice string</param>
     /// <param name="humanReadablePart">The human-readable part of the invoice</param>
     /// <param name="network">The network the invoice is created for</param>
-    /// <param name="amountMilliSats">The amount of millisatoshis the invoice is for</param>
+    /// <param name="amount">The amount of the invoice</param>
     /// <param name="timestamp">The timestamp of the invoice</param>
     /// <param name="taggedFields">The tagged fields of the invoice</param>
     /// <param name="signature">The invoice signature</param>
@@ -436,14 +443,14 @@ public partial class Invoice
     /// timestamp and tagged fields.
     /// </remarks>
     /// <seealso cref="Network"/>
-    private Invoice(string invoiceString, string humanReadablePart, Network network, ulong amountMilliSats,
-        long timestamp, TaggedFieldList taggedFields, CompactSignature signature)
+    private Invoice(string invoiceString, string humanReadablePart, Network network, LightningMoney amount,
+                    long timestamp, TaggedFieldList taggedFields, CompactSignature signature)
     {
         _invoiceString = invoiceString;
 
         Network = network;
         HumanReadablePart = humanReadablePart;
-        AmountMilliSats = amountMilliSats;
+        Amount = amount;
         Timestamp = timestamp;
         _taggedFields = taggedFields;
         Signature = signature;
@@ -470,7 +477,7 @@ public partial class Invoice
     public static Invoice InSatoshis(ulong amountSats, string description, uint256 paymentHash, uint256 paymentSecret,
                                      Network network)
     {
-        return new Invoice(amountSats * 1_000, description, paymentHash, paymentSecret, network);
+        return new Invoice(LightningMoney.Satoshis(amountSats), description, paymentHash, paymentSecret, network);
     }
 
     /// <summary>
@@ -489,7 +496,7 @@ public partial class Invoice
     public static Invoice InSatoshis(ulong amountSats, uint256 descriptionHash, uint256 paymentHash,
                                      uint256 paymentSecret, Network network)
     {
-        return new Invoice(amountSats * 1_000, descriptionHash, paymentHash, paymentSecret, network);
+        return new Invoice(LightningMoney.Satoshis(amountSats), descriptionHash, paymentHash, paymentSecret, network);
     }
 
     /// <summary>
@@ -545,11 +552,14 @@ public partial class Invoice
     #endregion
 
     /// <summary>
-    /// Encodes the invoice to a string
+    /// Encodes the current invoice into a lightning-compatible invoice format as a string.
     /// </summary>
-    /// <returns>A string representing the invoice</returns>
-    /// <exception cref="InvoiceSerializationException">If something goes wrong in the encoding process</exception>
-    public string Encode()
+    /// <param name="nodeKey">The private key of the node used to sign the invoice.</param>
+    /// <returns>The encoded lightning invoice as a string.</returns>
+    /// <exception cref="InvoiceSerializationException">
+    /// Thrown when an error occurs during the encoding process.
+    /// </exception>
+    public string Encode(Key nodeKey)
     {
         try
         {
@@ -566,7 +576,7 @@ public partial class Invoice
             _taggedFields.WriteToBitWriter(bitWriter);
 
             // Sign the invoice
-            var compactSignature = SignInvoice(HumanReadablePart, bitWriter);
+            var compactSignature = SignInvoice(HumanReadablePart, bitWriter, nodeKey);
             var signature = new byte[compactSignature.Signature.Length + 1];
             compactSignature.Signature.CopyTo(signature, 0);
             signature[^1] = (byte)compactSignature.RecoveryId;
@@ -582,10 +592,40 @@ public partial class Invoice
         }
     }
 
+    /// <summary>
+    /// Encodes the invoice into its string representation using the secure key manager.
+    /// </summary>
+    /// <returns>The encoded invoice string.</returns>
+    /// <exception cref="NullReferenceException">Thrown when the secure key manager is not set.</exception>
+    public string Encode()
+    {
+        if (_secureKeyManager is null)
+            throw new NullReferenceException("Secure key manager is not set, please use Encode(Key nodeKey) instead");
+
+        return Encode(_secureKeyManager.GetNodeKey());
+    }
+
     #region Overrides
     public override string ToString()
     {
         return string.IsNullOrWhiteSpace(_invoiceString) ? Encode() : _invoiceString;
+    }
+
+    /// <summary>
+    /// Converts the invoice object to its string representation.
+    /// </summary>
+    /// <remarks>
+    /// If the invoice string exists, it is returned directly.
+    /// Otherwise, the invoice is encoded using the provided node key.
+    /// </remarks>
+    /// <param name="nodeKey">The node key used for signing the invoice.</param>
+    /// <returns>A string representation of the invoice.</returns>
+    /// <exception cref="InvoiceSerializationException">
+    /// Thrown when an error occurs during the encoding process.
+    /// </exception>
+    public string ToString(Key nodeKey)
+    {
+        return string.IsNullOrWhiteSpace(_invoiceString) ? Encode(nodeKey) : _invoiceString;
     }
     #endregion
 
@@ -594,9 +634,9 @@ public partial class Invoice
     {
         StringBuilder sb = new(InvoiceConstants.PREFIX);
         sb.Append(GetPrefix(Network));
-        if (AmountMilliSats > 0)
+        if (!Amount.IsZero)
         {
-            ConvertMilliSatoshisToHumanReadable(AmountMilliSats, sb);
+            ConvertAmountToHumanReadable(Amount, sb);
         }
         return sb.ToString();
     }
@@ -613,16 +653,16 @@ public partial class Invoice
         };
     }
 
-    private static void ConvertMilliSatoshisToHumanReadable(ulong millisatoshis, StringBuilder sb)
+    private static void ConvertAmountToHumanReadable(LightningMoney amount, StringBuilder sb)
     {
-        var btcAmount = millisatoshis / InvoiceConstants.BTC_IN_MILLISATOSHIS;
+        var btcAmount = amount.ToUnit(LightningMoneyUnit.BTC);
 
         // Start with the smallest multiplier
         var tempAmount = btcAmount * 1_000_000_000_000m; // Start with pico
         char? suffix = InvoiceConstants.MULTIPLIER_PICO;
 
         // Try nano
-        if (millisatoshis % 10 == 0)
+        if (amount.MilliSatoshi % 10 == 0)
         {
             var nanoAmount = btcAmount * 1_000_000_000m;
             if (nanoAmount == decimal.Truncate(nanoAmount))
@@ -633,7 +673,7 @@ public partial class Invoice
         }
 
         // Try micro
-        if (millisatoshis % 1_000 == 0)
+        if (amount.MilliSatoshi % 1_000 == 0)
         {
             var microAmount = btcAmount * 1_000_000m;
             if (microAmount == decimal.Truncate(microAmount))
@@ -644,7 +684,7 @@ public partial class Invoice
         }
 
         // Try milli
-        if (millisatoshis % 1_000_000 == 0)
+        if (amount.MilliSatoshi % 1_000_000 == 0)
         {
             var milliAmount = btcAmount * 1000m;
             if (milliAmount == decimal.Truncate(milliAmount))
@@ -655,7 +695,7 @@ public partial class Invoice
         }
 
         // Try full BTC
-        if (millisatoshis % 1_000_000_000 == 0)
+        if (amount.MilliSatoshi % 1_000_000_000 == 0)
         {
             if (btcAmount == decimal.Truncate(btcAmount))
             {
@@ -724,7 +764,8 @@ public partial class Invoice
             return;
         }
 
-        if (NBitcoin.Crypto.ECDSASignature.TryParseFromCompact(Signature.Signature, out var ecdsa) && PayeePubKey.Verify(nBitcoinHash, ecdsa))
+        if (NBitcoin.Crypto.ECDSASignature.TryParseFromCompact(Signature.Signature, out var ecdsa)
+            && PayeePubKey.Verify(nBitcoinHash, ecdsa))
         {
             return;
         }
@@ -732,7 +773,7 @@ public partial class Invoice
         throw new ArgumentException("Invalid signature in invoice");
     }
 
-    private static CompactSignature SignInvoice(string hrp, BitWriter bitWriter)
+    private static CompactSignature SignInvoice(string hrp, BitWriter bitWriter, Key key)
     {
         // Assemble the message (hrp + data)
         var data = bitWriter.ToArray();
@@ -748,7 +789,6 @@ public partial class Invoice
         var nBitcoinHash = new uint256(hash);
 
         // Sign the hash
-        using var key = new Key(SecureKeyManager.GetPrivateKeyBytes());
         return key.SignCompact(nBitcoinHash, false);
     }
 

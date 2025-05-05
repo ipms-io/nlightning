@@ -44,17 +44,16 @@ internal sealed class SodiumJsCryptoProvider : ICryptoProvider
         LibsodiumJsWrapper.sodium_free(resultPtr);
     }
 
-    public int AeadChacha20Poly1305IetfEncrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> publicNonce,
+    public int AeadChaCha20Poly1305IetfEncrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> publicNonce,
                                                ReadOnlySpan<byte> secureNonce, ReadOnlySpan<byte> authenticationData,
                                                ReadOnlySpan<byte> plainText, Span<byte> cipherText,
                                                out long cipherTextLength)
     {
         try
         {
-            var response = LibsodiumJsWrapper.crypto_aead_chacha20poly1305_ietf_encrypt(plainText.ToArray(),
-                                                                                          authenticationData.ToArray(),
-                                                                                          null, publicNonce.ToArray(),
-                                                                                          key.ToArray());
+            var response = LibsodiumJsWrapper
+                .crypto_aead_chacha20poly1305_ietf_encrypt(plainText.ToArray(), authenticationData.ToArray(), null, 
+                                                           publicNonce.ToArray(), key.ToArray());
             response.CopyTo(cipherText);
             cipherTextLength = response.Length;
 
@@ -68,17 +67,16 @@ internal sealed class SodiumJsCryptoProvider : ICryptoProvider
         }
     }
 
-    public int AeadChacha20Poly1305IetfDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> publicNonce,
+    public int AeadChaCha20Poly1305IetfDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> publicNonce,
                                                ReadOnlySpan<byte> secureNonce, ReadOnlySpan<byte> authenticationData,
                                                ReadOnlySpan<byte> cipherText, Span<byte> plainText,
                                                out long plainTextLength)
     {
         try
         {
-            var response = LibsodiumJsWrapper.crypto_aead_chacha20poly1305_ietf_decrypt(null, cipherText.ToArray(),
-                                                                                         authenticationData.ToArray(),
-                                                                                         publicNonce.ToArray(),
-                                                                                         key.ToArray());
+            var response = LibsodiumJsWrapper
+                .crypto_aead_chacha20poly1305_ietf_decrypt(null, cipherText.ToArray(), authenticationData.ToArray(),
+                                                           publicNonce.ToArray(), key.ToArray());
             plainTextLength = response.Length;
             response.CopyTo(plainText);
             
@@ -116,6 +114,68 @@ internal sealed class SodiumJsCryptoProvider : ICryptoProvider
     public void MemoryUnlock(IntPtr addr, ulong len)
     {
         Console.WriteLine("Not available on the browser.");
+    }
+
+    public int AeadXChaCha20Poly1305IetfEncrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> nonce, 
+                                                ReadOnlySpan<byte> additionalData, ReadOnlySpan<byte> plainText, 
+                                                Span<byte> cipherText, out long cipherTextLength)
+    {
+        try
+        {
+            var response = LibsodiumJsWrapper
+                .crypto_aead_xchacha20poly1305_ietf_encrypt(plainText.ToArray(), additionalData.ToArray(), null, 
+                                                            nonce.ToArray(), key.ToArray());
+            response.CopyTo(cipherText);
+            cipherTextLength = response.Length;
+
+            return 0;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            cipherTextLength = 0;
+            return -1;
+        }
+    }
+
+    public int AeadXChaCha20Poly1305IetfDecrypt(ReadOnlySpan<byte> key, ReadOnlySpan<byte> nonce, 
+                                                ReadOnlySpan<byte> additionalData, ReadOnlySpan<byte> cipherText, 
+                                                Span<byte> plainText, out long plainTextLength)
+    {
+        try
+        {
+            var response = LibsodiumJsWrapper
+                .crypto_aead_xchacha20poly1305_ietf_decrypt(null, cipherText.ToArray(), additionalData.ToArray(),
+                                                            nonce.ToArray(), key.ToArray());
+            response.CopyTo(plainText);
+            plainTextLength = response.Length;
+
+            return 0;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            plainTextLength = 0;
+            return -1;
+        }
+    }
+
+    public int DeriveKeyFromPasswordUsingArgon2I(Span<byte> key, string password, ReadOnlySpan<byte> salt, ulong opsLimit, ulong memLimit)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void RandomBytes(Span<byte> buffer)
+    {
+        try
+        {
+            var response = LibsodiumJsWrapper.randombytes_buf(buffer.Length);
+            response.CopyTo(buffer);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
     }
 
     public void Dispose()

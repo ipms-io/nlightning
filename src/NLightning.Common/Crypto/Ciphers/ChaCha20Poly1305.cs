@@ -38,7 +38,7 @@ public sealed class ChaCha20Poly1305 : IDisposable
         Span<byte> nonce = stackalloc byte[CryptoConstants.CHACHA20_POLY1305_NONCE_LEN];
         BinaryPrimitives.WriteUInt64LittleEndian(nonce[4..], publicNonce);
 
-        var result = _cryptoProvider.AeadChacha20Poly1305IetfEncrypt(key, nonce, null, authenticationData, plaintext,
+        var result = _cryptoProvider.AeadChaCha20Poly1305IetfEncrypt(key, nonce, null, authenticationData, plaintext,
                                                                      ciphertext, out var length);
 
         if (result != 0)
@@ -65,7 +65,7 @@ public sealed class ChaCha20Poly1305 : IDisposable
         Span<byte> nonce = stackalloc byte[CryptoConstants.CHACHA20_POLY1305_NONCE_LEN];
         BinaryPrimitives.WriteUInt64LittleEndian(nonce[4..], publicNonce);
 
-        var result = _cryptoProvider.AeadChacha20Poly1305IetfDecrypt(key, nonce, null, authenticationData,
+        var result = _cryptoProvider.AeadChaCha20Poly1305IetfDecrypt(key, nonce, null, authenticationData,
                                                                      ciphertext, plaintext, out var length);
 
         if (result != 0)

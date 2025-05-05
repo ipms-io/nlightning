@@ -8,37 +8,69 @@
 
 <p>Welcome to our test app.</p>
 <br/>
-<button data-testid="encode" @onclick="Encode">Encode</button>
+<button data-testid="encodeAeadChacha20Poly1305Ietf" @onclick="EncodeAeadChacha20Poly1305Ietf">Encode AeadChacha20Poly1305Ietf</button>
 <br/>
-<button data-testid="decode" @onclick="Decode">Decode</button>
+<button data-testid="decodeAeadChacha20Poly1305Ietf" @onclick="DecodeAeadChacha20Poly1305Ietf">Decode AeadChacha20Poly1305Ietf</button>
 <br/>
-@if (_hasResult)
+<button data-testid="encodeAeadXChacha20Poly1305Ietf" @onclick="EncodeAeadXChacha20Poly1305Ietf">Encode AeadXChacha20Poly1305Ietf</button>
+<br/>
+<button data-testid="decodeAeadXChacha20Poly1305Ietf" @onclick="DecodeAeadXChacha20Poly1305Ietf">Decode AeadXChacha20Poly1305Ietf</button>
+<br/>
+@if (_hasAeadChacha20Poly1305IetfResult)
 {
-    <p data-testid="result">@_result</p>
+    <p data-testid="aeadChacha20Poly1305IetfResult">@_aeadChacha20Poly1305IetfResult</p>
+}
+@if (_hasAeadXChacha20Poly1305IetfResult)
+{
+    <p data-testid="aeadXChacha20Poly1305IetfResult">@_aeadXChacha20Poly1305IetfResult</p>
 }
 
 @code {
-    bool _hasResult;
-    string? _result;
+    bool _hasAeadChacha20Poly1305IetfResult;
+    bool _hasAeadXChacha20Poly1305IetfResult;
+    string? _aeadChacha20Poly1305IetfResult;
+    string? _aeadXChacha20Poly1305IetfResult;
 
-    void Encode()
+    void EncodeAeadChacha20Poly1305Ietf()
     {
         // Arrange
         var cryptoProvider = new SodiumJsCryptoProvider();
         Span<byte> cipher = new byte[AeadChacha20Poly1305IetfVector.MESSAGE.Length + 16];
 
         // Act
-        cryptoProvider.AeadChacha20Poly1305IetfEncrypt(AeadChacha20Poly1305IetfVector.KEY,
-            AeadChacha20Poly1305IetfVector.PUBLIC_NONCE, null,
-            AeadChacha20Poly1305IetfVector.AUTHENTICATION_DATA,
-            AeadChacha20Poly1305IetfVector.MESSAGE, cipher, out var clenP);
+        cryptoProvider.AeadChaCha20Poly1305IetfEncrypt(AeadChacha20Poly1305IetfVector.KEY,
+                                                       AeadChacha20Poly1305IetfVector.PUBLIC_NONCE, null,
+                                                       AeadChacha20Poly1305IetfVector.AUTHENTICATION_DATA,
+                                                       AeadChacha20Poly1305IetfVector.MESSAGE, cipher, out var clenP);
 
         // Expose Results 
-        _result = $"{{\"Result\":{{\"ClenP\":{clenP},\"Cipher\":\"{Convert.ToHexString(cipher)}\"}}}}";
-        _hasResult = true;
+        _aeadChacha20Poly1305IetfResult = $"{{\"Result\":{{\"ClenP\":{clenP},\"Cipher\":\"{Convert.ToHexString(cipher)}\"}}}}";
+        _hasAeadChacha20Poly1305IetfResult = true;
     }
 
-    void Decode()
+    void DecodeAeadChacha20Poly1305Ietf()
+    {
+        throw new NotImplementedException();
+    }
+
+    void EncodeAeadXChacha20Poly1305Ietf()
+    {
+        // Arrange
+        var cryptoProvider = new SodiumJsCryptoProvider();
+        Span<byte> cipher = new byte[AeadXChacha20Poly1305IetfVector.MESSAGE.Length + 16];
+
+        // Act
+        cryptoProvider.AeadXChaCha20Poly1305IetfEncrypt(AeadXChacha20Poly1305IetfVector.KEY,
+                                                        AeadXChacha20Poly1305IetfVector.PUBLIC_NONCE,
+                                                        AeadXChacha20Poly1305IetfVector.AUTHENTICATION_DATA,
+                                                        AeadXChacha20Poly1305IetfVector.MESSAGE, cipher, out var clenP);
+
+        // Expose Results 
+        _aeadXChacha20Poly1305IetfResult = $"{{\"Result\":{{\"ClenP\":{clenP},\"Cipher\":\"{Convert.ToHexString(cipher)}\"}}}}";
+        _hasAeadXChacha20Poly1305IetfResult = true;
+    }
+
+    void DecodeAeadXChacha20Poly1305Ietf()
     {
         throw new NotImplementedException();
     }

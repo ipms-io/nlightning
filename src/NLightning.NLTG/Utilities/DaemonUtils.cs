@@ -6,7 +6,9 @@ using Serilog;
 
 namespace NLightning.NLTG.Utilities;
 
-public partial class DaemonUtility
+using Constants;
+
+public partial class DaemonUtils
 {
     /// <summary>
     /// Starts the application as a daemon process if requested
@@ -272,9 +274,9 @@ public partial class DaemonUtility
     public static string GetPidFilePath(string network)
     {
         var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        var networkDir = Path.Combine(homeDir, ".nltg", network);
+        var networkDir = Path.Combine(homeDir, DaemonConstants.DAEMON_FOLDER, network);
         Directory.CreateDirectory(networkDir); // Ensure directory exists
-        return Path.Combine(networkDir, "nltg.pid");
+        return Path.Combine(networkDir, DaemonConstants.PID_FILE);
     }
 
     /// <summary>
