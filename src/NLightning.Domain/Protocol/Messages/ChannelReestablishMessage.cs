@@ -12,7 +12,7 @@ using Tlv;
 /// The channel_reestablish message is sent when a connection is lost.
 /// The message type is 136.
 /// </remarks>
-public sealed class ChannelReestablishMessage : BaseMessage
+public sealed class ChannelReestablishMessage : BaseChannelMessage
 {
     /// <summary>
     /// The payload of the message.

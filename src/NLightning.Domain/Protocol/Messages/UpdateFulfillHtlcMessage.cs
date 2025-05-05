@@ -11,7 +11,8 @@ using Payloads;
 /// The message type is 130.
 /// </remarks>
 /// <param name="payload"></param>
-public sealed class UpdateFulfillHtlcMessage(UpdateFulfillHtlcPayload payload) : BaseMessage(MessageTypes.UPDATE_FULFILL_HTLC, payload)
+public sealed class UpdateFulfillHtlcMessage(UpdateFulfillHtlcPayload payload)
+    : BaseChannelMessage(MessageTypes.UPDATE_FULFILL_HTLC, payload)
 {
     /// <summary>
     /// The payload of the message.

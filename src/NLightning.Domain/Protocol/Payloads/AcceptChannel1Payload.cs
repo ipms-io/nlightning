@@ -12,7 +12,7 @@ using ValueObjects;
 /// <remarks>
 /// Initializes a new instance of the AcceptChannel1Payload class.
 /// </remarks>
-public class AcceptChannel1Payload : IMessagePayload
+public class AcceptChannel1Payload : IChannelMessagePayload
 {
     /// <summary>
     /// The temporary_channel_id is used to identify this channel on a per-peer basis until the funding transaction

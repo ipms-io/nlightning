@@ -10,7 +10,7 @@ using Payloads;
 /// The funding_created message is sent by the funder to the fundee after the funding transaction has been created.
 /// The message type is 34.
 /// </remarks>
-public sealed class FundingCreatedMessage : BaseMessage
+public sealed class FundingCreatedMessage : BaseChannelMessage
 {
     /// <summary>
     /// The payload of the message.

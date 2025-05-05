@@ -13,7 +13,7 @@ using ValueObjects;
 /// <seealso cref="TxSignaturesMessage"/>
 /// <seealso cref="ValueObjects.ChannelId"/>
 /// <seealso cref="Witness"/>
-public class TxSignaturesPayload : IMessagePayload
+public class TxSignaturesPayload : IChannelMessagePayload
 {
     /// <summary>
     /// The channel id.

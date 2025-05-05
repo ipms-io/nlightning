@@ -14,7 +14,7 @@ using ValueObjects;
 /// <param name="serialId">The serial id.</param>
 /// <seealso cref="TxRemoveInputMessage"/>
 /// <seealso cref="ValueObjects.ChannelId"/>
-public class TxRemoveInputPayload(ChannelId channelId, ulong serialId) : IMessagePayload
+public class TxRemoveInputPayload(ChannelId channelId, ulong serialId) : IChannelMessagePayload
 {
     /// <summary>
     /// The channel id.

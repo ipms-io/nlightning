@@ -18,7 +18,7 @@ public class OpenChannel2Payload(ChainHash chainHash, ChannelFlags channelFlags,
                                  PubKey fundingPubKey, PubKey htlcBasepoint, LightningMoney htlcMinimumAmount,
                                  uint locktime, ushort maxAcceptedHtlcs, LightningMoney maxHtlcValueInFlight,
                                  PubKey paymentBasepoint, PubKey revocationBasepoint, PubKey secondPerCommitmentPoint,
-                                 ushort toSelfDelay, ChannelId temporaryChannelId) : IMessagePayload
+                                 ushort toSelfDelay, ChannelId channelId) : IChannelMessagePayload
 {
     /// <summary>
     /// The chain_hash value denotes the exact blockchain that the opened channel will reside within.
@@ -29,7 +29,7 @@ public class OpenChannel2Payload(ChainHash chainHash, ChannelFlags channelFlags,
     /// The temporary_channel_id is used to identify this channel on a per-peer basis until the funding transaction
     /// is established, at which point it is replaced by the channel_id, which is derived from the funding transaction.
     /// </summary>
-    public ChannelId TemporaryChannelId { get; } = temporaryChannelId;
+    public ChannelId ChannelId { get; } = channelId;
 
     /// <summary>
     /// funding_feerate_perkw indicates the fee rate that the opening node will pay for the funding transaction in

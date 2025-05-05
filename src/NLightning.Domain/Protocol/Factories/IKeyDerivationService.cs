@@ -1,6 +1,6 @@
 using NBitcoin;
 
-namespace NLightning.Common.Interfaces;
+namespace NLightning.Domain.Protocol.Factories;
 
 public interface IKeyDerivationService
 {

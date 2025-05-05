@@ -24,11 +24,11 @@ public class CommitmentTransactionFactory : ICommitmentTransactionFactory
         _nodeOptions = nodeOptions.Value;
     }
 
-    public ITransaction CreateCommitmentTransaction(IOutput output, PubKey localPaymentBasepoint,
-                                                    PubKey remotePaymentBasepoint, PubKey localDelayedPubKey,
-                                                    PubKey revocationPubKey, LightningMoney toLocalAmount,
-                                                    LightningMoney toRemoteAmount, uint toSelfDelay,
-                                                    CommitmentNumber commitmentNumber, bool isChannelFunder,
+    public ITransaction CreateCommitmentTransaction(NodeOptions nodeOptions, IOutput output,
+                                                    PubKey localPaymentBasepoint, PubKey remotePaymentBasepoint,
+                                                    PubKey localDelayedPubKey, PubKey revocationPubKey,
+                                                    LightningMoney toLocalAmount, LightningMoney toRemoteAmount,
+                                                    CommitmentNumber commitmentNumber, bool isFunder,
                                                     params BitcoinSecret[] secrets)
     {
         if (output is not FundingOutput fundingOutput)
@@ -39,7 +39,7 @@ public class CommitmentTransactionFactory : ICommitmentTransactionFactory
                                                               fundingOutput, localPaymentBasepoint,
                                                               remotePaymentBasepoint, localDelayedPubKey,
                                                               revocationPubKey, toLocalAmount, toRemoteAmount,
-                                                              toSelfDelay, commitmentNumber, isChannelFunder);
+                                                              nodeOptions.ToSelfDelay, commitmentNumber, isFunder);
 
         commitmentTransaction.ConstructTransaction(_feeService.GetCachedFeeRatePerKw());
 
@@ -48,13 +48,13 @@ public class CommitmentTransactionFactory : ICommitmentTransactionFactory
         return commitmentTransaction;
     }
 
-    public ITransaction CreateCommitmentTransaction(IOutput output, PubKey localPaymentBasepoint,
-                                                    PubKey remotePaymentBasepoint, PubKey localDelayedPubKey,
-                                                    PubKey revocationPubKey, LightningMoney toLocalAmount,
-                                                    LightningMoney toRemoteAmount, uint toSelfDelay,
-                                                    CommitmentNumber commitmentNumber, bool isChannelFunder,
+    public ITransaction CreateCommitmentTransaction(NodeOptions nodeOptions, IOutput output,
+                                                    PubKey localPaymentBasepoint, PubKey remotePaymentBasepoint,
+                                                    PubKey localDelayedPubKey, PubKey revocationPubKey,
+                                                    LightningMoney toLocalAmount, LightningMoney toRemoteAmount,
+                                                    CommitmentNumber commitmentNumber,
                                                     IEnumerable<IOutput> offeredHtlcs,
-                                                    IEnumerable<IOutput> receivedHtlcs,
+                                                    IEnumerable<IOutput> receivedHtlcs, bool isFunder,
                                                     params BitcoinSecret[] secrets)
     {
         if (output is not FundingOutput fundingOutput)
@@ -65,7 +65,7 @@ public class CommitmentTransactionFactory : ICommitmentTransactionFactory
                                                               fundingOutput, localPaymentBasepoint,
                                                               remotePaymentBasepoint, localDelayedPubKey,
                                                               revocationPubKey, toLocalAmount, toRemoteAmount,
-                                                              toSelfDelay, commitmentNumber, isChannelFunder);
+                                                              nodeOptions.ToSelfDelay, commitmentNumber, isFunder);
 
         foreach (var offeredHtlc in offeredHtlcs)
         {

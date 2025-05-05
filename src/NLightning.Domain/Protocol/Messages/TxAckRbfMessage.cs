@@ -12,7 +12,7 @@ using Tlv;
 /// The tx_ack_rbf message acknowledges the replacement of the transaction.
 /// The message type is 73.
 /// </remarks>
-public sealed class TxAckRbfMessage : BaseMessage
+public sealed class TxAckRbfMessage : BaseChannelMessage
 {
     /// <summary>
     /// The payload of the message.

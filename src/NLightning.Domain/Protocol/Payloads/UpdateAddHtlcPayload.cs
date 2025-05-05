@@ -13,7 +13,7 @@ using ValueObjects;
 /// <param name="channelId">The channel ID.</param>
 public class UpdateAddHtlcPayload(LightningMoney amount, ChannelId channelId, uint cltvExpiry, ulong id,
                                   ReadOnlyMemory<byte> paymentHash, ReadOnlyMemory<byte>? onionRoutingPacket = null)
-    : IMessagePayload
+    : IChannelMessagePayload
 {
     /// <summary>
     /// Gets the channel ID.

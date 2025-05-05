@@ -12,7 +12,7 @@ using ValueObjects;
 /// <remarks>
 /// Initializes a new instance of the OpenChannel1Payload class.
 /// </remarks>
-public class OpenChannel1Payload : IMessagePayload
+public class OpenChannel1Payload : IChannelMessagePayload
 {
     /// <summary>
     /// The chain_hash value denotes the exact blockchain that the opened channel will reside within.
@@ -23,7 +23,7 @@ public class OpenChannel1Payload : IMessagePayload
     /// The temporary_channel_id is used to identify this channel on a per-peer basis until the funding transaction
     /// is established, at which point it is replaced by the channel_id, which is derived from the funding transaction.
     /// </summary>
-    public ChannelId TemporaryChannelId { get; }
+    public ChannelId ChannelId { get; }
 
     /// <summary>
     /// funding_satoshis is the amount the sender is putting into the channel.
@@ -112,7 +112,7 @@ public class OpenChannel1Payload : IMessagePayload
     /// </summary>
     public ChannelFlags ChannelFlags { get; }
 
-    public OpenChannel1Payload(ChainHash chainHash, ChannelId temporaryChannelId, LightningMoney fundingAmount,
+    public OpenChannel1Payload(ChainHash chainHash, ChannelId channelId, LightningMoney fundingAmount,
                                LightningMoney pushAmount, LightningMoney dustLimitAmount,
                                LightningMoney maxHtlcValueInFlight, LightningMoney channelReserveAmount,
                                LightningMoney htlcMinimumAmount, LightningMoney feeRatePerKw, ushort toSelfDelay,
@@ -121,7 +121,7 @@ public class OpenChannel1Payload : IMessagePayload
                                PubKey firstPerCommitmentPoint, ChannelFlags channelFlags)
     {
         ChainHash = chainHash;
-        TemporaryChannelId = temporaryChannelId;
+        ChannelId = channelId;
         FundingAmount = fundingAmount;
         PushAmount = pushAmount;
         DustLimitAmount = dustLimitAmount;

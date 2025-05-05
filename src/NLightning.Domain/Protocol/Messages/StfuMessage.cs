@@ -4,7 +4,7 @@ using Constants;
 using Payloads;
 
 /// <summary>
-/// Represents an stfu message.
+/// Represents a stfu message.
 /// </summary>
 /// <remarks>
 /// The stfu message means SomeThing Fundamental is Underway, so we kindly ask the other node to STFU because we have

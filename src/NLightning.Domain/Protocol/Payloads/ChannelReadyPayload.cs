@@ -12,7 +12,7 @@ using ValueObjects;
 /// Initializes a new instance of the ChannelReadyPayload class.
 /// </remarks>
 /// <param name="channelId">The channel ID.</param>
-public class ChannelReadyPayload(ChannelId channelId, PubKey secondPerCommitmentPoint) : IMessagePayload
+public class ChannelReadyPayload(ChannelId channelId, PubKey secondPerCommitmentPoint) : IChannelMessagePayload
 {
     /// <summary>
     /// Gets the channel ID.

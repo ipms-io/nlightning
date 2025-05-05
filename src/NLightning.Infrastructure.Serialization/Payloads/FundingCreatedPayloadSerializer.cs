@@ -31,7 +31,7 @@ public class FundingCreatedPayloadSerializer : IPayloadSerializer<FundingCreated
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
-        await channelIdSerializer.SerializeAsync(fundingCreatedPayload.TemporaryChannelId, stream);
+        await channelIdSerializer.SerializeAsync(fundingCreatedPayload.ChannelId, stream);
 
         await stream.WriteAsync(fundingCreatedPayload.FundingTxId);
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(fundingCreatedPayload.FundingOutputIndex));

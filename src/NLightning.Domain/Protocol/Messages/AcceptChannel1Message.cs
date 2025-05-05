@@ -12,7 +12,7 @@ using Tlv;
 /// The accept_channel message is sent to the initiator in order to accept the channel opening.
 /// The message type is 33.
 /// </remarks>
-public sealed class AcceptChannel1Message : BaseMessage
+public sealed class AcceptChannel1Message : BaseChannelMessage
 {
     /// <summary>
     /// The payload of the message.

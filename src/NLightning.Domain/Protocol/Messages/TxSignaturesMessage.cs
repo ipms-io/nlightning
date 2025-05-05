@@ -11,7 +11,8 @@ using Payloads;
 /// The message type is 71.
 /// </remarks>
 /// <param name="payload">The tx_signatures payload.</param>
-public sealed class TxSignaturesMessage(TxSignaturesPayload payload) : BaseMessage(MessageTypes.TX_SIGNATURES, payload)
+public sealed class TxSignaturesMessage(TxSignaturesPayload payload)
+    : BaseChannelMessage(MessageTypes.TX_SIGNATURES, payload)
 {
     /// <summary>
     /// The payload of the message.

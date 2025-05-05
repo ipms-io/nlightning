@@ -10,6 +10,7 @@ using ValueObjects;
 
 public class Channel
 {
+    private readonly uint _keyIndex;
     private readonly ISecretStorageService _secretStorageService;
 
     public ChannelId ChannelId { get; }
@@ -24,9 +25,11 @@ public class Channel
     public ITransaction? FundingTransaction { get; set; }
     public ITransaction? CommitmentTransaction { get; set; }
 
-    public Channel(ChannelId channelId, PubKey firstPerCommitmentPoint, bool isInitiator, uint minimumDepth, PubKey peerFundingPubKey,
-                   Script? peerShutdownScriptPubKey, ISecretStorageService secretStorageService)
+    public Channel(ChannelId channelId, PubKey firstPerCommitmentPoint, bool isInitiator, uint keyIndex,
+                   uint minimumDepth, PubKey peerFundingPubKey, Script? peerShutdownScriptPubKey,
+                   ISecretStorageService secretStorageService)
     {
+        _keyIndex = keyIndex;
         _secretStorageService = secretStorageService;
 
         ChannelId = channelId;

@@ -11,7 +11,8 @@ using Payloads;
 /// The message type is 133.
 /// </remarks>
 /// <param name="payload"></param>
-public sealed class RevokeAndAckMessage(RevokeAndAckPayload payload) : BaseMessage(MessageTypes.REVOKE_AND_ACK, payload)
+public sealed class RevokeAndAckMessage(RevokeAndAckPayload payload)
+    : BaseChannelMessage(MessageTypes.REVOKE_AND_ACK, payload)
 {
     /// <summary>
     /// The payload of the message.

@@ -12,7 +12,7 @@ using Tlv;
 /// The open_channel message is sent to another peer in order to start the channel negotiation.
 /// The message type is 32.
 /// </remarks>
-public sealed class OpenChannel1Message : BaseMessage
+public sealed class OpenChannel1Message : BaseChannelMessage
 {
     /// <summary>
     /// The payload of the message.

@@ -11,7 +11,8 @@ using Payloads;
 /// The message type is 69.
 /// </remarks>
 /// <param name="payload">The tx_remove_output payload.</param>
-public sealed class TxRemoveOutputMessage(TxRemoveOutputPayload payload) : BaseMessage(MessageTypes.TX_REMOVE_OUTPUT, payload)
+public sealed class TxRemoveOutputMessage(TxRemoveOutputPayload payload)
+    : BaseChannelMessage(MessageTypes.TX_REMOVE_OUTPUT, payload)
 {
     /// <summary>
     /// The payload of the message.

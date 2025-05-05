@@ -75,14 +75,7 @@ public class ChannelManager : IChannelManager
 
         // Add channel to dictionaries
         _temporaryChannelLastReceivedMessage[temporaryChannelTuple] = message;
-        if (!_temporaryChannels.ContainsKey(temporaryChannelTuple))
-        {
-            _temporaryChannels.Add(temporaryChannelTuple, channel);
-        }
-        else
-        {
-            _temporaryChannels[temporaryChannelTuple] = channel;
-        }
+        _temporaryChannels[temporaryChannelTuple] = channel;
 
         return null!;//openChannelReplyMessage;
     }

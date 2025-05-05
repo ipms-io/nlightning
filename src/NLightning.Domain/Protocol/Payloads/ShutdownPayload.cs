@@ -11,7 +11,7 @@ using ValueObjects;
 /// <remarks>
 /// Initializes a new instance of the ShutdownPayload class.
 /// </remarks>
-public class ShutdownPayload(ChannelId channelId, Script scriptPubkey) : IMessagePayload
+public class ShutdownPayload(ChannelId channelId, Script scriptPubkey) : IChannelMessagePayload
 {
     /// <summary>
     /// The channel_id this message refers to

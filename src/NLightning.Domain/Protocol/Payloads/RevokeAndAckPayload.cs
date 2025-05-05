@@ -12,7 +12,7 @@ using ValueObjects;
 /// Initializes a new instance of the RevokeAndAckPayload class.
 /// </remarks>
 public class RevokeAndAckPayload(ChannelId channelId, PubKey nextPerCommitmentPoint,
-                                 ReadOnlyMemory<byte> perCommitmentSecret) : IMessagePayload
+                                 ReadOnlyMemory<byte> perCommitmentSecret) : IChannelMessagePayload
 {
     /// <summary>
     /// The channel_id this message refers to

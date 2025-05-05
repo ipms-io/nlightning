@@ -12,7 +12,7 @@ using Tlv;
 /// The closing_signed message is after shutdown is complete and there are no pending HTLCs.
 /// The message type is 39.
 /// </remarks>
-public sealed class ClosingSignedMessage : BaseMessage
+public sealed class ClosingSignedMessage : BaseChannelMessage
 {
     /// <summary>
     /// The payload of the message.

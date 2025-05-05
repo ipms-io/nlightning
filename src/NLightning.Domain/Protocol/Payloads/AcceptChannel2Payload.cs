@@ -17,7 +17,7 @@ public class AcceptChannel2Payload(PubKey delayedPaymentBasepoint, LightningMone
                                    PubKey htlcBasepoint, LightningMoney htlcMinimumAmount, ushort maxAcceptedHtlcs,
                                    LightningMoney maxHtlcValueInFlight, uint minimumDepth, PubKey paymentBasepoint,
                                    PubKey revocationBasepoint, ChannelId channelId, ushort toSelfDelay)
-    : IMessagePayload
+    : IChannelMessagePayload
 {
     /// <summary>
     /// The temporary_channel_id is used to identify this channel on a per-peer basis until the funding transaction

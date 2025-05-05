@@ -11,7 +11,7 @@ using ValueObjects;
 /// <remarks>
 /// Initializes a new instance of the FundingCreatedPayload class.
 /// </remarks>
-public class FundingSignedPayload : IMessagePayload
+public class FundingSignedPayload : IChannelMessagePayload
 {
     /// <summary>
     /// The channel_id is used to identify this channel on a per-peer basis until the funding transaction

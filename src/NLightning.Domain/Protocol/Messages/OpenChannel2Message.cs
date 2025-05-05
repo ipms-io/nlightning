@@ -12,7 +12,7 @@ using Tlv;
 /// The open_channel2 message is sent to another peer in order to start the channel negotiation.
 /// The message type is 64.
 /// </remarks>
-public sealed class OpenChannel2Message : BaseMessage
+public sealed class OpenChannel2Message : BaseChannelMessage
 {
     /// <summary>
     /// The payload of the message.

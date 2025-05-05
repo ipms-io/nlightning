@@ -11,7 +11,7 @@ using Payloads;
 /// The message type is 38.
 /// </remarks>
 /// <param name="payload"></param>
-public sealed class ShutdownMessage(ShutdownPayload payload) : BaseMessage(MessageTypes.SHUTDOWN, payload)
+public sealed class ShutdownMessage(ShutdownPayload payload) : BaseChannelMessage(MessageTypes.SHUTDOWN, payload)
 {
     /// <summary>
     /// The payload of the message.

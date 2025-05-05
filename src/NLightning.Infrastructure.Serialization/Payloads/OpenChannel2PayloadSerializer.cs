@@ -39,7 +39,7 @@ public class OpenChannel2PayloadSerializer : IPayloadSerializer<OpenChannel2Payl
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
-        await channelIdSerializer.SerializeAsync(openChannel2Payload.TemporaryChannelId, stream);
+        await channelIdSerializer.SerializeAsync(openChannel2Payload.ChannelId, stream);
 
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.FundingFeeRatePerKw));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.CommitmentFeeRatePerKw));

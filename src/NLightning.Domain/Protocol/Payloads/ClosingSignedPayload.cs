@@ -12,7 +12,7 @@ using ValueObjects;
 /// <remarks>
 /// Initializes a new instance of the ClosingSignedPayload class.
 /// </remarks>
-public class ClosingSignedPayload : IMessagePayload
+public class ClosingSignedPayload : IChannelMessagePayload
 {
     /// <summary>
     /// The channel_id is used to identify this channel.

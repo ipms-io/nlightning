@@ -12,7 +12,7 @@ using Tlv;
 /// The update_add_htlc message offers a new htlc to the peer.
 /// The message type is 128.
 /// </remarks>
-public sealed class UpdateAddHtlcMessage : BaseMessage
+public sealed class UpdateAddHtlcMessage : BaseChannelMessage
 {
     /// <summary>
     /// The payload of the message.
