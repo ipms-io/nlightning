@@ -91,7 +91,7 @@ public class TlvTests
         var deserializedTlv = NetworksTlv.FromTlv(await Tlv.DeserializeAsync(stream));
 
         // Assert
-        Assert.Equal(networksTlv.ChainHashes.Count(), deserializedTlv.ChainHashes.Count());
+        Assert.Equal(networksTlv.ChainHashes?.Count(), deserializedTlv.ChainHashes?.Count());
     }
 
     [Fact]

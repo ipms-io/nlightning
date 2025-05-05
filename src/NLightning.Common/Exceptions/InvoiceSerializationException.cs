@@ -6,6 +6,7 @@ namespace NLightning.Common.Exceptions;
 /// <summary>
 /// Represents an exception that is thrown when an error occurs during invoice serialization or deserialization.
 /// </summary>
+
 [ExcludeFromCodeCoverage]
 public class InvoiceSerializationException : ErrorException
 {
@@ -14,6 +15,7 @@ public class InvoiceSerializationException : ErrorException
     public InvoiceSerializationException(string message, Exception innerException) : base(message, innerException)
     { }
 
+#pragma warning disable CS8777 // Parameter must have a non-null value when exiting.
     /// <summary>Throws an exception if <paramref name="argument"/> is null or empty.</summary>
     /// <param name="argument">The string argument to validate as non-null and non-empty.</param>
     /// <param name="paramName">The name of the parameter with which <paramref name="argument"/> corresponds.</param>
@@ -39,6 +41,7 @@ public class InvoiceSerializationException : ErrorException
             ThrowNullOrWhiteSpaceException(argument, paramName);
         }
     }
+#pragma warning restore CS8777 // Parameter must have a non-null value when exiting.
 
     private static void ThrowNullOrEmptyException(string? argument, string? paramName)
     {
