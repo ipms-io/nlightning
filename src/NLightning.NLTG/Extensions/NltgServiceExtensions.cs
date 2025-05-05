@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NLightning.NLTG.Managers;
 
 namespace NLightning.NLTG.Extensions;
 
@@ -18,7 +19,7 @@ public static class NltgServiceExtensions
     /// <summary>
     /// Registers all NLTG application services for dependency injection
     /// </summary>
-    public static IHostBuilder ConfigureNltgServices(this IHostBuilder hostBuilder)
+    public static IHostBuilder ConfigureNltgServices(this IHostBuilder hostBuilder, SecureKeyManager secureKeyManager)
     {
         return hostBuilder.ConfigureServices((hostContext, services) =>
         {
@@ -46,6 +47,7 @@ public static class NltgServiceExtensions
             services.AddSingleton<IPeerFactory, PeerFactory>();
             services.AddSingleton<IPeerManager, PeerManager>();
             services.AddSingleton<IPingPongServiceFactory, PingPongServiceFactory>();
+            services.AddSingleton<ISecureKeyManager>(secureKeyManager);
             services.AddSingleton<ITcpListenerService, TcpListenerService>();
             services.AddSingleton<ITransportServiceFactory, TransportServiceFactory>();
 

@@ -35,6 +35,23 @@ internal static partial class LibsodiumJsWrapper
                                                                              byte[]? additionalData, byte[] publicNonce,
                                                                              byte[] key);
     #endregion
+    
+    #region AEAD XChaCha20 Poly1305
+    [JSImport("sodium.crypto_aead_xchacha20poly1305_ietf_encrypt", MODULE_NAME)]
+    internal static partial byte[] crypto_aead_xchacha20poly1305_ietf_encrypt(byte[] message, byte[]? additionalData,
+                                                                              byte[]? secretNonce, byte[] publicNonce,
+                                                                              byte[] key);
+    
+    [JSImport("sodium.crypto_aead_xchacha20poly1305_ietf_decrypt", MODULE_NAME)]
+    internal static partial byte[] crypto_aead_xchacha20poly1305_ietf_decrypt(byte[]? secretNonce, byte[] ciphertext,
+                                                                              byte[]? additionalData,
+                                                                              byte[] publicNonce, byte[] key);
+    #endregion
+    
+    #region Random Bytes
+    [JSImport("sodium.randombytes_buf", MODULE_NAME)]
+    internal static partial byte[] randombytes_buf(int size);
+    #endregion
 
     #region Secure Memory
     [JSImport("sodium.libsodium._malloc", MODULE_NAME)]

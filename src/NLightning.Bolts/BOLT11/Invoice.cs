@@ -7,7 +7,7 @@ namespace NLightning.Bolts.BOLT11;
 using Common.BitUtils;
 using Common.Constants;
 using Common.Crypto.Hashes;
-using Common.Managers;
+using Common.Interfaces;
 using Common.Node;
 using Common.Types;
 using Constants;
@@ -39,6 +39,8 @@ public partial class Invoice
 
     [GeneratedRegex(@"^[a-z]+((\d+)([munp])?)?$")]
     private static partial Regex AmountRegex();
+
+    private readonly ISecureKeyManager? _secureKeyManager;
 
     private TaggedFieldList _taggedFields { get; } = [];
 
@@ -186,9 +188,10 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGetAll(TaggedFieldTypes.FALLBACK_ADDRESS, out List<FallbackAddressTaggedField> fallbackAddress)
-                ? fallbackAddress.Select(x => x.Value).ToList()
-                : null;
+            return _taggedFields
+                .TryGetAll(TaggedFieldTypes.FALLBACK_ADDRESS, out List<FallbackAddressTaggedField> fallbackAddress)
+                    ? fallbackAddress.Select(x => x.Value).ToList()
+                    : null;
         }
         set
         {
@@ -278,9 +281,10 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.DESCRIPTION_HASH, out DescriptionHashTaggedField? descriptionHash)
-                ? descriptionHash!.Value
-                : null;
+            return _taggedFields
+                .TryGet(TaggedFieldTypes.DESCRIPTION_HASH, out DescriptionHashTaggedField? descriptionHash)
+                    ? descriptionHash!.Value
+                    : null;
         }
         internal set
         {
@@ -301,9 +305,10 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY, out MinFinalCltvExpiryTaggedField? minFinalCltvExpiry)
-                ? minFinalCltvExpiry!.Value
-                : null;
+            return _taggedFields
+                .TryGet(TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY, out MinFinalCltvExpiryTaggedField? minFinalCltvExpiry)
+                    ? minFinalCltvExpiry!.Value
+                    : null;
         }
         set
         {
@@ -348,14 +353,17 @@ public partial class Invoice
     /// <param name="paymentHash">The payment hash of the invoice</param>
     /// <param name="paymentSecret">The payment secret of the invoice</param>
     /// <param name="network">The network the invoice is created for</param>
+    /// <param name="secureKeyManager">Secure key manager</param>
     /// <remarks>
     /// The invoice is created with the given amount of millisatoshis, a description, the payment hash and the
     /// payment secret.
     /// </remarks>
     /// <seealso cref="Network"/>
     public Invoice(ulong amountMilliSats, string description, uint256 paymentHash, uint256 paymentSecret,
-                   Network network)
+                   Network network, ISecureKeyManager? secureKeyManager = null)
     {
+        _secureKeyManager = secureKeyManager;
+
         AmountMilliSats = amountMilliSats;
         Network = network;
         HumanReadablePart = BuildHumanReadablePart();
@@ -378,14 +386,17 @@ public partial class Invoice
     /// <param name="paymentHash">The payment hash of the invoice</param>
     /// <param name="paymentSecret">The payment secret of the invoice</param>
     /// <param name="network">The network the invoice is created for</param>
+    /// <param name="secureKeyManager">Secure key manager</param>
     /// <remarks>
     /// The invoice is created with the given amount of millisatoshis, a description hash, the payment hash and the
     /// payment secret.
     /// </remarks>
     /// <seealso cref="Network"/>
     public Invoice(ulong amountMilliSats, uint256 descriptionHash, uint256 paymentHash, uint256 paymentSecret,
-                   Network network)
+                   Network network, ISecureKeyManager? secureKeyManager = null)
     {
+        _secureKeyManager = secureKeyManager;
+
         AmountMilliSats = amountMilliSats;
         Network = network;
         HumanReadablePart = BuildHumanReadablePart();
@@ -437,7 +448,7 @@ public partial class Invoice
     /// </remarks>
     /// <seealso cref="Network"/>
     private Invoice(string invoiceString, string humanReadablePart, Network network, ulong amountMilliSats,
-        long timestamp, TaggedFieldList taggedFields, CompactSignature signature)
+                    long timestamp, TaggedFieldList taggedFields, CompactSignature signature)
     {
         _invoiceString = invoiceString;
 
@@ -545,11 +556,14 @@ public partial class Invoice
     #endregion
 
     /// <summary>
-    /// Encodes the invoice to a string
+    /// Encodes the current invoice into a lightning-compatible invoice format as a string.
     /// </summary>
-    /// <returns>A string representing the invoice</returns>
-    /// <exception cref="InvoiceSerializationException">If something goes wrong in the encoding process</exception>
-    public string Encode()
+    /// <param name="nodeKey">The private key of the node used to sign the invoice.</param>
+    /// <returns>The encoded lightning invoice as a string.</returns>
+    /// <exception cref="InvoiceSerializationException">
+    /// Thrown when an error occurs during the encoding process.
+    /// </exception>
+    public string Encode(Key nodeKey)
     {
         try
         {
@@ -566,7 +580,7 @@ public partial class Invoice
             _taggedFields.WriteToBitWriter(bitWriter);
 
             // Sign the invoice
-            var compactSignature = SignInvoice(HumanReadablePart, bitWriter);
+            var compactSignature = SignInvoice(HumanReadablePart, bitWriter, nodeKey);
             var signature = new byte[compactSignature.Signature.Length + 1];
             compactSignature.Signature.CopyTo(signature, 0);
             signature[^1] = (byte)compactSignature.RecoveryId;
@@ -582,10 +596,40 @@ public partial class Invoice
         }
     }
 
+    /// <summary>
+    /// Encodes the invoice into its string representation using the secure key manager.
+    /// </summary>
+    /// <returns>The encoded invoice string.</returns>
+    /// <exception cref="NullReferenceException">Thrown when the secure key manager is not set.</exception>
+    public string Encode()
+    {
+        if (_secureKeyManager is null)
+            throw new NullReferenceException("Secure key manager is not set, please use Encode(Key nodeKey) instead");
+
+        return Encode(_secureKeyManager.GetNodeKey());
+    }
+
     #region Overrides
     public override string ToString()
     {
         return string.IsNullOrWhiteSpace(_invoiceString) ? Encode() : _invoiceString;
+    }
+
+    /// <summary>
+    /// Converts the invoice object to its string representation.
+    /// </summary>
+    /// <remarks>
+    /// If the invoice string exists, it is returned directly.
+    /// Otherwise, the invoice is encoded using the provided node key.
+    /// </remarks>
+    /// <param name="nodeKey">The node key used for signing the invoice.</param>
+    /// <returns>A string representation of the invoice.</returns>
+    /// <exception cref="InvoiceSerializationException">
+    /// Thrown when an error occurs during the encoding process.
+    /// </exception>
+    public string ToString(Key nodeKey)
+    {
+        return string.IsNullOrWhiteSpace(_invoiceString) ? Encode(nodeKey) : _invoiceString;
     }
     #endregion
 
@@ -724,7 +768,8 @@ public partial class Invoice
             return;
         }
 
-        if (NBitcoin.Crypto.ECDSASignature.TryParseFromCompact(Signature.Signature, out var ecdsa) && PayeePubKey.Verify(nBitcoinHash, ecdsa))
+        if (NBitcoin.Crypto.ECDSASignature.TryParseFromCompact(Signature.Signature, out var ecdsa)
+            && PayeePubKey.Verify(nBitcoinHash, ecdsa))
         {
             return;
         }
@@ -732,7 +777,7 @@ public partial class Invoice
         throw new ArgumentException("Invalid signature in invoice");
     }
 
-    private static CompactSignature SignInvoice(string hrp, BitWriter bitWriter)
+    private static CompactSignature SignInvoice(string hrp, BitWriter bitWriter, Key key)
     {
         // Assemble the message (hrp + data)
         var data = bitWriter.ToArray();
@@ -748,7 +793,6 @@ public partial class Invoice
         var nBitcoinHash = new uint256(hash);
 
         // Sign the hash
-        using var key = new Key(SecureKeyManager.GetPrivateKeyBytes());
         return key.SignCompact(nBitcoinHash, false);
     }
 

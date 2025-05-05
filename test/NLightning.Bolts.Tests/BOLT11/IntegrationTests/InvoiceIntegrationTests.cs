@@ -10,10 +10,8 @@ using Common.Crypto.Hashes;
 using Common.Exceptions;
 using Common.Node;
 using Common.Types;
-using TestCollections;
 using static Utils.TestUtils;
 
-[Collection(SecureKeyManagerCollection.NAME)]
 public class InvoiceIntegrationTests
 {
     private static readonly PubKey s_expectedPayeePubkey = new("03e7156ae33b0a208d0744199163177e909e80176e55d97a2f221ede0f934dd9ad");
@@ -115,6 +113,7 @@ public class InvoiceIntegrationTests
     public void Given_ValidDecodedInvoice_When_Encoding_Then_InvoiceStringIsCorrect()
     {
         // Arrange
+        var key = new Key(Convert.FromHexString("e126f68f7eafcc8b74f54d269fe206be715000f94dac067d1c04a8ca3b2db734"));
         var testInvoices = ReadTestInvoices("BOLT11/Invoices/ValidInvoices.txt");
 
         foreach (var testInvoice in testInvoices)
@@ -166,7 +165,7 @@ public class InvoiceIntegrationTests
             }
 
             // Act
-            var invoiceString = invoice.Encode();
+            var invoiceString = invoice.Encode(key);
 
             // Assert
             Assert.Equal(testInvoice.INVOICE_STRING?.ToLowerInvariant(), invoiceString);

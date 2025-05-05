@@ -6,8 +6,10 @@ namespace NLightning.Common.Constants;
 public static class CryptoConstants
 {
     public const int CHACHA20_POLY1305_TAG_LEN = 16;
+    public const int XCHACHA20_POLY1305_TAG_LEN = 16;
 
     public const int CHACHA20_POLY1305_NONCE_LEN = 12;
+    public const int XCHACHA20_POLY1305_NONCE_LEN = 24;
 
     public const int SHA256_HASH_LEN = 32;
     public const int SHA256_BLOCK_LEN = 64;

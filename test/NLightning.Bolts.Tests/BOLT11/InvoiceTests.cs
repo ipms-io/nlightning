@@ -9,9 +9,7 @@ using Bolts.BOLT11.Types;
 using Common.Constants;
 using Common.Exceptions;
 using Common.Types;
-using TestCollections;
 
-[Collection(SecureKeyManagerCollection.NAME)]
 public class InvoiceTests
 {
     private static readonly uint256 s_testPaymentHash = new("0001020304050607080900010203040506070809000102030405060708090102");
@@ -111,19 +109,20 @@ public class InvoiceTests
     public void Given_Invoice_When_SetTaggedField_Then_InvoiceStringClearedOnChange()
     {
         // Given
+        var key = new Key();
         var invoice = new Invoice(Network.MAIN_NET);
 
         // "Touch" the invoice string once, so it's cached
-        var initialStr = invoice.ToString();
+        var initialStr = invoice.ToString(key);
         Assert.False(string.IsNullOrEmpty(initialStr));
 
         // When
-        invoice.RoutingInfos = new RoutingInfoCollection { s_defaultRoutingInfo };
+        invoice.RoutingInfos = [s_defaultRoutingInfo];
 
         // Then
-        // The .Changed event on routingInfoCollection should have reset invoice's cached string to null,
-        // forcing a new encode on next invoice.ToString().
-        var reencodedStr = invoice.ToString();
+        // The .Changed event on routingInfoCollection should have reset the invoice's cached string to null,
+        // forcing a new encoding on next invoice.ToString().
+        var reencodedStr = invoice.ToString(key);
         Assert.NotEqual(initialStr, reencodedStr);
         Assert.NotNull(invoice.RoutingInfos);
         Assert.Single(invoice.RoutingInfos!);
@@ -155,22 +154,23 @@ public class InvoiceTests
     public void Given_Invoice_When_AddRoutingInfo_Then_InvoiceStringClearedOnInternalChange()
     {
         // Given
+        var key = new Key();
         var invoice = new Invoice(Network.MAIN_NET)
         {
             RoutingInfos = new RoutingInfoCollection { s_defaultRoutingInfo }
         };
 
         // "Touch" the invoice string once so it's cached
-        var initialStr = invoice.ToString();
+        var initialStr = invoice.ToString(key);
         Assert.False(string.IsNullOrEmpty(initialStr));
 
         // When
         invoice.RoutingInfos.Add(s_defaultRoutingInfo);
 
         // Then
-        // The .Changed event on routingInfoCollection should have reset invoice's cached string to null,
-        // forcing a new encode on next invoice.ToString().
-        var reencodedStr = invoice.ToString();
+        // The .Changed event on routingInfoCollection should have reset the invoice's cached string to null,
+        // forcing a new encoding on next invoice.ToString().
+        var reencodedStr = invoice.ToString(key);
         Assert.NotEqual(initialStr, reencodedStr);
         Assert.NotNull(invoice.RoutingInfos);
         Assert.Equal(2, invoice.RoutingInfos!.Count);
@@ -209,7 +209,7 @@ public class InvoiceTests
         };
 
         // When
-        var encoded = invoice.Encode();
+        var encoded = invoice.Encode(new Key());
 
         // Then
         Assert.False(string.IsNullOrWhiteSpace(encoded));

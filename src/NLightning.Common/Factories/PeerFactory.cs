@@ -7,7 +7,6 @@ namespace NLightning.Common.Factories;
 
 using Exceptions;
 using Interfaces;
-using Managers;
 using Node;
 using Options;
 using Types;
@@ -18,17 +17,20 @@ public class PeerFactory : IPeerFactory
     private readonly IMessageFactory _messageFactory;
     private readonly IMessageServiceFactory _messageServiceFactory;
     private readonly IPingPongServiceFactory _pingPongServiceFactory;
+    private readonly ISecureKeyManager _secureKeyManager;
     private readonly ITransportServiceFactory _transportServiceFactory;
     private readonly NodeOptions _nodeOptions;
 
     public PeerFactory(ILoggerFactory loggerFactory, IMessageFactory messageFactory,
                        IMessageServiceFactory messageServiceFactory, IPingPongServiceFactory pingPongServiceFactory,
-                       ITransportServiceFactory transportServiceFactory, IOptions<NodeOptions> nodeOptions)
+                       ISecureKeyManager secureKeyManager, ITransportServiceFactory transportServiceFactory,
+                       IOptions<NodeOptions> nodeOptions)
     {
         _loggerFactory = loggerFactory;
         _messageFactory = messageFactory;
         _messageServiceFactory = messageServiceFactory;
         _pingPongServiceFactory = pingPongServiceFactory;
+        _secureKeyManager = secureKeyManager;
         _transportServiceFactory = transportServiceFactory;
         _nodeOptions = nodeOptions.Value;
     }
@@ -46,7 +48,7 @@ public class PeerFactory : IPeerFactory
         var logger = _loggerFactory.CreateLogger<Peer>();
 
         // Create and Initialize the transport service
-        var keyBytes = SecureKeyManager.GetPrivateKeyBytes();
+        var keyBytes = _secureKeyManager.GetNodeKey().ToBytes();
         var transportService = _transportServiceFactory
             .CreateTransportService(true, keyBytes, peerAddress.PubKey.ToBytes(), tcpClient);
         try
@@ -79,7 +81,7 @@ public class PeerFactory : IPeerFactory
         var port = remoteEndPoint.Port;
 
         // Create and Initialize the transport service
-        var key = SecureKeyManager.GetPrivateKey();
+        var key = _secureKeyManager.GetNodeKey();
         var transportService = _transportServiceFactory
             .CreateTransportService(false, key.ToBytes(), key.PubKey.ToBytes(), tcpClient);
         try
