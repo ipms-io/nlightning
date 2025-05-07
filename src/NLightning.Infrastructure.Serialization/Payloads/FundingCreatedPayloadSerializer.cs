@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Runtime.Serialization;
+using NBitcoin;
 using NBitcoin.Crypto;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
@@ -33,7 +34,7 @@ public class FundingCreatedPayloadSerializer : IPayloadSerializer<FundingCreated
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(fundingCreatedPayload.ChannelId, stream);
 
-        await stream.WriteAsync(fundingCreatedPayload.FundingTxId);
+        await stream.WriteAsync(fundingCreatedPayload.FundingTxId.ToBytes());
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(fundingCreatedPayload.FundingOutputIndex));
         await stream.WriteAsync(fundingCreatedPayload.Signature.ToCompact());
     }
@@ -51,7 +52,7 @@ public class FundingCreatedPayloadSerializer : IPayloadSerializer<FundingCreated
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..HashConstants.SHA256_HASH_LEN]);
-            var fundingTxId = buffer[..HashConstants.SHA256_HASH_LEN];
+            var fundingTxId = new uint256(buffer[..HashConstants.SHA256_HASH_LEN]);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ushort)]);
             var fundingOutputIndex = EndianBitConverter.ToUInt16BigEndian(buffer.AsSpan()[..sizeof(ushort)]);

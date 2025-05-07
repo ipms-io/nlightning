@@ -11,7 +11,7 @@ using Payloads;
 /// The message type is 134.
 /// </remarks>
 /// <param name="payload"></param>
-public sealed class UpdateFeeMessage(UpdateFeePayload payload) : BaseChannelMessage(MessageTypes.UPDATE_FEE, payload)
+public sealed class UpdateFeeMessage(UpdateFeePayload payload) : BaseChannelMessage(MessageTypes.UpdateFee, payload)
 {
     /// <summary>
     /// The payload of the message.

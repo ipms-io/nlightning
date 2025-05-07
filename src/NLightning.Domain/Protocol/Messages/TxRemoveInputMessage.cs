@@ -12,7 +12,7 @@ using Payloads;
 /// </remarks>
 /// <param name="payload">The tx_remove_input payload.</param>
 public sealed class TxRemoveInputMessage(TxRemoveInputPayload payload)
-    : BaseChannelMessage(MessageTypes.TX_REMOVE_INPUT, payload)
+    : BaseChannelMessage(MessageTypes.TxRemoveInput, payload)
 {
     /// <summary>
     /// The payload of the message.

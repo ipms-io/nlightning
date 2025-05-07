@@ -118,25 +118,36 @@ public sealed class Peer : IPeer
         {
             switch (message.Type)
             {
-                case MessageTypes.PING:
+                case MessageTypes.Ping:
                     _logger.LogTrace("Received ping message from peer {peer}", PeerAddress.PubKey);
                     _ = HandlePingAsync(message);
                     break;
-                case MessageTypes.PONG:
+                case MessageTypes.Pong:
                     _logger.LogTrace("Received pong message from peer {peer}", PeerAddress.PubKey);
                     _pingPongService.HandlePong(message);
                     break;
-                case MessageTypes.OPEN_CHANNEL:
-                case MessageTypes.ACCEPT_CHANNEL:
-                case MessageTypes.FUNDING_CREATED:
-                case MessageTypes.FUNDING_SIGNED:
+                case MessageTypes.OpenChannel:
+                case MessageTypes.AcceptChannel:
+                case MessageTypes.FundingCreated:
+                case MessageTypes.FundingSigned:
+                case MessageTypes.OpenChannel2:
+                case MessageTypes.AcceptChannel2:
+                case MessageTypes.TxAddInput:
+                case MessageTypes.TxAddOutput:
+                case MessageTypes.TxRemoveInput:
+                case MessageTypes.TxRemoveOutput:
+                case MessageTypes.TxComplete:
+                case MessageTypes.TxSignatures:
+                case MessageTypes.TxInitRbf:
+                case MessageTypes.TxAckRbf:
+                case MessageTypes.TxAbort:
                     if (message is IChannelMessage channelMessage)
                     {
                         _ = HandleChannelMessageAsync(channelMessage);
                     }
                     else
                     {
-                        DisconnectWithException(new ChannelException(
+                        DisconnectWithException(new ChannelErrorException(
                             $"Message from peer {PeerAddress.PubKey} can't be boxed to IChannelMessage"));
                     }
                     break;
@@ -151,8 +162,8 @@ public sealed class Peer : IPeer
 
     private void HandleInitialization(IMessage message)
     {
-        // Check if first message is an init message
-        if (message.Type != MessageTypes.INIT || message is not InitMessage initMessage)
+        // Check if the first message is an init message
+        if (message.Type != MessageTypes.Init || message is not InitMessage initMessage)
         {
             DisconnectWithException(new ConnectionException("Failed to receive init message"));
             return;

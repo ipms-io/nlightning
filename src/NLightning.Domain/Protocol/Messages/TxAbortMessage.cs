@@ -11,7 +11,7 @@ using Payloads;
 /// The message type is 74.
 /// </remarks>
 /// <param name="payload">The tx_abort payload.</param>
-public sealed class TxAbortMessage(TxAbortPayload payload) : BaseChannelMessage(MessageTypes.TX_ABORT, payload)
+public sealed class TxAbortMessage(TxAbortPayload payload) : BaseChannelMessage(MessageTypes.TxAbort, payload)
 {
     /// <summary>
     /// The payload of the message.

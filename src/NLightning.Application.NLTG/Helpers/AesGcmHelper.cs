@@ -5,7 +5,7 @@ namespace NLightning.Application.NLTG.Helpers;
 public static class AesGcmHelper
 {
     private const int AES_GCM_TAG_SIZE = 16;
-    
+
     private static byte[] DeriveKey(string password, byte[] salt)
     {
         using var kdf = new Rfc2898DeriveBytes(password, salt, 100_000, HashAlgorithmName.SHA256);

@@ -23,7 +23,7 @@ public sealed class TxInitRbfMessage : BaseChannelMessage
     public RequireConfirmedInputsTlv? RequireConfirmedInputsTlv { get; }
 
     public TxInitRbfMessage(TxInitRbfPayload payload, FundingOutputContributionTlv? fundingOutputContributionTlv = null, RequireConfirmedInputsTlv? requireConfirmedInputsTlv = null)
-        : base(MessageTypes.TX_INIT_RBF, payload)
+        : base(MessageTypes.TxInitRbf, payload)
     {
         FundingOutputContributionTlv = fundingOutputContributionTlv;
         RequireConfirmedInputsTlv = requireConfirmedInputsTlv;

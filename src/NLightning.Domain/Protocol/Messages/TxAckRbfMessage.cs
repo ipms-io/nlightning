@@ -24,7 +24,7 @@ public sealed class TxAckRbfMessage : BaseChannelMessage
 
     public TxAckRbfMessage(TxAckRbfPayload payload, FundingOutputContributionTlv? fundingOutputContributionTlv = null,
                            RequireConfirmedInputsTlv? requireConfirmedInputsTlv = null)
-        : base(MessageTypes.TX_ACK_RBF, payload)
+        : base(MessageTypes.TxAckRbf, payload)
     {
         FundingOutputContributionTlv = fundingOutputContributionTlv;
         RequireConfirmedInputsTlv = requireConfirmedInputsTlv;

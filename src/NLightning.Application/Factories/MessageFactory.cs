@@ -422,15 +422,15 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="PubKey"/>
     /// <seealso cref="UpfrontShutdownScriptTlv"/>
     /// <seealso cref="ChannelTypeTlv"/>
-    public IMessage CreateOpenChannel1Message(ChannelId temporaryChannelId, LightningMoney fundingAmount,
-                                              PubKey fundingPubKey, LightningMoney pushAmount,
-                                              LightningMoney channelReserveAmount, LightningMoney feeRatePerKw,
-                                              ushort maxAcceptedHtlcs, PubKey revocationBasepoint,
-                                              PubKey paymentBasepoint, PubKey delayedPaymentBasepoint,
-                                              PubKey htlcBasepoint, PubKey firstPerCommitmentPoint,
-                                              ChannelFlags channelFlags,
-                                              UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv,
-                                              ChannelTypeTlv? channelTypeTlv)
+    public OpenChannel1Message CreateOpenChannel1Message(ChannelId temporaryChannelId, LightningMoney fundingAmount,
+                                                         PubKey fundingPubKey, LightningMoney pushAmount,
+                                                         LightningMoney channelReserveAmount,
+                                                         LightningMoney feeRatePerKw, ushort maxAcceptedHtlcs,
+                                                         PubKey revocationBasepoint, PubKey paymentBasepoint,
+                                                         PubKey delayedPaymentBasepoint, PubKey htlcBasepoint,
+                                                         PubKey firstPerCommitmentPoint, ChannelFlags channelFlags,
+                                                         UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv,
+                                                         ChannelTypeTlv? channelTypeTlv)
     {
         var payload = new OpenChannel1Payload(_nodeOptions.Network.ChainHash, temporaryChannelId, fundingAmount,
                                               pushAmount, _nodeOptions.DustLimitAmount,
@@ -516,13 +516,14 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="PubKey"/>
     /// <seealso cref="UpfrontShutdownScriptTlv"/>
     /// <seealso cref="ChannelTypeTlv"/>
-    public IMessage CreateAcceptChannel1Message(ChannelId temporaryChannelId, LightningMoney channelReserveAmount,
-                                                uint minimumDepth, ushort maxAcceptedHtlcs,
-                                                PubKey revocationBasepoint, PubKey paymentBasepoint,
-                                                PubKey delayedPaymentBasepoint, PubKey htlcBasepoint,
-                                                PubKey firstPerCommitmentPoint, PubKey fundingPubKey,
-                                                UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv,
-                                                ChannelTypeTlv? channelTypeTlv)
+    public AcceptChannel1Message CreateAcceptChannel1Message(ChannelId temporaryChannelId,
+                                                             LightningMoney channelReserveAmount, uint minimumDepth,
+                                                             ushort maxAcceptedHtlcs, PubKey revocationBasepoint,
+                                                             PubKey paymentBasepoint, PubKey delayedPaymentBasepoint,
+                                                             PubKey htlcBasepoint, PubKey firstPerCommitmentPoint,
+                                                             PubKey fundingPubKey,
+                                                             UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv,
+                                                             ChannelTypeTlv? channelTypeTlv)
     {
         var payload = new AcceptChannel1Payload(temporaryChannelId, _nodeOptions.DustLimitAmount,
                                                 _nodeOptions.MaxHtlcValueInFlight, channelReserveAmount,
@@ -590,8 +591,8 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="ECDSASignature"/>
     /// <seealso cref="FundingCreatedPayload"/>
-    public IMessage CreatedFundingCreatedMessage(ChannelId temporaryChannelId, ReadOnlySpan<byte> fundingTxId,
-                                                 ushort fundingOutputIndex, ECDSASignature signature)
+    public FundingCreatedMessage CreatedFundingCreatedMessage(ChannelId temporaryChannelId, uint256 fundingTxId,
+                                                              ushort fundingOutputIndex, ECDSASignature signature)
     {
         var payload = new FundingCreatedPayload(temporaryChannelId, fundingTxId, fundingOutputIndex, signature);
 
@@ -608,7 +609,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="ECDSASignature"/>
     /// <seealso cref="FundingCreatedPayload"/>
-    public IMessage CreatedFundingSignedMessage(ChannelId channelId, ECDSASignature signature)
+    public FundingSignedMessage CreatedFundingSignedMessage(ChannelId channelId, ECDSASignature signature)
     {
         var payload = new FundingSignedPayload(channelId, signature);
 

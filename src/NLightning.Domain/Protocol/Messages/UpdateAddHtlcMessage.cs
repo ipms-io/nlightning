@@ -22,7 +22,7 @@ public sealed class UpdateAddHtlcMessage : BaseChannelMessage
     public BlindedPathTlv? BlindedPathTlv { get; }
 
     public UpdateAddHtlcMessage(UpdateAddHtlcPayload payload, BlindedPathTlv? blindedPathTlv = null)
-        : base(MessageTypes.UPDATE_ADD_HTLC, payload)
+        : base(MessageTypes.UpdateAddHtlc, payload)
     {
         BlindedPathTlv = blindedPathTlv;
 

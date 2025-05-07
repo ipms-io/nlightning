@@ -1,10 +1,12 @@
-using NLightning.Domain.Protocol.Messages.Interfaces;
+using NBitcoin;
 
 namespace NLightning.Domain.Protocol.Managers;
 
-using Common.Interfaces;
+using Messages.Interfaces;
 using Node.Options;
+
 public interface IChannelManager
 {
-    IChannelMessage? HandleChannelMessage(IChannelMessage message, FeatureOptions negotiatedFeatures);
+    IChannelMessage? HandleChannelMessage(IChannelMessage message, FeatureOptions negotiatedFeatures,
+                                          PubKey peerPubKey);
 }

@@ -17,6 +17,6 @@ public sealed class FundingCreatedMessage : BaseChannelMessage
     /// </summary>
     public new FundingCreatedPayload Payload { get => (FundingCreatedPayload)base.Payload; }
 
-    public FundingCreatedMessage(FundingCreatedPayload payload) : base(MessageTypes.ACCEPT_CHANNEL_2, payload)
+    public FundingCreatedMessage(FundingCreatedPayload payload) : base(MessageTypes.AcceptChannel2, payload)
     { }
 }

@@ -4,13 +4,20 @@ using Microsoft.Extensions.Hosting;
 
 namespace NLightning.Application.NLTG.Extensions;
 
+using Application.Managers;
+using Domain.Bitcoin.Factories;
 using Common.Options;
 using Domain.Bitcoin.Services;
 using Domain.Factories;
 using Domain.Node.Options;
 using Domain.Protocol.Factories;
 using Domain.Protocol.Managers;
+using Domain.Protocol.Services;
+using Domain.ValueObjects;
 using Factories;
+using Infrastructure.Bitcoin.Factories;
+using Infrastructure.Bitcoin.Factories.Interfaces;
+using Infrastructure.Protocol.Services;
 using Infrastructure.Node.Factories;
 using Infrastructure.Node.Interfaces;
 using Infrastructure.Node.Managers;
@@ -47,7 +54,12 @@ public static class NltgServiceExtensions
 
             // Register application services
             // Singleton services (one instance throughout the application)
+            services.AddSingleton<IChannelFactory, ChannelFactory>();
+            services.AddSingleton<IChannelManager, ChannelManager>();
+            services.AddSingleton<ICommitmentTransactionFactory, CommitmentTransactionFactory>();
             services.AddSingleton<IFeeService, FeeService>();
+            services.AddSingleton<IFundingTransactionFactory, FundingTransactionFactory>();
+            services.AddSingleton<IKeyDerivationService, KeyDerivationService>();
             services.AddSingleton<IMessageFactory, MessageFactory>();
             services.AddSingleton<IMessageServiceFactory, MessageServiceFactory>();
             services.AddSingleton<IPeerFactory, PeerFactory>();
@@ -71,6 +83,12 @@ public static class NltgServiceExtensions
                     if (configuredAddresses is { Length: > 0 })
                     {
                         options.ListenAddresses = configuredAddresses.ToList();
+                    }
+
+                    var networkString = configuration.GetValue<string>("Node:Network");
+                    if (!string.IsNullOrWhiteSpace(networkString))
+                    {
+                        options.Network = new Network(networkString);
                     }
                 })
                 .ValidateOnStart();

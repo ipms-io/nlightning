@@ -12,7 +12,7 @@ using Payloads;
 /// </remarks>
 /// <param name="payload">The tx_remove_output payload.</param>
 public sealed class TxRemoveOutputMessage(TxRemoveOutputPayload payload)
-    : BaseChannelMessage(MessageTypes.TX_REMOVE_OUTPUT, payload)
+    : BaseChannelMessage(MessageTypes.TxRemoveOutput, payload)
 {
     /// <summary>
     /// The payload of the message.

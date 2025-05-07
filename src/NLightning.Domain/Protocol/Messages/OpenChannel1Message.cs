@@ -24,7 +24,7 @@ public sealed class OpenChannel1Message : BaseChannelMessage
 
     public OpenChannel1Message(OpenChannel1Payload payload, UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv = null,
                                ChannelTypeTlv? channelTypeTlv = null)
-        : base(MessageTypes.OPEN_CHANNEL_2, payload)
+        : base(MessageTypes.OpenChannel2, payload)
     {
         UpfrontShutdownScriptTlv = upfrontShutdownScriptTlv;
         ChannelTypeTlv = channelTypeTlv;

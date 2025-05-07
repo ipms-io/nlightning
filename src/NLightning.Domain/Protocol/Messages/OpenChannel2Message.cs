@@ -24,7 +24,7 @@ public sealed class OpenChannel2Message : BaseChannelMessage
     public RequireConfirmedInputsTlv? RequireConfirmedInputsTlv { get; }
 
     public OpenChannel2Message(OpenChannel2Payload payload, UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv = null, ChannelTypeTlv? channelTypeTlv = null, RequireConfirmedInputsTlv? requireConfirmedInputsTlv = null)
-        : base(MessageTypes.OPEN_CHANNEL_2, payload)
+        : base(MessageTypes.OpenChannel2, payload)
     {
         UpfrontShutdownScriptTlv = upfrontShutdownScriptTlv;
         ChannelTypeTlv = channelTypeTlv;

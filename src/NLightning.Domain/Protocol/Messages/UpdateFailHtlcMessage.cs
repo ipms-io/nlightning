@@ -12,7 +12,7 @@ using Payloads;
 /// </remarks>
 /// <param name="payload"></param>
 public sealed class UpdateFailHtlcMessage(UpdateFailHtlcPayload payload)
-    : BaseChannelMessage(MessageTypes.UPDATE_FAIL_HTLC, payload)
+    : BaseChannelMessage(MessageTypes.UpdateFailHtlc, payload)
 {
     /// <summary>
     /// The payload of the message.

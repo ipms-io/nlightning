@@ -12,7 +12,7 @@ using Payloads;
 /// </remarks>
 /// <param name="payload"></param>
 public sealed class CommitmentSignedMessage(CommitmentSignedPayload payload)
-    : BaseChannelMessage(MessageTypes.COMMITMENT_SIGNED, payload)
+    : BaseChannelMessage(MessageTypes.CommitmentSigned, payload)
 {
     /// <summary>
     /// The payload of the message.

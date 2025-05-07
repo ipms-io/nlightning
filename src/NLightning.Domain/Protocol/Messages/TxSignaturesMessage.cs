@@ -12,7 +12,7 @@ using Payloads;
 /// </remarks>
 /// <param name="payload">The tx_signatures payload.</param>
 public sealed class TxSignaturesMessage(TxSignaturesPayload payload)
-    : BaseChannelMessage(MessageTypes.TX_SIGNATURES, payload)
+    : BaseChannelMessage(MessageTypes.TxSignatures, payload)
 {
     /// <summary>
     /// The payload of the message.

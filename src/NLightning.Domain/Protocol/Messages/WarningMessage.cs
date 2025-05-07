@@ -11,7 +11,7 @@ using Payloads;
 /// The message type is 1.
 /// </remarks>
 /// <param name="payload">The warning payload. <see cref="ErrorPayload"/></param>
-public sealed class WarningMessage(ErrorPayload payload) : BaseMessage(MessageTypes.WARNING, payload)
+public sealed class WarningMessage(ErrorPayload payload) : BaseMessage(MessageTypes.Warning, payload)
 {
     /// <summary>
     /// The payload of the message.

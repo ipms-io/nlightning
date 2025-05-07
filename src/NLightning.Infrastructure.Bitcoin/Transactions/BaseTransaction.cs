@@ -1,4 +1,6 @@
 using NBitcoin;
+using NBitcoin.Crypto;
+using NLightning.Domain.Protocol.Signers;
 
 namespace NLightning.Infrastructure.Bitcoin.Transactions;
 
@@ -15,14 +17,14 @@ public abstract class BaseTransaction : ITransaction
     private readonly TransactionBuilder _builder;
     private readonly List<(Coin, Sequence)> _coins = [];
 
-    private NBitcoin.Transaction _transaction;
+    private Transaction _transaction;
     #endregion
 
     #region Protected Properties
     protected List<BaseOutput> Outputs { get; private set; } = [];
     protected LightningMoney CalculatedFee { get; } = LightningMoney.Zero;
     protected bool Finalized { get; private set; }
-    protected NBitcoin.Transaction FinalizedTransaction => Finalized
+    protected Transaction FinalizedTransaction => Finalized
         ? _transaction
         : throw new Exception("Transaction not finalized.");
     #endregion
@@ -47,7 +49,7 @@ public abstract class BaseTransaction : ITransaction
 
         _coins = coins.Select(c => (c, Sequence.Final)).ToList();
 
-        _transaction = NBitcoin.Transaction.Create(network);
+        _transaction = Transaction.Create(network);
         _transaction.Version = version;
         _transaction.Inputs.AddRange(_coins.Select(c => new TxIn(c.Item1.Outpoint)));
     }
@@ -84,39 +86,15 @@ public abstract class BaseTransaction : ITransaction
         _transaction.LockTime = lockTime;
     }
 
-    protected void SignTransaction(params BitcoinSecret[] secrets)
+    protected LightningMoney TotalInputAmount => _coins.Sum(c => (LightningMoney)c.Item1.Amount);
+    protected LightningMoney TotalOutputAmount => Outputs.Sum(o => o.Amount);
+
+    protected bool CheckTransactionAmounts(LightningMoney? fees = null)
     {
-        ArgumentNullException.ThrowIfNull(secrets);
-
         // Check if the output amount is greater than the input amount
-        if (!CheckTransactionAmounts())
-            throw new InvalidOperationException("Output amount cannot exceed input amount.");
-
-        // Sign all inputs
-        ArgumentNullException.ThrowIfNull(secrets);
-
-        if (Finalized)
-        {
-            // Remove signature from inputs
-            _transaction.Inputs.Clear();
-            foreach (var (coin, sequence) in _coins)
-            {
-                _transaction.Inputs.Add(coin.Outpoint, null, null, sequence);
-            }
-        }
-        else
-        {
-            // Add our keys
-            _builder.AddKeys(secrets.Select(ISecret (s) => s).ToArray());
-            _builder.AddCoins(_coins.Select(c => c.Item1));
-        }
-
-        _transaction = _builder.SignTransactionInPlace(_transaction);
-
-        TxId = _transaction.GetHash();
-        Finalized = true;
+        return TotalOutputAmount + (fees ?? LightningMoney.Zero) <= TotalInputAmount;
     }
-
+    
     protected void CalculateAndCheckFees(LightningMoney currentFeePerKw)
     {
         // Calculate transaction fee
@@ -127,29 +105,55 @@ public abstract class BaseTransaction : ITransaction
             throw new InvalidOperationException("Output amount cannot exceed input amount.");
     }
 
-    protected void AppendRemoteSignatureToTransaction(ITransactionSignature remoteSignature, PubKey remotePubKey)
+    protected void CalculateTransactionFee(LightningMoney currentFeePerKw)
     {
-        _builder.AddKnownSignature(remotePubKey, remoteSignature, _transaction.Inputs[0].PrevOut);
+        var outputWeight = CalculateOutputWeight();
+        var inputWeight = CalculateInputWeight();
+        
+        CalculatedFee.Satoshi = (outputWeight + inputWeight) * currentFeePerKw.Satoshi / 1000L;
     }
 
-    protected void SignTransactionWithExistingKeys()
+    #region Signature Management
+
+    protected List<ECDSASignature> SignTransaction(ILightningSigner signer, params BitcoinSecret[] secrets)
     {
-        _transaction = _builder.SignTransactionInPlace(_transaction);
+        ArgumentNullException.ThrowIfNull(signer);
+        ArgumentNullException.ThrowIfNull(secrets);
+
+        // Check if output amount is greater than input amount
+        if (!CheckTransactionAmounts())
+            throw new InvalidOperationException("Output amount cannot exceed input amount.");
+
+        var coins = _coins.Select(c => c.Item1);
+        var signatures = signer.SignTransaction(_transaction, coins, SigHash.All, secrets);
 
         TxId = _transaction.GetHash();
         Finalized = true;
+        
+        return signatures;
     }
-
-    protected LightningMoney TotalInputAmount => _coins.Sum(c => (LightningMoney)c.Item1.Amount);
-
-    protected LightningMoney TotalOutputAmount => Outputs.Sum(o => o.Amount);
-
-    protected bool CheckTransactionAmounts(LightningMoney? fees = null)
+    
+    protected void AppendRemoteSignatureToTransaction(ILightningSigner signer, ITransactionSignature remoteSignature,
+                                                      PubKey remotePubKey)
     {
-        // Check if the output amount is greater than the input amount
-        return TotalOutputAmount + (fees ?? LightningMoney.Zero) <= TotalInputAmount;
+        ArgumentNullException.ThrowIfNull(signer);
+        signer.AddKnownSignature(_transaction, remotePubKey, remoteSignature, _transaction.Inputs[0].PrevOut);
     }
+    
+    protected List<ECDSASignature> SignTransactionWithExistingKeys(ILightningSigner signer)
+    {
+        ArgumentNullException.ThrowIfNull(signer);
 
+        var signatures = signer.ExtractSignatures(_transaction);
+
+        TxId = _transaction.GetHash();
+        Finalized = true;
+
+        return signatures;
+    }
+    #endregion
+    
+    #region Weight Calculation
     protected int CalculateOutputWeight()
     {
         var outputWeight = WeightConstants.TRANSACTION_BASE_WEIGHT;
@@ -249,19 +253,12 @@ public abstract class BaseTransaction : ITransaction
         return inputWeight;
     }
 
-    protected void CalculateTransactionFee(LightningMoney currentFeePerKw)
-    {
-        var outputWeight = CalculateOutputWeight();
-        var inputWeight = CalculateInputWeight();
-
-        CalculatedFee.Satoshi = (outputWeight + inputWeight) * currentFeePerKw.Satoshi / 1000L;
-    }
-
     #region Input Management
     protected void AddCoin(Coin coin, Sequence sequence)
     {
         ArgumentNullException.ThrowIfNull(coin);
 
+        _coins.Add((coin, sequence));
         _transaction.Inputs.Add(coin.Outpoint, null, null, sequence);
     }
     protected void AddCoin(Coin coin)
@@ -270,6 +267,27 @@ public abstract class BaseTransaction : ITransaction
 
         _coins.Add((coin, Sequence.Final));
         _transaction.Inputs.Add(coin.Outpoint, null, null, Sequence.Final);
+    }
+    
+    protected void RemoveCoin(Coin coin, Sequence sequence)
+    {
+        ArgumentNullException.ThrowIfNull(coin);
+
+        var indexToRemove = _coins.FindIndex(c => c.Item1.Equals(coin));
+        _coins.RemoveAt(indexToRemove);
+
+        indexToRemove = _transaction.Inputs.FindIndex(i => i.PrevOut == coin.Outpoint);
+        _transaction.Inputs.RemoveAt(indexToRemove);
+    }
+    protected void RemoveCoin(Coin coin)
+    {
+        ArgumentNullException.ThrowIfNull(coin);
+
+        var indexToRemove = _coins.FindIndex(c => c.Item1.Outpoint.Equals(coin.Outpoint));
+        _coins.RemoveAt(indexToRemove);
+
+        indexToRemove = _transaction.Inputs.FindIndex(i => i.PrevOut == coin.Outpoint);
+        _transaction.Inputs.RemoveAt(indexToRemove);
     }
     #endregion
 

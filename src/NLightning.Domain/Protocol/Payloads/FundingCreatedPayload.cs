@@ -1,3 +1,4 @@
+using NBitcoin;
 using NBitcoin.Crypto;
 
 namespace NLightning.Domain.Protocol.Payloads;
@@ -22,7 +23,7 @@ public class FundingCreatedPayload : IChannelMessagePayload
     /// <summary>
     /// The funding transaction id.
     /// </summary>
-    public ReadOnlyMemory<byte> FundingTxId { get; }
+    public uint256 FundingTxId { get; }
 
     /// <summary>
     /// The funding transaction output index.
@@ -34,11 +35,11 @@ public class FundingCreatedPayload : IChannelMessagePayload
     /// </summary>
     public ECDSASignature Signature { get; }
 
-    public FundingCreatedPayload(ChannelId channelId, ReadOnlySpan<byte> fundingTxId, ushort fundingOutputIndex,
+    public FundingCreatedPayload(ChannelId channelId, uint256 fundingTxId, ushort fundingOutputIndex,
                                  ECDSASignature signature)
     {
         ChannelId = channelId;
-        FundingTxId = fundingTxId.ToArray();
+        FundingTxId = fundingTxId;
         FundingOutputIndex = fundingOutputIndex;
         Signature = signature;
     }

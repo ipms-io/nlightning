@@ -32,7 +32,7 @@ public sealed class AcceptChannel1Message : BaseChannelMessage
     public AcceptChannel1Message(AcceptChannel1Payload payload,
                                  UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv = null,
                                  ChannelTypeTlv? channelTypeTlv = null)
-        : base(MessageTypes.ACCEPT_CHANNEL_2, payload)
+        : base(MessageTypes.AcceptChannel2, payload)
     {
         UpfrontShutdownScriptTlv = upfrontShutdownScriptTlv;
         ChannelTypeTlv = channelTypeTlv;

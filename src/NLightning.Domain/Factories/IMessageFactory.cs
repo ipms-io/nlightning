@@ -1,11 +1,12 @@
 using NBitcoin;
 using NBitcoin.Crypto;
-using NLightning.Domain.Protocol.Messages;
 
 namespace NLightning.Domain.Factories;
 
 using Money;
+using Protocol.Messages;
 using Protocol.Messages.Interfaces;
+using Protocol.Tlv;
 using ValueObjects;
 
 public interface IMessageFactory
@@ -18,15 +19,14 @@ public interface IMessageFactory
     ErrorMessage CreateErrorMessage(byte[] data, ChannelId? channelId);
     PingMessage CreatePingMessage();
     PongMessage CreatePongMessage(IMessage pingMessage);
+    
     TxAddInputMessage CreateTxAddInputMessage(ChannelId channelId, ulong serialId, byte[] prevTx, uint prevTxVout,
                                      uint sequence);
-
     TxAddOutputMessage CreateTxAddOutputMessage(ChannelId channelId, ulong serialId, LightningMoney amount, Script script);
     TxRemoveInputMessage CreateTxRemoveInputMessage(ChannelId channelId, ulong serialId);
     TxRemoveOutputMessage CreateTxRemoveOutputMessage(ChannelId channelId, ulong serialId);
     TxCompleteMessage CreateTxCompleteMessage(ChannelId channelId);
     TxSignaturesMessage CreateTxSignaturesMessage(ChannelId channelId, byte[] txId, List<Witness> witnesses);
-
     TxInitRbfMessage CreateTxInitRbfMessage(ChannelId channelId, uint locktime, uint feerate, long fundingOutputContrubution,
                                     bool requireConfirmedInputs);
     TxAckRbfMessage CreateTxAckRbfMessage(ChannelId channelId, long fundingOutputContrubution, bool requireConfirmedInputs);
@@ -36,6 +36,15 @@ public interface IMessageFactory
     ShutdownMessage CreateShutdownMessage(ChannelId channelId, Script scriptPubkey);
     ClosingSignedMessage CreateClosingSignedMessage(ChannelId channelId, ulong feeSatoshis, ECDSASignature signature,
                                         ulong minFeeSatoshis, ulong maxFeeSatoshis);
+    OpenChannel1Message CreateOpenChannel1Message(ChannelId temporaryChannelId, LightningMoney fundingAmount,
+                                                  PubKey fundingPubKey, LightningMoney pushAmount,
+                                                  LightningMoney channelReserveAmount, LightningMoney feeRatePerKw,
+                                                  ushort maxAcceptedHtlcs, PubKey revocationBasepoint,
+                                                  PubKey paymentBasepoint, PubKey delayedPaymentBasepoint,
+                                                  PubKey htlcBasepoint, PubKey firstPerCommitmentPoint,
+                                                  ChannelFlags channelFlags,
+                                                  UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv,
+                                                  ChannelTypeTlv? channelTypeTlv);
     OpenChannel2Message CreateOpenChannel2Message(ChannelId temporaryChannelId, uint fundingFeeRatePerKw,
                                        uint commitmentFeeRatePerKw, ulong fundingSatoshis, PubKey fundingPubKey,
                                        PubKey revocationBasepoint, PubKey paymentBasepoint,
@@ -43,11 +52,21 @@ public interface IMessageFactory
                                        PubKey firstPerCommitmentPoint, PubKey secondPerCommitmentPoint,
                                        ChannelFlags channelFlags, Script? shutdownScriptPubkey = null,
                                        byte[]? channelType = null, bool requireConfirmedInputs = false);
+    AcceptChannel1Message CreateAcceptChannel1Message(ChannelId temporaryChannelId, LightningMoney channelReserveAmount,
+                                                      uint minimumDepth, ushort maxAcceptedHtlcs,
+                                                      PubKey localFundingPubKey, PubKey revocationBasepoint,
+                                                      PubKey paymentBasepoint, PubKey delayedPaymentBasepoint,
+                                                      PubKey htlcBasepoint, PubKey firstPerCommitmentPoint,
+                                                      UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv,
+                                                      ChannelTypeTlv? channelTypeTlv);
     AcceptChannel2Message CreateAcceptChannel2Message(ChannelId temporaryChannelId, LightningMoney fundingSatoshis,
                                          PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint,
                                          PubKey delayedPaymentBasepoint, PubKey htlcBasepoint,
                                          PubKey firstPerCommitmentPoint, Script? shutdownScriptPubkey = null,
                                          byte[]? channelType = null, bool requireConfirmedInputs = false);
+    FundingCreatedMessage CreatedFundingCreatedMessage(ChannelId temporaryChannelId, uint256 fundingTxId,
+                                                       ushort fundingOutputIndex, ECDSASignature signature);
+    FundingSignedMessage CreatedFundingSignedMessage(ChannelId channelId, ECDSASignature signature);
     UpdateAddHtlcMessage CreateUpdateAddHtlcMessage(ChannelId channelId, ulong id, ulong amountMsat,
                                         ReadOnlyMemory<byte> paymentHash, uint cltvExpiry,
                                         ReadOnlyMemory<byte>? onionRoutingPacket = null);

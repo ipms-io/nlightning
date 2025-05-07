@@ -12,7 +12,7 @@ using Payloads;
 /// </remarks>
 /// <param name="payload"></param>
 public sealed class RevokeAndAckMessage(RevokeAndAckPayload payload)
-    : BaseChannelMessage(MessageTypes.REVOKE_AND_ACK, payload)
+    : BaseChannelMessage(MessageTypes.RevokeAndAck, payload)
 {
     /// <summary>
     /// The payload of the message.

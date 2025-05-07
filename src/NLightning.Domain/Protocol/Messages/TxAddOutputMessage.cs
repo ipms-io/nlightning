@@ -12,7 +12,7 @@ using Payloads;
 /// </remarks>
 /// <param name="payload">The tx_add_output payload.</param>
 public sealed class TxAddOutputMessage(TxAddOutputPayload payload)
-    : BaseChannelMessage(MessageTypes.TX_ADD_OUTPUT, payload)
+    : BaseChannelMessage(MessageTypes.TxAddOutput, payload)
 {
     /// <summary>
     /// The payload of the message.

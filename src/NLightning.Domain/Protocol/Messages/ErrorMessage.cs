@@ -11,7 +11,7 @@ using Payloads;
 /// The message type is 17.
 /// </remarks>
 /// <param name="payload">The error payload.</param>
-public sealed class ErrorMessage(ErrorPayload payload) : BaseMessage(MessageTypes.ERROR, payload)
+public sealed class ErrorMessage(ErrorPayload payload) : BaseMessage(MessageTypes.Error, payload)
 {
     /// <summary>
     /// The payload of the message.

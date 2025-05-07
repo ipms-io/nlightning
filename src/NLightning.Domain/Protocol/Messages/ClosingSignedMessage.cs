@@ -21,7 +21,7 @@ public sealed class ClosingSignedMessage : BaseChannelMessage
 
     public FeeRangeTlv FeeRangeTlv { get; }
 
-    public ClosingSignedMessage(ClosingSignedPayload payload, FeeRangeTlv feeRangeTlv) : base(MessageTypes.CLOSING_SIGNED, payload)
+    public ClosingSignedMessage(ClosingSignedPayload payload, FeeRangeTlv feeRangeTlv) : base(MessageTypes.ClosingSigned, payload)
     {
         FeeRangeTlv = feeRangeTlv;
         Extension = new TlvStream();

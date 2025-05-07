@@ -22,7 +22,7 @@ public sealed class ChannelReestablishMessage : BaseChannelMessage
     public NextFundingTlv? NextFundingTlv { get; }
 
     public ChannelReestablishMessage(ChannelReestablishPayload payload, NextFundingTlv? nextFundingTlv = null)
-        : base(MessageTypes.CHANNEL_REESTABLISH, payload)
+        : base(MessageTypes.ChannelReestablish, payload)
     {
         NextFundingTlv = nextFundingTlv;
 
