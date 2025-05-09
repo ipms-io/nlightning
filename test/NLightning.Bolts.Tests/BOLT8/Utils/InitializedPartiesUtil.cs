@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Text;
 using NLightning.Common.Constants;
 
 namespace NLightning.Bolts.Tests.BOLT8.Utils;

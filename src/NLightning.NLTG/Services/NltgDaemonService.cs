@@ -2,6 +2,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NLightning.Application.Interfaces.Services;
+using NLightning.Application.Options;
+using NLightning.Domain.Serialization;
+using NLightning.Domain.ValueObjects;
 
 namespace NLightning.NLTG.Services;
 
@@ -18,7 +22,7 @@ public class NltgDaemonService : BackgroundService
     private readonly ISecureKeyManager _secureKeyManager;
     private readonly ITcpListenerService _tcpListenerService;
 
-    public NltgDaemonService(IConfiguration configuration, IFeeService feeService, ILogger<NltgDaemonService> logger,
+    public NltgDaemonService(IConfiguration configuration, IEndianConverter endianConverter, IFeeService feeService, ILogger<NltgDaemonService> logger,
                              IOptions<NodeOptions> nodeOptions, ISecureKeyManager secureKeyManager,
                              ITcpListenerService tcpListenerService)
     {
@@ -28,6 +32,9 @@ public class NltgDaemonService : BackgroundService
         _nodeOptions = nodeOptions.Value;
         _secureKeyManager = secureKeyManager;
         _tcpListenerService = tcpListenerService;
+        
+        BigSize.SetEndianConverter(endianConverter);
+        Witness.SetEndianConverter(endianConverter);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

@@ -1,16 +1,26 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NLightning.Application.Interfaces;
+using NLightning.Application.Interfaces.Managers;
+using NLightning.Application.Interfaces.Services;
+using NLightning.Application.Options;
+using NLightning.Domain.Protocol.Interfaces;
+using NLightning.Domain.Serialization;
+using NLightning.Infrastructure.Bitcoin.Services;
+using NLightning.Infrastructure.Node;
+using NLightning.Infrastructure.Node.Interfaces;
+using NLightning.Infrastructure.Node.Managers;
+using NLightning.Infrastructure.Protocol;
+using NLightning.Infrastructure.Protocol.Factories;
+using NLightning.Infrastructure.Serialization;
 using NLightning.NLTG.Managers;
 
 namespace NLightning.NLTG.Extensions;
 
 using Bolts.BOLT1.Factories;
-using Bolts.BOLT1.Managers;
-using Common.Factories;
 using Common.Interfaces;
 using Common.Options;
-using Common.Services;
 using Interfaces;
 using Services;
 
@@ -41,6 +51,7 @@ public static class NltgServiceExtensions
 
             // Register application services
             // Singleton services (one instance throughout the application)
+            services.AddSingleton<IEndianConverter, EndianConverterAdapter>();
             services.AddSingleton<IFeeService, FeeService>();
             services.AddSingleton<IMessageFactory, MessageFactory>();
             services.AddSingleton<IMessageServiceFactory, MessageServiceFactory>();

@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <Configurations>Debug;Release;Debug.Native;Debug.Wasm;Release.Native;Release.Wasm</Configurations>
+    <Configurations>Debug;Release;Debug.Native;Release.Native</Configurations>
     <Platforms>AnyCPU</Platforms>
     <VSTestBlame>true</VSTestBlame>
     <VSTestNoLogo>true</VSTestNoLogo>
@@ -73,7 +73,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\NLightning.Bolts\NLightning.Bolts.csproj"/>
     <ProjectReference Include="..\..\src\NLightning.Models\NLightning.Models.csproj"/>
     <ProjectReference Include="..\..\src\NLightning.Models.Postgres\NLightning.Models.Postgres.csproj"/>
     <ProjectReference Include="..\..\src\NLightning.Models.Sqlite\NLightning.Models.Sqlite.csproj"/>

@@ -1,4 +1,3 @@
-using System.Text;
 using Xunit.Abstractions;
 
 namespace NLightning.Bolts.Tests.Utils;
