@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Options;
 using NBitcoin;
 
 namespace NLightning.Infrastructure.Bitcoin.Factories;
@@ -8,6 +7,7 @@ using Domain.Bitcoin.Transactions;
 using Domain.Bitcoin.Services;
 using Domain.Money;
 using Domain.Node.Options;
+using Domain.Protocol.Signers;
 using Interfaces;
 using Outputs;
 using Protocol.Models;
@@ -16,12 +16,12 @@ using Transactions;
 public class CommitmentTransactionFactory : ICommitmentTransactionFactory
 {
     private readonly IFeeService _feeService;
-    private readonly NodeOptions _nodeOptions;
+    private readonly ILightningSigner _lightningSigner;
 
-    public CommitmentTransactionFactory(IFeeService feeService, IOptions<NodeOptions> nodeOptions)
+    public CommitmentTransactionFactory(IFeeService feeService, ILightningSigner lightningSigner)
     {
         _feeService = feeService;
-        _nodeOptions = nodeOptions.Value;
+        _lightningSigner = lightningSigner;
     }
 
     public ITransaction CreateCommitmentTransaction(NodeOptions nodeOptions, IOutput output,
@@ -34,8 +34,8 @@ public class CommitmentTransactionFactory : ICommitmentTransactionFactory
         if (output is not FundingOutput fundingOutput)
             throw new ArgumentException("Invalid funding output type", nameof(output));
 
-        var commitmentTransaction = new CommitmentTransaction(_nodeOptions.AnchorAmount, _nodeOptions.DustLimitAmount,
-                                                              _nodeOptions.MustTrimHtlcOutputs, _nodeOptions.Network,
+        var commitmentTransaction = new CommitmentTransaction(nodeOptions.AnchorAmount, nodeOptions.DustLimitAmount,
+                                                              nodeOptions.MustTrimHtlcOutputs, nodeOptions.Network,
                                                               fundingOutput, localPaymentBasepoint,
                                                               remotePaymentBasepoint, localDelayedPubKey,
                                                               revocationPubKey, toLocalAmount, toRemoteAmount,
@@ -43,7 +43,7 @@ public class CommitmentTransactionFactory : ICommitmentTransactionFactory
 
         commitmentTransaction.ConstructTransaction(_feeService.GetCachedFeeRatePerKw());
 
-        commitmentTransaction.SignTransaction(secrets);
+        commitmentTransaction.SignTransaction(_lightningSigner, secrets);
 
         return commitmentTransaction;
     }
@@ -60,8 +60,8 @@ public class CommitmentTransactionFactory : ICommitmentTransactionFactory
         if (output is not FundingOutput fundingOutput)
             throw new ArgumentException("Invalid funding output type", nameof(output));
 
-        var commitmentTransaction = new CommitmentTransaction(_nodeOptions.AnchorAmount, _nodeOptions.DustLimitAmount,
-                                                              _nodeOptions.MustTrimHtlcOutputs, _nodeOptions.Network,
+        var commitmentTransaction = new CommitmentTransaction(nodeOptions.AnchorAmount, nodeOptions.DustLimitAmount,
+                                                              nodeOptions.MustTrimHtlcOutputs, nodeOptions.Network,
                                                               fundingOutput, localPaymentBasepoint,
                                                               remotePaymentBasepoint, localDelayedPubKey,
                                                               revocationPubKey, toLocalAmount, toRemoteAmount,
@@ -85,7 +85,7 @@ public class CommitmentTransactionFactory : ICommitmentTransactionFactory
 
         commitmentTransaction.ConstructTransaction(_feeService.GetCachedFeeRatePerKw());
 
-        commitmentTransaction.SignTransaction(secrets);
+        commitmentTransaction.SignTransaction(_lightningSigner, secrets);
 
         return commitmentTransaction;
     }

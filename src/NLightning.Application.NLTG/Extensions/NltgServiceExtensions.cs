@@ -1,9 +1,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace NLightning.Application.NLTG.Extensions;
 
+using Domain.Protocol.Signers;
 using Application.Managers;
 using Domain.Bitcoin.Factories;
 using Common.Options;
@@ -26,6 +28,7 @@ using Infrastructure.Transport.Factories;
 using Interfaces;
 using Managers;
 using Services;
+using Signers;
 
 public static class NltgServiceExtensions
 {
@@ -68,6 +71,16 @@ public static class NltgServiceExtensions
             services.AddSingleton<ISecureKeyManager>(secureKeyManager);
             services.AddSingleton<ITcpListenerService, TcpListenerService>();
             services.AddSingleton<ITransportServiceFactory, TransportServiceFactory>();
+            
+            // Add the Signer
+            services.AddSingleton<ILightningSigner>(serviceProvider =>
+            {
+                var keyDerivationService = serviceProvider.GetRequiredService<IKeyDerivationService>();
+                var logger = serviceProvider.GetRequiredService<ILogger<LocalLightningSigner>>();
+    
+                // Create the signer with the correct network
+                return new LocalLightningSigner(keyDerivationService, logger, secureKeyManager);
+            });
 
             // Scoped services (one instance per scope)
 

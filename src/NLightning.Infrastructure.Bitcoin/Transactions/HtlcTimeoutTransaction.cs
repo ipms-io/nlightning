@@ -1,7 +1,9 @@
 using NBitcoin;
+using NBitcoin.Crypto;
 
 namespace NLightning.Infrastructure.Bitcoin.Transactions;
 
+using Domain.Protocol.Signers;
 using Outputs;
 
 public class HtlcTimeoutTransaction : BaseHtlcTransaction
@@ -14,7 +16,7 @@ public class HtlcTimeoutTransaction : BaseHtlcTransaction
         SetLockTime(cltvEpiry);
     }
 
-    protected new void SignTransaction(params BitcoinSecret[] secrets)
+    protected new List<ECDSASignature> SignTransaction(ILightningSigner signer, params BitcoinSecret[] secrets)
     {
         var witness = new WitScript(
             Op.GetPushOp(0), // OP_0
@@ -23,6 +25,6 @@ public class HtlcTimeoutTransaction : BaseHtlcTransaction
             Op.GetPushOp([]) // Payment pre-image for HTLC-success
         );
 
-        base.SignTransaction(secrets);
+        return base.SignTransaction(signer, secrets);
     }
 }

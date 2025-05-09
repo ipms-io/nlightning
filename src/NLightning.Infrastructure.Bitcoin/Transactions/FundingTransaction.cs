@@ -4,6 +4,7 @@ namespace NLightning.Infrastructure.Bitcoin.Transactions;
 
 using Domain.Money;
 using Domain.Protocol.Constants;
+using Domain.Protocol.Signers;
 using Outputs;
 
 /// <summary>
@@ -112,9 +113,9 @@ public class FundingTransaction : BaseTransaction
         }
     }
 
-    internal new void SignTransaction(params BitcoinSecret[] secrets)
+    internal new void SignTransaction(ILightningSigner signer, params BitcoinSecret[] secrets)
     {
-        base.SignTransaction(secrets);
+        base.SignTransaction(signer, secrets);
         // Set funding output fields
         FundingOutput.TxId = TxId;
 

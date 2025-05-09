@@ -8,6 +8,7 @@ using Domain.Bitcoin.Services;
 using Domain.Bitcoin.Transactions;
 using Domain.Money;
 using Domain.Node.Options;
+using Domain.Protocol.Signers;
 using Transactions;
 using Network = Domain.ValueObjects.Network;
 
@@ -15,13 +16,16 @@ public class FundingTransactionFactory : IFundingTransactionFactory
 {
     private readonly IFeeService _feeService;
     private readonly NodeOptions _nodeOptions;
+    private readonly ILightningSigner _lightningSigner;
     private readonly Network _network;
 
-    public FundingTransactionFactory(IFeeService feeService, IOptions<NodeOptions> nodeOptions)
+    public FundingTransactionFactory(IFeeService feeService, IOptions<NodeOptions> nodeOptions,
+                                     ILightningSigner lightningSigner)
     {
         _feeService = feeService;
         _nodeOptions = nodeOptions.Value;
         _network = _nodeOptions.Network;
+        _lightningSigner = lightningSigner;
     }
 
     public ITransaction CreateFundingTransaction(PubKey localFundingPubKey, PubKey remoteFundingPubKey,
@@ -34,7 +38,7 @@ public class FundingTransactionFactory : IFundingTransactionFactory
 
         fundingTx.ConstructTransaction(_feeService.GetCachedFeeRatePerKw());
 
-        fundingTx.SignTransaction(secrets);
+        fundingTx.SignTransaction(_lightningSigner, secrets);
 
         return fundingTx;
     }
@@ -50,7 +54,7 @@ public class FundingTransactionFactory : IFundingTransactionFactory
 
         fundingTx.ConstructTransaction(_feeService.GetCachedFeeRatePerKw());
 
-        fundingTx.SignTransaction(secrets);
+        fundingTx.SignTransaction(_lightningSigner, secrets);
 
         return fundingTx;
     }

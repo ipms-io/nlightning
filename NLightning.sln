@@ -11,13 +11,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Common", "src\NL
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{AF4411D4-8EE9-423E-8213-1C9D35E47882}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Models", "src\NLightning.Models\NLightning.Models.csproj", "{2EBE72E4-F20D-4668-B2A5-F7DCDECA0832}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure.Persistence", "src\NLightning.Infrastructure.Persistence\NLightning.Infrastructure.Persistence.csproj", "{2EBE72E4-F20D-4668-B2A5-F7DCDECA0832}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Models.Postgres", "src\NLightning.Models.Postgres\NLightning.Models.Postgres.csproj", "{DC168173-FDDA-4C70-9A7F-F14D909B01EE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure.Persistence.Postgres", "src\NLightning.Infrastructure.Persistence.Postgres\NLightning.Infrastructure.Persistence.Postgres.csproj", "{DC168173-FDDA-4C70-9A7F-F14D909B01EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Models.Sqlite", "src\NLightning.Models.Sqlite\NLightning.Models.Sqlite.csproj", "{04D4EEFE-A127-445B-8D41-252E85CE969C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure.Persistence.Sqlite", "src\NLightning.Infrastructure.Persistence.Sqlite\NLightning.Infrastructure.Persistence.Sqlite.csproj", "{04D4EEFE-A127-445B-8D41-252E85CE969C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Models.SqlServer", "src\NLightning.Models.SqlServer\NLightning.Models.SqlServer.csproj", "{7F9B8714-BFAC-4F98-9BAB-EA2FC1B29688}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure.Persistence.SqlServer", "src\NLightning.Infrastructure.Persistence.SqlServer\NLightning.Infrastructure.Persistence.SqlServer.csproj", "{7F9B8714-BFAC-4F98-9BAB-EA2FC1B29688}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Common.Tests", "test\NLightning.Common.Tests\NLightning.Common.Tests.csproj", "{B6169CE9-FEB2-46EC-994D-4082186EB705}"
 EndProject
@@ -54,6 +54,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure.Serialization.Tests", "test\NLightning.Infrastructure.Serialization.Tests\NLightning.Infrastructure.Serialization.Tests.csproj", "{4550DC12-8EE8-4C35-B438-873EE128DA1A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Application.NLTG.Tests", "test\NLightning.Application.NLTG.Tests\NLightning.Application.NLTG.Tests.csproj", "{BC559AD8-72B9-4ABF-A7FF-6305E141AB62}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure.Repositories", "NLightning.Infrastructure.Repositories\NLightning.Infrastructure.Repositories.csproj", "{02639428-3F4E-43A9-9585-A5D90EDCA1FF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{2746A75F-A7F5-438E-B68F-6AB643F7FE54}"
 	ProjectSection(SolutionItems) = preProject
@@ -347,6 +349,18 @@ Global
 		{BC559AD8-72B9-4ABF-A7FF-6305E141AB62}.Debug.Native|Any CPU.Build.0 = Debug|Any CPU
 		{BC559AD8-72B9-4ABF-A7FF-6305E141AB62}.Debug.Wasm|Any CPU.ActiveCfg = Debug|Any CPU
 		{BC559AD8-72B9-4ABF-A7FF-6305E141AB62}.Debug.Wasm|Any CPU.Build.0 = Debug|Any CPU
+		{02639428-3F4E-43A9-9585-A5D90EDCA1FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02639428-3F4E-43A9-9585-A5D90EDCA1FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02639428-3F4E-43A9-9585-A5D90EDCA1FF}.Release.Native|Any CPU.ActiveCfg = Debug|Any CPU
+		{02639428-3F4E-43A9-9585-A5D90EDCA1FF}.Release.Native|Any CPU.Build.0 = Debug|Any CPU
+		{02639428-3F4E-43A9-9585-A5D90EDCA1FF}.Release.Wasm|Any CPU.ActiveCfg = Debug|Any CPU
+		{02639428-3F4E-43A9-9585-A5D90EDCA1FF}.Release.Wasm|Any CPU.Build.0 = Debug|Any CPU
+		{02639428-3F4E-43A9-9585-A5D90EDCA1FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02639428-3F4E-43A9-9585-A5D90EDCA1FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02639428-3F4E-43A9-9585-A5D90EDCA1FF}.Debug.Native|Any CPU.ActiveCfg = Debug|Any CPU
+		{02639428-3F4E-43A9-9585-A5D90EDCA1FF}.Debug.Native|Any CPU.Build.0 = Debug|Any CPU
+		{02639428-3F4E-43A9-9585-A5D90EDCA1FF}.Debug.Wasm|Any CPU.ActiveCfg = Debug|Any CPU
+		{02639428-3F4E-43A9-9585-A5D90EDCA1FF}.Debug.Wasm|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -384,5 +398,6 @@ Global
 		{1D9EF48B-9D37-4996-8C26-56AC6245EAFF} = {735305B0-B08D-4C48-A1DE-47E8DC2D8032}
 		{9B420B23-5DAE-4CDE-A3DB-69663111750D} = {735305B0-B08D-4C48-A1DE-47E8DC2D8032}
 		{18F1E97C-8546-4359-93B3-8D1F5B1CC4B4} = {735305B0-B08D-4C48-A1DE-47E8DC2D8032}
+		{02639428-3F4E-43A9-9585-A5D90EDCA1FF} = {123D0631-533C-447F-B7DA-D1D37E5E64BF}
 	EndGlobalSection
 EndGlobal

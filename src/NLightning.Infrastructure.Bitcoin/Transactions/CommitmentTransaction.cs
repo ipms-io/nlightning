@@ -144,10 +144,11 @@ public class CommitmentTransaction : BaseTransaction
         AddOutput(receivedHtlcOutput);
     }
 
-    public List<ECDSASignature> AppendRemoteSignatureAndSign(ECDSASignature remoteSignature, PubKey remotePubKey)
+    public List<ECDSASignature> AppendRemoteSignatureAndSign(ILightningSigner signer, ECDSASignature remoteSignature,
+                                                             PubKey remotePubKey)
     {
-        AppendRemoteSignatureToTransaction(new TransactionSignature(remoteSignature), remotePubKey);
-        return SignTransactionWithExistingKeys();
+        AppendRemoteSignatureToTransaction(signer, new TransactionSignature(remoteSignature), remotePubKey);
+        return SignTransactionWithExistingKeys(signer);
     }
 
     public Transaction GetSignedTransaction()

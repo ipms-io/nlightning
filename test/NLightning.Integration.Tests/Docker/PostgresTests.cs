@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using NLightning.Integration.Tests.Fixtures;
 using ServiceStack.Text;
 using Xunit.Abstractions;
 
 namespace NLightning.Integration.Tests.Docker;
 
-using Models;
+using Fixtures;
+using Infrastructure.Persistence.Contexts;
 using Utils;
 
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
@@ -26,7 +26,7 @@ public class PostgresTests
             options =>
                 options.UseNpgsql(postgresFixture.DbConnectionString, x =>
                     {
-                        x.MigrationsAssembly("NLightning.Models.Postgres");
+                        x.MigrationsAssembly("NLightning.Infrastructure.Persistence.Postgres");
                     })
                     .EnableSensitiveDataLogging()
                     .UseSnakeCaseNamingConvention());
@@ -34,7 +34,7 @@ public class PostgresTests
         {
             x.UseNpgsql(postgresFixture.DbConnectionString, y =>
             {
-                y.MigrationsAssembly("NLightning.Models.Postgres");
+                y.MigrationsAssembly("NLightning.Infrastructure.Persistence.Postgres");
             })
                 .EnableSensitiveDataLogging()
                 .UseSnakeCaseNamingConvention();

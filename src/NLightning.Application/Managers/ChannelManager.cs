@@ -123,7 +123,7 @@ public class ChannelManager : IChannelManager
         return acceptChannel1ReplyMessage;
     }
 
-    private IChannelMessage? HandleFundingCreatedMessage(ChannelState channelState, FundingCreatedMessage message,
+    private FundingSignedMessage? HandleFundingCreatedMessage(ChannelState channelState, FundingCreatedMessage message,
                                                          PubKey peerPubKey)
     {
         var payload = message.Payload;
@@ -176,7 +176,7 @@ public class ChannelManager : IChannelManager
                                             "Sorry, we had an internal error");
         }
 
-        List<ECDSASignature>? signatures = null;
+        List<ECDSASignature>? signatures;
         try
         {
             signatures = commitmentTransaction

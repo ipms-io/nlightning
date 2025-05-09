@@ -5,7 +5,7 @@ using Xunit.Abstractions;
 
 namespace NLightning.Integration.Tests.Docker;
 
-using Models;
+using Infrastructure.Persistence.Contexts;
 using Utils;
 
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
@@ -27,7 +27,7 @@ public class SqliteTests
         var contextOptions = new DbContextOptionsBuilder<NLightningContext>()
             .UseSqlite(connection, x =>
             {
-                x.MigrationsAssembly("NLightning.Models.Sqlite");
+                x.MigrationsAssembly("NLightning.Infrastructure.Persistence.Sqlite");
             })
             .Options;
 

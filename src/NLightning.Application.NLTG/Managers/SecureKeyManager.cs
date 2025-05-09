@@ -30,7 +30,7 @@ public class SecureKeyManager : ISecureKeyManager, IDisposable
     private ulong _privateKeyLength;
     private IntPtr _securePrivateKeyPtr;
 
-    public const string PATH = "m/6425'/0'/0'/0/{0}";
+    public KeyPath KeyPath => new KeyPath("m/6425'/0'/0'/0");
 
     public string OutputDescriptor { get; init; }
 
@@ -62,7 +62,7 @@ public class SecureKeyManager : ISecureKeyManager, IDisposable
         var xpub = extKey.Neuter().ToString(_network);
         var fingerprint = extKey.GetPublicKey().GetHDFingerPrint();
 
-        OutputDescriptor = $"wpkh([{fingerprint}/{string.Format(PATH, "*")}]{xpub}/0/*)";
+        OutputDescriptor = $"wpkh([{fingerprint}/{KeyPath}/*]{xpub}/0/*)";
 
         // Securely wipe the original key from regular memory
         cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(privateKey, 0), _privateKeyLength);
@@ -81,7 +81,7 @@ public class SecureKeyManager : ISecureKeyManager, IDisposable
 
         // Derive the key at m/6425'/0'/0'/0/index
         var masterKey = GetMasterKey();
-        var derivedKey = masterKey.Derive(new KeyPath(string.Format(PATH, index)));
+        var derivedKey = masterKey.Derive(KeyPath.Derive(index));
 
         _ = UpdateLastUsedIndexOnFile().ContinueWith(task =>
         {
@@ -97,7 +97,7 @@ public class SecureKeyManager : ISecureKeyManager, IDisposable
     public ExtKey GetKeyAtIndex(uint index)
     {
         var masterKey = GetMasterKey();
-        return masterKey.Derive(new KeyPath(string.Format(PATH, index)));
+        return masterKey.Derive(KeyPath.Derive(index));
     }
 
     public Key GetNodeKey()
@@ -114,7 +114,7 @@ public class SecureKeyManager : ISecureKeyManager, IDisposable
 
     public async Task UpdateLastUsedIndexOnFile()
     {
-        var jsonString = File.ReadAllText(_filePath);
+        var jsonString = await File.ReadAllTextAsync(_filePath);
         var data = JsonSerializer.Deserialize<KeyFileData>(jsonString)
                    ?? throw new SerializationException("Invalid key file");
 

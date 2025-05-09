@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 namespace NLightning.Integration.Tests.Docker;
 
 using Fixtures;
-using Models;
+using Infrastructure.Persistence.Contexts;
 using Utils;
 
 #pragma warning disable xUnit1033 // Test classes decorated with 'Xunit.IClassFixture<TFixture>' or 'Xunit.ICollectionFixture<TFixture>' should add a constructor argument of type TFixture
@@ -27,7 +27,7 @@ public class SqlServerTests
             options =>
                 options.UseSqlServer(sqlServerFixture.DbConnectionString, x =>
                     {
-                        x.MigrationsAssembly("NLightning.Models.SqlServer");
+                        x.MigrationsAssembly("NLightning.Infrastructure.Persistence.SqlServer");
                     })
                     .EnableSensitiveDataLogging()
                    );
@@ -35,7 +35,7 @@ public class SqlServerTests
         {
             x.UseNpgsql(sqlServerFixture.DbConnectionString, y =>
             {
-                y.MigrationsAssembly("NLightning.Models.SqlServer");
+                y.MigrationsAssembly("NLightning.Infrastructure.Persistence.SqlServer");
             })
                 .EnableSensitiveDataLogging()
                 ;

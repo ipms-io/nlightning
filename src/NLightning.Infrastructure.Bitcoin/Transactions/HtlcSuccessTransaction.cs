@@ -1,7 +1,9 @@
 using NBitcoin;
+using NBitcoin.Crypto;
 
 namespace NLightning.Infrastructure.Bitcoin.Transactions;
 
+using Domain.Protocol.Signers;
 using Outputs;
 
 public class BaseHtlcSuccessTransaction : BaseHtlcTransaction
@@ -17,7 +19,7 @@ public class BaseHtlcSuccessTransaction : BaseHtlcTransaction
         PaymentPreimage = paymentPreimage;
     }
 
-    protected new void SignTransaction(params BitcoinSecret[] secrets)
+    protected new List<ECDSASignature> SignTransaction(ILightningSigner signer, params BitcoinSecret[] secrets)
     {
         var witness = new WitScript(
             Op.GetPushOp(0), // OP_0
@@ -26,6 +28,6 @@ public class BaseHtlcSuccessTransaction : BaseHtlcTransaction
             Op.GetPushOp(PaymentPreimage) // Payment pre-image for HTLC-success
         );
 
-        base.SignTransaction(secrets);
+        return base.SignTransaction(signer, secrets);
     }
 }
