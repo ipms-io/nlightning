@@ -1,11 +1,11 @@
 using NBitcoin;
 using NBitcoin.Crypto;
-using NLightning.Domain.Protocol.Signers;
 
 namespace NLightning.Infrastructure.Bitcoin.Transactions;
 
 using Domain.Money;
 using Domain.Protocol.Constants;
+using Domain.Protocol.Signers;
 using Domain.ValueObjects;
 using Outputs;
 using Protocol.Models;
@@ -47,7 +47,7 @@ public class CommitmentTransaction : BaseTransaction
     /// <param name="localPaymentBasepoint">The local public key.</param>
     /// <param name="remotePaymentBasepoint">The remote public key.</param>
     /// <param name="localDelayedPubKey">The local delayed public key.</param>
-    /// <param name="revocationPubKey">The revocation public key.</param>
+    /// <param name="remoteRevocationPubKey">The revocation public key.</param>
     /// <param name="toLocalAmount">The amount for the to_local output in satoshis.</param>
     /// <param name="toRemoteAmount">The amount for the to_remote output in satoshis.</param>
     /// <param name="toSelfDelay">The to_self_delay in blocks.</param>
@@ -144,11 +144,10 @@ public class CommitmentTransaction : BaseTransaction
         AddOutput(receivedHtlcOutput);
     }
 
-    public void AppendRemoteSignatureAndSign(ILightningSigner signer, ECDSASignature remoteSignature,
-                                             PubKey remotePubKey)
+    public List<ECDSASignature> AppendRemoteSignatureAndSign(ECDSASignature remoteSignature, PubKey remotePubKey)
     {
-        AppendRemoteSignatureToTransaction(signer, new TransactionSignature(remoteSignature), remotePubKey);
-        return SignTransactionWithExistingKeys(signer);
+        AppendRemoteSignatureToTransaction(new TransactionSignature(remoteSignature), remotePubKey);
+        return SignTransactionWithExistingKeys();
     }
 
     public Transaction GetSignedTransaction()
@@ -160,7 +159,7 @@ public class CommitmentTransaction : BaseTransaction
 
         throw new InvalidOperationException("You have to sign and finalize the transaction first.");
     }
-    
+
     public void ReplaceFundingOutput(FundingOutput oldFundingOutput, FundingOutput newFundingOutput)
     {
         RemoveCoin(oldFundingOutput.ToCoin());

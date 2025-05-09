@@ -11,7 +11,7 @@ public class FundingOutput : BaseOutput
     public PubKey LocalPubKey { get; }
     public PubKey RemotePubKey { get; }
 
-    public FundingOutput(PubKey localPubKey, PubKey remotePubKey, LightningMoney amount)
+    public FundingOutput(PubKey localPubKey, PubKey remotePubKey, LightningMoney amount, bool isPlaceHolder = false)
         : base(CreateMultisigScript(localPubKey, remotePubKey), amount)
     {
         ArgumentNullException.ThrowIfNull(localPubKey);
@@ -25,6 +25,12 @@ public class FundingOutput : BaseOutput
 
         LocalPubKey = localPubKey;
         RemotePubKey = remotePubKey;
+
+        if (isPlaceHolder)
+        {
+            IsPlaceHolder = isPlaceHolder;
+            Index = 0;
+        }
     }
 
     private static Script CreateMultisigScript(PubKey localPubKey, PubKey remotePubKey)

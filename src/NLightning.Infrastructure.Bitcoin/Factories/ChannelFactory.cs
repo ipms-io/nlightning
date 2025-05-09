@@ -20,6 +20,7 @@ using Infrastructure.Protocol.Services;
 using Interfaces;
 using Outputs;
 using Protocol.Models;
+using Transactions;
 
 public class ChannelFactory : IChannelFactory
 {
@@ -50,6 +51,9 @@ public class ChannelFactory : IChannelFactory
         var payload = message.Payload;
 
         #region Checks
+        // Set peer options as agreed
+        var peerOptions = _nodeOptions;
+
         // Check if ChainHash is compatible
         if (payload.ChainHash != _nodeOptions.Network.ChainHash)
             throw new ChannelErrorException("ChainHash is not compatible");
@@ -67,17 +71,28 @@ public class ChannelFactory : IChannelFactory
         if (payload.PushAmount > 1_000 * payload.FundingAmount)
             throw new ChannelErrorException("Push amount is too large");
 
+        // Check if there are enough funds to pay for fees
+        if (payload.FundingAmount < payload.DustLimitAmount + payload.ChannelReserveAmount)
+            throw new ChannelErrorException("Funding amount is too small");
+
         // Check if dust_limit_satoshis is too small
         if (payload.DustLimitAmount < ChannelConstants.MIN_DUST_LIMIT_AMOUNT)
-            throw new ChannelErrorException("Dust limit amount is too small");
+            peerOptions.DustLimitAmount = ChannelConstants.MIN_DUST_LIMIT_AMOUNT;
+        // throw new ChannelErrorException("Dust limit amount is too small");
 
-        // Check if channel reserve amount is below the dust limit
-        if (payload.DustLimitAmount > payload.ChannelReserveAmount)
-            throw new ChannelErrorException("Channel reserve amount is too small");
+        // Check if we consider dust_limit_satoshis too large. IE. 20% bigger than our dust limit
+        if (payload.DustLimitAmount > _nodeOptions.DustLimitAmount * 1.2M)
+            throw new ChannelErrorException("Dust limit amount is too large");
+
+        // Check if the channel reserve amount is below the dust limit
+        if (peerOptions.DustLimitAmount > payload.ChannelReserveAmount)
+            peerOptions.ChannelReserveAmount = _nodeOptions.ChannelReserveAmount;
+        // throw new ChannelErrorException("Channel reserve amount is too small");
 
         // Check if we consider channel_reserve_satoshis too large. IE. 20% bigger than our channel reserve
         if (payload.ChannelReserveAmount > _nodeOptions.ChannelReserveAmount * 1.2M)
-            throw new ChannelErrorException("Channel reserve amount is too large");
+            peerOptions.ChannelReserveAmount = _nodeOptions.ChannelReserveAmount;
+        // throw new ChannelErrorException("Channel reserve amount is too large");
 
         // Check channel flags for undefined bits
         if ((payload.ChannelFlags & ~1) != 0)
@@ -89,7 +104,7 @@ public class ChannelFactory : IChannelFactory
             && message.UpfrontShutdownScriptTlv?.Length == 0
            ) throw new ChannelErrorException("Upfront shutdown script is required but not provided");
 
-        // Check if the option channel type was negotiated and channel type is present
+        // Check if the option channel type was negotiated and the channel type is present
         if (negotiatedFeatures.ChannelType == FeatureSupport.Compulsory && message.ChannelTypeTlv is null)
             throw new ChannelErrorException("Channel type was negotiated but not provided");
 
@@ -126,59 +141,46 @@ public class ChannelFactory : IChannelFactory
 
         // Check if we consider htlc_minimum_msat too large. IE. 20% bigger than our htlc minimum amount
         if (payload.HtlcMinimumAmount > _nodeOptions.HtlcMinimumAmount * 1.2M)
-            throw new ChannelErrorException("Htlc minimum amount is too large");
+            peerOptions.HtlcMinimumAmount = _nodeOptions.HtlcMinimumAmount;
+        // throw new ChannelErrorException("Htlc minimum amount is too large");
 
         // Check if we consider max_htlc_value_in_flight_msat too small. IE. 20% smaller than our max htlc value
         if (payload.MaxHtlcValueInFlight < _nodeOptions.MaxHtlcValueInFlight * 0.8M)
-            throw new ChannelErrorException("Max htlc value in flight is too small");
+            peerOptions.MaxHtlcValueInFlight = _nodeOptions.MaxHtlcValueInFlight;
+        // throw new ChannelErrorException("Max htlc value in flight is too small");
 
         // Check if we consider max_accepted_htlcs too small. IE. 20% smaller than our max accepted htlcs
         if (payload.MaxAcceptedHtlcs < (ushort)(_nodeOptions.MaxAcceptedHtlcs * 0.8M))
-            throw new ChannelErrorException("Max accepted htlcs is too small");
+            peerOptions.MaxAcceptedHtlcs = _nodeOptions.MaxAcceptedHtlcs;
+        // throw new ChannelErrorException("Max accepted htlcs is too small");
 
         // Check max_accepted_htlcs is too large
         if (payload.MaxAcceptedHtlcs > ChannelConstants.MAX_ACCEPTED_HTLCS)
-            throw new ChannelErrorException("Max accepted htlcs is too small");
-
-        // Check if we consider dust_limit_satoshis too large. IE. 20% bigger than our dust limit
-        if (payload.DustLimitAmount > _nodeOptions.DustLimitAmount * 1.2M)
-            throw new ChannelErrorException("Dust limit amount is too large");
-
-        // Check if there's enough funds to pay for fees
-        if (payload.FundingAmount < payload.DustLimitAmount + payload.ChannelReserveAmount)
-            throw new ChannelErrorException("Funding amount is too small");
+            peerOptions.MaxAcceptedHtlcs = _nodeOptions.MaxAcceptedHtlcs;
+        // throw new ChannelErrorException("Max accepted htlcs is too small");
 
         // Check if we consider to_self_delay unreasonably large. IE. 50% bigger than our to_self_delay
         if (payload.ToSelfDelay > _nodeOptions.ToSelfDelay * 1.5M)
-            throw new ChannelErrorException("To self delay is too large");
+            peerOptions.ToSelfDelay = _nodeOptions.ToSelfDelay;
+        // throw new ChannelErrorException("To self delay is too large");
 
         // Check if we consider fee_rate_per_kw too large
+        // TODO: Get actual amount from FeeService
         if (payload.FeeRatePerKw > ChannelConstants.MAX_FEE_PER_KW)
             throw new ChannelErrorException("Fee rate per kw is too large");
 
         // Check if we consider fee_rate_per_kw too small. IE. 20% smaller than our fee rate
+        // TODO: Get actual amount from FeeService
         if (payload.FeeRatePerKw < ChannelConstants.MIN_FEE_PER_KW
             || payload.FeeRatePerKw < _feeService.GetCachedFeeRatePerKw() * 0.8M
            ) throw new ChannelErrorException("Fee rate per kw is too small");
         #endregion
 
-        // Set peer options as agreed
-        var peerOptions = new NodeOptions
-        {
-            Network = _nodeOptions.Network,
-            DustLimitAmount = payload.DustLimitAmount,
-            ChannelReserveAmount = payload.ChannelReserveAmount,
-            ToSelfDelay = payload.ToSelfDelay,
-            MaxHtlcValueInFlight = payload.MaxHtlcValueInFlight,
-            HtlcMinimumAmount = payload.HtlcMinimumAmount,
-            MaxAcceptedHtlcs = payload.MaxAcceptedHtlcs,
-            Features = negotiatedFeatures
-        };
-
         // Calculate the amounts
         var toLocalAmount = payload.PushAmount;
         var toRemoteAmount = payload.FundingAmount - payload.PushAmount;
 
+        #region Secrets and Basepoints
         // Generate a private key for this channel
         var channelKey = _secureKeyManager.GetNextKey(out var index);
 
@@ -187,19 +189,23 @@ public class ChannelFactory : IChannelFactory
             .GeneratePerCommitmentSecret(channelKey.PrivateKey.ToBytes(), CryptoConstants.FIRST_PER_COMMITMENT_INDEX);
         using var firstPerCommitmentSecret = new Key(firstPerCommitmentSecretBytes);
         using var localFundingSecret = channelKey.PrivateKey;
-        // using var localRevocationSecret = channelKey.Derive(0).PrivateKey;
+        using var localRevocationSecret = channelKey.Derive(0).PrivateKey;
         using var localPaymentSecret = channelKey.Derive(1).PrivateKey;
-        // using var localDelayedPaymentSecret = channelKey.Derive(2).PrivateKey;
-        // using var localHtlcSecret = channelKey.Derive(3).PrivateKey;
+        using var localDelayedPaymentSecret = channelKey.Derive(2).PrivateKey;
+        using var localHtlcSecret = channelKey.Derive(3).PrivateKey;
         var bitcoinSecret = new BitcoinSecret(localPaymentSecret, _nodeOptions.Network);
 
         // Generate Basepoints
-        // var firstPerCommitmentBasepoint = firstPerCommitmentSecret.PubKey;
+        var localFirstPerCommitmentBasepoint = firstPerCommitmentSecret.PubKey;
         var localFundingPubKey = localFundingSecret.PubKey;
-        // var localRevocationBasepoint = localRevocationSecret.PubKey;
+        var localRevocationBasepoint = localRevocationSecret.PubKey;
         var localPaymentBasepoint = localPaymentSecret.PubKey;
-        // var localDelayedPaymentBasepoint = localDelayedPaymentSecret.PubKey;
-        // var localHtlcBasepoint = localHtlcSecret.PubKey;
+        var localDelayedPaymentBasepoint = localDelayedPaymentSecret.PubKey;
+        var localHtlcBasepoint = localHtlcSecret.PubKey;
+        #endregion
+
+        // Generate our upfront shutdown script
+        // var localUpfrontShutdownScript = channelKey.Neuter().PubKey.ScriptPubKey.PaymentScript;
 
         // Create a per-commitment storage
         var ourPerCommitmentStorage = new SecretStorageService();
@@ -211,29 +217,41 @@ public class ChannelFactory : IChannelFactory
         // Create a commitment transaction
         try
         {
-            var fundingOutput = new FundingOutput(localFundingPubKey, payload.FundingPubKey, payload.FundingAmount);
-            var commitmentTx = _commitmentTransactionFactory
-                .CreateCommitmentTransactionAsResponder(peerOptions, fundingOutput, payload.PaymentBasepoint,
-                    localPaymentBasepoint, payload.DelayedPaymentBasepoint,
-                    payload.RevocationBasepoint, toRemoteAmount, toLocalAmount,
-                    commitmentNumber, bitcoinSecret);
-        var fundingOutput = new FundingOutput(localFundingPubKey, payload.FundingPubKey, payload.FundingAmount);
-        var commitmentTx = _commitmentTransactionFactory
-            .CreateCommitmentTransaction(peerOptions, fundingOutput, localPaymentBasepoint, payload.PaymentBasepoint, 
-                                         localDelayedPaymentBasepoint, payload.RevocationBasepoint, toLocalAmount, 
-                                         toRemoteAmount, commitmentNumber, false, bitcoinSecret);
+            var fundingOutput = new FundingOutput(localFundingPubKey, payload.FundingPubKey, payload.FundingAmount,
+                                                  true);
+            var tx = _commitmentTransactionFactory
+                .CreateCommitmentTransaction(peerOptions, fundingOutput, localPaymentBasepoint,
+                                             payload.PaymentBasepoint, localDelayedPaymentBasepoint,
+                                             payload.RevocationBasepoint, toLocalAmount, toRemoteAmount,
+                                             commitmentNumber, false, bitcoinSecret);
 
-            // TODO: Check if amount is enough to pay for fees
+            // Check if the transaction is valid
+            if (tx is not CommitmentTransaction commitmentTransaction)
+                throw new ChannelErrorException("Commitment transaction is invalid");
 
-            // TODO: Check if to_local and to_remote amounts are greater than channel reserve
+            // Check if to_local and to_remote amounts are greater than channel reserve
+            if (!payload.ChannelReserveAmount.IsZero)
+            {
+                if (!commitmentTransaction.ToLocalOutput.Amount.IsZero
+                    && commitmentTransaction.ToLocalOutput.Amount < payload.ChannelReserveAmount)
+                    throw new ChannelErrorException("To local amount is less than channel reserve");
+
+                if (!commitmentTransaction.ToRemoteOutput.Amount.IsZero
+                    && commitmentTransaction.ToRemoteOutput.Amount < payload.ChannelReserveAmount)
+                    throw new ChannelErrorException("To remote amount is less than channel reserve");
+            }
+
+            return new Channel(payload.ChannelId, payload.FirstPerCommitmentPoint, false, index, minimumDepth,
+                               payload.FundingPubKey, message.UpfrontShutdownScriptTlv?.ShutdownScriptPubkey,
+                               ourPerCommitmentStorage, _secureKeyManager, peerOptions, commitmentTransaction,
+                               localDelayedPaymentBasepoint, localFirstPerCommitmentBasepoint, localFundingPubKey,
+                               localHtlcBasepoint, localPaymentBasepoint, localRevocationBasepoint,
+                               null, fundingOutput);
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Error creating commitment transaction");
+            throw new ChannelErrorException("Error creating commitment transaction", e);
         }
-
-        return new Channel(payload.ChannelId, payload.FirstPerCommitmentPoint, false, index, minimumDepth,
-                           payload.FundingPubKey, message.UpfrontShutdownScriptTlv?.ShutdownScriptPubkey,
-                           ourPerCommitmentStorage);
     }
 }

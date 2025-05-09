@@ -34,6 +34,8 @@ public abstract class BaseOutput : IOutput
     /// </remarks>
     public int Index { get; set; }
 
+    public bool IsPlaceHolder { get; set; }
+
     public Script RedeemScript { get; }
 
     public abstract ScriptType ScriptType { get; }
@@ -82,14 +84,17 @@ public abstract class BaseOutput : IOutput
 
     public ScriptCoin ToCoin()
     {
-        if (Index == -1)
-            throw new InvalidOperationException("Output is nonexistent. Sign the transaction first.");
+        if (!IsPlaceHolder)
+        {
+            if (Index == -1)
+                throw new InvalidOperationException("Output is nonexistent. Sign the transaction first.");
 
-        if (TxId is null || TxId == uint256.Zero || TxId == uint256.One)
-            throw new InvalidOperationException("Transaction ID is not set. Sign the transaction first.");
+            if (TxId is null || TxId == uint256.Zero || TxId == uint256.One)
+                throw new InvalidOperationException("Transaction ID is not set. Sign the transaction first.");
 
-        if (Amount.IsZero)
-            throw new InvalidOperationException("You can't spend a zero amount output.");
+            if (Amount.IsZero)
+                throw new InvalidOperationException("You can't spend a zero amount output.");
+        }
 
         return new ScriptCoin(TxId, checked((uint)Index), Amount, ScriptPubKey, RedeemScript);
     }

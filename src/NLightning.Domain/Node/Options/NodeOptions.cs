@@ -44,13 +44,13 @@ public class NodeOptions
 
     public bool MustTrimHtlcOutputs { get; set; }
 
-    public LightningMoney DustLimitAmount { get; set; } = LightningMoney.Satoshis(546);
+    public LightningMoney DustLimitAmount { get; set; } = LightningMoney.Satoshis(354);
 
     public ulong DefaultCltvExpiry { get; set; }
 
     public bool HasAnchorOutputs => !AnchorAmount.IsZero;
 
-    public ushort MaxAcceptedHtlcs { get; set; }
+    public ushort MaxAcceptedHtlcs { get; set; } = 5;
     public LightningMoney HtlcMinimumAmount { get; set; } = LightningMoney.Satoshis(1);
     public uint Locktime { get; set; }
     public ushort ToSelfDelay { get; set; }

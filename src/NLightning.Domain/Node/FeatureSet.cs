@@ -192,7 +192,7 @@ public class FeatureSet
     /// <returns>true if the feature sets are compatible, false otherwise.</returns>
     /// <remarks>
     /// The other feature set must support the var_onion_optin feature.
-    /// The other feature set must have all dependencies set.
+    /// The other feature set must have all the dependencies set.
     /// </remarks>
     public bool IsCompatible(FeatureSet other, out FeatureSet? negotiatedFeatureSet)
     {
@@ -215,7 +215,7 @@ public class FeatureSet
             var isOtherOptionalSet = other.IsFeatureSet(i, false);
             var isOtherCompulsorySet = other.IsFeatureSet(i, true);
 
-            // If feature is unknown
+            // If the feature is unknown
             if (!Enum.IsDefined(typeof(Feature), i))
             {
                 // If the feature is unknown and even, close the connection
@@ -250,7 +250,7 @@ public class FeatureSet
                 {
                     negotiatedFeatureSet.SetFeature(i, true);
                 }
-                else if (isLocalOptionalSet || isOtherOptionalSet)
+                else if (isLocalOptionalSet && isOtherOptionalSet)
                 {
                     negotiatedFeatureSet.SetFeature(i, false);
                 }

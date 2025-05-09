@@ -9,8 +9,10 @@ using Domain.Protocol.Constants;
 using Domain.Protocol.Managers;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Messages.Interfaces;
+using Domain.Protocol.Payloads;
 using Domain.Protocol.Services;
 using Domain.Protocol.Tlv;
+using Domain.ValueObjects;
 using Interfaces;
 
 /// <summary>
@@ -95,6 +97,19 @@ public sealed class Peer : IPeer
     }
     private void DisconnectWithException(object? sender, Exception? e)
     {
+        if (e is ErrorException)
+        {
+            ChannelId? channelId = null;
+            var message = e.Message;
+            if (e is ChannelErrorException channelErrorException)
+            {
+                channelId = channelErrorException.ChannelId;
+                if (!string.IsNullOrWhiteSpace(channelErrorException.PeerMessage))
+                    message = channelErrorException.PeerMessage;
+            }
+            _messageService.SendMessageAsync(new ErrorMessage(new ErrorPayload(channelId, message)));
+        }
+
         _logger.LogError(e, "Disconnecting peer {peer}", PeerAddress.PubKey);
         _cancellationTokenSource.Cancel();
         _messageService.Dispose();
@@ -157,6 +172,19 @@ public sealed class Peer : IPeer
 
     private void HandleException(object? sender, Exception e)
     {
+        if (e is WarningException)
+        {
+            ChannelId? channelId = null;
+            var message = e.Message;
+            if (e is ChannelWarningException channelWarningException)
+            {
+                channelId = channelWarningException.ChannelId;
+                if (!string.IsNullOrWhiteSpace(channelWarningException.PeerMessage))
+                    message = channelWarningException.PeerMessage;
+            }
+            _messageService.SendMessageAsync(new WarningMessage(new ErrorPayload(channelId, message)));
+        }
+
         DisconnectWithException(sender, e);
     }
 
@@ -244,9 +272,9 @@ public sealed class Peer : IPeer
         try
         {
             _logger.LogTrace("Received channel message ({messageType}) from peer {peer}",
-                             Enum.GetName(typeof(MessageTypes), message.Type), PeerAddress.PubKey);
+                Enum.GetName(typeof(MessageTypes), message.Type), PeerAddress.PubKey);
 
-            var replyMessage = _channelManager.HandleChannelMessage(message, _features);
+            var replyMessage = _channelManager.HandleChannelMessage(message, _features, PeerAddress.PubKey);
             if (replyMessage is not null)
             {
                 await _messageService.SendMessageAsync(replyMessage, _cancellationTokenSource.Token);
@@ -256,6 +284,8 @@ public sealed class Peer : IPeer
         {
             _logger.LogError(e, "Error handling channel message ({messageType}) from peer {peer}",
                 Enum.GetName(typeof(MessageTypes), message.Type), PeerAddress.PubKey);
+
+            HandleException(this, e);
         }
     }
 

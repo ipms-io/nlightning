@@ -11,30 +11,29 @@ using ValueObjects;
 /// We usually want to close the connection when this exception is thrown.
 /// </remarks>
 [ExcludeFromCodeCoverage]
-public class ChannelErrorException : ErrorException
+public class ChannelWarningException : ErrorException
 {
     public ChannelId? ChannelId { get; }
     public string? PeerMessage { get; }
 
-    public ChannelErrorException(string message, string? peerMessage = null) : base(message)
+    public ChannelWarningException(string message, string? peerMessage = null) : base(message)
     {
         PeerMessage = peerMessage;
     }
 
-    public ChannelErrorException(string message, Exception innerException, string? peerMessage = null)
-        : base(message, innerException)
+    public ChannelWarningException(string message, Exception innerException, string? peerMessage = null) : base(message)
     {
         PeerMessage = peerMessage;
     }
 
-    public ChannelErrorException(string message, ChannelId? channelId, string? peerMessage = null) : base(message)
+    public ChannelWarningException(string message, ChannelId? channelId, string? peerMessage = null) : base(message)
     {
         ChannelId = channelId;
         PeerMessage = peerMessage;
     }
-    public ChannelErrorException(string message, ChannelId? channelId, Exception innerException,
-                                 string? peerMessage = null)
-        : base(message, innerException)
+    public ChannelWarningException(string message, ChannelId? channelId, Exception innerException,
+                                   string? peerMessage = null)
+        : base(message)
     {
         ChannelId = channelId;
         PeerMessage = peerMessage;

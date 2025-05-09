@@ -94,6 +94,12 @@ public class SecureKeyManager : ISecureKeyManager, IDisposable
         return derivedKey;
     }
 
+    public ExtKey GetKeyAtIndex(uint index)
+    {
+        var masterKey = GetMasterKey();
+        return masterKey.Derive(new KeyPath(string.Format(PATH, index)));
+    }
+
     public Key GetNodeKey()
     {
         var masterKey = GetMasterKey();

@@ -5,11 +5,11 @@ using Domain.ValueObjects;
 
 public static class ChannelIdFactory
 {
-    public static ChannelId CreateV1(Span<byte> fundingTxId, ushort fundingOutputIndex)
+    public static ChannelId CreateV1(ReadOnlySpan<byte> fundingTxId, ushort fundingOutputIndex)
     {
         if (fundingTxId.Length != 32)
         {
-            throw new ArgumentException("Funding transaction ID must be 32 bytes", nameof(fundingTxId));
+            throw new ArgumentException("Funding transaction id must be 32 bytes", nameof(fundingTxId));
         }
 
         var channelId = new byte[32];
@@ -22,7 +22,8 @@ public static class ChannelIdFactory
         return new ChannelId(channelId);
     }
 
-    public static ChannelId CreateV2(Span<byte> lesserRevocationBasepoint, Span<byte> greaterRevocationBasepoint)
+    public static ChannelId CreateV2(ReadOnlySpan<byte> lesserRevocationBasepoint,
+                                     ReadOnlySpan<byte> greaterRevocationBasepoint)
     {
         if (lesserRevocationBasepoint.Length != 33 || greaterRevocationBasepoint.Length != 33)
         {
