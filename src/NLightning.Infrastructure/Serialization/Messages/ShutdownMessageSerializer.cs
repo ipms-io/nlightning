@@ -1,27 +1,28 @@
 using System.Runtime.Serialization;
+using NLightning.Common.Utils;
+using NLightning.Infrastructure.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Messages;
 
-using Application.Interfaces.Serialization;
 using Common.BitUtils;
 using Domain.Protocol.Interfaces;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Payloads;
 using Exceptions;
 
-public class ShutdownMessageSerializer : IMessageTypeSerializer<ShutdownMessage>
+public class ShutdownMessageSerializer : IMessageSerializer<ShutdownMessage>
 {
-    private readonly IPayloadSerializer _payloadSerializer;
+    private readonly IPayloadSerializerFactory _payloadSerializerFactory;
     
-    public ShutdownMessageSerializer(IPayloadSerializer payloadSerializer)
+    public ShutdownMessageSerializer(IPayloadSerializerFactory payloadSerializerFactory)
     {
-        _payloadSerializer = payloadSerializer;
+        _payloadSerializerFactory = payloadSerializerFactory;
     }
     
     public async Task SerializeAsync(IMessage message, Stream stream)
     {
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(message.Type));
-        await _payloadSerializer.SerializeAsync(message.Payload, stream);
+        await _payloadSerializerFactory.SerializeAsync(message.Payload, stream);
         
         if (message.Extension?.Any() ?? false)
         {
@@ -43,7 +44,7 @@ public class ShutdownMessageSerializer : IMessageTypeSerializer<ShutdownMessage>
         try
         {
             // Deserialize payload
-            var payload = await _payloadSerializer.DeserializeAsync<ShutdownPayload>(stream);
+            var payload = await _payloadSerializerFactory.DeserializeAsync<ShutdownPayload>(stream);
 
             return new ShutdownMessage(payload);
         }
@@ -52,7 +53,7 @@ public class ShutdownMessageSerializer : IMessageTypeSerializer<ShutdownMessage>
             throw new MessageSerializationException("Error deserializing ShutdownMessage", e);
         }
     }
-    async Task<IMessage> IMessageTypeSerializer.DeserializeAsync(Stream stream)
+    async Task<IMessage> IMessageSerializer.DeserializeAsync(Stream stream)
     {
         return await DeserializeAsync(stream);
     }

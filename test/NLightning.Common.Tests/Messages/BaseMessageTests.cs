@@ -1,4 +1,5 @@
 using System.Text;
+using NLightning.Common.Utils;
 
 namespace NLightning.Common.Tests.Messages;
 

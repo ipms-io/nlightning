@@ -1,3 +1,5 @@
+using NLightning.Domain.Money;
+
 namespace NLightning.Application.Interfaces.Services;
 
 using Domain.ValueObjects;

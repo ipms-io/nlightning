@@ -1,9 +1,9 @@
-using NLightning.Application.Interfaces.Serialization;
 using NLightning.Domain.Protocol.Payloads;
+using NLightning.Infrastructure.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
-public class AcceptChannel2PayloadSerializer : IPayloadTypeSerializer<AcceptChannel2Payload>
+public class AcceptChannel2PayloadSerializer : IPayloadSerializer<AcceptChannel2Payload>
 {
     
 }

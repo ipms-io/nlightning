@@ -1,27 +1,28 @@
 using System.Runtime.Serialization;
+using NLightning.Common.Utils;
+using NLightning.Infrastructure.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Messages;
 
-using Application.Interfaces.Serialization;
 using Common.BitUtils;
 using Domain.Protocol.Interfaces;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Payloads;
 using Exceptions;
 
-public class RevokeAndAckMessageSerializer : IMessageTypeSerializer<RevokeAndAckMessage>
+public class RevokeAndAckMessageSerializer : IMessageSerializer<RevokeAndAckMessage>
 {
-    private readonly IPayloadSerializer _payloadSerializer;
+    private readonly IPayloadSerializerFactory _payloadSerializerFactory;
     
-    public RevokeAndAckMessageSerializer(IPayloadSerializer payloadSerializer)
+    public RevokeAndAckMessageSerializer(IPayloadSerializerFactory payloadSerializerFactory)
     {
-        _payloadSerializer = payloadSerializer;
+        _payloadSerializerFactory = payloadSerializerFactory;
     }
     
     public async Task SerializeAsync(IMessage message, Stream stream)
     {
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(message.Type));
-        await _payloadSerializer.SerializeAsync(message.Payload, stream);
+        await _payloadSerializerFactory.SerializeAsync(message.Payload, stream);
         
         if (message.Extension?.Any() ?? false)
         {
@@ -43,7 +44,7 @@ public class RevokeAndAckMessageSerializer : IMessageTypeSerializer<RevokeAndAck
         try
         {
             // Deserialize payload
-            var payload = await _payloadSerializer.DeserializeAsync<RevokeAndAckPayload>(stream);
+            var payload = await _payloadSerializerFactory.DeserializeAsync<RevokeAndAckPayload>(stream);
 
             return new RevokeAndAckMessage(payload);
         }
@@ -52,7 +53,7 @@ public class RevokeAndAckMessageSerializer : IMessageTypeSerializer<RevokeAndAck
             throw new MessageSerializationException("Error deserializing RevokeAndAckMessage", e);
         }
     }
-    async Task<IMessage> IMessageTypeSerializer.DeserializeAsync(Stream stream)
+    async Task<IMessage> IMessageSerializer.DeserializeAsync(Stream stream)
     {
         return await DeserializeAsync(stream);
     }

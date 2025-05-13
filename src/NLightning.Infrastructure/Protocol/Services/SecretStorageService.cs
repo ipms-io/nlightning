@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using NLightning.Infrastructure.Protocol.Models;
 
 namespace NLightning.Infrastructure.Protocol.Services;
 

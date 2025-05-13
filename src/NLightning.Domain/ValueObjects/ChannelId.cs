@@ -1,14 +1,16 @@
 namespace NLightning.Domain.ValueObjects;
 
+using Interfaces;
+
 /// <summary>
 /// Represents a channel id.
 /// </summary>
 /// <remarks>
 /// The channel id is a unique identifier for a channel.
 /// </remarks>
-public readonly struct ChannelId : IEquatable<ChannelId>
+public readonly struct ChannelId : IValueObject, IEquatable<ChannelId>
 {
-    private const int LENGTH = 32;
+    public const int LENGTH = 32;
 
     private readonly byte[] _value;
 
@@ -31,11 +33,6 @@ public readonly struct ChannelId : IEquatable<ChannelId>
         }
 
         _value = value.ToArray();
-    }
-
-    public ValueTask SerializeAsync(Stream stream)
-    {
-        return stream.WriteAsync(_value);
     }
 
     public static async Task<ChannelId> DeserializeAsync(Stream stream)
@@ -66,6 +63,7 @@ public readonly struct ChannelId : IEquatable<ChannelId>
 
     #region Operators
     public static implicit operator byte[](ChannelId c) => c._value;
+    public static implicit operator ReadOnlyMemory<byte>(ChannelId c) => c._value;
     public static implicit operator ChannelId(byte[] value) => new(value);
     public static implicit operator ChannelId(Span<byte> value) => new(value);
 

@@ -1,27 +1,28 @@
 using System.Runtime.Serialization;
+using NLightning.Common.Utils;
+using NLightning.Infrastructure.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Messages;
 
-using Application.Interfaces.Serialization;
 using Common.BitUtils;
 using Domain.Protocol.Interfaces;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Payloads;
 using Exceptions;
 
-public class TxAddInputMessageSerializer : IMessageTypeSerializer<TxAddInputMessage>
+public class TxAddInputMessageSerializer : IMessageSerializer<TxAddInputMessage>
 {
-    private readonly IPayloadSerializer _payloadSerializer;
+    private readonly IPayloadSerializerFactory _payloadSerializerFactory;
     
-    public TxAddInputMessageSerializer(IPayloadSerializer payloadSerializer)
+    public TxAddInputMessageSerializer(IPayloadSerializerFactory payloadSerializerFactory)
     {
-        _payloadSerializer = payloadSerializer;
+        _payloadSerializerFactory = payloadSerializerFactory;
     }
     
     public async Task SerializeAsync(IMessage message, Stream stream)
     {
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(message.Type));
-        await _payloadSerializer.SerializeAsync(message.Payload, stream);
+        await _payloadSerializerFactory.SerializeAsync(message.Payload, stream);
         
         if (message.Extension?.Any() ?? false)
         {
@@ -43,7 +44,7 @@ public class TxAddInputMessageSerializer : IMessageTypeSerializer<TxAddInputMess
         try
         {
             // Deserialize payload
-            var payload = await _payloadSerializer.DeserializeAsync<TxAddInputPayload>(stream);
+            var payload = await _payloadSerializerFactory.DeserializeAsync<TxAddInputPayload>(stream);
 
             return new TxAddInputMessage(payload);
         }
@@ -52,7 +53,7 @@ public class TxAddInputMessageSerializer : IMessageTypeSerializer<TxAddInputMess
             throw new MessageSerializationException("Error deserializing TxAddInputMessage", e);
         }
     }
-    async Task<IMessage> IMessageTypeSerializer.DeserializeAsync(Stream stream)
+    async Task<IMessage> IMessageSerializer.DeserializeAsync(Stream stream)
     {
         return await DeserializeAsync(stream);
     }

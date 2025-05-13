@@ -43,7 +43,7 @@ public class PeerFactory : IPeerFactory
     /// <param name="tcpClient">TCP client</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created peer.</returns>
     /// <exception cref="ConnectionException">Thrown when the connection to the peer fails.</exception>
-    public async Task<Peer> CreateConnectedPeerAsync(PeerAddress peerAddress, TcpClient tcpClient)
+    public async Task<Peer> CreateConnectedPeerAsync(Protocol.Models.PeerAddress peerAddress, TcpClient tcpClient)
     {
         // Create a specific logger for the Peer class
         var logger = _loggerFactory.CreateLogger<Peer>();
@@ -105,7 +105,7 @@ public class PeerFactory : IPeerFactory
         // Create the ping pong service
         var pingPongService = _pingPongServiceFactory.CreatePingPongService();
 
-        var peerAddress = new PeerAddress(transportService.RemoteStaticPublicKey, ipAddress, port);
+        var peerAddress = new Protocol.Models.PeerAddress(transportService.RemoteStaticPublicKey, ipAddress, port);
 
         return new Peer(_nodeOptions.Features, logger, _messageFactory, messageService, _nodeOptions.NetworkTimeout,
                         peerAddress, pingPongService);

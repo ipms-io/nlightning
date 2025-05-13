@@ -1,8 +1,11 @@
 using System.Runtime.Serialization;
+using NLightning.Common.Utils;
+using NLightning.Domain.Protocol.Models;
+using NLightning.Infrastructure.Protocol.Models;
+using NLightning.Infrastructure.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Messages;
 
-using Application.Interfaces.Serialization;
 using Common.BitUtils;
 using Domain.Protocol.Constants;
 using Domain.Protocol.Interfaces;
@@ -12,19 +15,19 @@ using Domain.Protocol.Tlvs;
 using Domain.ValueObjects;
 using Exceptions;
 
-public class ChannelReestablishMessageSerializer : IMessageTypeSerializer<ChannelReestablishMessage>
+public class ChannelReestablishMessageSerializer : IMessageSerializer<ChannelReestablishMessage>
 {
-    private readonly IPayloadSerializer _payloadSerializer;
+    private readonly IPayloadSerializerFactory _payloadSerializerFactory;
     
-    public ChannelReestablishMessageSerializer(IPayloadSerializer payloadSerializer)
+    public ChannelReestablishMessageSerializer(IPayloadSerializerFactory payloadSerializerFactory)
     {
-        _payloadSerializer = payloadSerializer;
+        _payloadSerializerFactory = payloadSerializerFactory;
     }
     
     public async Task SerializeAsync(IMessage message, Stream stream)
     {
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(message.Type));
-        await _payloadSerializer.SerializeAsync(message.Payload, stream);
+        await _payloadSerializerFactory.SerializeAsync(message.Payload, stream);
         
         if (message.Extension?.Any() ?? false)
         {
@@ -46,7 +49,7 @@ public class ChannelReestablishMessageSerializer : IMessageTypeSerializer<Channe
         try
         {
             // Deserialize payload
-            var payload = await _payloadSerializer.DeserializeAsync<ChannelReestablishPayload>(stream);
+            var payload = await _payloadSerializerFactory.DeserializeAsync<ChannelReestablishPayload>(stream);
 
             // Deserialize extension
             var extension = await TlvStream.DeserializeAsync(stream);
@@ -55,7 +58,7 @@ public class ChannelReestablishMessageSerializer : IMessageTypeSerializer<Channe
                 return new ChannelReestablishMessage(payload);
             }
 
-            var nextFundingTlv = extension.TryGetTlv(TlvConstants.NEXT_FUNDING, out var tlv)
+            var nextFundingTlv = extension.TryGetTlv(TlvConstants.NextFunding, out var tlv)
                 ? NextFundingTlv.FromTlv(tlv!)
                 : null;
 
@@ -66,7 +69,7 @@ public class ChannelReestablishMessageSerializer : IMessageTypeSerializer<Channe
             throw new MessageSerializationException("Error deserializing ChannelReestablishMessage", e);
         }
     }
-    async Task<IMessage> IMessageTypeSerializer.DeserializeAsync(Stream stream)
+    async Task<IMessage> IMessageSerializer.DeserializeAsync(Stream stream)
     {
         return await DeserializeAsync(stream);
     }

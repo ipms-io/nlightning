@@ -3,14 +3,19 @@ using NBitcoin;
 using NBitcoin.Crypto;
 using NLightning.Application.Options;
 using NLightning.Common.BitUtils;
+using NLightning.Common.Utils;
 using NLightning.Domain.Exceptions;
 using NLightning.Domain.Protocol.Constants;
 using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Domain.Protocol.Messages;
+using NLightning.Domain.Protocol.Models;
 using NLightning.Domain.Protocol.Payloads;
 using NLightning.Domain.Protocol.Tlvs;
 using NLightning.Domain.ValueObjects;
 using NLightning.Infrastructure.Exceptions;
+using NLightning.Infrastructure.Protocol.Models;
+using NLightning.Infrastructure.Serialization;
+using NLightning.Infrastructure.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Protocol.Factories;
 
@@ -19,10 +24,12 @@ namespace NLightning.Infrastructure.Protocol.Factories;
 /// </summary>
 public class MessageFactory : IMessageFactory
 {
+    private readonly IMessageSerializerFactory _messageSerializerFactory;
     private readonly NodeOptions _nodeOptions;
 
-    public MessageFactory(IOptions<NodeOptions> nodeOptions)
+    public MessageFactory(IOptions<NodeOptions> nodeOptions, IMessageSerializerFactory messageSerializerFactory)
     {
+        _messageSerializerFactory = messageSerializerFactory;
         _nodeOptions = nodeOptions.Value;
     }
 

@@ -1,3 +1,6 @@
+using NLightning.Domain.Money;
+using NLightning.Infrastructure.Protocol.Interfaces;
+
 namespace NLightning.Infrastructure.Protocol.Services;
 
 using Domain.Protocol.Interfaces;

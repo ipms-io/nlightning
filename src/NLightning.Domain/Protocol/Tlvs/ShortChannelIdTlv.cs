@@ -1,4 +1,5 @@
 using NLightning.Domain.Protocol.Constants;
+using NLightning.Domain.Protocol.Models;
 using NLightning.Domain.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Tlvs;
@@ -9,14 +10,14 @@ namespace NLightning.Domain.Protocol.Tlvs;
 /// <remarks>
 /// The short channel id TLV is used in the ChannelReadyMessage to communicate the channel type that should be opened.
 /// </remarks>
-public class ShortChannelIdTlv : Tlv
+public class ShortChannelIdTlv : BaseTlv
 {
     /// <summary>
     /// The shutdown script to be used when closing the channel
     /// </summary>
     public ShortChannelId ShortChannelId { get; }
 
-    public ShortChannelIdTlv(ShortChannelId shortChannelId) : base(TlvConstants.SHORT_CHANNEL_ID)
+    public ShortChannelIdTlv(ShortChannelId shortChannelId) : base(TlvConstants.ShortChannelId)
     {
         ShortChannelId = shortChannelId;
 
@@ -25,23 +26,23 @@ public class ShortChannelIdTlv : Tlv
     }
 
     /// <summary>
-    /// Cast ShortChannelIdTlv from a Tlv.
+    /// Cast ShortChannelIdTlv from a BaseTlv.
     /// </summary>
-    /// <param name="tlv">The tlv to cast from.</param>
+    /// <param name="baseTlv">The baseTlv to cast from.</param>
     /// <returns>The cast ShortChannelIdTlv.</returns>
     /// <exception cref="InvalidCastException">Error casting ShortChannelIdTlv</exception>
-    public static ShortChannelIdTlv FromTlv(Tlv tlv)
+    public static ShortChannelIdTlv FromTlv(BaseTlv baseTlv)
     {
-        if (tlv.Type != TlvConstants.SHORT_CHANNEL_ID)
+        if (baseTlv.Type != TlvConstants.ShortChannelId)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
 
-        if (tlv.Length == 0)
+        if (baseTlv.Length == 0)
         {
             throw new InvalidCastException("Invalid length");
         }
 
-        return new ShortChannelIdTlv(tlv.Value);
+        return new ShortChannelIdTlv(baseTlv.Value);
     }
 }

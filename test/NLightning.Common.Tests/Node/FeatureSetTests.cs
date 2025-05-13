@@ -1,4 +1,5 @@
 using NLightning.Common.Enums;
+using NLightning.Common.Utils;
 
 namespace NLightning.Common.Tests.Node;
 

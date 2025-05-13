@@ -1,8 +1,8 @@
 using System.Diagnostics;
-using NLightning.Infrastructure.Crypto.Constants;
 
 namespace NLightning.Infrastructure.Crypto.Hashes;
 
+using Constants;
 using Factories;
 using Interfaces;
 

@@ -2,9 +2,9 @@ namespace NLightning.Domain.Enums;
 
 public enum LightningMoneyUnit : ulong
 {
-    BTC = 100_000_000_000,
-    MILLI_BTC = 100_000_000,
-    BIT = 100_000,
-    SATOSHI = 1_000,
-    MILLI_SATOSHI = 1,
+    Btc = 100_000_000_000,
+    MilliBtc = 100_000_000,
+    Bit = 100_000,
+    Satoshi = 1_000,
+    MilliSatoshi = 1,
 }

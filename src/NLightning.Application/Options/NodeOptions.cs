@@ -1,3 +1,5 @@
+using NLightning.Domain.Money;
+
 namespace NLightning.Application.Options;
 
 using Domain.Node;

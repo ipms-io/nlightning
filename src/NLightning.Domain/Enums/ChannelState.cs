@@ -2,8 +2,8 @@ namespace NLightning.Domain.Enums;
 
 public enum ChannelState
 {
-    OPENING,
-    OPEN,
-    CLOSING,
-    CLOSED
+    Opening,
+    Open,
+    Closing,
+    Closed
 }

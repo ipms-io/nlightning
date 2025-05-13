@@ -1,8 +1,11 @@
 using System.Runtime.Serialization;
+using NLightning.Common.Utils;
+using NLightning.Domain.Protocol.Models;
+using NLightning.Infrastructure.Protocol.Models;
+using NLightning.Infrastructure.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Messages;
 
-using Application.Interfaces.Serialization;
 using Common.BitUtils;
 using Domain.Protocol.Constants;
 using Domain.Protocol.Interfaces;
@@ -12,19 +15,19 @@ using Domain.Protocol.Tlvs;
 using Domain.ValueObjects;
 using Exceptions;
 
-public class AcceptChannel2MessageSerializer : IMessageTypeSerializer<AcceptChannel2Message>
+public class AcceptChannel2MessageSerializer : IMessageSerializer<AcceptChannel2Message>
 {
-    private readonly IPayloadSerializer _payloadSerializer;
+    private readonly IPayloadSerializerFactory _payloadSerializerFactory;
     
-    public AcceptChannel2MessageSerializer(IPayloadSerializer payloadSerializer)
+    public AcceptChannel2MessageSerializer(IPayloadSerializerFactory payloadSerializerFactory)
     {
-        _payloadSerializer = payloadSerializer;
+        _payloadSerializerFactory = payloadSerializerFactory;
     }
     
     public async Task SerializeAsync(IMessage message, Stream stream)
     {
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(message.Type));
-        await _payloadSerializer.SerializeAsync(message.Payload, stream);
+        await _payloadSerializerFactory.SerializeAsync(message.Payload, stream);
         
         if (message.Extension?.Any() ?? false)
         {
@@ -46,7 +49,7 @@ public class AcceptChannel2MessageSerializer : IMessageTypeSerializer<AcceptChan
         try
         {
             // Deserialize payload
-            var payload = await _payloadSerializer.DeserializeAsync<AcceptChannel2Payload>(stream);
+            var payload = await _payloadSerializerFactory.DeserializeAsync<AcceptChannel2Payload>(stream);
 
             // Deserialize extension
             var extension = await TlvStream.DeserializeAsync(stream);
@@ -55,15 +58,15 @@ public class AcceptChannel2MessageSerializer : IMessageTypeSerializer<AcceptChan
                 return new AcceptChannel2Message(payload);
             }
 
-            var upfrontShutdownScriptTlv = extension.TryGetTlv(TlvConstants.UPFRONT_SHUTDOWN_SCRIPT, out var tlv)
+            var upfrontShutdownScriptTlv = extension.TryGetTlv(TlvConstants.UpfrontShutdownScript, out var tlv)
                 ? UpfrontShutdownScriptTlv.FromTlv(tlv!)
                 : null;
 
-            var channelTypeTlv = extension.TryGetTlv(TlvConstants.CHANNEL_TYPE, out tlv)
+            var channelTypeTlv = extension.TryGetTlv(TlvConstants.ChannelType, out tlv)
                 ? ChannelTypeTlv.FromTlv(tlv!)
                 : null;
 
-            var requireConfirmedInputsTlv = extension.TryGetTlv(TlvConstants.REQUIRE_CONFIRMED_INPUTS, out tlv)
+            var requireConfirmedInputsTlv = extension.TryGetTlv(TlvConstants.RequireConfirmedInputs, out tlv)
                 ? RequireConfirmedInputsTlv.FromTlv(tlv!)
                 : null;
 
@@ -74,7 +77,7 @@ public class AcceptChannel2MessageSerializer : IMessageTypeSerializer<AcceptChan
             throw new MessageSerializationException("Error deserializing AcceptChannel2Message", e);
         }
     }
-    async Task<IMessage> IMessageTypeSerializer.DeserializeAsync(Stream stream)
+    async Task<IMessage> IMessageSerializer.DeserializeAsync(Stream stream)
     {
         return await DeserializeAsync(stream);
     }

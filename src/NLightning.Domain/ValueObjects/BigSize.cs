@@ -1,6 +1,6 @@
-using NLightning.Domain.Serialization;
-
 namespace NLightning.Domain.ValueObjects;
+
+using Interfaces;
 
 /// <summary>
 /// Represents a variable length integer.
@@ -9,106 +9,12 @@ namespace NLightning.Domain.ValueObjects;
 /// <remarks>
 /// Initializes a new instance of the <see cref="BigSize"/> struct.
 /// </remarks>
-public readonly struct BigSize(ulong value) : IComparable
+public readonly struct BigSize(ulong value) : IValueObject, IComparable, IEquatable<BigSize>
 {
-    private static IEndianConverter? s_endianConverter;
-    private static IEndianConverter _endianConverter => 
-        s_endianConverter ?? throw new InvalidOperationException("EndianConverter not initialized");
-    
-    public static void SetEndianConverter(IEndianConverter converter) => s_endianConverter = converter;
-    
     /// <summary>
     /// The uint representation of the big size.
     /// </summary>
     public ulong Value { get; } = value;
-
-    #region Serialization
-    /// <summary>
-    /// Serializes a big size to a BinaryWriter.
-    /// </summary>
-    /// <param name="stream">The stream to serialize to.</param>
-    public async Task SerializeAsync(Stream stream)
-    {
-        if (Value < 0xfd)
-        {
-            await stream.WriteAsync(new[] { (byte)Value });
-        }
-        else if (Value < 0x10000)
-        {
-            await stream.WriteAsync(new byte[] { 0xfd });
-            await stream.WriteAsync(_endianConverter.GetBytesBigEndian((ushort)Value));
-        }
-        else if (Value < 0x100000000)
-        {
-            await stream.WriteAsync(new byte[] { 0xfe });
-            await stream.WriteAsync(_endianConverter.GetBytesBigEndian((uint)Value));
-        }
-        else
-        {
-            await stream.WriteAsync(new byte[] { 0xff });
-            await stream.WriteAsync(_endianConverter.GetBytesBigEndian(Value));
-        }
-    }
-
-    /// <summary>
-    /// Deserializes a big size from a BinaryReader.
-    /// </summary>
-    /// <param name="stream">The stream to deserialize from.</param>
-    /// <returns>The deserialized big size.</returns>
-    /// <exception cref="ArgumentException">Thrown when the stream is empty or insufficient data is available.</exception>
-    public static async Task<BigSize> DeserializeAsync(Stream stream)
-    {
-        if (stream.Position == stream.Length)
-        {
-            throw new ArgumentException("BigSize cannot be read from an empty stream.");
-        }
-
-        var prefix = new byte[1];
-        await stream.ReadExactlyAsync(prefix);
-        ulong value;
-
-        if (prefix[0] < 0xfd)
-        {
-            value = prefix[0];
-        }
-        else if (prefix[0] == 0xfd)
-        {
-            // Check if there are enough bytes to read
-            if (stream.Position + 2 > stream.Length)
-            {
-                throw new ArgumentException("BigSize cannot be read from a stream with insufficient data.");
-            }
-
-            var bytes = new byte[2];
-            await stream.ReadExactlyAsync(bytes);
-            value = _endianConverter.ToUInt16BigEndian(bytes);
-        }
-        else if (prefix[0] == 0xfe)
-        {
-            if (stream.Position + 4 > stream.Length)
-            {
-                throw new ArgumentException("BigSize cannot be read from a stream with insufficient data.");
-            }
-
-            var bytes = new byte[4];
-            await stream.ReadExactlyAsync(bytes);
-            value = _endianConverter.ToUInt32BigEndian(bytes);
-        }
-        else
-        {
-            if (stream.Position + 8 > stream.Length)
-            {
-                throw new ArgumentException("BigSize cannot be read from a stream with insufficient data.");
-            }
-
-            var bytes = new byte[8];
-            await stream.ReadExactlyAsync(bytes);
-            value = _endianConverter.ToUInt64BigEndian(bytes);
-        }
-
-        return new BigSize(value);
-    }
-    #endregion
 
     #region Implicit Conversions
     public static implicit operator ulong(BigSize bigSize) => bigSize.Value;
@@ -202,6 +108,10 @@ public readonly struct BigSize(ulong value) : IComparable
     public override bool Equals(object? obj)
     {
         return obj is BigSize bigSize && Value == bigSize.Value;
+    }
+    public bool Equals(BigSize other)
+    {
+        return Value == other.Value;
     }
 
     public override int GetHashCode()

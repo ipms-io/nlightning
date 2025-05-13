@@ -1,4 +1,5 @@
 using NLightning.Domain.Protocol.Constants;
+using NLightning.Domain.Protocol.Models;
 using NLightning.Domain.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Tlvs;
@@ -9,7 +10,7 @@ namespace NLightning.Domain.Protocol.Tlvs;
 /// <remarks>
 /// The networks TLV is used in the InitMessage to communicate the networks that the node supports.
 /// </remarks>
-public class NetworksTlv : Tlv
+public class NetworksTlv : BaseTlv
 {
     /// <summary>
     /// The chain hashes.
@@ -19,7 +20,7 @@ public class NetworksTlv : Tlv
     /// </remarks>
     public IEnumerable<ChainHash>? ChainHashes { get; private set; }
 
-    public NetworksTlv(IEnumerable<ChainHash> chainHashes) : base(TlvConstants.NETWORKS)
+    public NetworksTlv(IEnumerable<ChainHash> chainHashes) : base(TlvConstants.Networks)
     {
         ChainHashes = chainHashes.ToList();
 
@@ -35,28 +36,28 @@ public class NetworksTlv : Tlv
     }
 
     /// <summary>
-    /// Cast a NetworksTLV from a Tlv.
+    /// Cast a NetworksTLV from a BaseTlv.
     /// </summary>
-    /// <param name="tlv">The tlv to cast from.</param>
+    /// <param name="baseTlv">The baseTlv to cast from.</param>
     /// <returns>The cast NetworksTLV.</returns>
     /// <exception cref="InvalidCastException">Error casting NetworksTLV</exception>
-    public static NetworksTlv FromTlv(Tlv tlv)
+    public static NetworksTlv FromTlv(BaseTlv baseTlv)
     {
-        if (tlv.Type != TlvConstants.NETWORKS)
+        if (baseTlv.Type != TlvConstants.Networks)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
 
-        if (tlv.Length % ChainHash.LENGTH != 0)
+        if (baseTlv.Length % ChainHash.LENGTH != 0)
         {
             throw new InvalidCastException("Invalid length");
         }
 
         var chainHashes = new List<ChainHash>();
         // split the Value into 32 bytes chinks and add it to the list
-        for (var i = 0; i < tlv.Length; i += ChainHash.LENGTH)
+        for (var i = 0; i < baseTlv.Length; i += ChainHash.LENGTH)
         {
-            chainHashes.Add(tlv.Value[i..(i + ChainHash.LENGTH)]);
+            chainHashes.Add(baseTlv.Value[i..(i + ChainHash.LENGTH)]);
         }
 
         return new NetworksTlv(chainHashes);

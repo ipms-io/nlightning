@@ -1,50 +1,45 @@
 using System.Collections;
 using System.Runtime.Serialization;
 using System.Text;
-using NLightning.Domain.Enums;
-using NLightning.Domain.Serialization;
 
 namespace NLightning.Domain.Node;
+
+using Enums;
+using Serialization;
 
 /// <summary>
 /// Represents the features supported by a node. <see href="https://github.com/lightning/bolts/blob/master/09-features.md">BOLT-9</see>
 /// </summary>
 public class FeatureSet
 {
-    private static IEndianConverter? s_endianConverter;
-    private static IEndianConverter _endianConverter => 
-        s_endianConverter ?? throw new InvalidOperationException("EndianConverter not initialized");
-    
-    public static void SetEndianConverter(IEndianConverter converter) => s_endianConverter = converter;
-    
     /// <summary>
     /// Some features are dependent on other features. This dictionary contains the dependencies.
     /// </summary>
     private static readonly Dictionary<Feature, Feature[]> s_featureDependencies = new()
     {
         // This   \/                          Depends on this \/
-        { Feature.GOSSIP_QUERIES_EX,               [Feature.GOSSIP_QUERIES] },
-        { Feature.PAYMENT_SECRET,                  [Feature.VAR_ONION_OPTIN] },
-        { Feature.BASIC_MPP,                       [Feature.PAYMENT_SECRET] },
-        { Feature.OPTION_ANCHOR_OUTPUTS,           [Feature.OPTION_STATIC_REMOTE_KEY] },
-        { Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX, [Feature.OPTION_STATIC_REMOTE_KEY] },
-        { Feature.OPTION_ROUTE_BLINDING,           [Feature.VAR_ONION_OPTIN] },
-        { Feature.OPTION_ZEROCONF,                 [Feature.OPTION_SCID_ALIAS] },
+        { Feature.GossipQueriesEx,               [Feature.GossipQueries] },
+        { Feature.PaymentSecret,                  [Feature.VarOnionOptin] },
+        { Feature.BasicMpp,                       [Feature.PaymentSecret] },
+        { Feature.OptionAnchorOutputs,           [Feature.OptionStaticRemoteKey] },
+        { Feature.OptionAnchorsZeroFeeHtlcTx, [Feature.OptionStaticRemoteKey] },
+        { Feature.OptionRouteBlinding,           [Feature.VarOnionOptin] },
+        { Feature.OptionZeroconf,                 [Feature.OptionScidAlias] },
     };
 
-    private BitArray _featureFlags;
+    internal BitArray FeatureFlags;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FeatureSet"/> class.
     /// </summary>
     /// <remarks>
-    /// Always set the bit of <see cref="Feature.VAR_ONION_OPTIN"/> as Optional.
+    /// Always set the bit of <see cref="Feature.VarOnionOptin"/> as Optional.
     /// </remarks>
     public FeatureSet()
     {
-        _featureFlags = new BitArray(128);
+        FeatureFlags = new BitArray(128);
         // Always set the compulsory bit of var_onion_optin
-        SetFeature(Feature.VAR_ONION_OPTIN, false);
+        SetFeature(Feature.VarOnionOptin, false);
     }
 
     public event EventHandler? Changed;
@@ -52,7 +47,7 @@ public class FeatureSet
     /// <summary>
     /// Gets the position of the last index of one in the BitArray and add 1 because arrays starts at 0.
     /// </summary>
-    public int SizeInBits => GetLastIndexOfOne(_featureFlags);
+    public int SizeInBits => GetLastIndexOfOne(FeatureFlags);
 
     /// <summary>
     /// Sets a feature.
@@ -109,12 +104,12 @@ public class FeatureSet
     /// <param name="isSet">true to set the feature, false to unset it</param>
     public void SetFeature(int bitPosition, bool isSet)
     {
-        if (bitPosition >= _featureFlags.Length)
+        if (bitPosition >= FeatureFlags.Length)
         {
-            _featureFlags.Length = bitPosition + 1;
+            FeatureFlags.Length = bitPosition + 1;
         }
 
-        _featureFlags.Set(bitPosition, isSet);
+        FeatureFlags.Set(bitPosition, isSet);
 
         OnChanged();
     }
@@ -160,12 +155,12 @@ public class FeatureSet
     /// <returns>true if the feature is set, false otherwise.</returns>
     private bool IsFeatureSet(int bitPosition)
     {
-        if (bitPosition >= _featureFlags.Length)
+        if (bitPosition >= FeatureFlags.Length)
         {
             return false;
         }
 
-        return _featureFlags.Get(bitPosition);
+        return FeatureFlags.Get(bitPosition);
     }
 
     /// <summary>
@@ -174,7 +169,7 @@ public class FeatureSet
     /// <returns>true if one of the features are set, false otherwise.</returns>
     public bool IsOptionAnchorsSet()
     {
-        return IsFeatureSet(Feature.OPTION_ANCHOR_OUTPUTS, false) || IsFeatureSet(Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX, false);
+        return IsFeatureSet(Feature.OptionAnchorOutputs, false) || IsFeatureSet(Feature.OptionAnchorsZeroFeeHtlcTx, false);
     }
 
     /// <summary>
@@ -189,12 +184,12 @@ public class FeatureSet
     public bool IsCompatible(FeatureSet other)
     {
         // Check if the other node supports var_onion_optin
-        if (!other.IsFeatureSet(Feature.VAR_ONION_OPTIN, false) && !other.IsFeatureSet(Feature.VAR_ONION_OPTIN, true))
+        if (!other.IsFeatureSet(Feature.VarOnionOptin, false) && !other.IsFeatureSet(Feature.VarOnionOptin, true))
         {
             return false;
         }
 
-        for (var i = 1; i < _featureFlags.Length; i += 2)
+        for (var i = 1; i < FeatureFlags.Length; i += 2)
         {
             var isLocalOptionalSet = IsFeatureSet(i, false);
             var isLocalCompulsorySet = IsFeatureSet(i, true);
@@ -231,76 +226,20 @@ public class FeatureSet
     }
 
     /// <summary>
-    /// Serializes the features to a binary writer.
-    /// </summary>
-    /// <param name="stream">The stream to write to.</param>
-    /// <param name="asGlobal">If the features should be serialized as a global feature set.</param>
-    /// <param name="includeLength">If the length of the byte array should be included.</param>
-    /// <remarks>
-    /// If the features are serialized as a global feature set, only the first 13 bits are serialized.
-    /// </remarks>
-    /// <remarks>
-    /// If the length of the byte array is included, the first 2 bytes are written as the length of the byte array.
-    /// </remarks>
-    public async Task SerializeAsync(Stream stream, bool asGlobal = false, bool includeLength = true)
-    {
-        // If it's a global feature, cut out any bit greater than 13
-        if (asGlobal)
-        {
-            _featureFlags.Length = 13;
-        }
-
-        // Convert BitArray to byte array
-        var bytes = new byte[(_featureFlags.Length + 7) / 8];
-        _featureFlags.CopyTo(bytes, 0);
-
-        // Set bytes as big endian
-        if (BitConverter.IsLittleEndian)
-        {
-            Array.Reverse(bytes);
-        }
-
-        // Trim leading zero bytes
-        var leadingZeroBytes = 0;
-        foreach (var t in bytes)
-        {
-            if (t == 0)
-            {
-                leadingZeroBytes++;
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        var trimmedBytes = bytes[leadingZeroBytes..];
-
-        // Write the length of the byte array or 1 if all bytes are zero
-        if (includeLength)
-        {
-            await stream.WriteAsync(_endianConverter.GetBytesBigEndian((ushort)trimmedBytes.Length));
-        }
-
-        // Otherwise, return the array starting from the first non-zero byte
-        await stream.WriteAsync(trimmedBytes);
-    }
-
-    /// <summary>
     /// Serializes the features to a byte array.
     /// </summary>
     public void WriteToBitWriter(IBitWriter bitWriter, int length, bool shouldPad)
     {
         // Check if _featureFlags is as long as the length
-        var extraLength = length - _featureFlags.Length;
+        var extraLength = length - FeatureFlags.Length;
         if (extraLength > 0)
         {
-            _featureFlags.Length += extraLength;
+            FeatureFlags.Length += extraLength;
         }
 
         for (var i = 0; i < length && bitWriter.HasMoreBits(1); i++)
         {
-            bitWriter.WriteBit(_featureFlags[length - i - (shouldPad ? 0 : 1)]);
+            bitWriter.WriteBit(FeatureFlags[length - i - (shouldPad ? 0 : 1)]);
         }
     }
 
@@ -316,48 +255,6 @@ public class FeatureSet
     {
         // Check if feature is either set as compulsory or optional
         return IsFeatureSet(feature, false) || IsFeatureSet(feature, true);
-    }
-
-    /// <summary>
-    /// Deserializes the features from a binary reader.
-    /// </summary>
-    /// <param name="stream">The stream to read from.</param>
-    /// <param name="includeLength">If the length of the byte array is included.</param>
-    /// <remarks>
-    /// If the length of the byte array is included, the first 2 bytes are read as the length of the byte array.
-    /// </remarks>
-    /// <returns>The deserialized features.</returns>
-    /// <exception cref="SerializationException">Error deserializing Features</exception>
-    public static async Task<FeatureSet> DeserializeAsync(Stream stream, bool includeLength = true)
-    {
-        try
-        {
-            var length = 8;
-
-            var bytes = new byte[2];
-            if (includeLength)
-            {
-                // Read the length of the byte array
-                await stream.ReadExactlyAsync(bytes);
-                length = _endianConverter.ToUInt16BigEndian(bytes);
-            }
-
-            // Read the byte array
-            bytes = new byte[length];
-            await stream.ReadExactlyAsync(bytes);
-
-            if (BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(bytes);
-            }
-
-            // Convert the byte array to BitArray
-            return new FeatureSet { _featureFlags = new BitArray(bytes) };
-        }
-        catch (Exception e)
-        {
-            throw new SerializationException("Error deserializing Features", e);
-        }
     }
 
     /// <summary>
@@ -379,7 +276,7 @@ public class FeatureSet
             }
 
             var bitArray = new BitArray(data);
-            return new FeatureSet { _featureFlags = bitArray };
+            return new FeatureSet { FeatureFlags = bitArray };
         }
         catch (Exception e)
         {
@@ -406,7 +303,7 @@ public class FeatureSet
                 bitArray.Set(length - i - (shouldPad ? 0 : 1), bitReader.ReadBit());
             }
 
-            return new FeatureSet { _featureFlags = bitArray };
+            return new FeatureSet { FeatureFlags = bitArray };
         }
         catch (Exception e)
         {
@@ -425,7 +322,7 @@ public class FeatureSet
     /// </remarks>
     public static FeatureSet Combine(FeatureSet first, FeatureSet second)
     {
-        var combinedLength = Math.Max(first._featureFlags.Length, second._featureFlags.Length);
+        var combinedLength = Math.Max(first.FeatureFlags.Length, second.FeatureFlags.Length);
         var combinedFlags = new BitArray(combinedLength);
 
         for (var i = 0; i < combinedLength; i++)
@@ -433,13 +330,13 @@ public class FeatureSet
             combinedFlags.Set(i, first.IsFeatureSet(i) || second.IsFeatureSet(i));
         }
 
-        return new FeatureSet { _featureFlags = combinedFlags };
+        return new FeatureSet { FeatureFlags = combinedFlags };
     }
 
     public override string ToString()
     {
         var sb = new StringBuilder();
-        for (var i = 0; i < _featureFlags.Length; i++)
+        for (var i = 0; i < FeatureFlags.Length; i++)
         {
             if (IsFeatureSet(i))
             {

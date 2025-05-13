@@ -1,12 +1,14 @@
 namespace NLightning.Domain.ValueObjects;
 
+using Interfaces;
+
 /// <summary>
 /// Represents a chain hash.
 /// </summary>
 /// <remarks>
-/// A chain hash is a 32 byte hash that is used to identify a chain.
+/// A chain hash is a 32-byte hash used to identify a chain.
 /// </remarks>
-public readonly struct ChainHash : IEquatable<ChainHash>
+public readonly struct ChainHash : IValueObject, IEquatable<ChainHash>
 {
     /// <summary>
     /// The length of a chain hash.
@@ -67,11 +69,6 @@ public readonly struct ChainHash : IEquatable<ChainHash>
     public static bool operator !=(ChainHash left, ChainHash right)
     {
         return !(left == right);
-    }
-
-    public ValueTask SerializeAsync(Stream stream)
-    {
-        return stream.WriteAsync(_value);
     }
 
     public static async Task<ChainHash> DeserializeAsync(Stream stream)

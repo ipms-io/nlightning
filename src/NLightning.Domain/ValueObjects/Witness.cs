@@ -1,40 +1,48 @@
-using System.Runtime.Serialization;
-using NLightning.Domain.Serialization;
-
 namespace NLightning.Domain.ValueObjects;
 
-public class Witness(byte[] witnessData)
+using Interfaces;
+
+public readonly struct Witness : IValueObject, IEquatable<Witness>
 {
-    private static IEndianConverter? s_endianConverter;
-    private static IEndianConverter _endianConverter => 
-        s_endianConverter ?? throw new InvalidOperationException("EndianConverter not initialized");
+    private readonly byte[] _value;
     
-    public static void SetEndianConverter(IEndianConverter converter) => s_endianConverter = converter;
-    
-    public byte[] WitnessData { get; } = witnessData;
+    public ushort Length => (ushort)_value.Length;
 
-    public async Task SerializeAsync(Stream stream)
+    public Witness(byte[] value)
     {
-        await stream.WriteAsync(_endianConverter.GetBytesBigEndian((ushort)WitnessData.Length));
-        await stream.WriteAsync(WitnessData);
+        _value = value;
     }
 
-    public static async Task<Witness> DeserializeAsync(Stream stream)
+    #region Equality
+    public bool Equals(Witness other)
     {
-        try
-        {
-            var bytes = new byte[2];
-            await stream.ReadExactlyAsync(bytes);
-            var length = _endianConverter.ToUInt16BigEndian(bytes);
-
-            var witnessData = new byte[length];
-            await stream.ReadExactlyAsync(witnessData);
-
-            return new Witness(witnessData);
-        }
-        catch (Exception e)
-        {
-            throw new SerializationException("Error deserializing Witness", e);
-        }
+        return _value.SequenceEqual(other._value);
     }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is Witness other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return _value.GetHashCode();
+    }
+    #endregion
+    
+    #region Implicit Operators
+    public static implicit operator byte[](Witness s) => s._value;
+    public static implicit operator Witness(byte[] value) => new(value);
+    public static implicit operator ReadOnlyMemory<byte>(Witness s) => s._value;
+
+    public static bool operator ==(Witness left, Witness right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(Witness left, Witness right)
+    {
+        return !(left == right);
+    }
+    #endregion
 }

@@ -1,11 +1,11 @@
 using System.Net;
-using NLightning.Domain.Protocol.Tlvs;
 
 namespace NLightning.Domain.Node;
 
-using Common.TLVs;
 using Enums;
 using Protocol.Constants;
+using Protocol.Models;
+using Protocol.Tlvs;
 using ValueObjects;
 
 public class FeatureOptions
@@ -13,97 +13,97 @@ public class FeatureOptions
     /// <summary>
     /// Enable data loss protection.
     /// </summary>
-    public FeatureSupport DataLossProtect { get; set; } = FeatureSupport.COMPULSORY;
+    public FeatureSupport DataLossProtect { get; set; } = FeatureSupport.Compulsory;
 
     /// <summary>
     /// Enable initial routing sync.
     /// </summary>
-    public FeatureSupport InitialRoutingSync { get; set; } = FeatureSupport.NO;
+    public FeatureSupport InitialRoutingSync { get; set; } = FeatureSupport.No;
 
     /// <summary>
     /// Enable upfront shutdown script.
     /// </summary>
-    public FeatureSupport UpfrontShutdownScript { get; set; } = FeatureSupport.OPTIONAL;
+    public FeatureSupport UpfrontShutdownScript { get; set; } = FeatureSupport.Optional;
 
     /// <summary>
     /// Enable gossip queries.
     /// </summary>
-    public FeatureSupport GossipQueries { get; set; } = FeatureSupport.OPTIONAL;
+    public FeatureSupport GossipQueries { get; set; } = FeatureSupport.Optional;
 
     /// <summary>
     /// Enable expanded gossip queries.
     /// </summary>
-    public FeatureSupport ExpandedGossipQueries { get; set; } = FeatureSupport.OPTIONAL;
+    public FeatureSupport ExpandedGossipQueries { get; set; } = FeatureSupport.Optional;
 
     /// <summary>
     /// Enable static remote key.
     /// </summary>
-    public FeatureSupport StaticRemoteKey { get; set; } = FeatureSupport.COMPULSORY;
+    public FeatureSupport StaticRemoteKey { get; set; } = FeatureSupport.Compulsory;
 
     /// <summary>
     /// Enable payment secret.
     /// </summary>
-    public FeatureSupport PaymentSecret { get; set; } = FeatureSupport.COMPULSORY;
+    public FeatureSupport PaymentSecret { get; set; } = FeatureSupport.Compulsory;
 
     /// <summary>
     /// Enable basic MPP.
     /// </summary>
-    public FeatureSupport BasicMpp { get; set; } = FeatureSupport.OPTIONAL;
+    public FeatureSupport BasicMpp { get; set; } = FeatureSupport.Optional;
 
     /// <summary>
     /// Enable large channels.
     /// </summary>
-    public FeatureSupport LargeChannels { get; set; } = FeatureSupport.OPTIONAL;
+    public FeatureSupport LargeChannels { get; set; } = FeatureSupport.Optional;
 
     /// <summary>
     /// Enable anchor outputs.
     /// </summary>
-    public FeatureSupport AnchorOutputs { get; set; } = FeatureSupport.OPTIONAL;
+    public FeatureSupport AnchorOutputs { get; set; } = FeatureSupport.Optional;
 
     /// <summary>
     /// Enable zero fee anchor tx.
     /// </summary>
-    public FeatureSupport ZeroFeeAnchorTx { get; set; } = FeatureSupport.NO;
+    public FeatureSupport ZeroFeeAnchorTx { get; set; } = FeatureSupport.No;
 
     /// <summary>
     /// Enable route blinding.
     /// </summary>
-    public FeatureSupport RouteBlinding { get; set; } = FeatureSupport.OPTIONAL;
+    public FeatureSupport RouteBlinding { get; set; } = FeatureSupport.Optional;
 
     /// <summary>
     /// Enable beyond segwit shutdown.
     /// </summary>
-    public FeatureSupport BeyondSegwitShutdown { get; set; } = FeatureSupport.NO;
+    public FeatureSupport BeyondSegwitShutdown { get; set; } = FeatureSupport.No;
 
     /// <summary>
     /// Enable dual fund.
     /// </summary>
-    public FeatureSupport DualFund { get; set; } = FeatureSupport.OPTIONAL;
+    public FeatureSupport DualFund { get; set; } = FeatureSupport.Optional;
 
     /// <summary>
     /// Enable onion messages.
     /// </summary>
-    public FeatureSupport OnionMessages { get; set; } = FeatureSupport.NO;
+    public FeatureSupport OnionMessages { get; set; } = FeatureSupport.No;
 
     /// <summary>
     /// Enable channel type.
     /// </summary>
-    public FeatureSupport ChannelType { get; set; } = FeatureSupport.OPTIONAL;
+    public FeatureSupport ChannelType { get; set; } = FeatureSupport.Optional;
 
     /// <summary>
     /// Enable scid alias.
     /// </summary>
-    public FeatureSupport ScidAlias { get; set; } = FeatureSupport.OPTIONAL;
+    public FeatureSupport ScidAlias { get; set; } = FeatureSupport.Optional;
 
     /// <summary>
     /// Enable payment metadata.
     /// </summary>
-    public FeatureSupport PaymentMetadata { get; set; } = FeatureSupport.NO;
+    public FeatureSupport PaymentMetadata { get; set; } = FeatureSupport.No;
 
     /// <summary>
     /// Enable zero conf.
     /// </summary>
-    public FeatureSupport ZeroConf { get; set; } = FeatureSupport.NO;
+    public FeatureSupport ZeroConf { get; set; } = FeatureSupport.No;
 
     /// <summary>
     /// The chain hashes of the node.
@@ -126,107 +126,107 @@ public class FeatureOptions
     /// </summary>
     /// <returns>The features set for the node.</returns>
     /// <remarks>
-    /// All features set as OPTIONAL.
+    /// All features set as Optional.
     /// </remarks>
     public FeatureSet GetNodeFeatures()
     {
         var features = new FeatureSet();
 
         // Set default features
-        if (DataLossProtect != FeatureSupport.NO)
+        if (DataLossProtect != FeatureSupport.No)
         {
-            features.SetFeature(Feature.OPTION_DATA_LOSS_PROTECT, DataLossProtect == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.OptionDataLossProtect, DataLossProtect == FeatureSupport.Compulsory);
         }
 
-        if (InitialRoutingSync != FeatureSupport.NO)
+        if (InitialRoutingSync != FeatureSupport.No)
         {
-            features.SetFeature(Feature.INITIAL_ROUTING_SYNC, InitialRoutingSync == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.InitialRoutingSync, InitialRoutingSync == FeatureSupport.Compulsory);
         }
 
-        if (UpfrontShutdownScript != FeatureSupport.NO)
+        if (UpfrontShutdownScript != FeatureSupport.No)
         {
-            features.SetFeature(Feature.OPTION_UPFRONT_SHUTDOWN_SCRIPT,
-                                UpfrontShutdownScript == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.OptionUpfrontShutdownScript,
+                                UpfrontShutdownScript == FeatureSupport.Compulsory);
         }
 
-        if (GossipQueries != FeatureSupport.NO)
+        if (GossipQueries != FeatureSupport.No)
         {
-            features.SetFeature(Feature.GOSSIP_QUERIES, GossipQueries == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.GossipQueries, GossipQueries == FeatureSupport.Compulsory);
         }
 
-        if (ExpandedGossipQueries != FeatureSupport.NO)
+        if (ExpandedGossipQueries != FeatureSupport.No)
         {
-            features.SetFeature(Feature.GOSSIP_QUERIES_EX, ExpandedGossipQueries == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.GossipQueriesEx, ExpandedGossipQueries == FeatureSupport.Compulsory);
         }
 
-        if (StaticRemoteKey != FeatureSupport.NO)
+        if (StaticRemoteKey != FeatureSupport.No)
         {
-            features.SetFeature(Feature.OPTION_STATIC_REMOTE_KEY, StaticRemoteKey == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.OptionStaticRemoteKey, StaticRemoteKey == FeatureSupport.Compulsory);
         }
 
-        if (PaymentSecret != FeatureSupport.NO)
+        if (PaymentSecret != FeatureSupport.No)
         {
-            features.SetFeature(Feature.PAYMENT_SECRET, PaymentSecret == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.PaymentSecret, PaymentSecret == FeatureSupport.Compulsory);
         }
 
-        if (BasicMpp != FeatureSupport.NO)
+        if (BasicMpp != FeatureSupport.No)
         {
-            features.SetFeature(Feature.BASIC_MPP, BasicMpp == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.BasicMpp, BasicMpp == FeatureSupport.Compulsory);
         }
 
-        if (LargeChannels != FeatureSupport.NO)
+        if (LargeChannels != FeatureSupport.No)
         {
-            features.SetFeature(Feature.OPTION_SUPPORT_LARGE_CHANNEL, LargeChannels == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.OptionSupportLargeChannel, LargeChannels == FeatureSupport.Compulsory);
         }
 
-        if (AnchorOutputs != FeatureSupport.NO)
+        if (AnchorOutputs != FeatureSupport.No)
         {
-            features.SetFeature(Feature.OPTION_ANCHOR_OUTPUTS, AnchorOutputs == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.OptionAnchorOutputs, AnchorOutputs == FeatureSupport.Compulsory);
         }
 
-        if (ZeroFeeAnchorTx != FeatureSupport.NO)
+        if (ZeroFeeAnchorTx != FeatureSupport.No)
         {
-            features.SetFeature(Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX, ZeroFeeAnchorTx == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.OptionAnchorsZeroFeeHtlcTx, ZeroFeeAnchorTx == FeatureSupport.Compulsory);
         }
 
-        if (RouteBlinding != FeatureSupport.NO)
+        if (RouteBlinding != FeatureSupport.No)
         {
-            features.SetFeature(Feature.OPTION_ROUTE_BLINDING, RouteBlinding == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.OptionRouteBlinding, RouteBlinding == FeatureSupport.Compulsory);
         }
 
-        if (BeyondSegwitShutdown != FeatureSupport.NO)
+        if (BeyondSegwitShutdown != FeatureSupport.No)
         {
-            features.SetFeature(Feature.OPTION_SHUTDOWN_ANY_SEGWIT, BeyondSegwitShutdown == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.OptionShutdownAnySegwit, BeyondSegwitShutdown == FeatureSupport.Compulsory);
         }
 
-        if (DualFund != FeatureSupport.NO)
+        if (DualFund != FeatureSupport.No)
         {
-            features.SetFeature(Feature.OPTION_DUAL_FUND, DualFund == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.OptionDualFund, DualFund == FeatureSupport.Compulsory);
         }
 
-        if (OnionMessages != FeatureSupport.NO)
+        if (OnionMessages != FeatureSupport.No)
         {
-            features.SetFeature(Feature.OPTION_ONION_MESSAGES, OnionMessages == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.OptionOnionMessages, OnionMessages == FeatureSupport.Compulsory);
         }
 
-        if (ChannelType != FeatureSupport.NO)
+        if (ChannelType != FeatureSupport.No)
         {
-            features.SetFeature(Feature.OPTION_CHANNEL_TYPE, ChannelType == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.OptionChannelType, ChannelType == FeatureSupport.Compulsory);
         }
 
-        if (ScidAlias != FeatureSupport.NO)
+        if (ScidAlias != FeatureSupport.No)
         {
-            features.SetFeature(Feature.OPTION_SCID_ALIAS, ScidAlias == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.OptionScidAlias, ScidAlias == FeatureSupport.Compulsory);
         }
 
-        if (PaymentMetadata != FeatureSupport.NO)
+        if (PaymentMetadata != FeatureSupport.No)
         {
-            features.SetFeature(Feature.OPTION_PAYMENT_METADATA, PaymentMetadata == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.OptionPaymentMetadata, PaymentMetadata == FeatureSupport.Compulsory);
         }
 
-        if (ZeroConf != FeatureSupport.NO)
+        if (ZeroConf != FeatureSupport.No)
         {
-            features.SetFeature(Feature.OPTION_ZEROCONF, ZeroConf == FeatureSupport.COMPULSORY);
+            features.SetFeature(Feature.OptionZeroconf, ZeroConf == FeatureSupport.Compulsory);
         }
 
         return features;
@@ -244,7 +244,7 @@ public class FeatureOptions
         // If there are no ChainHashes, use Mainnet as default
         if (!ChainHashes.Any())
         {
-            ChainHashes = [ChainConstants.MAIN];
+            ChainHashes = [ChainConstants.Main];
         }
 
         return new NetworksTlv(ChainHashes);
@@ -267,101 +267,101 @@ public class FeatureOptions
     {
         var options = new FeatureOptions
         {
-            DataLossProtect = featureSet.IsFeatureSet(Feature.OPTION_DATA_LOSS_PROTECT, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.OPTION_DATA_LOSS_PROTECT, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            InitialRoutingSync = featureSet.IsFeatureSet(Feature.INITIAL_ROUTING_SYNC, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.INITIAL_ROUTING_SYNC, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            UpfrontShutdownScript = featureSet.IsFeatureSet(Feature.OPTION_UPFRONT_SHUTDOWN_SCRIPT, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.OPTION_UPFRONT_SHUTDOWN_SCRIPT, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            GossipQueries = featureSet.IsFeatureSet(Feature.GOSSIP_QUERIES, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.GOSSIP_QUERIES, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            ExpandedGossipQueries = featureSet.IsFeatureSet(Feature.GOSSIP_QUERIES_EX, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.GOSSIP_QUERIES_EX, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            StaticRemoteKey = featureSet.IsFeatureSet(Feature.OPTION_STATIC_REMOTE_KEY, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.OPTION_STATIC_REMOTE_KEY, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            PaymentSecret = featureSet.IsFeatureSet(Feature.PAYMENT_SECRET, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.PAYMENT_SECRET, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            BasicMpp = featureSet.IsFeatureSet(Feature.BASIC_MPP, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.BASIC_MPP, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            LargeChannels = featureSet.IsFeatureSet(Feature.OPTION_SUPPORT_LARGE_CHANNEL, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.OPTION_SUPPORT_LARGE_CHANNEL, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            AnchorOutputs = featureSet.IsFeatureSet(Feature.OPTION_ANCHOR_OUTPUTS, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.OPTION_ANCHOR_OUTPUTS, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            ZeroFeeAnchorTx = featureSet.IsFeatureSet(Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.OPTION_ANCHORS_ZERO_FEE_HTLC_TX, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            RouteBlinding = featureSet.IsFeatureSet(Feature.OPTION_ROUTE_BLINDING, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.OPTION_ROUTE_BLINDING, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            BeyondSegwitShutdown = featureSet.IsFeatureSet(Feature.OPTION_SHUTDOWN_ANY_SEGWIT, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.OPTION_SHUTDOWN_ANY_SEGWIT, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            DualFund = featureSet.IsFeatureSet(Feature.OPTION_DUAL_FUND, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.OPTION_DUAL_FUND, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            OnionMessages = featureSet.IsFeatureSet(Feature.OPTION_ONION_MESSAGES, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.OPTION_ONION_MESSAGES, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            ChannelType = featureSet.IsFeatureSet(Feature.OPTION_CHANNEL_TYPE, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.OPTION_CHANNEL_TYPE, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            ScidAlias = featureSet.IsFeatureSet(Feature.OPTION_SCID_ALIAS, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.OPTION_SCID_ALIAS, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            PaymentMetadata = featureSet.IsFeatureSet(Feature.OPTION_PAYMENT_METADATA, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.OPTION_PAYMENT_METADATA, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO,
-            ZeroConf = featureSet.IsFeatureSet(Feature.OPTION_ZEROCONF, true)
-                ? FeatureSupport.COMPULSORY
-                : featureSet.IsFeatureSet(Feature.OPTION_ZEROCONF, false)
-                    ? FeatureSupport.OPTIONAL
-                    : FeatureSupport.NO
+            DataLossProtect = featureSet.IsFeatureSet(Feature.OptionDataLossProtect, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.OptionDataLossProtect, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            InitialRoutingSync = featureSet.IsFeatureSet(Feature.InitialRoutingSync, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.InitialRoutingSync, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            UpfrontShutdownScript = featureSet.IsFeatureSet(Feature.OptionUpfrontShutdownScript, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.OptionUpfrontShutdownScript, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            GossipQueries = featureSet.IsFeatureSet(Feature.GossipQueries, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.GossipQueries, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            ExpandedGossipQueries = featureSet.IsFeatureSet(Feature.GossipQueriesEx, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.GossipQueriesEx, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            StaticRemoteKey = featureSet.IsFeatureSet(Feature.OptionStaticRemoteKey, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.OptionStaticRemoteKey, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            PaymentSecret = featureSet.IsFeatureSet(Feature.PaymentSecret, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.PaymentSecret, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            BasicMpp = featureSet.IsFeatureSet(Feature.BasicMpp, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.BasicMpp, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            LargeChannels = featureSet.IsFeatureSet(Feature.OptionSupportLargeChannel, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.OptionSupportLargeChannel, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            AnchorOutputs = featureSet.IsFeatureSet(Feature.OptionAnchorOutputs, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.OptionAnchorOutputs, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            ZeroFeeAnchorTx = featureSet.IsFeatureSet(Feature.OptionAnchorsZeroFeeHtlcTx, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.OptionAnchorsZeroFeeHtlcTx, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            RouteBlinding = featureSet.IsFeatureSet(Feature.OptionRouteBlinding, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.OptionRouteBlinding, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            BeyondSegwitShutdown = featureSet.IsFeatureSet(Feature.OptionShutdownAnySegwit, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.OptionShutdownAnySegwit, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            DualFund = featureSet.IsFeatureSet(Feature.OptionDualFund, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.OptionDualFund, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            OnionMessages = featureSet.IsFeatureSet(Feature.OptionOnionMessages, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.OptionOnionMessages, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            ChannelType = featureSet.IsFeatureSet(Feature.OptionChannelType, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.OptionChannelType, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            ScidAlias = featureSet.IsFeatureSet(Feature.OptionScidAlias, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.OptionScidAlias, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            PaymentMetadata = featureSet.IsFeatureSet(Feature.OptionPaymentMetadata, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.OptionPaymentMetadata, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No,
+            ZeroConf = featureSet.IsFeatureSet(Feature.OptionZeroconf, true)
+                ? FeatureSupport.Compulsory
+                : featureSet.IsFeatureSet(Feature.OptionZeroconf, false)
+                    ? FeatureSupport.Optional
+                    : FeatureSupport.No
         };
 
         if (extension?.TryGetTlv(new BigSize(1), out var chainHashes) ?? false)

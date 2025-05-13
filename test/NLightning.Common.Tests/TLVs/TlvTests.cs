@@ -1,11 +1,11 @@
 using NBitcoin;
+using NLightning.Domain.Protocol.Tlvs;
 
 namespace NLightning.Common.Tests.TLVs;
 
-using Common.TLVs;
 using Common.Types;
 
-public class TlvTests
+public class BaseTlvTests
 {
     [Fact]
     public async Task BlindedPathTlv_SerializationAndDeserialization_WorksCorrectly()

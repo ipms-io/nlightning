@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using NBitcoin;
+using NLightning.Domain.Money;
 
 namespace NLightning.Bolt11.Models;
 
@@ -30,14 +31,14 @@ public partial class Invoice
     #region Private Fields
     private static readonly Dictionary<string, Network> s_supportedNetworks = new()
     {
-        { InvoiceConstants.PREFIX_MAINET, Network.MAIN_NET },
-        { InvoiceConstants.PREFIX_TESTNET, Network.TEST_NET },
-        { InvoiceConstants.PREFIX_SIGNET, Network.SIG_NET },
-        { InvoiceConstants.PREFIX_REGTEST, Network.REG_TEST },
-        { InvoiceConstants.PREFIX_MAINET.ToUpperInvariant(), Network.MAIN_NET },
-        { InvoiceConstants.PREFIX_TESTNET.ToUpperInvariant(), Network.TEST_NET },
-        { InvoiceConstants.PREFIX_SIGNET.ToUpperInvariant(), Network.SIG_NET },
-        { InvoiceConstants.PREFIX_REGTEST.ToUpperInvariant(), Network.REG_TEST }
+        { InvoiceConstants.PREFIX_MAINET, Network.Mainnet },
+        { InvoiceConstants.PREFIX_TESTNET, Network.Testnet },
+        { InvoiceConstants.PREFIX_SIGNET, Network.Signet },
+        { InvoiceConstants.PREFIX_REGTEST, Network.Regtest },
+        { InvoiceConstants.PREFIX_MAINET.ToUpperInvariant(), Network.Mainnet },
+        { InvoiceConstants.PREFIX_TESTNET.ToUpperInvariant(), Network.Testnet },
+        { InvoiceConstants.PREFIX_SIGNET.ToUpperInvariant(), Network.Signet },
+        { InvoiceConstants.PREFIX_REGTEST.ToUpperInvariant(), Network.Regtest }
     };
 
     [GeneratedRegex(@"^[a-z]+((\d+)([munp])?)?$")]
@@ -657,7 +658,7 @@ public partial class Invoice
 
     private static void ConvertAmountToHumanReadable(LightningMoney amount, StringBuilder sb)
     {
-        var btcAmount = amount.ToUnit(LightningMoneyUnit.BTC);
+        var btcAmount = amount.ToUnit(LightningMoneyUnit.Btc);
 
         // Start with the smallest multiplier
         var tempAmount = btcAmount * 1_000_000_000_000m; // Start with pico

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Options;
 using NBitcoin;
+using NLightning.Domain.Money;
 
 namespace NLightning.Infrastructure.Protocol.Factories;
 

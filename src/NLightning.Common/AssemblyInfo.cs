@@ -1,4 +1,4 @@
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("NLightning.NLTG")]
+[assembly: InternalsVisibleTo("NLightning.Application.NLTG")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

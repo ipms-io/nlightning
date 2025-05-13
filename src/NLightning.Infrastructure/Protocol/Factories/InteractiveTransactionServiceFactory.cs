@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using NLightning.Infrastructure.Protocol.Interfaces;
 
 namespace NLightning.Infrastructure.Protocol.Factories;
 

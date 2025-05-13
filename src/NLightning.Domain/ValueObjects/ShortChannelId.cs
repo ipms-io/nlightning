@@ -1,36 +1,38 @@
 namespace NLightning.Domain.ValueObjects;
 
+using Interfaces;
+
 /// <summary>
 /// Represents a short channel id.
 /// </summary>
 /// <remarks>
 /// The short channel id is a unique description of the funding transaction.
 /// </remarks>
-public readonly struct ShortChannelId
+public readonly struct ShortChannelId : IValueObject, IEquatable<ShortChannelId>
 {
     private readonly byte[] _value;
 
     public const int LENGTH = 8;
 
-    public readonly uint BLOCK_HEIGHT;
-    public readonly uint TRANSACTION_INDEX;
-    public readonly ushort OUTPUT_INDEX;
+    public readonly uint BlockHeight;
+    public readonly uint TransactionIndex;
+    public readonly ushort OutputIndex;
 
     public ShortChannelId(uint blockHeight, uint transactionIndex, ushort outputIndex)
     {
-        BLOCK_HEIGHT = blockHeight;
-        TRANSACTION_INDEX = transactionIndex;
-        OUTPUT_INDEX = outputIndex;
+        BlockHeight = blockHeight;
+        TransactionIndex = transactionIndex;
+        OutputIndex = outputIndex;
 
         _value = [
-            (byte)(BLOCK_HEIGHT >> 16),
-            (byte)(BLOCK_HEIGHT >> 8),
-            (byte)BLOCK_HEIGHT,
-            (byte)(TRANSACTION_INDEX >> 16),
-            (byte)(TRANSACTION_INDEX >> 8),
-            (byte)TRANSACTION_INDEX,
-            (byte)(OUTPUT_INDEX >> 8),
-            (byte)OUTPUT_INDEX
+            (byte)(BlockHeight >> 16),
+            (byte)(BlockHeight >> 8),
+            (byte)BlockHeight,
+            (byte)(TransactionIndex >> 16),
+            (byte)(TransactionIndex >> 8),
+            (byte)TransactionIndex,
+            (byte)(OutputIndex >> 8),
+            (byte)OutputIndex
         ];
     }
 
@@ -43,29 +45,16 @@ public readonly struct ShortChannelId
 
         _value = value;
 
-        BLOCK_HEIGHT = (uint)((value[0] << 16) | (value[1] << 8) | value[2]);
-        TRANSACTION_INDEX = (uint)((value[3] << 16) | (value[4] << 8) | value[5]);
-        OUTPUT_INDEX = (ushort)((value[6] << 8) | value[7]);
+        BlockHeight = (uint)((value[0] << 16) | (value[1] << 8) | value[2]);
+        TransactionIndex = (uint)((value[3] << 16) | (value[4] << 8) | value[5]);
+        OutputIndex = (ushort)((value[6] << 8) | value[7]);
     }
 
     public ShortChannelId(ulong channelId) : this(
         (uint)((channelId >> 40) & 0xFFFFFF), // BLOCK_HEIGHT
         (uint)((channelId >> 16) & 0xFFFF),   // TRANSACTION_INDEX
         (ushort)(channelId & 0xFF)            // OUTPUT_INDEX
-    )
-    { }
-
-    public ValueTask SerializeAsync(Stream stream)
-    {
-        return stream.WriteAsync(_value);
-    }
-
-    public static async Task<ShortChannelId> DeserializeAsync(Stream stream)
-    {
-        var buffer = new byte[LENGTH];
-        await stream.ReadExactlyAsync(buffer);
-        return new ShortChannelId(buffer);
-    }
+    ) { }
 
     public static ShortChannelId Parse(string shortChannelId)
     {
@@ -85,7 +74,7 @@ public readonly struct ShortChannelId
     #region Overrides
     public override string ToString()
     {
-        return $"{BLOCK_HEIGHT}x{TRANSACTION_INDEX}x{OUTPUT_INDEX}";
+        return $"{BlockHeight}x{TransactionIndex}x{OutputIndex}";
     }
 
     public override bool Equals(object? obj)
@@ -100,20 +89,21 @@ public readonly struct ShortChannelId
 
     public bool Equals(ShortChannelId other)
     {
-        return BLOCK_HEIGHT == other.BLOCK_HEIGHT &&
-               TRANSACTION_INDEX == other.TRANSACTION_INDEX &&
-               OUTPUT_INDEX == other.OUTPUT_INDEX;
+        return BlockHeight == other.BlockHeight &&
+               TransactionIndex == other.TransactionIndex &&
+               OutputIndex == other.OutputIndex;
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(BLOCK_HEIGHT, TRANSACTION_INDEX, OUTPUT_INDEX);
+        return HashCode.Combine(BlockHeight, TransactionIndex, OutputIndex);
     }
     #endregion
 
-    #region Operators
+    #region Implicit Operators
     public static implicit operator byte[](ShortChannelId s) => s._value;
     public static implicit operator ShortChannelId(byte[] value) => new(value);
+    public static implicit operator ReadOnlyMemory<byte>(ShortChannelId s) => s._value;
     public static implicit operator ReadOnlySpan<byte>(ShortChannelId s) => s._value;
     public static implicit operator ShortChannelId(Span<byte> value) => new(value.ToArray());
     public static implicit operator ShortChannelId(ulong value) => new(value);

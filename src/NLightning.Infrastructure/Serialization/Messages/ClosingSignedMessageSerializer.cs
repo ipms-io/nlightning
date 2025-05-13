@@ -1,8 +1,11 @@
 using System.Runtime.Serialization;
+using NLightning.Common.Utils;
+using NLightning.Domain.Protocol.Models;
+using NLightning.Infrastructure.Protocol.Models;
+using NLightning.Infrastructure.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Messages;
 
-using Application.Interfaces.Serialization;
 using Common.BitUtils;
 using Domain.Protocol.Constants;
 using Domain.Protocol.Interfaces;
@@ -12,19 +15,19 @@ using Domain.Protocol.Tlvs;
 using Domain.ValueObjects;
 using Exceptions;
 
-public class ClosingSignedMessageSerializer : IMessageTypeSerializer<ClosingSignedMessage>
+public class ClosingSignedMessageSerializer : IMessageSerializer<ClosingSignedMessage>
 {
-    private readonly IPayloadSerializer _payloadSerializer;
+    private readonly IPayloadSerializerFactory _payloadSerializerFactory;
     
-    public ClosingSignedMessageSerializer(IPayloadSerializer payloadSerializer)
+    public ClosingSignedMessageSerializer(IPayloadSerializerFactory payloadSerializerFactory)
     {
-        _payloadSerializer = payloadSerializer;
+        _payloadSerializerFactory = payloadSerializerFactory;
     }
     
     public async Task SerializeAsync(IMessage message, Stream stream)
     {
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(message.Type));
-        await _payloadSerializer.SerializeAsync(message.Payload, stream);
+        await _payloadSerializerFactory.SerializeAsync(message.Payload, stream);
         
         if (message.Extension?.Any() ?? false)
         {
@@ -46,12 +49,12 @@ public class ClosingSignedMessageSerializer : IMessageTypeSerializer<ClosingSign
         try
         {
             // Deserialize payload
-            var payload = await _payloadSerializer.DeserializeAsync<ClosingSignedPayload>(stream);
+            var payload = await _payloadSerializerFactory.DeserializeAsync<ClosingSignedPayload>(stream);
 
             // Deserialize extension
             var extension = await TlvStream.DeserializeAsync(stream)
                             ?? throw new SerializationException("Required extension is missing");
-            if (!extension.TryGetTlv(TlvConstants.FEE_RANGE, out var feeRangeTlv))
+            if (!extension.TryGetTlv(TlvConstants.FeeRange, out var feeRangeTlv))
             {
                 throw new SerializationException("Required extension is missing");
             }
@@ -63,7 +66,7 @@ public class ClosingSignedMessageSerializer : IMessageTypeSerializer<ClosingSign
             throw new MessageSerializationException("Error deserializing ClosingSignedMessage", e);
         }
     }
-    async Task<IMessage> IMessageTypeSerializer.DeserializeAsync(Stream stream)
+    async Task<IMessage> IMessageSerializer.DeserializeAsync(Stream stream)
     {
         return await DeserializeAsync(stream);
     }

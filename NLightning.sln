@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{123D0631-533C-447F-B7DA-D1D37E5E64BF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.NLTG", "src\NLightning.NLTG\NLightning.NLTG.csproj", "{A103C727-E983-4510-81FB-301625DC1A7F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Application.NLTG", "src\NLightning.Application.NLTG\NLightning.Application.NLTG.csproj", "{A103C727-E983-4510-81FB-301625DC1A7F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Common", "src\NLightning.Common\NLightning.Common.csproj", "{97623AAC-B371-4515-819E-81607E1150BB}"
 EndProject

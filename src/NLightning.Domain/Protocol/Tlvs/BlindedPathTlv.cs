@@ -1,8 +1,9 @@
 using NBitcoin;
-using NLightning.Domain.Protocol.Constants;
-using NLightning.Domain.ValueObjects;
+using NLightning.Domain.Protocol.Models;
 
-namespace NLightning.Common.TLVs;
+namespace NLightning.Domain.Protocol.Tlvs;
+
+using Constants;
 
 /// <summary>
 /// Blinded Path TLV.
@@ -10,14 +11,14 @@ namespace NLightning.Common.TLVs;
 /// <remarks>
 /// The blinded path TLV is used in the UpdateAddHtlcMessage to communicate the blinded path key.
 /// </remarks>
-public class BlindedPathTlv : Tlv
+public class BlindedPathTlv : BaseTlv
 {
     /// <summary>
     /// The blinded path key
     /// </summary>
     public PubKey PathKey { get; }
 
-    public BlindedPathTlv(PubKey pathKey) : base(TlvConstants.BLINDED_PATH)
+    public BlindedPathTlv(PubKey pathKey) : base(TlvConstants.BlindedPath)
     {
         PathKey = pathKey;
 
@@ -26,23 +27,23 @@ public class BlindedPathTlv : Tlv
     }
 
     /// <summary>
-    /// Cast BlindedPathTlv from a Tlv.
+    /// Cast BlindedPathTlv from a BaseTlv.
     /// </summary>
-    /// <param name="tlv">The tlv to cast from.</param>
+    /// <param name="baseTlv">The baseTlv to cast from.</param>
     /// <returns>The cast BlindedPathTlv.</returns>
     /// <exception cref="InvalidCastException">Error casting BlindedPathTlv</exception>
-    public static BlindedPathTlv FromTlv(Tlv tlv)
+    public static BlindedPathTlv FromTlv(BaseTlv baseTlv)
     {
-        if (tlv.Type != TlvConstants.BLINDED_PATH)
+        if (baseTlv.Type != TlvConstants.BlindedPath)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
 
-        if (tlv.Length == 0)
+        if (baseTlv.Length == 0)
         {
             throw new InvalidCastException("Invalid length");
         }
 
-        return new BlindedPathTlv(new PubKey(tlv.Value));
+        return new BlindedPathTlv(new PubKey(baseTlv.Value));
     }
 }

@@ -1,12 +1,13 @@
 namespace NLightning.Domain.ValueObjects;
 
 using Protocol.Constants;
-public readonly struct Network : IEquatable<Network>
+
+public readonly struct Network : IEquatable<Network>, IEquatable<NBitcoin.Network>
 {
-    public static readonly Network MAIN_NET = new(NetworkConstants.MAINNET);
-    public static readonly Network TEST_NET = new(NetworkConstants.TESTNET);
-    public static readonly Network REG_TEST = new(NetworkConstants.REGTEST);
-    public static readonly Network SIG_NET = new(NetworkConstants.SIGNET);
+    public static readonly Network Mainnet = new(NetworkConstants.MAINNET);
+    public static readonly Network Testnet = new(NetworkConstants.TESTNET);
+    public static readonly Network Regtest = new(NetworkConstants.REGTEST);
+    public static readonly Network Signet = new(NetworkConstants.SIGNET);
 
     public string Name { get; }
 
@@ -21,9 +22,9 @@ public readonly struct Network : IEquatable<Network>
         {
             return Name switch
             {
-                NetworkConstants.MAINNET => ChainConstants.MAIN,
-                NetworkConstants.TESTNET => ChainConstants.TESTNET,
-                NetworkConstants.REGTEST => ChainConstants.REGTEST,
+                NetworkConstants.MAINNET => ChainConstants.Main,
+                NetworkConstants.TESTNET => ChainConstants.Testnet,
+                NetworkConstants.REGTEST => ChainConstants.Regtest,
                 _ => throw new Exception("Chain not supported.")
             };
         }
@@ -49,9 +50,9 @@ public readonly struct Network : IEquatable<Network>
     {
         return network.Name switch
         {
-            "Main" => MAIN_NET,
-            "TestNet" => TEST_NET,
-            "RegTest" => REG_TEST,
+            "Main" => Mainnet,
+            "TestNet" => Testnet,
+            "RegTest" => Regtest,
             _ => throw new ArgumentException("Unsupported network type", nameof(network)),
         };
     }
@@ -66,6 +67,11 @@ public readonly struct Network : IEquatable<Network>
     public bool Equals(Network other)
     {
         return Name == other.Name;
+    }
+
+    public bool Equals(NBitcoin.Network? other)
+    {
+        return other is not null && ((byte[])ChainHash).SequenceEqual(other.GenesisHash.ToBytes());
     }
 
     public override int GetHashCode()

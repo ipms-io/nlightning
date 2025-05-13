@@ -14,7 +14,7 @@ public class Channel
     {
         ChannelId = channelId;
         IsInitiator = isInitiator;
-        State = ChannelState.OPENING; // Initial state
+        State = ChannelState.Opening; // Initial state
     }
 
     public void AssignShortChannelId(ShortChannelId shortChannelId)

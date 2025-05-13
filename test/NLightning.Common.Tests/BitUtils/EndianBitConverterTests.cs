@@ -1,4 +1,5 @@
 using NLightning.Common.BitUtils;
+using NLightning.Common.Utils;
 
 namespace NLightning.Common.Tests.BitUtils;
 

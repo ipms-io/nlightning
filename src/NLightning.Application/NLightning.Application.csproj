@@ -33,6 +33,7 @@
 
     <ItemGroup>
       <Folder Include="Interfaces\Factories\" />
+      <Folder Include="Interfaces\Managers\" />
     </ItemGroup>
 
 </Project>

@@ -1,4 +1,5 @@
 using NLightning.Domain.Protocol.Constants;
+using NLightning.Domain.Protocol.Models;
 using NLightning.Domain.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Tlvs;
@@ -9,16 +10,16 @@ namespace NLightning.Domain.Protocol.Tlvs;
 /// <remarks>
 /// The required confirmed inputs TLV is used in the TxInitRbfMessage to communicate if confirmed inputs are required.
 /// </remarks>
-public class RequireConfirmedInputsTlv() : Tlv(TlvConstants.REQUIRE_CONFIRMED_INPUTS)
+public class RequireConfirmedInputsTlv() : BaseTlv(TlvConstants.RequireConfirmedInputs)
 {
-    public static RequireConfirmedInputsTlv FromTlv(Tlv tlv)
+    public static RequireConfirmedInputsTlv FromTlv(BaseTlv baseTlv)
     {
-        if (tlv.Type != TlvConstants.REQUIRE_CONFIRMED_INPUTS)
+        if (baseTlv.Type != TlvConstants.RequireConfirmedInputs)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
 
-        if (tlv.Length != 0) // long (64 bits) is 8 bytes
+        if (baseTlv.Length != 0) // long (64 bits) is 8 bytes
         {
             throw new InvalidCastException("Invalid length");
         }

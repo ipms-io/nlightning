@@ -1,4 +1,5 @@
 using NBitcoin;
+using NLightning.Domain.Money;
 using NLightning.Domain.Protocol.Constants;
 using NLightning.Domain.ValueObjects;
 using NLightning.Infrastructure.Protocol.Outputs;

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using NBitcoin;
+using NLightning.Domain.Money;
 
 namespace NLightning.Infrastructure.Protocol.Outputs;
 

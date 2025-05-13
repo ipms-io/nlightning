@@ -3,7 +3,6 @@ namespace NLightning.Common.Tests.Messages;
 using Common.Messages;
 using Common.Messages.Payloads;
 using Common.Node;
-using Common.TLVs;
 using Common.Types;
 using Constants;
 using Exceptions;

@@ -1,8 +1,11 @@
 using System.Runtime.Serialization;
+using NLightning.Common.Utils;
+using NLightning.Domain.Protocol.Models;
+using NLightning.Infrastructure.Protocol.Models;
+using NLightning.Infrastructure.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Messages;
 
-using Application.Interfaces.Serialization;
 using Common.BitUtils;
 using Domain.Protocol.Constants;
 using Domain.Protocol.Interfaces;
@@ -12,19 +15,19 @@ using Domain.Protocol.Tlvs;
 using Domain.ValueObjects;
 using Exceptions;
 
-public class ChannelReadyMessageSerializer : IMessageTypeSerializer<ChannelReadyMessage>
+public class ChannelReadyMessageSerializer : IMessageSerializer<ChannelReadyMessage>
 {
-    private readonly IPayloadSerializer _payloadSerializer;
+    private readonly IPayloadSerializerFactory _payloadSerializerFactory;
     
-    public ChannelReadyMessageSerializer(IPayloadSerializer payloadSerializer)
+    public ChannelReadyMessageSerializer(IPayloadSerializerFactory payloadSerializerFactory)
     {
-        _payloadSerializer = payloadSerializer;
+        _payloadSerializerFactory = payloadSerializerFactory;
     }
     
     public async Task SerializeAsync(IMessage message, Stream stream)
     {
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(message.Type));
-        await _payloadSerializer.SerializeAsync(message.Payload, stream);
+        await _payloadSerializerFactory.SerializeAsync(message.Payload, stream);
         
         if (message.Extension?.Any() ?? false)
         {
@@ -46,7 +49,7 @@ public class ChannelReadyMessageSerializer : IMessageTypeSerializer<ChannelReady
         try
         {
             // Deserialize payload
-            var payload = await _payloadSerializer.DeserializeAsync<ChannelReadyPayload>(stream);
+            var payload = await _payloadSerializerFactory.DeserializeAsync<ChannelReadyPayload>(stream);
 
             // Deserialize extension
             var extension = await TlvStream.DeserializeAsync(stream);
@@ -55,7 +58,7 @@ public class ChannelReadyMessageSerializer : IMessageTypeSerializer<ChannelReady
                 return new ChannelReadyMessage(payload);
             }
 
-            var shortChannelIdTlv = extension.TryGetTlv(TlvConstants.SHORT_CHANNEL_ID, out var tlv)
+            var shortChannelIdTlv = extension.TryGetTlv(TlvConstants.ShortChannelId, out var tlv)
                 ? ShortChannelIdTlv.FromTlv(tlv!)
                 : null;
 
@@ -66,7 +69,7 @@ public class ChannelReadyMessageSerializer : IMessageTypeSerializer<ChannelReady
             throw new MessageSerializationException("Error deserializing ChannelReadyMessage", e);
         }
     }
-    async Task<IMessage> IMessageTypeSerializer.DeserializeAsync(Stream stream)
+    async Task<IMessage> IMessageSerializer.DeserializeAsync(Stream stream)
     {
         return await DeserializeAsync(stream);
     }

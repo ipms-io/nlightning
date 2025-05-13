@@ -8,15 +8,15 @@ public enum FeatureSupport : byte
     /// <summary>
     /// Feature is not supported
     /// </summary>
-    NO = 0,
+    No = 0,
 
     /// <summary>
     /// Feature is supported but optional
     /// </summary>
-    OPTIONAL = 1,
+    Optional = 1,
 
     /// <summary>
     /// Feature is supported and required
     /// </summary>
-    COMPULSORY = 2
+    Compulsory = 2
 }

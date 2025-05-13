@@ -1,4 +1,5 @@
 using NBitcoin;
+using NLightning.Domain.Money;
 
 namespace NLightning.Infrastructure.Protocol.Transactions;
 

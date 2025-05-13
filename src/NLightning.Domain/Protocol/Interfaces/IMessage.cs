@@ -1,6 +1,6 @@
 namespace NLightning.Domain.Protocol.Interfaces;
 
-using ValueObjects;
+using Models;
 
 /// <summary>
 /// Interface for a message.

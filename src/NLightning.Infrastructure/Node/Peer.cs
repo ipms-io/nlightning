@@ -8,7 +8,7 @@ using Domain.Protocol.Constants;
 using Domain.Protocol.Interfaces;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Tlvs;
-using Domain.ValueObjects;
+using Interfaces;
 
 /// <summary>
 /// Represents a peer in the network.
@@ -32,7 +32,7 @@ public sealed class Peer : IPeer
     /// </summary>
     public event EventHandler? DisconnectEvent;
 
-    public PeerAddress PeerAddress { get; }
+    public Protocol.Models.PeerAddress PeerAddress { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Peer"/> class.
@@ -46,7 +46,7 @@ public sealed class Peer : IPeer
     /// <param name="pingPongService">The ping pong service.</param>
     /// <exception cref="ConnectionException">Thrown when the connection to the peer fails.</exception>
     internal Peer(FeatureOptions features, ILogger<Peer> logger, IMessageFactory messageFactory,
-                  IMessageService messageService, TimeSpan networkTimeout, PeerAddress peerAddress,
+                  IMessageService messageService, TimeSpan networkTimeout, Protocol.Models.PeerAddress peerAddress,
                   IPingPongService pingPongService)
     {
         _features = features;
@@ -147,7 +147,7 @@ public sealed class Peer : IPeer
 
         // Check if Chains are compatible
         if (initMessage.Extension != null
-            && initMessage.Extension.TryGetTlv(TlvConstants.NETWORKS, out var networksTlv))
+            && initMessage.Extension.TryGetTlv(TlvConstants.Networks, out var networksTlv))
         {
             // Check if ChainHash contained in networksTlv.ChainHashes exists in our ChainHashes
             var networkChainHashes = ((NetworksTlv)networksTlv!).ChainHashes;

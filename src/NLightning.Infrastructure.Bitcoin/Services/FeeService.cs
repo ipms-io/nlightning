@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using NLightning.Application.Interfaces.Services;
 using NLightning.Common.Options;
 using NLightning.Domain.Exceptions;
+using NLightning.Domain.Money;
 using NLightning.Domain.ValueObjects;
 using NLightning.Infrastructure.Bitcoin.Caching;
 
