@@ -2,6 +2,7 @@ using System.Diagnostics;
 
 namespace NLightning.Infrastructure.Transport.Handshake.States;
 
+using Common.Utils;
 using Crypto.Functions;
 using Crypto.Interfaces;
 using Crypto.Primitives;
@@ -84,7 +85,7 @@ internal sealed class HandshakeState : IHandshakeState
     /// <exception cref="ArgumentException">Thrown if the output was greater than <see cref="ProtocolConstants.MAX_MESSAGE_LENGTH"/> bytes in length, or if the output buffer did not have enough space to hold the ciphertext.</exception>
     public (int, byte[]?, Encryption.Transport?) WriteMessage(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
-        ThrowIfDisposed(_disposed, nameof(HandshakeState));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(HandshakeState));
 
         if (_messagePatterns.Count == 0)
         {
@@ -145,11 +146,6 @@ internal sealed class HandshakeState : IHandshakeState
         return (ciphertextSize, handshakeHash, transport);
     }
 
-    private void ThrowIfDisposed(bool disposed, string handshakeStateName)
-    {
-        throw new NotImplementedException();
-    }
-
     /// <inheritdoc/>
     /// <exception cref="ObjectDisposedException">Thrown if the current instance has already been disposed.</exception>
     /// <exception cref="InvalidOperationException">Thrown if the call to <see cref="WriteMessage"/> was expected or the handshake has already been completed.</exception>
@@ -157,7 +153,7 @@ internal sealed class HandshakeState : IHandshakeState
     /// <exception cref="System.Security.Cryptography.CryptographicException">Thrown if the decryption of the message has failed.</exception>
     public (int, byte[]?, Encryption.Transport?) ReadMessage(ReadOnlySpan<byte> message, Span<byte> payloadBuffer)
     {
-        ThrowIfDisposed(_disposed, nameof(HandshakeState));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(HandshakeState));
 
         if (_messagePatterns.Count == 0)
         {

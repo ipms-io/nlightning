@@ -2,6 +2,7 @@ using System.Diagnostics;
 
 namespace NLightning.Infrastructure.Transport.Handshake.States;
 
+using Common.Utils;
 using Crypto.Ciphers;
 using Crypto.Functions;
 using Crypto.Primitives;
@@ -28,7 +29,7 @@ internal sealed class CipherState : IDisposable
     /// </summary>
     public void InitializeKeyAndChainingKey(ReadOnlySpan<byte> key, ReadOnlySpan<byte> chainingKey)
     {
-        ThrowIfDisposed(_disposed, nameof(CipherState));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(CipherState));
 
         Debug.Assert(key.Length == CryptoConstants.PRIVKEY_LEN);
         Debug.Assert(chainingKey.Length == CryptoConstants.PRIVKEY_LEN);
@@ -47,14 +48,9 @@ internal sealed class CipherState : IDisposable
     /// </summary>
     public bool HasKeys()
     {
-        ThrowIfDisposed(_disposed, nameof(CipherState));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(CipherState));
 
         return _k is not null && _ck is not null;
-    }
-
-    private void ThrowIfDisposed(bool disposed, string cipherStateName)
-    {
-        throw new NotImplementedException();
     }
 
     /// <summary>
@@ -62,7 +58,7 @@ internal sealed class CipherState : IDisposable
     /// </summary>
     public void SetNonce(ulong nonce)
     {
-        ThrowIfDisposed(_disposed, nameof(CipherState));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(CipherState));
 
         _n = nonce;
     }
@@ -74,7 +70,7 @@ internal sealed class CipherState : IDisposable
     /// </summary>
     public int EncryptWithAd(ReadOnlySpan<byte> ad, ReadOnlySpan<byte> plaintext, Span<byte> ciphertext)
     {
-        ThrowIfDisposed(_disposed, nameof(CipherState));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(CipherState));
 
         if (_n == MAX_NONCE)
         {
@@ -98,7 +94,7 @@ internal sealed class CipherState : IDisposable
     /// </summary>
     public int DecryptWithAd(ReadOnlySpan<byte> ad, ReadOnlySpan<byte> ciphertext, Span<byte> plaintext)
     {
-        ThrowIfDisposed(_disposed, nameof(CipherState));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(CipherState));
 
         // If nonce reaches its maximum value, rekey
         if (_n == MAX_NONCE)
@@ -126,7 +122,7 @@ internal sealed class CipherState : IDisposable
     /// <returns>Number of bytes written to ciphertext</returns>
     public int Encrypt(ReadOnlySpan<byte> plaintext, Span<byte> ciphertext)
     {
-        ThrowIfDisposed(_disposed, nameof(CipherState));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(CipherState));
 
         if (_n == MAX_NONCE)
         {
@@ -144,7 +140,7 @@ internal sealed class CipherState : IDisposable
     /// <returns>Number of bytes written to plaintext</returns>
     public int Decrypt(ReadOnlySpan<byte> ciphertext, Span<byte> plaintext)
     {
-        ThrowIfDisposed(_disposed, nameof(CipherState));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(CipherState));
 
         if (_n == MAX_NONCE)
         {
@@ -158,7 +154,7 @@ internal sealed class CipherState : IDisposable
     /// </summary>
     public void Rekey()
     {
-        ThrowIfDisposed(_disposed, nameof(CipherState));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(CipherState));
 
         if (!HasKeys())
         {

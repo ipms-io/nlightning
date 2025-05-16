@@ -64,7 +64,7 @@ public sealed class RoutingInfoCollection : List<RoutingInfo>
         OnChanged();
     }
 
-    internal new int RemoveAll(Predicate<RoutingInfo> match)
+    public new int RemoveAll(Predicate<RoutingInfo> match)
     {
         var removed = base.RemoveAll(match);
         if (removed > 0)

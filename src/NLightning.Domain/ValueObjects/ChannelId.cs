@@ -35,13 +35,6 @@ public readonly struct ChannelId : IValueObject, IEquatable<ChannelId>
         _value = value.ToArray();
     }
 
-    public static async Task<ChannelId> DeserializeAsync(Stream stream)
-    {
-        var buffer = new byte[LENGTH];
-        await stream.ReadExactlyAsync(buffer);
-        return new ChannelId(buffer);
-    }
-
     #region Overrides
     public override bool Equals(object? obj)
     {

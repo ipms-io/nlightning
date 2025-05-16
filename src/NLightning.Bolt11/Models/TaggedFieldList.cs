@@ -1,8 +1,8 @@
 using System.Diagnostics;
+using NLightning.Common.Utils;
 
 namespace NLightning.Bolt11.Models;
 
-using Common.BitUtils;
 using Domain.ValueObjects;
 using Enums;
 using Factories;

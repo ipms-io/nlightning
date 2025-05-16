@@ -3,7 +3,6 @@ using NLightning.Common.Utils;
 
 namespace NLightning.Common.Tests.Messages.Payloads;
 
-using Common.BitUtils;
 using Common.Messages.Payloads;
 using Common.Types;
 

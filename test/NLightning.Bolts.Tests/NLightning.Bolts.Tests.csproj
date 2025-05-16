@@ -68,7 +68,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="BOLT11/Invoices/ValidInvoices.txt" CopyToOutputDirectory="PreserveNewest"/>
     <None Remove="TestResults\**"/>
   </ItemGroup>
 
@@ -85,10 +84,6 @@
 
   <ItemGroup>
     <EmbeddedResource Remove="TestResults\**"/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="BOLT1\Services\" />
   </ItemGroup>
 
 </Project>

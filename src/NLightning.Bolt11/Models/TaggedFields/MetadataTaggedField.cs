@@ -1,6 +1,7 @@
+using NLightning.Common.Utils;
+
 namespace NLightning.Bolt11.Models.TaggedFields;
 
-using Common.BitUtils;
 using Enums;
 using Interfaces;
 

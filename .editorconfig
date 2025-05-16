@@ -129,6 +129,7 @@ dotnet_naming_rule.enum_values_should_be_pascal_case.severity = error
 dotnet_naming_rule.enum_values_should_be_pascal_case.symbols = enum_values
 dotnet_naming_rule.enum_values_should_be_pascal_case.style = enum_values_style
 
+dotnet_naming_symbols.enum_values.applicable_accessibilities = public, protected, internal, protected_internal, private_protected, private
 dotnet_naming_symbols.enum_values.applicable_kinds = enum
 
 dotnet_naming_style.enum_values_style.capitalization = pascal_case

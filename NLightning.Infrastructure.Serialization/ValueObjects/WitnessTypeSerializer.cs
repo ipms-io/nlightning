@@ -37,19 +37,25 @@ public class WitnessTypeSerializer : IValueObjectTypeSerializer<Witness>
     /// <exception cref="IOException">Thrown when an I/O error occurs during the read operation.</exception>
     public async Task<Witness> DeserializeAsync(Stream stream)
     {
-        var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.MAX_SIGNATURE_SIZE);
-        
+        var buffer = ArrayPool<byte>.Shared.Rent(sizeof(ushort));
+
         try
         {
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..2]);
-            var length = EndianBitConverter.ToUInt16BigEndian(buffer[..2]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ushort)]);
+            var len = EndianBitConverter.ToUInt16BigEndian(buffer[..sizeof(ushort)]);
 
-            if (length > CryptoConstants.MAX_SIGNATURE_SIZE)
-                throw new SerializationException($"Witness length {length} exceeds maximum size of {CryptoConstants.MAX_SIGNATURE_SIZE} bytes.");
-            
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..length]);
+            // if (length > CryptoConstants.MAX_SIGNATURE_SIZE)
+            //     throw new SerializationException(
+            //         $"Witness length {length} exceeds maximum size of {CryptoConstants.MAX_SIGNATURE_SIZE} bytes.");
 
-            return new Witness(buffer[..length]);
+            var witnessBytes = new byte[len];
+            await stream.ReadExactlyAsync(witnessBytes);
+
+            return new Witness(witnessBytes);
+        }
+        catch (Exception e)
+        {
+            throw new SerializationException("Error deserializing Witness", e);
         }
         finally
         {

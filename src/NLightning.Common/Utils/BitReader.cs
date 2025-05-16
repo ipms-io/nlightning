@@ -1,7 +1,7 @@
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 
-namespace NLightning.Common.BitUtils;
+namespace NLightning.Common.Utils;
 
 using Domain.Serialization;
 

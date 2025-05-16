@@ -33,17 +33,17 @@ public class MessageServiceTests
     [Fact]
     public void Given_ReceivedMessage_When_ReceiveMessageAsync_IsInvoked_Then_MessageReceivedEventIsRaised()
     {
-        // Arrange
+        // Given
         var transportServiceMock = new Mock<ITransportService>();
         var messageMock = new Mock<IMessage>();
         _messageSerializerMock.Setup(m => m.DeserializeMessageAsync(It.IsAny<Stream>()))
-            .ReturnsAsync(messageMock.Object);
+                              .ReturnsAsync(messageMock.Object);
         
         var messageService = new MessageService(_messageSerializerMock.Object, transportServiceMock.Object);
         var stream = new MemoryStream();
 
-        // Act & Assert
-        var receivedMessage = Assert.Raises<IMessage?>(
+        // When & Then
+        var receivedMessage = Assert.RaisesAny<IMessage?>(
             h => messageService.MessageReceived += h,
             h => messageService.MessageReceived -= h,
             () => {
@@ -58,44 +58,41 @@ public class MessageServiceTests
     [Fact]
     public void Given_TransportServiceConnectionState_When_CheckingIsConnected_Then_ReturnsCorrectValue()
     {
-        // Arrange
+        // Given
         var transportServiceMock = new Mock<ITransportService>();
         transportServiceMock.Setup(t => t.IsConnected).Returns(true);
         var messageService = new MessageService(_messageSerializerMock.Object, transportServiceMock.Object);
 
-        // Act
-        var isConnected = messageService.IsConnected;
-
-        // Assert
-        Assert.True(isConnected);
+        // When & Then
+        Assert.True(messageService.IsConnected);
     }
 
     [Fact]
     public void Given_MessageService_When_Dispose_IsCalled_Then_TransportServiceIsDisposed()
     {
-        // Arrange
+        // Given
         var transportServiceMock = new Mock<ITransportService>();
         var messageService = new MessageService(_messageSerializerMock.Object, transportServiceMock.Object);
 
-        // Act
+        // When
         messageService.Dispose();
 
-        // Assert
+        // Then
         transportServiceMock.Verify(t => t.Dispose(), Times.Once());
     }
     
     [Fact]
     public async Task Given_DisposedMessageService_When_SendMessageAsync_IsCalled_Then_ThrowsInvalidOperationException()
     {
-        // Arrange
+        // Given
         var transportServiceMock = new Mock<ITransportService>();
         var messageService = new MessageService(_messageSerializerMock.Object, transportServiceMock.Object);
         var messageMock = new Mock<IMessage>();
         
-        // Act
+        // When
         messageService.Dispose();
         
-        // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => messageService.SendMessageAsync(messageMock.Object));
+        // Then
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => messageService.SendMessageAsync(messageMock.Object));
     }
 }

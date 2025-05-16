@@ -1,5 +1,6 @@
 namespace NLightning.Infrastructure.Transport.Encryption;
 
+using Common.Utils;
 using Domain.Crypto.Constants;
 using Domain.Exceptions;
 using Domain.Transport;
@@ -31,7 +32,7 @@ internal sealed class Transport : ITransport
     /// <exception cref="ArgumentException">Thrown if the encrypted payload was greater than <see cref="ProtocolConstants.MAX_MESSAGE_LENGTH"/> bytes in length, or if the output buffer did not have enough space to hold the ciphertext.</exception>
     public int WriteMessage(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
-        ThrowIfDisposed(_disposed, nameof(Transport));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Transport));
 
         // Serialize length into 2 bytes encoded as a big-endian integer
         var l = BitConverter.GetBytes((ushort)payload.Length);
@@ -49,15 +50,10 @@ internal sealed class Transport : ITransport
         return lcLen + mLen;
     }
 
-    private void ThrowIfDisposed(bool disposed, string transportName)
-    {
-        throw new NotImplementedException();
-    }
-
     /// <inheritdoc/>
     public int ReadMessageLength(ReadOnlySpan<byte> lc)
     {
-        ThrowIfDisposed(_disposed, nameof(Transport));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Transport));
 
         if (lc.Length != ProtocolConstants.MESSAGE_HEADER_SIZE)
         {
@@ -82,7 +78,7 @@ internal sealed class Transport : ITransport
     /// <inheritdoc/>
     public int ReadMessagePayload(ReadOnlySpan<byte> message, Span<byte> payloadBuffer)
     {
-        ThrowIfDisposed(_disposed, nameof(Transport));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Transport));
 
         // Decrypt the payload from the message buffer
         return ReadMessagePart(message, payloadBuffer);

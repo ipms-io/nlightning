@@ -3,7 +3,6 @@ using NLightning.Common.Utils;
 
 namespace NLightning.Common.Tests.Node;
 
-using Common.BitUtils;
 using Common.Node;
 
 public class FeatureSetTests

@@ -15,7 +15,7 @@ using Infrastructure.Node.Interfaces;
 using Infrastructure.Node.Managers;
 using Infrastructure.Node.Models;
 using Infrastructure.Protocol.Models;
-using TestUtils;
+using NLightning.Tests.Utils;
 
 // ReSharper disable AccessToDisposedClosure
 public class PeerManagerTests
@@ -43,7 +43,7 @@ public class PeerManagerTests
     [Fact]
     public async Task Given_ValidPeerAddress_When_ConnectToPeerAsync_IsCalled_Then_PeerIsAdded()
     {
-        // Arrange
+        // Given
         var availablePort = await PortPoolUtil.GetAvailablePortAsync();
         var tcpListener = new TcpListener(IPAddress.Loopback, availablePort);
         tcpListener.Start();
@@ -57,11 +57,11 @@ public class PeerManagerTests
                 _ = await tcpListener.AcceptTcpClientAsync();
             });
 
-            // Act
+            // When
             await peerService.ConnectToPeerAsync(peerAddress);
             await acceptTask;
 
-            // Assert
+            // Then
             var field = peerService.GetType().GetField("_peers", BindingFlags.NonPublic | BindingFlags.Instance);
             var peers = field?.GetValue(peerService);
             Assert.NotNull(peers);
@@ -78,18 +78,17 @@ public class PeerManagerTests
     [Fact]
     public async Task Given_ConnectionError_When_ConnectToPeerAsync_IsCalled_Then_ThrowException()
     {
-        // Arrange
         var availablePort = await PortPoolUtil.GetAvailablePortAsync();
 
         try
         {
-            var peerService = new PeerManager(_mockLogger.Object, _nodeOptionsWrapper, _mockPeerFactory.Object);
-
+            // Given
+            var peerManager = new PeerManager(_mockLogger.Object, _nodeOptionsWrapper, _mockPeerFactory.Object);
             var peerAddress = new PeerAddress(_pubKey, IPAddress.Loopback.ToString(), availablePort);
 
-            // Act & Assert
+            // When & Then
             var exception = await Assert
-                .ThrowsAnyAsync<ConnectionException>(() => peerService.ConnectToPeerAsync(peerAddress));
+                .ThrowsAnyAsync<ConnectionException>(() => peerManager.ConnectToPeerAsync(peerAddress));
             Assert.Equal($"Failed to connect to peer {peerAddress.Host}:{peerAddress.Port}", exception.Message);
         }
         finally
@@ -101,7 +100,7 @@ public class PeerManagerTests
     [Fact]
     public async Task Given_ValidTcpClient_When_AcceptPeerAsync_IsCalled_Then_PeerIsAdded()
     {
-        // Arrange
+        // Given
         var pubkey = new Key().PubKey;
 
         _mockPeerFactory.Setup(f => f.CreateConnectingPeerAsync(It.IsAny<TcpClient>()))
@@ -114,10 +113,10 @@ public class PeerManagerTests
         var peerService = new PeerManager(_mockLogger.Object, _nodeOptionsWrapper, _mockPeerFactory.Object);
         var tcpClient = new TcpClient();
 
-        // Act
+        // When
         await peerService.AcceptPeerAsync(tcpClient);
 
-        // Assert
+        // Then
         var field = peerService.GetType().GetField("_peers", BindingFlags.NonPublic | BindingFlags.Instance);
         var peers = field?.GetValue(peerService);
         Assert.NotNull(peers);

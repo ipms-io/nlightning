@@ -3,7 +3,6 @@ using NLightning.Common.Utils;
 
 namespace NLightning.Common.Tests.Messages;
 
-using Common.BitUtils;
 using Common.Types;
 using Constants;
 using Mock;

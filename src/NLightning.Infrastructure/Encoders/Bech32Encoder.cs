@@ -1,9 +1,9 @@
 using System.Text;
 using NBitcoin.DataEncoders;
+using NLightning.Common.Utils;
 
 namespace NLightning.Infrastructure.Encoders;
 
-using Common.BitUtils;
 using Domain.Constants;
 
 /// <summary>

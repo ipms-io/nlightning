@@ -70,11 +70,4 @@ public readonly struct ChainHash : IValueObject, IEquatable<ChainHash>
     {
         return !(left == right);
     }
-
-    public static async Task<ChainHash> DeserializeAsync(Stream stream)
-    {
-        var buffer = new byte[LENGTH];
-        await stream.ReadExactlyAsync(buffer);
-        return new ChainHash(buffer);
-    }
 }

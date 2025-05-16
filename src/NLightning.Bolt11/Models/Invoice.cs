@@ -1,13 +1,13 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using NBitcoin;
+using NLightning.Common.Utils;
 using NLightning.Domain.Crypto.Constants;
 using NLightning.Domain.Money;
 using NLightning.Domain.Protocol.Managers;
 
 namespace NLightning.Bolt11.Models;
 
-using Common.BitUtils;
 using Domain.Constants;
 using Domain.Enums;
 using Domain.Models;

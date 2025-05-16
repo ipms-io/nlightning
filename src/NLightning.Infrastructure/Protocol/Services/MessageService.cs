@@ -1,3 +1,5 @@
+using NLightning.Common.Utils;
+
 namespace NLightning.Infrastructure.Protocol.Services;
 
 using Domain.Protocol.Messages.Interfaces;
@@ -16,6 +18,8 @@ internal sealed class MessageService : IMessageService
 {
     private readonly IMessageSerializer _messageSerializer;
     private readonly ITransportService? _transportService;
+    
+    private bool _disposed;
 
     /// <inheritdoc />
     public event EventHandler<IMessage?>? MessageReceived;
@@ -42,15 +46,13 @@ internal sealed class MessageService : IMessageService
     /// <exception cref="ObjectDisposedException">Thrown when the object is disposed.</exception>
     public async Task SendMessageAsync(IMessage message, CancellationToken cancellationToken = default)
     {
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(MessageService));
+        
         if (cancellationToken.IsCancellationRequested)
-        {
             return;
-        }
 
         if (_transportService == null)
-        {
             throw new InvalidOperationException($"{nameof(MessageService)} is not initialized");
-        }
 
         await _transportService.WriteMessageAsync(message, cancellationToken);
     }
@@ -89,10 +91,15 @@ internal sealed class MessageService : IMessageService
 
     private void Dispose(bool disposing)
     {
+        if (_disposed)
+            return;
+        
         if (disposing)
         {
             _transportService?.Dispose();
         }
+
+        _disposed = true;
     }
 
     ~MessageService()

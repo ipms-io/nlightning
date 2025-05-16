@@ -39,7 +39,7 @@ public class BigSizeTypeSerializer : IValueObjectTypeSerializer<BigSize>
         else
         {
             await stream.WriteAsync(new byte[] { 0xff });
-            await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(bigSize));
+            await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(bigSize.Value));
         }
     }
 

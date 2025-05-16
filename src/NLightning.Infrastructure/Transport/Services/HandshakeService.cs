@@ -1,6 +1,7 @@
 namespace NLightning.Infrastructure.Transport.Services;
 
 using Domain.Transport;
+using Common.Utils;
 using Crypto.Functions;
 using Handshake.States;
 using Interfaces;
@@ -32,7 +33,7 @@ internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> loca
     /// <exception cref="InvalidOperationException">Thrown when there's no more steps to complete</exception>
     public int PerformStep(ReadOnlySpan<byte> inMessage, Span<byte> outMessage, out ITransport? transport)
     {
-        ThrowIfDisposed(_disposed, nameof(HandshakeService));
+        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(HandshakeService));
 
         switch (_steps)
         {
@@ -50,11 +51,6 @@ internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> loca
             default:
                 throw new InvalidOperationException("There's no more steps to complete");
         }
-    }
-
-    private void ThrowIfDisposed(bool disposed, string handshakeServiceName)
-    {
-        throw new NotImplementedException();
     }
 
     #region Initiator Methods
