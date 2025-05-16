@@ -1,13 +1,14 @@
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLightning.Application.Options;
-using NLightning.Domain.Transport.Interfaces;
-using NLightning.Infrastructure.Transport.Services;
 
-namespace NLightning.Bolts.BOLT1.Factories;
+namespace NLightning.Infrastructure.Transport.Factories;
 
-using Common.Interfaces;
+using Domain.Node;
+using Domain.Protocol.Interfaces;
+using Domain.Transport.Interfaces;
+using Domain.Serialization.Messages;
+using Services;
 
 /// <summary>
 /// Factory for creating a transport service.
@@ -18,11 +19,14 @@ using Common.Interfaces;
 public sealed class TransportServiceFactory : ITransportServiceFactory
 {
     private readonly ILoggerFactory _loggerFactory;
+    private readonly IMessageSerializer _messageSerializer;
     private readonly NodeOptions _nodeOptions;
 
-    public TransportServiceFactory(ILoggerFactory loggerFactory, IOptions<NodeOptions> nodeOptions)
+    public TransportServiceFactory(ILoggerFactory loggerFactory, IMessageSerializer messageSerializer,
+                                   IOptions<NodeOptions> nodeOptions)
     {
         _loggerFactory = loggerFactory;
+        _messageSerializer = messageSerializer;
         _nodeOptions = nodeOptions.Value;
     }
 
@@ -32,6 +36,7 @@ public sealed class TransportServiceFactory : ITransportServiceFactory
         // Create a specific logger for the TransportService class
         var logger = _loggerFactory.CreateLogger<TransportService>();
 
-        return new TransportService(logger, _nodeOptions.NetworkTimeout, isInitiator, s, rs, tcpClient);
+        return new TransportService(logger, _messageSerializer, _nodeOptions.NetworkTimeout, isInitiator, s, rs,
+                                    tcpClient);
     }
 }

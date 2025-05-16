@@ -1,8 +1,8 @@
 using System.Diagnostics;
+using NLightning.Domain.Crypto.Constants;
 
 namespace NLightning.Infrastructure.Transport.Handshake.MessagePatterns;
 
-using Crypto.Constants;
 using Enums;
 
 /// <summary>

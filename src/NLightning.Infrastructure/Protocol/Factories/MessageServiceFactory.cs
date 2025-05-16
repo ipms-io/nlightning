@@ -1,10 +1,10 @@
-using NLightning.Domain.Protocol.Interfaces;
-using NLightning.Domain.Transport.Interfaces;
-using NLightning.Infrastructure.Protocol.Services;
-
-namespace NLightning.Bolts.BOLT1.Factories;
+namespace NLightning.Infrastructure.Protocol.Factories;
 
 using Common.Interfaces;
+using Domain.Protocol.Interfaces;
+using Domain.Serialization.Messages;
+using Domain.Transport.Interfaces;
+using Services;
 
 /// <summary>
 /// Factory for creating a message service.
@@ -14,16 +14,16 @@ using Common.Interfaces;
 /// </remarks>
 public sealed class MessageServiceFactory : IMessageServiceFactory
 {
-    private readonly IMessageFactory _messageFactory;
+    private readonly IMessageSerializer _messageSerializer;
 
-    public MessageServiceFactory(IMessageFactory messageFactory)
+    public MessageServiceFactory(IMessageSerializer messageSerializer)
     {
-        _messageFactory = messageFactory;
+        _messageSerializer = messageSerializer;
     }
 
     /// <inheritdoc />
     public IMessageService CreateMessageService(ITransportService transportService)
     {
-        return new MessageService(_messageFactory, transportService);
+        return new MessageService(_messageSerializer, transportService);
     }
 }

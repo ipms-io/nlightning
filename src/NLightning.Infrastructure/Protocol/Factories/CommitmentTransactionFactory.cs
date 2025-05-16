@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Options;
 using NBitcoin;
 using NLightning.Application.Interfaces.Services;
-using NLightning.Application.Options;
 using NLightning.Domain.Money;
+using NLightning.Domain.Node;
 using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Domain.ValueObjects;
 using NLightning.Infrastructure.Protocol.Models;

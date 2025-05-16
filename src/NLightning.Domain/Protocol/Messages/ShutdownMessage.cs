@@ -1,0 +1,20 @@
+using NLightning.Domain.Protocol.Constants;
+using NLightning.Domain.Protocol.Payloads;
+
+namespace NLightning.Domain.Protocol.Messages;
+
+/// <summary>
+/// Represents a shutdown message.
+/// </summary>
+/// <remarks>
+/// The shutdown message is sent by either node to initiate closing, along with the scriptpubkey it wants to be paid to.
+/// The message type is 38.
+/// </remarks>
+/// <param name="payload"></param>
+public sealed class ShutdownMessage(ShutdownPayload payload) : BaseMessage(MessageTypes.SHUTDOWN, payload)
+{
+    /// <summary>
+    /// The payload of the message.
+    /// </summary>
+    public new ShutdownPayload Payload { get => (ShutdownPayload)base.Payload; }
+}

@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Buffers.Binary;
 using NLightning.Common.Utils;
+using NLightning.Infrastructure.Converters;
 using NLightning.Infrastructure.Serialization;
 
 namespace NLightning.Common.Crypto.Providers.Native.Ciphers;

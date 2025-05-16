@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using NLightning.Infrastructure.Crypto.Constants;
+using NLightning.Domain.Crypto.Constants;
 
 namespace NLightning.Infrastructure.Crypto.Functions;
 

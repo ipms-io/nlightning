@@ -2,14 +2,11 @@ using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLightning.Application.Interfaces;
-using NLightning.Application.Options;
-using NLightning.Infrastructure.Node.Interfaces;
+using NLightning.Domain.Node;
 
 namespace NLightning.Application.NLTG.Services;
 
-using Common.Interfaces;
-using Common.Options;
+using Infrastructure.Node.Interfaces;
 using Interfaces;
 
 public class TcpListenerService : ITcpListenerService

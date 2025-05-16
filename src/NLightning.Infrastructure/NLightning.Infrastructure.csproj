@@ -111,6 +111,10 @@
     <ProjectReference Include="..\NLightning.Domain\NLightning.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Node\Options\" />
+  </ItemGroup>
+
   <!--  Import regular sdk if the configuration calls for it  -->
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' And !$(Configuration.Contains('.Wasm'))"/>
   <!--  Import blazor sdk if the configuration calls for it  -->

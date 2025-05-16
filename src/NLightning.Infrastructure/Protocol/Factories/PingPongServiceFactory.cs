@@ -1,8 +1,9 @@
 using Microsoft.Extensions.Options;
+using NLightning.Domain.Factories;
+using NLightning.Domain.Node;
 
 namespace NLightning.Infrastructure.Protocol.Factories;
 
-using Application.Options;
 using Common.Interfaces;
 using Domain.Protocol.Interfaces;
 using Services;

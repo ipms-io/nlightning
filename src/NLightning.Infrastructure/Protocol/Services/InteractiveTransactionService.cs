@@ -1,5 +1,6 @@
 using NLightning.Domain.Money;
 using NLightning.Infrastructure.Protocol.Interfaces;
+using NLightning.Infrastructure.Protocol.Validators;
 
 namespace NLightning.Infrastructure.Protocol.Services;
 

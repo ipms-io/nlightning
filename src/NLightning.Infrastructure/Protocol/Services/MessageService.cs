@@ -2,6 +2,8 @@ namespace NLightning.Infrastructure.Protocol.Services;
 
 using Common.Utils;
 using Domain.Protocol.Interfaces;
+using Domain.Protocol.Messages.Interfaces;
+using Domain.Serialization.Messages;
 using Domain.Transport.Interfaces;
 
 /// <summary>
@@ -13,7 +15,7 @@ using Domain.Transport.Interfaces;
 /// <seealso cref="IMessageService" />
 internal sealed class MessageService : IMessageService
 {
-    private readonly IMessageFactory _messageFactory;
+    private readonly IMessageSerializer _messageSerializer;
     private readonly ITransportService? _transportService;
 
     private bool _disposed;
@@ -28,11 +30,11 @@ internal sealed class MessageService : IMessageService
     /// <summary>
     /// Initializes a new <see cref="MessageService"/> class.
     /// </summary>
-    /// <param name="messageFactory">The message factory.</param>
+    /// <param name="messageSerializer">The message serializer.</param>
     /// <param name="transportService">The transport service.</param>
-    public MessageService(IMessageFactory messageFactory, ITransportService transportService)
+    public MessageService(IMessageSerializer messageSerializer, ITransportService transportService)
     {
-        _messageFactory = messageFactory;
+        _messageSerializer = messageSerializer;
         _transportService = transportService;
 
         _transportService.MessageReceived += ReceiveMessage;
@@ -61,7 +63,7 @@ internal sealed class MessageService : IMessageService
     {
         try
         {
-            var message = _messageFactory.DeserializeMessageAsync(stream).Result;
+            var message = _messageSerializer.DeserializeMessageAsync(stream).Result;
             if (message is not null)
             {
                 MessageReceived?.Invoke(this, message);

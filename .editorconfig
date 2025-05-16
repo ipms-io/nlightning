@@ -62,6 +62,9 @@ dotnet_diagnostic.IDE0055.severity = error
 # IDE0060: Remove unused parameter
 dotnet_diagnostic.IDE0060.severity = error
 
+# IDE0061: Use expression body for local functions
+dotnet_diagnostic.IDE0061.severity = none
+
 # IDE0170: Prefer extended property pattern
 dotnet_diagnostic.IDE0170.severity = error
 
@@ -135,7 +138,7 @@ dotnet_naming_rule.constants_should_be_upper_case.severity = error
 dotnet_naming_rule.constants_should_be_upper_case.symbols = constants
 dotnet_naming_rule.constants_should_be_upper_case.style = constant_style
 
-dotnet_naming_symbols.constants.applicable_kinds = field
+dotnet_naming_symbols.constants.applicable_kinds = field, local
 dotnet_naming_symbols.constants.required_modifiers = const
 
 dotnet_naming_style.constant_style.capitalization = all_upper
@@ -146,7 +149,8 @@ dotnet_naming_rule.non_private_readonly_static_fields_should_be_upper_case.symbo
 dotnet_naming_rule.non_private_readonly_static_fields_should_be_upper_case.style = non_private_readonly_static_style
 
 dotnet_naming_symbols.non_private_readonly_static_fields.applicable_kinds = field
-dotnet_naming_symbols.non_private_readonly_static_fields.required_modifiers = readonly, const
+dotnet_naming_symbols.non_private_readonly_static_fields.applicable_accessibilities = public, protected, internal, protected_internal, private_protected
+dotnet_naming_symbols.non_private_readonly_static_fields.required_modifiers = readonly, static
 
 dotnet_naming_style.non_private_readonly_static_style.capitalization = all_upper
 

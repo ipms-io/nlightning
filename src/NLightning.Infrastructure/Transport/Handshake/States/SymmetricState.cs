@@ -1,6 +1,7 @@
+using NLightning.Domain.Crypto.Constants;
+
 namespace NLightning.Infrastructure.Transport.Handshake.States;
 
-using Crypto.Constants;
 using Crypto.Factories;
 using Crypto.Functions;
 using Crypto.Hashes;

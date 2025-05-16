@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Options;
 using NBitcoin;
 using NLightning.Domain.Money;
+using NLightning.Domain.Node;
 
 namespace NLightning.Infrastructure.Protocol.Factories;
 
 using Application.Interfaces.Services;
-using Application.Options;
 using Domain.Protocol.Interfaces;
 using Domain.ValueObjects;
 using Transactions;

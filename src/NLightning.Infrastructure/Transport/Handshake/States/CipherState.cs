@@ -1,9 +1,9 @@
 using System.Diagnostics;
+using NLightning.Domain.Crypto.Constants;
 
 namespace NLightning.Infrastructure.Transport.Handshake.States;
 
 using Crypto.Ciphers;
-using Crypto.Constants;
 using Crypto.Functions;
 using Crypto.Primitives;
 

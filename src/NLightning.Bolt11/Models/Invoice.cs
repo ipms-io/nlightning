@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using NBitcoin;
+using NLightning.Domain.Crypto.Constants;
 using NLightning.Domain.Money;
 
 namespace NLightning.Bolt11.Models;
@@ -15,7 +16,6 @@ using Domain.Protocol.Constants;
 using Domain.ValueObjects;
 using Enums;
 using Exceptions;
-using Infrastructure.Crypto.Constants;
 using Infrastructure.Crypto.Hashes;
 using Infrastructure.Encoders;
 using TaggedFields;

@@ -1,12 +1,13 @@
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
-using NLightning.Infrastructure.Exceptions;
 
 namespace NLightning.Infrastructure.Transport.Services;
 
 using Domain.Exceptions;
-using Domain.Protocol.Interfaces;
+using Domain.Protocol.Messages.Interfaces;
+using Domain.Serialization.Messages;
 using Domain.Transport.Interfaces;
+using Exceptions;
 using Interfaces;
 using Protocol.Constants;
 
@@ -14,6 +15,7 @@ internal sealed class TransportService : ITransportService
 {
     private readonly CancellationTokenSource _cts = new();
     private readonly ILogger _logger;
+    private readonly IMessageSerializer _messageSerializer;
     private readonly TimeSpan _networkTimeout;
     private readonly SemaphoreSlim _networkWriteSemaphore = new(1, 1);
     private readonly TcpClient _tcpClient;
@@ -31,18 +33,20 @@ internal sealed class TransportService : ITransportService
     public bool IsConnected => _tcpClient.Connected;
     public NBitcoin.PubKey? RemoteStaticPublicKey { get; private set; }
 
-    public TransportService(ILogger logger, TimeSpan networkTimeout, bool isInitiator, ReadOnlySpan<byte> s,
-                            ReadOnlySpan<byte> rs, TcpClient tcpClient)
-        : this(logger, networkTimeout, new HandshakeService(isInitiator, s, rs), tcpClient)
+    public TransportService(ILogger logger, IMessageSerializer messageSerializer, TimeSpan networkTimeout,
+                            bool isInitiator, ReadOnlySpan<byte> s, ReadOnlySpan<byte> rs, TcpClient tcpClient)
+        : this(logger, messageSerializer, networkTimeout, new HandshakeService(isInitiator, s, rs), tcpClient)
     {
+        _messageSerializer = messageSerializer;
         _networkTimeout = networkTimeout;
     }
 
-    internal TransportService(ILogger logger, TimeSpan networkTimeout, IHandshakeService handshakeService,
+    internal TransportService(ILogger logger, IMessageSerializer messageSerializer, TimeSpan networkTimeout, IHandshakeService handshakeService,
                               TcpClient tcpClient)
     {
         _handshakeService = handshakeService;
         _logger = logger;
+        _messageSerializer = messageSerializer;
         _networkTimeout = networkTimeout;
         _tcpClient = tcpClient;
 
@@ -51,7 +55,6 @@ internal sealed class TransportService : ITransportService
 
     public async Task InitializeAsync()
     {
-        ThrowIfDisposed(_disposed, nameof(TransportService));
         if (_handshakeService == null)
         {
             throw new NullReferenceException(nameof(_handshakeService));
@@ -89,8 +92,8 @@ internal sealed class TransportService : ITransportService
                 _logger.LogTrace("Writing Act Three");
                 writeBuffer = new byte[66];
                 len = _handshakeService.PerformStep(readBuffer, writeBuffer, out _transport);
-                await stream.WriteAsync(writeBuffer.AsMemory()[..len]);
-                await stream.FlushAsync();
+                await stream.WriteAsync(writeBuffer.AsMemory()[..len], CancellationToken.None);
+                await stream.FlushAsync(CancellationToken.None);
             }
             catch (Exception e)
             {
@@ -113,8 +116,8 @@ internal sealed class TransportService : ITransportService
                 // Read Act One and Write Act Two
                 _logger.LogTrace("Writing Act Two");
                 var len = _handshakeService.PerformStep(readBuffer, writeBuffer, out _);
-                await stream.WriteAsync(writeBuffer.AsMemory()[..len]);
-                await stream.FlushAsync();
+                await stream.WriteAsync(writeBuffer.AsMemory()[..len], CancellationToken.None);
+                await stream.FlushAsync(CancellationToken.None);
 
                 // Read exactly 66 bytes
                 _logger.LogTrace("Reading Act Three");
@@ -156,15 +159,8 @@ internal sealed class TransportService : ITransportService
         _handshakeService = null;
     }
 
-    private void ThrowIfDisposed(bool disposed, string transportServiceName)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task WriteMessageAsync(IMessage message, CancellationToken cancellationToken = default)
     {
-        ThrowIfDisposed(_disposed, nameof(TransportService));
-
         if (_tcpClient is null || !_tcpClient.Connected)
         {
             throw new InvalidOperationException("TcpClient is not connected");
@@ -177,7 +173,7 @@ internal sealed class TransportService : ITransportService
 
         // Serialize message
         using var messageStream = new MemoryStream();
-        await message.SerializeAsync(messageStream);
+        await _messageSerializer.SerializeAsync(message,messageStream);
 
         // Encrypt message
         var buffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
@@ -199,13 +195,10 @@ internal sealed class TransportService : ITransportService
 
     private async Task ReadResponseAsync()
     {
-        ThrowIfDisposed(_disposed, nameof(TransportService));
-
         while (!_cts.IsCancellationRequested)
         {
             try
             {
-                ThrowIfDisposed(_disposed, nameof(TransportService));
                 if (_transport == null)
                 {
                     throw new InvalidOperationException("Handshake not completed");

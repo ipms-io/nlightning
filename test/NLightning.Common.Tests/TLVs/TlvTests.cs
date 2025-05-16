@@ -1,5 +1,5 @@
 using NBitcoin;
-using NLightning.Domain.Protocol.Tlvs;
+using NLightning.Domain.Protocol.Tlv;
 
 namespace NLightning.Common.Tests.TLVs;
 

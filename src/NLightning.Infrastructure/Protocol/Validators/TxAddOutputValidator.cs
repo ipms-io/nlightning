@@ -1,10 +1,8 @@
 using NLightning.Domain.Money;
+using NLightning.Domain.Protocol.Constants;
+using NLightning.Domain.Protocol.Payloads;
 
-namespace NLightning.Domain.Protocol.Validators;
-
-using Constants;
-using Payloads;
-using ValueObjects;
+namespace NLightning.Infrastructure.Protocol.Validators;
 
 public static class TxAddOutputValidator
 {
@@ -37,7 +35,7 @@ public static class TxAddOutputValidator
             throw new InvalidOperationException("The sats amount is greater than the maximum allowed (MAX_MONEY).");
         }
 
-        if (!isStandardScript(output.Script))
+        if (!isStandardScript(output.Script.ToBytes()))
         {
             throw new InvalidOperationException("The script is non-standard.");
         }

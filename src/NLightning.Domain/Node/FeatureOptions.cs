@@ -1,11 +1,11 @@
 using System.Net;
+using NLightning.Domain.Protocol.Tlv;
 
 namespace NLightning.Domain.Node;
 
 using Enums;
 using Protocol.Constants;
 using Protocol.Models;
-using Protocol.Tlvs;
 using ValueObjects;
 
 public class FeatureOptions

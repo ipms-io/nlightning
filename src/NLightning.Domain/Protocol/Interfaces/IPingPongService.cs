@@ -1,3 +1,5 @@
+using NLightning.Domain.Protocol.Messages.Interfaces;
+
 namespace NLightning.Domain.Protocol.Interfaces;
 
 /// <summary>

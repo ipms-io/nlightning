@@ -5,7 +5,7 @@ using NLightning.Application.NLTG.Helpers;
 using NLightning.Application.NLTG.Managers;
 using NLightning.Application.NLTG.Utilities;
 using Serilog;
-using Network = NLightning.Common.Types.Network;
+using Network = NLightning.Domain.ValueObjects.Network;
 
 try
 {

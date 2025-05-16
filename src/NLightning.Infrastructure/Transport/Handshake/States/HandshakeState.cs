@@ -1,11 +1,11 @@
 using System.Diagnostics;
+using NLightning.Domain.Crypto.Constants;
 using NLightning.Infrastructure.Transport.Handshake.Enums;
 using NLightning.Infrastructure.Transport.Handshake.MessagePatterns;
 using NLightning.Infrastructure.Transport.Interfaces;
 
 namespace NLightning.Infrastructure.Transport.Handshake.States;
 
-using Crypto.Constants;
 using Crypto.Functions;
 using Crypto.Interfaces;
 using Crypto.Primitives;

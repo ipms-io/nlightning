@@ -1,5 +1,6 @@
 using System.Net.Sockets;
 using NLightning.Domain.ValueObjects;
+using NLightning.Infrastructure.Node.Models;
 using PeerAddress = NLightning.Infrastructure.Protocol.Models.PeerAddress;
 
 namespace NLightning.Infrastructure.Node.Interfaces;

@@ -3,15 +3,16 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json;
 using NBitcoin;
-using NLightning.Infrastructure.Crypto.Ciphers;
-using NLightning.Infrastructure.Crypto.Constants;
-using NLightning.Infrastructure.Crypto.Hashes;
+using NLightning.Domain.Crypto.Constants;
 using Serilog;
 
 namespace NLightning.Application.NLTG.Managers;
 
 using Common.Interfaces;
 using Constants;
+using Infrastructure.Crypto.Ciphers;
+using Infrastructure.Crypto.Factories;
+using Infrastructure.Crypto.Hashes;
 using Models;
 
 /// <summary>

@@ -1,7 +1,8 @@
 using System.Net.Sockets;
-using NLightning.Domain.Transport.Interfaces;
 
-namespace NLightning.Common.Interfaces;
+namespace NLightning.Domain.Protocol.Interfaces;
+
+using Transport.Interfaces;
 
 /// <summary>
 /// Interface for a transport service factory.

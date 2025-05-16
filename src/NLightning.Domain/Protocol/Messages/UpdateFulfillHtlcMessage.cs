@@ -1,0 +1,20 @@
+using NLightning.Domain.Protocol.Constants;
+using NLightning.Domain.Protocol.Payloads;
+
+namespace NLightning.Domain.Protocol.Messages;
+
+/// <summary>
+/// Represents a update_fulfill_htlc message.
+/// </summary>
+/// <remarks>
+/// The update_fulfill_htlc message is sent to let the peer know that the htlc was fulfiled
+/// The message type is 130.
+/// </remarks>
+/// <param name="payload"></param>
+public sealed class UpdateFulfillHtlcMessage(UpdateFulfillHtlcPayload payload) : BaseMessage(MessageTypes.UPDATE_FULFILL_HTLC, payload)
+{
+    /// <summary>
+    /// The payload of the message.
+    /// </summary>
+    public new UpdateFulfillHtlcPayload Payload { get => (UpdateFulfillHtlcPayload)base.Payload; }
+}

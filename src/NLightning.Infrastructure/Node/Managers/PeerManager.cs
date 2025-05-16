@@ -2,11 +2,12 @@ using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
+using NLightning.Domain.Node;
+using NLightning.Infrastructure.Node.Models;
 using NLightning.Infrastructure.Protocol.Models;
 
 namespace NLightning.Infrastructure.Node.Managers;
 
-using Application.Options;
 using Domain.Exceptions;
 using Domain.ValueObjects;
 using Interfaces;

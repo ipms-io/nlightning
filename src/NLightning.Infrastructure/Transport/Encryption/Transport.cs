@@ -1,6 +1,6 @@
+using NLightning.Domain.Crypto.Constants;
 using NLightning.Domain.Exceptions;
 using NLightning.Domain.Transport.Interfaces;
-using NLightning.Infrastructure.Crypto.Constants;
 using NLightning.Infrastructure.Protocol.Constants;
 using NLightning.Infrastructure.Transport.Handshake.States;
 
