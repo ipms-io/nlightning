@@ -1,14 +1,13 @@
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using NLightning.Infrastructure.Protocol.Models;
 
 namespace NLightning.Infrastructure.Protocol.Services;
 
 using Crypto.Factories;
 using Crypto.Hashes;
 using Crypto.Interfaces;
-using Domain.Protocol.Interfaces;
-using Domain.ValueObjects;
+using Domain.Protocol.Services;
+using Models;
 
 
 /// <summary>

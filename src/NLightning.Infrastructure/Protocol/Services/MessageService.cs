@@ -1,10 +1,9 @@
 namespace NLightning.Infrastructure.Protocol.Services;
 
-using Common.Utils;
-using Domain.Protocol.Interfaces;
 using Domain.Protocol.Messages.Interfaces;
+using Domain.Protocol.Services;
 using Domain.Serialization.Messages;
-using Domain.Transport.Interfaces;
+using Domain.Transport;
 
 /// <summary>
 /// Service for sending and receiving messages.
@@ -17,8 +16,6 @@ internal sealed class MessageService : IMessageService
 {
     private readonly IMessageSerializer _messageSerializer;
     private readonly ITransportService? _transportService;
-
-    private bool _disposed;
 
     /// <inheritdoc />
     public event EventHandler<IMessage?>? MessageReceived;
@@ -50,7 +47,6 @@ internal sealed class MessageService : IMessageService
             return;
         }
 
-        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(MessageService));
         if (_transportService == null)
         {
             throw new InvalidOperationException($"{nameof(MessageService)} is not initialized");
@@ -93,14 +89,9 @@ internal sealed class MessageService : IMessageService
 
     private void Dispose(bool disposing)
     {
-        if (!_disposed)
+        if (disposing)
         {
-            if (disposing)
-            {
-                _transportService?.Dispose();
-            }
-
-            _disposed = true;
+            _transportService?.Dispose();
         }
     }
 

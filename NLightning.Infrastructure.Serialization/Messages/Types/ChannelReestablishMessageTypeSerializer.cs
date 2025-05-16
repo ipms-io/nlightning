@@ -1,25 +1,31 @@
 using System.Runtime.Serialization;
-using NLightning.Domain.Protocol.Tlv;
 
 namespace NLightning.Infrastructure.Serialization.Messages.Types;
 
-using NLightning.Domain.Protocol.Messages;
-using NLightning.Domain.Protocol.Messages.Interfaces;
-using NLightning.Domain.Protocol.Payloads;
-using NLightning.Domain.Serialization.Factories;
-using NLightning.Domain.Serialization.Messages;
+using Domain.Protocol.Constants;
+using Domain.Protocol.Factories;
+using Domain.Protocol.Messages;
+using Domain.Protocol.Messages.Interfaces;
+using Domain.Protocol.Payloads;
+using Domain.Protocol.Tlv;
+using Domain.Serialization.Factories;
+using Domain.Serialization.Messages.Types;
 using Exceptions;
+using Interfaces;
 
 public class ChannelReestablishMessageTypeSerializer : IMessageTypeSerializer<ChannelReestablishMessage>
 {
     private readonly IPayloadTypeSerializerFactory _payloadTypeSerializerFactory;
-    private readonly ITlvTypeSerializerFactory _tlvTypeSerializerFactory;
+    private readonly ITlvConverterFactory _tlvConverterFactory;
+    private readonly ITlvStreamSerializer _tlvStreamSerializer;
 
     public ChannelReestablishMessageTypeSerializer(IPayloadTypeSerializerFactory payloadTypeSerializerFactory,
-                                               ITlvTypeSerializerFactory tlvTypeSerializerFactory)
+                                                   ITlvConverterFactory tlvConverterFactory,
+                                                   ITlvStreamSerializer tlvStreamSerializer)
     {
         _payloadTypeSerializerFactory = payloadTypeSerializerFactory;
-        _tlvTypeSerializerFactory = tlvTypeSerializerFactory;
+        _tlvConverterFactory = tlvConverterFactory;
+        _tlvStreamSerializer = tlvStreamSerializer;
     }
     
     public async Task SerializeAsync(IMessage message, Stream stream)
@@ -31,14 +37,9 @@ public class ChannelReestablishMessageTypeSerializer : IMessageTypeSerializer<Ch
         var payloadTypeSerializer = _payloadTypeSerializerFactory.GetSerializer(message.Type) 
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
-        
-        if (channelReestablishMessage.NextFundingTlv is not null)
-        {
-            var tlvSerializer =
-                _tlvTypeSerializerFactory.GetSerializer<NextFundingTlv>()
-                ?? throw new SerializationException($"No serializer found for tlv type {nameof(NextFundingTlv)}");
-            await tlvSerializer.SerializeAsync(channelReestablishMessage.NextFundingTlv, stream);
-        }
+
+        // Serialize the TLV stream
+        await _tlvStreamSerializer.SerializeAsync(channelReestablishMessage.Extension, stream);
     }
 
     /// <summary>
@@ -61,11 +62,18 @@ public class ChannelReestablishMessageTypeSerializer : IMessageTypeSerializer<Ch
             if (stream.Position >= stream.Length)
                 return new ChannelReestablishMessage(payload);
 
-            var nextFundingTlvSerializer =
-                _tlvTypeSerializerFactory.GetSerializer<NextFundingTlv>()
-                ?? throw new SerializationException(
-                    $"No serializer found for tlv type {nameof(NextFundingTlv)}");
-            var nextFundingTlv = await nextFundingTlvSerializer.DeserializeAsync(stream);
+            var extension = await _tlvStreamSerializer.DeserializeAsync(stream);
+            if (extension is null)
+                return new ChannelReestablishMessage(payload);
+
+            NextFundingTlv? nextFundingTlv = null;
+            if (extension.TryGetTlv(TlvConstants.NEXT_FUNDING, out var baseNextFundingTlv))
+            {
+                var tlvConverter = _tlvConverterFactory.GetConverter<NextFundingTlv>()
+                                   ?? throw new SerializationException(
+                                       $"No serializer found for tlv type {nameof(NextFundingTlv)}");
+                nextFundingTlv = tlvConverter.ConvertFromBase(baseNextFundingTlv!);
+            }
 
             return new ChannelReestablishMessage(payload, nextFundingTlv);
         }

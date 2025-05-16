@@ -1,13 +1,13 @@
 using Microsoft.Extensions.Options;
-using NLightning.Domain.Factories;
-using NLightning.Domain.Node;
-using NLightning.Domain.Protocol.Messages;
-using NLightning.Domain.Protocol.Messages.Interfaces;
 
 namespace NLightning.Infrastructure.Protocol.Services;
 
 using Domain.Exceptions;
-using Domain.Protocol.Interfaces;
+using Domain.Factories;
+using Domain.Node.Options;
+using Domain.Protocol.Messages;
+using Domain.Protocol.Messages.Interfaces;
+using Domain.Protocol.Services;
 
 /// <summary>
 /// Service for managing the ping pong protocol.

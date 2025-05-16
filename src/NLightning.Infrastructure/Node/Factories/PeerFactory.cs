@@ -2,14 +2,14 @@ using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLightning.Domain.Factories;
-using NLightning.Domain.Node;
 
 namespace NLightning.Infrastructure.Node.Factories;
 
-using Common.Interfaces;
 using Domain.Exceptions;
-using Domain.Protocol.Interfaces;
+using Domain.Factories;
+using Domain.Node.Options;
+using Domain.Protocol.Factories;
+using Domain.Protocol.Managers;
 using Interfaces;
 using Models;
 

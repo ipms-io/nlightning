@@ -1,5 +1,3 @@
-using NLightning.Domain.Crypto.Constants;
-
 namespace NLightning.Infrastructure.Transport.Handshake.States;
 
 using Crypto.Factories;
@@ -7,6 +5,7 @@ using Crypto.Functions;
 using Crypto.Hashes;
 using Crypto.Interfaces;
 using Crypto.Primitives;
+using Domain.Crypto.Constants;
 
 /// <summary>
 /// A SymmetricState object contains a CipherState plus ck (a chaining

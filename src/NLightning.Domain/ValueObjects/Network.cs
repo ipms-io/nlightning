@@ -4,10 +4,10 @@ using Protocol.Constants;
 
 public readonly struct Network : IEquatable<Network>, IEquatable<NBitcoin.Network>
 {
-    public static readonly Network Mainnet = new(NetworkConstants.MAINNET);
-    public static readonly Network Testnet = new(NetworkConstants.TESTNET);
-    public static readonly Network Regtest = new(NetworkConstants.REGTEST);
-    public static readonly Network Signet = new(NetworkConstants.SIGNET);
+    public static readonly Network MAINNET = new(NetworkConstants.MAINNET);
+    public static readonly Network TESTNET = new(NetworkConstants.TESTNET);
+    public static readonly Network REGTEST = new(NetworkConstants.REGTEST);
+    public static readonly Network SIGNET = new(NetworkConstants.SIGNET);
 
     public string Name { get; }
 
@@ -22,9 +22,9 @@ public readonly struct Network : IEquatable<Network>, IEquatable<NBitcoin.Networ
         {
             return Name switch
             {
-                NetworkConstants.MAINNET => ChainConstants.Main,
-                NetworkConstants.TESTNET => ChainConstants.Testnet,
-                NetworkConstants.REGTEST => ChainConstants.Regtest,
+                NetworkConstants.MAINNET => ChainConstants.MAIN,
+                NetworkConstants.TESTNET => ChainConstants.TESTNET,
+                NetworkConstants.REGTEST => ChainConstants.REGTEST,
                 _ => throw new Exception("Chain not supported.")
             };
         }
@@ -50,9 +50,9 @@ public readonly struct Network : IEquatable<Network>, IEquatable<NBitcoin.Networ
     {
         return network.Name switch
         {
-            "Main" => Mainnet,
-            "TestNet" => Testnet,
-            "RegTest" => Regtest,
+            "Main" => MAINNET,
+            "TestNet" => TESTNET,
+            "RegTest" => REGTEST,
             _ => throw new ArgumentException("Unsupported network type", nameof(network)),
         };
     }

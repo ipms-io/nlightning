@@ -1,25 +1,31 @@
 using System.Runtime.Serialization;
-using NLightning.Domain.Protocol.Tlv;
 
 namespace NLightning.Infrastructure.Serialization.Messages.Types;
 
+using Domain.Protocol.Constants;
+using Domain.Protocol.Factories;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Payloads;
+using Domain.Protocol.Tlv;
 using Domain.Serialization.Factories;
-using Domain.Serialization.Messages;
+using Domain.Serialization.Messages.Types;
 using Exceptions;
+using Interfaces;
 
 public class ClosingSignedMessageTypeSerializer : IMessageTypeSerializer<ClosingSignedMessage>
 {
     private readonly IPayloadTypeSerializerFactory _payloadTypeSerializerFactory;
-    private readonly ITlvTypeSerializerFactory _tlvTypeSerializerFactory;
+    private readonly ITlvConverterFactory _tlvConverterFactory;
+    private readonly ITlvStreamSerializer _tlvStreamSerializer;
 
     public ClosingSignedMessageTypeSerializer(IPayloadTypeSerializerFactory payloadTypeSerializerFactory,
-                                          ITlvTypeSerializerFactory tlvTypeSerializerFactory)
+                                              ITlvConverterFactory tlvConverterFactory,
+                                              ITlvStreamSerializer tlvStreamSerializer)
     {
         _payloadTypeSerializerFactory = payloadTypeSerializerFactory;
-        _tlvTypeSerializerFactory = tlvTypeSerializerFactory;
+        _tlvConverterFactory = tlvConverterFactory;
+        _tlvStreamSerializer = tlvStreamSerializer;
     }
     
     public async Task SerializeAsync(IMessage message, Stream stream)
@@ -31,11 +37,9 @@ public class ClosingSignedMessageTypeSerializer : IMessageTypeSerializer<Closing
         var payloadTypeSerializer = _payloadTypeSerializerFactory.GetSerializer(message.Type) 
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
-        
-        var tlvSerializer =
-            _tlvTypeSerializerFactory.GetSerializer<FeeRangeTlv>()
-            ?? throw new SerializationException($"No serializer found for tlv type {nameof(FeeRangeTlv)}");
-        await tlvSerializer.SerializeAsync(closingSignedMessage.FeeRangeTlv, stream);
+
+        // Serialize the TLV stream
+        await _tlvStreamSerializer.SerializeAsync(closingSignedMessage.Extension, stream);
     }
 
     /// <summary>
@@ -58,12 +62,14 @@ public class ClosingSignedMessageTypeSerializer : IMessageTypeSerializer<Closing
             if (stream.Position >= stream.Length)
                 throw new SerializationException("Required extension is missing");
             
-            var feeRangeTlvSerializer =
-                _tlvTypeSerializerFactory.GetSerializer<FeeRangeTlv>()
-                ?? throw new SerializationException(
-                    $"No serializer found for tlv type {nameof(FeeRangeTlv)}");
-            var feeRangeTlv = await feeRangeTlvSerializer.DeserializeAsync(stream)
-                              ?? throw new SerializationException($"Error serializing {nameof(FeeRangeTlv)}");
+            var extension = await _tlvStreamSerializer.DeserializeAsync(stream);
+            if (extension is null || !extension.TryGetTlv(TlvConstants.FEE_RANGE, out var baseFeeRangeTlv))
+                throw new SerializationException("Required extension is missing");
+
+            var tlvConverter = _tlvConverterFactory.GetConverter<FeeRangeTlv>()
+                               ?? throw new SerializationException(
+                                   $"No serializer found for tlv type {nameof(FeeRangeTlv)}");
+            var feeRangeTlv = tlvConverter.ConvertFromBase(baseFeeRangeTlv!);
 
             return new ClosingSignedMessage(payload, feeRangeTlv);
         }

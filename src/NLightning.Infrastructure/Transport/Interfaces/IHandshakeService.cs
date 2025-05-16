@@ -1,6 +1,6 @@
 namespace NLightning.Infrastructure.Transport.Interfaces;
 
-using Domain.Transport.Interfaces;
+using Domain.Transport;
 
 /// <summary>
 /// The Handshake Service

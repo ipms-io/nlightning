@@ -1,7 +1,7 @@
-using NLightning.Domain.Enums;
-using NLightning.Domain.ValueObjects;
-
 namespace NLightning.Domain.Channels;
+
+using Enums;
+using ValueObjects;
 
 public class Channel
 {

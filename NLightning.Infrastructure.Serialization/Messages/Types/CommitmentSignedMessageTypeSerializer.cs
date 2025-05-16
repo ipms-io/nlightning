@@ -1,12 +1,13 @@
 using System.Runtime.Serialization;
-using NLightning.Domain.Protocol.Messages;
-using NLightning.Domain.Protocol.Messages.Interfaces;
-using NLightning.Domain.Protocol.Payloads;
-using NLightning.Domain.Serialization.Factories;
-using NLightning.Domain.Serialization.Messages;
-using NLightning.Infrastructure.Exceptions;
 
 namespace NLightning.Infrastructure.Serialization.Messages.Types;
+
+using Domain.Protocol.Messages;
+using Domain.Protocol.Messages.Interfaces;
+using Domain.Protocol.Payloads;
+using Domain.Serialization.Factories;
+using Domain.Serialization.Messages.Types;
+using Exceptions;
 
 public class CommitmentSignedMessageTypeSerializer : IMessageTypeSerializer<CommitmentSignedMessage>
 {

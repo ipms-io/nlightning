@@ -1,8 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Domain.Protocol.Constants;
 
 /// <summary>
 /// Represents the message types used in the Lightning Network.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public static class MessageTypes
 {
     #region Setup & Control

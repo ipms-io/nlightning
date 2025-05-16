@@ -1,25 +1,31 @@
 using System.Runtime.Serialization;
-using NLightning.Domain.Protocol.Tlv;
 
 namespace NLightning.Infrastructure.Serialization.Messages.Types;
 
+using Domain.Protocol.Constants;
+using Domain.Protocol.Factories;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Payloads;
+using Domain.Protocol.Tlv;
 using Domain.Serialization.Factories;
-using Domain.Serialization.Messages;
+using Domain.Serialization.Messages.Types;
 using Exceptions;
+using Interfaces;
 
 public class TxInitRbfMessageTypeSerializer : IMessageTypeSerializer<TxInitRbfMessage>
 {
     private readonly IPayloadTypeSerializerFactory _payloadTypeSerializerFactory;
-    private readonly ITlvTypeSerializerFactory _tlvTypeSerializerFactory;
+    private readonly ITlvConverterFactory _tlvConverterFactory;
+    private readonly ITlvStreamSerializer _tlvStreamSerializer;
 
     public TxInitRbfMessageTypeSerializer(IPayloadTypeSerializerFactory payloadTypeSerializerFactory,
-                                      ITlvTypeSerializerFactory tlvTypeSerializerFactory)
+                                          ITlvConverterFactory tlvConverterFactory,
+                                          ITlvStreamSerializer tlvStreamSerializer)
     {
         _payloadTypeSerializerFactory = payloadTypeSerializerFactory;
-        _tlvTypeSerializerFactory = tlvTypeSerializerFactory;
+        _tlvConverterFactory = tlvConverterFactory;
+        _tlvStreamSerializer = tlvStreamSerializer;
     }
     
     public async Task SerializeAsync(IMessage message, Stream stream)
@@ -32,23 +38,8 @@ public class TxInitRbfMessageTypeSerializer : IMessageTypeSerializer<TxInitRbfMe
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
 
-        if (txAckRbfMessage.FundingOutputContributionTlv is not null)
-        {
-            var tlvSerializer =
-                _tlvTypeSerializerFactory.GetSerializer<FundingOutputContributionTlv>()
-                ?? throw new SerializationException(
-                    $"No serializer found for tlv type {nameof(FundingOutputContributionTlv)}");
-            await tlvSerializer.SerializeAsync(txAckRbfMessage.FundingOutputContributionTlv, stream);
-        }
-
-        if (txAckRbfMessage.RequireConfirmedInputsTlv is not null)
-        {
-            var tlvSerializer = 
-                _tlvTypeSerializerFactory.GetSerializer<RequireConfirmedInputsTlv>()
-                ?? throw new SerializationException(
-                    $"No serializer found for tlv type {nameof(RequireConfirmedInputsTlv)}");
-            await tlvSerializer.SerializeAsync(txAckRbfMessage.RequireConfirmedInputsTlv, stream);
-        }
+        // Serialize the TLV stream
+        await _tlvStreamSerializer.SerializeAsync(txAckRbfMessage.Extension, stream);
     }
 
     /// <summary>
@@ -71,17 +62,28 @@ public class TxInitRbfMessageTypeSerializer : IMessageTypeSerializer<TxInitRbfMe
             if (stream.Position >= stream.Length)
                 return new TxInitRbfMessage(payload);
 
-            var fundingOutputContributionTlvSerializer =
-                _tlvTypeSerializerFactory.GetSerializer<FundingOutputContributionTlv>()
-                ?? throw new SerializationException(
-                    $"No serializer found for tlv type {nameof(FundingOutputContributionTlv)}");
-            var fundingOutputContributionTlv = await fundingOutputContributionTlvSerializer.DeserializeAsync(stream);
-            
-            var requireConfirmedInputsTlvSerializer =
-                _tlvTypeSerializerFactory.GetSerializer<RequireConfirmedInputsTlv>()
-                ?? throw new SerializationException(
-                    $"No serializer found for tlv type {nameof(RequireConfirmedInputsTlv)}");
-            var requireConfirmedInputsTlv = await requireConfirmedInputsTlvSerializer.DeserializeAsync(stream);
+            var extension = await _tlvStreamSerializer.DeserializeAsync(stream);
+            if (extension is null)
+                return new TxInitRbfMessage(payload);
+
+            FundingOutputContributionTlv? fundingOutputContributionTlv = null;
+            if (extension.TryGetTlv(TlvConstants.FUNDING_OUTPUT_CONTRIBUTION, out var baseFundingOutputContributionTlv))
+            {
+                var tlvConverter = _tlvConverterFactory.GetConverter<FundingOutputContributionTlv>()
+                                   ?? throw new SerializationException(
+                                       $"No serializer found for tlv type {nameof(FundingOutputContributionTlv)}");
+                fundingOutputContributionTlv = tlvConverter.ConvertFromBase(baseFundingOutputContributionTlv!);
+            }
+
+            RequireConfirmedInputsTlv? requireConfirmedInputsTlv = null;
+            if (extension.TryGetTlv(TlvConstants.REQUIRE_CONFIRMED_INPUTS, out var baserequireConfirmedInputsTlv))
+            {
+                var tlvConverter =
+                    _tlvConverterFactory.GetConverter<RequireConfirmedInputsTlv>()
+                    ?? throw new SerializationException(
+                        $"No serializer found for tlv type {nameof(RequireConfirmedInputsTlv)}");
+                requireConfirmedInputsTlv = tlvConverter.ConvertFromBase(baserequireConfirmedInputsTlv!);
+            }
 
             return new TxInitRbfMessage(payload, fundingOutputContributionTlv, requireConfirmedInputsTlv);
         }

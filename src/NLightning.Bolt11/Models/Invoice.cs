@@ -3,12 +3,12 @@ using System.Text.RegularExpressions;
 using NBitcoin;
 using NLightning.Domain.Crypto.Constants;
 using NLightning.Domain.Money;
+using NLightning.Domain.Protocol.Managers;
 
 namespace NLightning.Bolt11.Models;
 
 using Common.BitUtils;
 using Domain.Constants;
-using Common.Interfaces;
 using Domain.Enums;
 using Domain.Models;
 using Domain.Node;
@@ -31,14 +31,14 @@ public partial class Invoice
     #region Private Fields
     private static readonly Dictionary<string, Network> s_supportedNetworks = new()
     {
-        { InvoiceConstants.PREFIX_MAINET, Network.Mainnet },
-        { InvoiceConstants.PREFIX_TESTNET, Network.Testnet },
-        { InvoiceConstants.PREFIX_SIGNET, Network.Signet },
-        { InvoiceConstants.PREFIX_REGTEST, Network.Regtest },
-        { InvoiceConstants.PREFIX_MAINET.ToUpperInvariant(), Network.Mainnet },
-        { InvoiceConstants.PREFIX_TESTNET.ToUpperInvariant(), Network.Testnet },
-        { InvoiceConstants.PREFIX_SIGNET.ToUpperInvariant(), Network.Signet },
-        { InvoiceConstants.PREFIX_REGTEST.ToUpperInvariant(), Network.Regtest }
+        { InvoiceConstants.PREFIX_MAINET, Network.MAINNET },
+        { InvoiceConstants.PREFIX_TESTNET, Network.TESTNET },
+        { InvoiceConstants.PREFIX_SIGNET, Network.SIGNET },
+        { InvoiceConstants.PREFIX_REGTEST, Network.REGTEST },
+        { InvoiceConstants.PREFIX_MAINET.ToUpperInvariant(), Network.MAINNET },
+        { InvoiceConstants.PREFIX_TESTNET.ToUpperInvariant(), Network.TESTNET },
+        { InvoiceConstants.PREFIX_SIGNET.ToUpperInvariant(), Network.SIGNET },
+        { InvoiceConstants.PREFIX_REGTEST.ToUpperInvariant(), Network.REGTEST }
     };
 
     [GeneratedRegex(@"^[a-z]+((\d+)([munp])?)?$")]

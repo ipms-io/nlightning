@@ -1,8 +1,8 @@
 using NBitcoin;
-using NLightning.Domain.Money;
-using NLightning.Domain.ValueObjects;
 
 namespace NLightning.Infrastructure.Protocol.Outputs;
+
+using Domain.Money;
 
 /// <summary>
 /// Represents a to_remote output in a commitment transaction.

@@ -1,7 +1,7 @@
-namespace NLightning.Domain.Protocol.Validators;
+namespace NLightning.Infrastructure.Protocol.Validators;
 
-using Constants;
-using Payloads;
+using Domain.Protocol.Constants;
+using Domain.Protocol.Payloads;
 
 public static class TxAddInputValidator
 {

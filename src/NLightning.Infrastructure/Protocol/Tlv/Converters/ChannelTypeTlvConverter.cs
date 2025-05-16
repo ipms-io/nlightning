@@ -1,5 +1,3 @@
-using NBitcoin;
-
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
 using Domain.Protocol.Constants;

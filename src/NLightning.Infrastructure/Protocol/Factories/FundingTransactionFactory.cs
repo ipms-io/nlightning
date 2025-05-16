@@ -1,24 +1,26 @@
 using Microsoft.Extensions.Options;
 using NBitcoin;
-using NLightning.Domain.Money;
-using NLightning.Domain.Node;
 
 namespace NLightning.Infrastructure.Protocol.Factories;
 
-using Application.Interfaces.Services;
-using Domain.Protocol.Interfaces;
-using Domain.ValueObjects;
+using Domain.Bitcoin.Services;
+using Domain.Money;
+using Domain.Node.Options;
+using Domain.Protocol.Factories;
 using Transactions;
+using Network = Domain.ValueObjects.Network;
 
 public class FundingTransactionFactory : IFundingTransactionFactory
 {
     private readonly IFeeService _feeService;
     private readonly NodeOptions _nodeOptions;
+    private readonly Network _network;
 
     public FundingTransactionFactory(IFeeService feeService, IOptions<NodeOptions> nodeOptions)
     {
         _feeService = feeService;
         _nodeOptions = nodeOptions.Value;
+        _network = _nodeOptions.Network;
     }
 
     public FundingTransaction CreateFundingTransaction(PubKey localFundingPubKey, PubKey remoteFundingPubKey,
@@ -26,7 +28,7 @@ public class FundingTransactionFactory : IFundingTransactionFactory
                                                        Coin[] coins, params BitcoinSecret[] secrets)
     {
         var fundingTx = new FundingTransaction(_nodeOptions.DustLimitAmount, _nodeOptions.HasAnchorOutputs,
-                                               _nodeOptions.Network, localFundingPubKey, remoteFundingPubKey,
+                                               _network, localFundingPubKey, remoteFundingPubKey,
                                                fundingSatoshis, changeScript, coins);
 
         fundingTx.ConstructTransaction(_feeService.GetCachedFeeRatePerKw());
@@ -42,7 +44,7 @@ public class FundingTransactionFactory : IFundingTransactionFactory
                                                        params BitcoinSecret[] secrets)
     {
         var fundingTx = new FundingTransaction(_nodeOptions.DustLimitAmount, _nodeOptions.HasAnchorOutputs,
-                                               _nodeOptions.Network, localFundingPubKey, remoteFundingPubKey,
+                                               _network, localFundingPubKey, remoteFundingPubKey,
                                                fundingSatoshis, redeemScript, changeScript, coins);
 
         fundingTx.ConstructTransaction(_feeService.GetCachedFeeRatePerKw());

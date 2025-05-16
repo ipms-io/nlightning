@@ -1,8 +1,8 @@
-using NLightning.Domain.Protocol.Constants;
-using NLightning.Domain.Protocol.Models;
-using NLightning.Domain.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Tlv;
+
+using Constants;
+using Models;
+using ValueObjects;
 
 /// <summary>
 /// Networks TLV.

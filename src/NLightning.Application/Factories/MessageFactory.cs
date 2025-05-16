@@ -1,17 +1,17 @@
 using Microsoft.Extensions.Options;
 using NBitcoin;
 using NBitcoin.Crypto;
-using NLightning.Domain.Factories;
-using NLightning.Domain.Protocol.Tlv;
 
 namespace NLightning.Application.Factories;
 
-using Domain.Node;
-using Domain.Protocol.Interfaces;
+using Domain.Factories;
+using Domain.Money;
+using Domain.Node.Options;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Models;
 using Domain.Protocol.Payloads;
+using Domain.Protocol.Tlv;
 using Domain.ValueObjects;
 
 /// <summary>
@@ -20,10 +20,12 @@ using Domain.ValueObjects;
 public class MessageFactory : IMessageFactory
 {
     private readonly NodeOptions _nodeOptions;
+    private readonly Network _network;
 
     public MessageFactory(IOptions<NodeOptions> nodeOptions)
     {
         _nodeOptions = nodeOptions.Value;
+        _network = _nodeOptions.Network;
     }
 
     #region Init Message
@@ -174,15 +176,15 @@ public class MessageFactory : IMessageFactory
     /// </summary>
     /// <param name="channelId">The channel id.</param>
     /// <param name="serialId">The serial id.</param>
-    /// <param name="sats">The number of satoshis.</param>
+    /// <param name="amount">The number of satoshis.</param>
     /// <param name="script">The script.</param>
     /// <returns>The TxAddOutput message.</returns>
     /// <seealso cref="TxAddOutputMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="TxAddOutputPayload"/>
-    public IMessage CreateTxAddOutputMessage(ChannelId channelId, ulong serialId, ulong sats, byte[] script)
+    public IMessage CreateTxAddOutputMessage(ChannelId channelId, ulong serialId, LightningMoney amount, Script script)
     {
-        var payload = new TxAddOutputPayload(channelId, serialId, sats, script);
+        var payload = new TxAddOutputPayload(amount, channelId, script, serialId);
 
         return new TxAddOutputMessage(payload);
     }
@@ -428,14 +430,13 @@ public class MessageFactory : IMessageFactory
                                               ChannelFlags channelFlags, Script? shutdownScriptPubkey = null,
                                               byte[]? channelType = null, bool requireConfirmedInputs = false)
     {
-        var payload = new OpenChannel2Payload(_nodeOptions.DustLimitAmount, _nodeOptions.HtlcMinimumAmount,
-                                              _nodeOptions.Locktime, _nodeOptions.MaxHtlcValueInFlight,
-                                              _nodeOptions.MaxAcceptedHtlcs, _nodeOptions.Network,
-                                              _nodeOptions.ToSelfDelay, temporaryChannelId, fundingFeeRatePerKw,
-                                              commitmentFeeRatePerKw, fundingSatoshis, fundingPubKey,
-                                              revocationBasepoint, paymentBasepoint, delayedPaymentBasepoint,
-                                              htlcBasepoint, firstPerCommitmentPoint, secondPerCommitmentPoint,
-                                              channelFlags);
+        var payload = new OpenChannel2Payload(_network.ChainHash, channelFlags, commitmentFeeRatePerKw,
+                                              delayedPaymentBasepoint, _nodeOptions.DustLimitAmount,
+                                              firstPerCommitmentPoint, fundingSatoshis, fundingFeeRatePerKw,
+                                              fundingPubKey, htlcBasepoint, _nodeOptions.HtlcMinimumAmount,
+                                              _nodeOptions.Locktime, _nodeOptions.MaxAcceptedHtlcs,
+                                              _nodeOptions.MaxHtlcValueInFlight, paymentBasepoint, revocationBasepoint,
+                                              secondPerCommitmentPoint, _nodeOptions.ToSelfDelay, temporaryChannelId);
 
         return new OpenChannel2Message(payload,
                                        shutdownScriptPubkey is null
@@ -467,18 +468,19 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="PubKey"/>
     /// <seealso cref="Script"/>
     /// <seealso cref="AcceptChannel2Payload"/>
-    public IMessage CreateAcceptChannel2Message(ChannelId temporaryChannelId, ulong fundingSatoshis,
+    public IMessage CreateAcceptChannel2Message(ChannelId temporaryChannelId, LightningMoney fundingSatoshis,
                                                 PubKey fundingPubKey, PubKey revocationBasepoint,
                                                 PubKey paymentBasepoint, PubKey delayedPaymentBasepoint,
                                                 PubKey htlcBasepoint, PubKey firstPerCommitmentPoint,
                                                 Script? shutdownScriptPubkey = null, byte[]? channelType = null,
                                                 bool requireConfirmedInputs = false)
     {
-        var payload = new AcceptChannel2Payload(_nodeOptions.DustLimitAmount, _nodeOptions.HtlcMinimumAmount,
-                                                _nodeOptions.MaxHtlcValueInFlight, _nodeOptions.MaxAcceptedHtlcs,
-                                                _nodeOptions.MinimumDepth, _nodeOptions.ToSelfDelay, temporaryChannelId,
-                                                fundingSatoshis, fundingPubKey, revocationBasepoint, paymentBasepoint,
-                                                delayedPaymentBasepoint, htlcBasepoint, firstPerCommitmentPoint);
+        var payload = new AcceptChannel2Payload(delayedPaymentBasepoint, _nodeOptions.DustLimitAmount,
+                                                firstPerCommitmentPoint, fundingSatoshis, fundingPubKey,
+                                                htlcBasepoint, _nodeOptions.HtlcMinimumAmount,
+                                                _nodeOptions.MaxAcceptedHtlcs, _nodeOptions.MaxHtlcValueInFlight,
+                                                _nodeOptions.MinimumDepth, paymentBasepoint, revocationBasepoint,
+                                                temporaryChannelId, _nodeOptions.ToSelfDelay);
 
         return new AcceptChannel2Message(payload,
                                        shutdownScriptPubkey is null
@@ -509,7 +511,7 @@ public class MessageFactory : IMessageFactory
                                                ReadOnlyMemory<byte> paymentHash, uint cltvExpiry,
                                                ReadOnlyMemory<byte>? onionRoutingPacket = null)
     {
-        var payload = new UpdateAddHtlcPayload(channelId, id, amountMsat, paymentHash, cltvExpiry, onionRoutingPacket);
+        var payload = new UpdateAddHtlcPayload(amountMsat, channelId, cltvExpiry, id, paymentHash, onionRoutingPacket);
 
         return new UpdateAddHtlcMessage(payload);
     }
@@ -562,7 +564,7 @@ public class MessageFactory : IMessageFactory
     public IMessage CreateCommitmentSignedMessage(ChannelId channelId, ECDSASignature signature,
                                                   IEnumerable<ECDSASignature> htlcSignatures)
     {
-        var payload = new CommitmentSignedPayload(channelId, signature, htlcSignatures);
+        var payload = new CommitmentSignedPayload(channelId, htlcSignatures, signature);
 
         return new CommitmentSignedMessage(payload);
     }
@@ -581,7 +583,7 @@ public class MessageFactory : IMessageFactory
     public IMessage CreateCommitmentSignedMessage(ChannelId channelId, ReadOnlyMemory<byte> perCommitmentSecret,
                                                   PubKey nextPerCommitmentPoint)
     {
-        var payload = new RevokeAndAckPayload(channelId, perCommitmentSecret, nextPerCommitmentPoint);
+        var payload = new RevokeAndAckPayload(channelId, nextPerCommitmentPoint, perCommitmentSecret);
 
         return new RevokeAndAckMessage(payload);
     }
@@ -616,7 +618,7 @@ public class MessageFactory : IMessageFactory
     public IMessage CreateUpdateFailMalformedHtlcMessage(ChannelId channelId, ulong id,
                                                          ReadOnlyMemory<byte> sha256OfOnion, ushort failureCode)
     {
-        var payload = new UpdateFailMalformedHtlcPayload(channelId, id, sha256OfOnion, failureCode);
+        var payload = new UpdateFailMalformedHtlcPayload(channelId, failureCode, id, sha256OfOnion);
 
         return new UpdateFailMalformedHtlcMessage(payload);
     }
@@ -638,8 +640,8 @@ public class MessageFactory : IMessageFactory
                                                     ReadOnlyMemory<byte> yourLastPerCommitmentSecret,
                                                     PubKey myCurrentPerCommitmentPoint)
     {
-        var payload = new ChannelReestablishPayload(channelId, nextCommitmentNumber, nextRevocationNumber,
-                                                    yourLastPerCommitmentSecret, myCurrentPerCommitmentPoint);
+        var payload = new ChannelReestablishPayload(channelId, myCurrentPerCommitmentPoint, nextCommitmentNumber,
+                                                    nextRevocationNumber, yourLastPerCommitmentSecret);
 
         return new ChannelReestablishMessage(payload);
     }

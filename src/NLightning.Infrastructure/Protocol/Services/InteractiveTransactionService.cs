@@ -1,13 +1,9 @@
-using NLightning.Domain.Money;
-using NLightning.Infrastructure.Protocol.Interfaces;
-using NLightning.Infrastructure.Protocol.Validators;
-
 namespace NLightning.Infrastructure.Protocol.Services;
 
-using Domain.Protocol.Interfaces;
 using Domain.Protocol.Payloads;
-using Domain.Protocol.Validators;
-using Domain.ValueObjects;
+using Domain.Money;
+using Interfaces;
+using Validators;
 
 public class InteractiveTransactionService : IInteractiveTransactionService
 {

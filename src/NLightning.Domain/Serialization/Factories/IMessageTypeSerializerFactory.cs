@@ -1,6 +1,6 @@
 namespace NLightning.Domain.Serialization.Factories;
 
-using Messages;
+using Messages.Types;
 using Protocol.Messages.Interfaces;
 
 public interface IMessageTypeSerializerFactory

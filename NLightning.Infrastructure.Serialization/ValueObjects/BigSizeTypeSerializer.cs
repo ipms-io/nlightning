@@ -1,8 +1,8 @@
 using System.Buffers;
-using NLightning.Infrastructure.Converters;
 
 namespace NLightning.Infrastructure.Serialization.ValueObjects;
 
+using Converters;
 using Domain.Serialization.ValueObjects;
 using Domain.ValueObjects;
 using Domain.ValueObjects.Interfaces;

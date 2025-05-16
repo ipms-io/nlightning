@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Domain.Protocol.Constants;
 
+[ExcludeFromCodeCoverage]
 public static class WeightConstants
 {
     // ReSharper disable InconsistentNaming

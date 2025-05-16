@@ -1,10 +1,10 @@
-using NLightning.Domain.Crypto.Constants;
-using NLightning.Domain.Exceptions;
-using NLightning.Domain.Transport.Interfaces;
-using NLightning.Infrastructure.Protocol.Constants;
-using NLightning.Infrastructure.Transport.Handshake.States;
-
 namespace NLightning.Infrastructure.Transport.Encryption;
+
+using Domain.Crypto.Constants;
+using Domain.Exceptions;
+using Domain.Transport;
+using Protocol.Constants;
+using Handshake.States;
 
 /// <inheritdoc/>
 internal sealed class Transport : ITransport

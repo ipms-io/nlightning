@@ -1,11 +1,10 @@
 using NBitcoin;
-using NLightning.Domain.Money;
-using NLightning.Domain.Protocol.Constants;
-using NLightning.Domain.ValueObjects;
-using NLightning.Infrastructure.Protocol.Outputs;
-using Network = NLightning.Domain.ValueObjects.Network;
 
 namespace NLightning.Infrastructure.Protocol.Transactions;
+
+using Domain.Money;
+using Domain.Protocol.Constants;
+using Outputs;
 
 /// <summary>
 /// Represents a funding transaction.

@@ -2,10 +2,10 @@ using System.Text.Json;
 using MessagePack;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NLightning.Domain.Bitcoin.Services;
 
 namespace NLightning.Application.NLTG.Services;
 
-using Application.Interfaces.Services;
 using Common.Options;
 using Domain.Money;
 using Infrastructure.Bitcoin.Caching;

@@ -1,9 +1,9 @@
 using System.Collections;
 using System.Runtime.Serialization;
-using NLightning.Infrastructure.Converters;
 
 namespace NLightning.Infrastructure.Serialization.Node;
 
+using Converters;
 using Domain.Node;
 using Interfaces;
 

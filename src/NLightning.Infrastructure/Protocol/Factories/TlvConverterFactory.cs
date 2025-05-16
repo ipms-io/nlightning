@@ -1,6 +1,6 @@
 namespace NLightning.Infrastructure.Protocol.Factories;
 
-using Domain.Protocol.Factories.Interfaces;
+using Domain.Protocol.Factories;
 using Domain.Protocol.Models;
 using Domain.Protocol.Tlv;
 using Domain.Protocol.Tlv.Converters;

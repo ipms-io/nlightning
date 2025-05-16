@@ -87,4 +87,8 @@
     <EmbeddedResource Remove="TestResults\**"/>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="BOLT1\Services\" />
+  </ItemGroup>
+
 </Project>

@@ -1,11 +1,11 @@
 using System.Diagnostics;
-using NLightning.Domain.Crypto.Constants;
 
 namespace NLightning.Infrastructure.Transport.Handshake.States;
 
 using Crypto.Ciphers;
 using Crypto.Functions;
 using Crypto.Primitives;
+using Domain.Crypto.Constants;
 
 /// <summary>
 /// A CipherState can encrypt and decrypt data based on its variables k

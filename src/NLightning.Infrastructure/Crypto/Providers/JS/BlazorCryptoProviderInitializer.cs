@@ -1,7 +1,7 @@
 #if CRYPTO_JS
 using System.Runtime.InteropServices.JavaScript;
 
-namespace NLightning.Common.Crypto.Providers.JS;
+namespace NLightning.Infrastructure.Crypto.Providers.JS;
 
 public static class BlazorCryptoProvider
 {

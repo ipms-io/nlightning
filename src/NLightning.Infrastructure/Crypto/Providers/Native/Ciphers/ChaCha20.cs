@@ -1,4 +1,5 @@
-namespace NLightning.Common.Crypto.Providers.Native.Ciphers;
+#if CRYPTO_NATIVE
+namespace NLightning.Infrastructure.Crypto.Providers.Native.Ciphers;
 
 public static class ChaCha20
 {
@@ -15,3 +16,4 @@ public static class ChaCha20
         return (value << offset) | (value >> (32 - offset));
     }
 }
+#endif

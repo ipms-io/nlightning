@@ -1,8 +1,8 @@
-using NLightning.Domain.Money;
-using NLightning.Domain.Protocol.Constants;
-using NLightning.Domain.Protocol.Payloads;
-
 namespace NLightning.Infrastructure.Protocol.Validators;
+
+using Domain.Money;
+using Domain.Protocol.Constants;
+using Domain.Protocol.Payloads;
 
 public static class TxAddOutputValidator
 {

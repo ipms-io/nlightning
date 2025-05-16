@@ -1,7 +1,6 @@
-using NLightning.Infrastructure.Crypto.Primitives;
-
 namespace NLightning.Infrastructure.Crypto.Interfaces;
 
+using Primitives;
 /// <summary>
 /// Interface for the Eliptic-Curve Diffie-Hellman key exchange.
 /// </summary>

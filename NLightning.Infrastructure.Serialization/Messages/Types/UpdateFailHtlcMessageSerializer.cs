@@ -6,7 +6,7 @@ using Domain.Protocol.Messages;
 using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Payloads;
 using Domain.Serialization.Factories;
-using Domain.Serialization.Messages;
+using Domain.Serialization.Messages.Types;
 using Exceptions;
 
 public class UpdateFailHtlcMessageTypeMessageTypeSerializer : IMessageTypeSerializer<UpdateFailHtlcMessage>

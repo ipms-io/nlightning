@@ -1,6 +1,6 @@
-namespace NLightning.Infrastructure.Protocol.Factories;
+using NLightning.Domain.Protocol.Factories;
 
-using Domain.Protocol.Interfaces;
+namespace NLightning.Infrastructure.Protocol.Factories;
 
 public class HtlcTransactionFactory : IHtlcTransactionFactory
 {

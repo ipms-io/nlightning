@@ -1,15 +1,15 @@
 using Microsoft.Extensions.Options;
 using NBitcoin;
-using NLightning.Application.Interfaces.Services;
-using NLightning.Domain.Money;
-using NLightning.Domain.Node;
-using NLightning.Domain.Protocol.Interfaces;
-using NLightning.Domain.ValueObjects;
-using NLightning.Infrastructure.Protocol.Models;
-using NLightning.Infrastructure.Protocol.Outputs;
-using NLightning.Infrastructure.Protocol.Transactions;
 
 namespace NLightning.Infrastructure.Protocol.Factories;
+
+using Domain.Bitcoin.Services;
+using Domain.Money;
+using Domain.Node.Options;
+using Domain.Protocol.Factories;
+using Models;
+using Outputs;
+using Transactions;
 
 public class CommitmentTransactionFactory : ICommitmentTransactionFactory
 {

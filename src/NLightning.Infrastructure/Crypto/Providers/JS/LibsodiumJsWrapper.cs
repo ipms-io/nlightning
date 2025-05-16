@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 
-namespace NLightning.Common.Crypto.Providers.JS;
+namespace NLightning.Infrastructure.Crypto.Providers.JS;
 
 [SupportedOSPlatform("browser")]
 internal static partial class LibsodiumJsWrapper

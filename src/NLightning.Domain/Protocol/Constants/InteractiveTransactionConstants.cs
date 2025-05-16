@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Domain.Protocol.Constants;
 
+[ExcludeFromCodeCoverage]
 public static class InteractiveTransactionConstants
 {
     public const int MAX_INPUTS_ALLOWED = 252;

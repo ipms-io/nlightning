@@ -1,25 +1,30 @@
 using System.Runtime.Serialization;
-using NLightning.Domain.Protocol.Tlv;
 
 namespace NLightning.Infrastructure.Serialization.Messages.Types;
 
+using Domain.Protocol.Constants;
+using Domain.Protocol.Factories;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Payloads;
+using Domain.Protocol.Tlv;
 using Domain.Serialization.Factories;
-using Domain.Serialization.Messages;
+using Domain.Serialization.Messages.Types;
 using Exceptions;
+using Interfaces;
 
 public class InitMessageTypeSerializer : IMessageTypeSerializer<InitMessage>
 {
     private readonly IPayloadTypeSerializerFactory _payloadTypeSerializerFactory;
-    private readonly ITlvTypeSerializerFactory _tlvTypeSerializerFactory;
+    private readonly ITlvConverterFactory _tlvConverterFactory;
+    private readonly ITlvStreamSerializer _tlvStreamSerializer;
 
     public InitMessageTypeSerializer(IPayloadTypeSerializerFactory payloadTypeSerializerFactory,
-                                 ITlvTypeSerializerFactory tlvTypeSerializerFactory)
+                                     ITlvConverterFactory tlvConverterFactory, ITlvStreamSerializer tlvStreamSerializer)
     {
         _payloadTypeSerializerFactory = payloadTypeSerializerFactory;
-        _tlvTypeSerializerFactory = tlvTypeSerializerFactory;
+        _tlvConverterFactory = tlvConverterFactory;
+        _tlvStreamSerializer = tlvStreamSerializer;
     }
     
     public async Task SerializeAsync(IMessage message, Stream stream)
@@ -32,14 +37,8 @@ public class InitMessageTypeSerializer : IMessageTypeSerializer<InitMessage>
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
         
-        if (initMessage.NetworksTlv is not null)
-        {
-            var tlvSerializer =
-                _tlvTypeSerializerFactory.GetSerializer<NetworksTlv>()
-                ?? throw new SerializationException(
-                    $"No serializer found for tlv type {nameof(NetworksTlv)}");
-            await tlvSerializer.SerializeAsync(initMessage.NetworksTlv, stream);
-        }
+        // Serialize the TLV stream
+        await _tlvStreamSerializer.SerializeAsync(initMessage.Extension, stream);
     }
 
     /// <summary>
@@ -62,11 +61,18 @@ public class InitMessageTypeSerializer : IMessageTypeSerializer<InitMessage>
             if (stream.Position >= stream.Length)
                 return new InitMessage(payload);
 
-            var upfrontShutdownScriptTlvSerializer =
-                _tlvTypeSerializerFactory.GetSerializer<NetworksTlv>()
-                ?? throw new SerializationException(
-                    $"No serializer found for tlv type {nameof(NetworksTlv)}");
-            var networksTlv = await upfrontShutdownScriptTlvSerializer.DeserializeAsync(stream);
+            var extension = await _tlvStreamSerializer.DeserializeAsync(stream);
+            if (extension is null)
+                return new InitMessage(payload);
+
+            NetworksTlv? networksTlv = null;
+            if (extension.TryGetTlv(TlvConstants.NETWORKS, out var baseNetworkTlv))
+            {
+                var tlvConverter = _tlvConverterFactory.GetConverter<NetworksTlv>()
+                                   ?? throw new SerializationException(
+                                       $"No serializer found for tlv type {nameof(NetworksTlv)}");
+                networksTlv = tlvConverter.ConvertFromBase(baseNetworkTlv!);
+            }
 
             return new InitMessage(payload, networksTlv);
         }

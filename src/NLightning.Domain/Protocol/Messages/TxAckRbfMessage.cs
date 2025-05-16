@@ -1,9 +1,9 @@
-using NLightning.Domain.Protocol.Constants;
-using NLightning.Domain.Protocol.Models;
-using NLightning.Domain.Protocol.Payloads;
-using NLightning.Domain.Protocol.Tlv;
-
 namespace NLightning.Domain.Protocol.Messages;
+
+using Constants;
+using Models;
+using Payloads;
+using Tlv;
 
 /// <summary>
 /// Represents a tx_ack_rbf message.

@@ -6,7 +6,6 @@ namespace NLightning.Common.Tests.Messages;
 using Common.BitUtils;
 using Common.Types;
 using Constants;
-using Interfaces;
 using Mock;
 
 public class BaseMessageTests

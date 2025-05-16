@@ -1,15 +1,15 @@
 using Microsoft.Extensions.Logging;
-using NLightning.Domain.Factories;
-using NLightning.Domain.Protocol.Messages;
-using NLightning.Domain.Protocol.Messages.Interfaces;
-using NLightning.Domain.Protocol.Tlv;
 
 namespace NLightning.Infrastructure.Node.Models;
 
 using Domain.Exceptions;
-using Domain.Node;
+using Domain.Factories;
+using Domain.Node.Options;
 using Domain.Protocol.Constants;
-using Domain.Protocol.Interfaces;
+using Domain.Protocol.Messages;
+using Domain.Protocol.Messages.Interfaces;
+using Domain.Protocol.Services;
+using Domain.Protocol.Tlv;
 using Interfaces;
 
 /// <summary>

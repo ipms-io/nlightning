@@ -4,9 +4,7 @@ using System.Security.Cryptography;
 
 namespace NLightning.Infrastructure.Crypto.Providers.JS;
 
-using Common.Crypto.Providers.JS;
 using Interfaces;
-
 
 [SupportedOSPlatform("browser")]
 internal sealed class SodiumJsCryptoProvider : ICryptoProvider

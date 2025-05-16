@@ -3,6 +3,7 @@ using NBitcoin.Crypto;
 
 namespace NLightning.Domain.Factories;
 
+using Money;
 using Protocol.Messages.Interfaces;
 using ValueObjects;
 
@@ -19,7 +20,7 @@ public interface IMessageFactory
     IMessage CreateTxAddInputMessage(ChannelId channelId, ulong serialId, byte[] prevTx, uint prevTxVout,
                                      uint sequence);
 
-    IMessage CreateTxAddOutputMessage(ChannelId channelId, ulong serialId, ulong sats, byte[] script);
+    IMessage CreateTxAddOutputMessage(ChannelId channelId, ulong serialId, LightningMoney amount, Script script);
     IMessage CreateTxRemoveInputMessage(ChannelId channelId, ulong serialId);
     IMessage CreateTxRemoveOutputMessage(ChannelId channelId, ulong serialId);
     IMessage CreateTxCompleteMessage(ChannelId channelId);
@@ -41,8 +42,8 @@ public interface IMessageFactory
                                        PubKey firstPerCommitmentPoint, PubKey secondPerCommitmentPoint,
                                        ChannelFlags channelFlags, Script? shutdownScriptPubkey = null,
                                        byte[]? channelType = null, bool requireConfirmedInputs = false);
-    IMessage CreateAcceptChannel2Message(ChannelId temporaryChannelId, ulong fundingSatoshis, PubKey fundingPubKey,
-                                         PubKey revocationBasepoint, PubKey paymentBasepoint,
+    IMessage CreateAcceptChannel2Message(ChannelId temporaryChannelId, LightningMoney fundingSatoshis,
+                                         PubKey fundingPubKey, PubKey revocationBasepoint, PubKey paymentBasepoint,
                                          PubKey delayedPaymentBasepoint, PubKey htlcBasepoint,
                                          PubKey firstPerCommitmentPoint, Script? shutdownScriptPubkey = null,
                                          byte[]? channelType = null, bool requireConfirmedInputs = false);

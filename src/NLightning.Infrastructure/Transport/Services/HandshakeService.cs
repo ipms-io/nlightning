@@ -1,6 +1,6 @@
 namespace NLightning.Infrastructure.Transport.Services;
 
-using Domain.Transport.Interfaces;
+using Domain.Transport;
 using Crypto.Functions;
 using Handshake.States;
 using Interfaces;

@@ -4,10 +4,10 @@ using Microsoft.Extensions.Options;
 
 namespace NLightning.Infrastructure.Transport.Factories;
 
-using Domain.Node;
-using Domain.Protocol.Interfaces;
-using Domain.Transport.Interfaces;
+using Domain.Node.Options;
+using Domain.Protocol.Factories;
 using Domain.Serialization.Messages;
+using Domain.Transport;
 using Services;
 
 /// <summary>
@@ -31,7 +31,8 @@ public sealed class TransportServiceFactory : ITransportServiceFactory
     }
 
     /// <inheritdoc />
-    public ITransportService CreateTransportService(bool isInitiator, ReadOnlySpan<byte> s, ReadOnlySpan<byte> rs, TcpClient tcpClient)
+    public ITransportService CreateTransportService(bool isInitiator, ReadOnlySpan<byte> s, ReadOnlySpan<byte> rs,
+                                                    TcpClient tcpClient)
     {
         // Create a specific logger for the TransportService class
         var logger = _loggerFactory.CreateLogger<TransportService>();

@@ -1,7 +1,6 @@
-using NLightning.Domain.Crypto.Constants;
-
 namespace NLightning.Infrastructure.Crypto.Hashes;
 
+using Domain.Crypto.Constants;
 using Factories;
 using Interfaces;
 

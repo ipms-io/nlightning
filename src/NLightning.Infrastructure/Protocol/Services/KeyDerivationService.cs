@@ -1,12 +1,12 @@
 using NBitcoin;
 using NBitcoin.Secp256k1;
-using NLightning.Domain.Crypto.Constants;
 
 namespace NLightning.Infrastructure.Protocol.Services;
 
 using Crypto.Contexts;
 using Crypto.Hashes;
-using Domain.Protocol.Interfaces;
+using Domain.Crypto.Constants;
+using Domain.Protocol.Services;
 
 public class KeyDerivationService : IKeyDerivationService
 {

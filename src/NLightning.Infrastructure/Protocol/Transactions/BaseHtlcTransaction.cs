@@ -1,14 +1,11 @@
 using NBitcoin;
 using NBitcoin.Crypto;
-using NLightning.Domain.Money;
-using NLightning.Domain.Protocol.Constants;
-using NLightning.Domain.ValueObjects;
-using NLightning.Infrastructure.Protocol.Outputs;
-using Network = NBitcoin.Network;
 
 namespace NLightning.Infrastructure.Protocol.Transactions;
 
-using Network = Network;
+using Domain.Money;
+using Domain.Protocol.Constants;
+using Outputs;
 
 public abstract class BaseHtlcTransaction : BaseTransaction
 {

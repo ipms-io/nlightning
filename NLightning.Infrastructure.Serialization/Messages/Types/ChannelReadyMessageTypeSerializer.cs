@@ -1,24 +1,31 @@
 using System.Runtime.Serialization;
-using NLightning.Domain.Protocol.Messages;
-using NLightning.Domain.Protocol.Messages.Interfaces;
-using NLightning.Domain.Protocol.Payloads;
-using NLightning.Domain.Protocol.Tlv;
-using NLightning.Domain.Serialization.Factories;
-using NLightning.Domain.Serialization.Messages;
-using NLightning.Infrastructure.Exceptions;
 
 namespace NLightning.Infrastructure.Serialization.Messages.Types;
+
+using Domain.Protocol.Constants;
+using Domain.Protocol.Factories;
+using Domain.Protocol.Messages;
+using Domain.Protocol.Messages.Interfaces;
+using Domain.Protocol.Payloads;
+using Domain.Protocol.Tlv;
+using Domain.Serialization.Factories;
+using Domain.Serialization.Messages.Types;
+using Exceptions;
+using Interfaces;
 
 public class ChannelReadyMessageTypeSerializer : IMessageTypeSerializer<ChannelReadyMessage>
 {
     private readonly IPayloadTypeSerializerFactory _payloadTypeSerializerFactory;
-    private readonly ITlvTypeSerializerFactory _tlvTypeSerializerFactory;
+    private readonly ITlvConverterFactory _tlvConverterFactory;
+    private readonly ITlvStreamSerializer _tlvStreamSerializer;
 
     public ChannelReadyMessageTypeSerializer(IPayloadTypeSerializerFactory payloadTypeSerializerFactory,
-                                         ITlvTypeSerializerFactory tlvTypeSerializerFactory)
+                                             ITlvConverterFactory tlvConverterFactory,
+                                             ITlvStreamSerializer tlvStreamSerializer)
     {
         _payloadTypeSerializerFactory = payloadTypeSerializerFactory;
-        _tlvTypeSerializerFactory = tlvTypeSerializerFactory;
+        _tlvConverterFactory = tlvConverterFactory;
+        _tlvStreamSerializer = tlvStreamSerializer;
     }
     
     public async Task SerializeAsync(IMessage message, Stream stream)
@@ -31,14 +38,8 @@ public class ChannelReadyMessageTypeSerializer : IMessageTypeSerializer<ChannelR
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
 
-        if (channelReadyMessage.ShortChannelIdTlv is not null)
-        {
-            var tlvSerializer =
-                _tlvTypeSerializerFactory.GetSerializer<ShortChannelIdTlv>()
-                ?? throw new SerializationException(
-                    $"No serializer found for tlv type {nameof(ShortChannelIdTlv)}");
-            await tlvSerializer.SerializeAsync(channelReadyMessage.ShortChannelIdTlv, stream);
-        }
+        // Serialize the TLV stream
+        await _tlvStreamSerializer.SerializeAsync(channelReadyMessage.Extension, stream);
     }
 
     /// <summary>
@@ -61,11 +62,18 @@ public class ChannelReadyMessageTypeSerializer : IMessageTypeSerializer<ChannelR
             if (stream.Position >= stream.Length)
                 return new ChannelReadyMessage(payload);
 
-            var shortChannelIdTlvSerializer =
-                _tlvTypeSerializerFactory.GetSerializer<ShortChannelIdTlv>()
-                ?? throw new SerializationException(
-                    $"No serializer found for tlv type {nameof(ShortChannelIdTlv)}");
-            var shortChannelIdTlv = await shortChannelIdTlvSerializer.DeserializeAsync(stream);
+            var extension = await _tlvStreamSerializer.DeserializeAsync(stream);
+            if (extension is null)
+                return new ChannelReadyMessage(payload);
+
+            ShortChannelIdTlv? shortChannelIdTlv = null;
+            if (extension.TryGetTlv(TlvConstants.SHORT_CHANNEL_ID, out var baseShortChannelId))
+            {
+                var tlvConverter = _tlvConverterFactory.GetConverter<ShortChannelIdTlv>()
+                                   ?? throw new SerializationException(
+                                       $"No serializer found for tlv type {nameof(ShortChannelIdTlv)}");
+                shortChannelIdTlv = tlvConverter.ConvertFromBase(baseShortChannelId!);
+            }
 
             return new ChannelReadyMessage(payload, shortChannelIdTlv);
         }

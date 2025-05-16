@@ -1,9 +1,10 @@
 using System.Buffers;
-using NLightning.Domain.Serialization.ValueObjects;
-using NLightning.Domain.ValueObjects;
-using NLightning.Domain.ValueObjects.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.ValueObjects;
+
+using Domain.Serialization.ValueObjects;
+using Domain.ValueObjects;
+using Domain.ValueObjects.Interfaces;
 
 public class ChainHashTypeSerializer : IValueObjectTypeSerializer<ChainHash>
 {

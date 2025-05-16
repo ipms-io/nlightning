@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
-using NLightning.Domain.Crypto.Constants;
 
 namespace NLightning.Infrastructure.Crypto.Ciphers;
 
+using Domain.Crypto.Constants;
 using Factories;
 using Interfaces;
 

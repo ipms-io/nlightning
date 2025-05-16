@@ -1,13 +1,11 @@
+#if CRYPTO_NATIVE
 using System.Buffers;
 using System.Buffers.Binary;
-using NLightning.Common.Utils;
-using NLightning.Infrastructure.Converters;
-using NLightning.Infrastructure.Serialization;
+using NLightning.Infrastructure.Crypto.Providers.Native.Constants;
 
-namespace NLightning.Common.Crypto.Providers.Native.Ciphers;
+namespace NLightning.Infrastructure.Crypto.Providers.Native.Ciphers;
 
-using BitUtils;
-using Constants;
+using Converters;
 
 public static class HChaCha20
 {
@@ -89,3 +87,4 @@ public static class HChaCha20
         }
     }
 }
+#endif

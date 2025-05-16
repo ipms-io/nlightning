@@ -6,7 +6,7 @@ namespace NLightning.Infrastructure.Transport.Services;
 using Domain.Exceptions;
 using Domain.Protocol.Messages.Interfaces;
 using Domain.Serialization.Messages;
-using Domain.Transport.Interfaces;
+using Domain.Transport;
 using Exceptions;
 using Interfaces;
 using Protocol.Constants;

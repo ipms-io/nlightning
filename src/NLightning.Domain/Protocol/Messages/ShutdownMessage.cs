@@ -1,7 +1,7 @@
-using NLightning.Domain.Protocol.Constants;
-using NLightning.Domain.Protocol.Payloads;
-
 namespace NLightning.Domain.Protocol.Messages;
+
+using Constants;
+using Payloads;
 
 /// <summary>
 /// Represents a shutdown message.

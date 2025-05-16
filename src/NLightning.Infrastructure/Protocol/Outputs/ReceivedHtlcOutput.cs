@@ -1,12 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
 using NBitcoin;
-using NLightning.Domain.Crypto.Constants;
-using NLightning.Domain.Money;
 
 namespace NLightning.Infrastructure.Protocol.Outputs;
 
 using Crypto.Hashes;
-using Domain.ValueObjects;
+using Domain.Crypto.Constants;
+using Domain.Money;
 using Exceptions;
 
 /// <summary>

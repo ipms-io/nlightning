@@ -2,10 +2,10 @@ using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLightning.Domain.Node;
 
 namespace NLightning.Application.NLTG.Services;
 
+using Domain.Node.Options;
 using Infrastructure.Node.Interfaces;
 using Interfaces;
 

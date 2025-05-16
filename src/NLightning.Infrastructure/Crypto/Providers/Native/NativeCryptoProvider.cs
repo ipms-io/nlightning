@@ -7,9 +7,10 @@ using Org.BouncyCastle.Crypto.Parameters;
 
 namespace NLightning.Infrastructure.Crypto.Providers.Native;
 
-using Common.Constants;
-using Common.Crypto.Providers.Native.Ciphers;
-using Common.Crypto.Providers.Native.Constants;
+using Ciphers;
+using Constants;
+using Domain.Crypto.Constants;
+
 using Interfaces;
 
 internal sealed partial class NativeCryptoProvider: ICryptoProvider

@@ -1,6 +1,6 @@
 namespace NLightning.Infrastructure.Transport.Interfaces;
 
-using Domain.Transport.Interfaces;
+using Domain.Transport;
 
 /// <summary>
 /// A <see href="https://noiseprotocol.org/noise.html#the-handshakestate-object">HandshakeState</see> object contains a <see href="https://noiseprotocol.org/noise.html#the-symmetricstate-object">SymmetricState</see> plus the local and remote keys, a boolean indicating the initiator or responder role, and the remaining portion of the handshake pattern.

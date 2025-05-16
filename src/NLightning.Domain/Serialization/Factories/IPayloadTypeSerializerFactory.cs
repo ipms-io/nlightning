@@ -1,6 +1,6 @@
 namespace NLightning.Domain.Serialization.Factories;
 
-using Payloads;
+using Payloads.Types;
 using Protocol.Payloads.Interfaces;
 
 public interface IPayloadTypeSerializerFactory

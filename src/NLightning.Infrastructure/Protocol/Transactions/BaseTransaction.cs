@@ -1,13 +1,11 @@
 using NBitcoin;
-using NLightning.Domain.Money;
 
 namespace NLightning.Infrastructure.Protocol.Transactions;
 
-using NLightning.Domain.Protocol.Constants;
-using NLightning.Domain.ValueObjects;
-using NLightning.Infrastructure.Protocol.Comparers;
-using NLightning.Infrastructure.Protocol.Outputs;
-using Network = Network;
+using Comparers;
+using Domain.Protocol.Constants;
+using Domain.Money;
+using Outputs;
 
 public abstract class BaseTransaction
 {

@@ -2,12 +2,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLightning.Domain.Node;
 
 namespace NLightning.Application.NLTG.Services;
 
-using Application.Interfaces.Services;
-using Common.Interfaces;
+using Domain.Bitcoin.Services;
+using Domain.Node.Options;
+using Domain.Protocol.Managers;
 using Interfaces;
 
 public class NltgDaemonService : BackgroundService

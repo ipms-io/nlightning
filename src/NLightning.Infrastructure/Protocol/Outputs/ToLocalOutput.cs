@@ -1,9 +1,8 @@
 using NBitcoin;
-using NLightning.Domain.Money;
 
 namespace NLightning.Infrastructure.Protocol.Outputs;
 
-using Domain.ValueObjects;
+using Domain.Money;
 using Exceptions;
 
 /// <summary>

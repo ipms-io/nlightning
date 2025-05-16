@@ -1,10 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using NBitcoin;
-using NLightning.Domain.Money;
 
 namespace NLightning.Infrastructure.Protocol.Outputs;
 
-using Domain.ValueObjects;
+using Domain.Money;
 
 public abstract class BaseHtlcOutput : BaseOutput
 {
@@ -15,8 +14,7 @@ public abstract class BaseHtlcOutput : BaseOutput
     public required ulong CltvExpiry { get; init; }
 
     protected BaseHtlcOutput(Script redeemScript, LightningMoney amount) : base(redeemScript, amount)
-    {
-    }
+    { }
 
     [SetsRequiredMembers]
     protected BaseHtlcOutput(Script redeemScript, LightningMoney amount, PubKey revocationPubKey,

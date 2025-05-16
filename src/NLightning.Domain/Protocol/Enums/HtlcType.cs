@@ -1,7 +1,7 @@
-namespace NLightning.Bolts.BOLT3.Enums;
+namespace NLightning.Domain.Protocol.Enums;
 
 public enum HtlcType
 {
-    OFFERED,
-    RECEIVED
+    Offered,
+    Received
 }

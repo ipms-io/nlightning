@@ -1,7 +1,8 @@
 using NBitcoin;
-using NLightning.Domain.ValueObjects;
 
 namespace NLightning.Domain.Models;
+
+using ValueObjects;
 
 /// <summary>
 /// Represents routing information for a payment

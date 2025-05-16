@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Infrastructure.Protocol.Constants;
 
+[ExcludeFromCodeCoverage]
 internal static class ProtocolConstants
 {
     /// <summary>

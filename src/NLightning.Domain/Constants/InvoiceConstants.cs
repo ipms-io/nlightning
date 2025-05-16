@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Domain.Constants;
 
+[ExcludeFromCodeCoverage]
 public static class InvoiceConstants
 {
     public const string PREFIX = "ln";

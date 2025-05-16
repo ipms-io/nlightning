@@ -43,6 +43,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure.Serialization", "NLightning.Infrastructure.Serialization\NLightning.Infrastructure.Serialization.csproj", "{562BB245-FE0F-480E-91C5-13597620AEB1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure.Tests", "test\NLightning.Infrastructure.Tests\NLightning.Infrastructure.Tests.csproj", "{0468A9F8-0451-4B4E-BD3B-42E38D5FA82A}"
+EndProject
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -230,6 +232,18 @@ Global
 		{562BB245-FE0F-480E-91C5-13597620AEB1}.Debug.Native|Any CPU.Build.0 = Debug|Any CPU
 		{562BB245-FE0F-480E-91C5-13597620AEB1}.Debug.Wasm|Any CPU.ActiveCfg = Debug|Any CPU
 		{562BB245-FE0F-480E-91C5-13597620AEB1}.Debug.Wasm|Any CPU.Build.0 = Debug|Any CPU
+		{0468A9F8-0451-4B4E-BD3B-42E38D5FA82A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0468A9F8-0451-4B4E-BD3B-42E38D5FA82A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0468A9F8-0451-4B4E-BD3B-42E38D5FA82A}.Release.Native|Any CPU.ActiveCfg = Debug|Any CPU
+		{0468A9F8-0451-4B4E-BD3B-42E38D5FA82A}.Release.Native|Any CPU.Build.0 = Debug|Any CPU
+		{0468A9F8-0451-4B4E-BD3B-42E38D5FA82A}.Release.Wasm|Any CPU.ActiveCfg = Debug|Any CPU
+		{0468A9F8-0451-4B4E-BD3B-42E38D5FA82A}.Release.Wasm|Any CPU.Build.0 = Debug|Any CPU
+		{0468A9F8-0451-4B4E-BD3B-42E38D5FA82A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0468A9F8-0451-4B4E-BD3B-42E38D5FA82A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0468A9F8-0451-4B4E-BD3B-42E38D5FA82A}.Debug.Native|Any CPU.ActiveCfg = Debug|Any CPU
+		{0468A9F8-0451-4B4E-BD3B-42E38D5FA82A}.Debug.Native|Any CPU.Build.0 = Debug|Any CPU
+		{0468A9F8-0451-4B4E-BD3B-42E38D5FA82A}.Debug.Wasm|Any CPU.ActiveCfg = Debug|Any CPU
+		{0468A9F8-0451-4B4E-BD3B-42E38D5FA82A}.Debug.Wasm|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -256,5 +270,6 @@ Global
 		{833F2133-9D6B-4F0B-BD9E-B18B6535F2B0} = {123D0631-533C-447F-B7DA-D1D37E5E64BF}
 		{15CE280A-3636-4064-B363-030CF879B14B} = {123D0631-533C-447F-B7DA-D1D37E5E64BF}
 		{562BB245-FE0F-480E-91C5-13597620AEB1} = {123D0631-533C-447F-B7DA-D1D37E5E64BF}
+		{0468A9F8-0451-4B4E-BD3B-42E38D5FA82A} = {AF4411D4-8EE9-423E-8213-1C9D35E47882}
 	EndGlobalSection
 EndGlobal

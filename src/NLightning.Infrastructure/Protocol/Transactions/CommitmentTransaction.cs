@@ -1,12 +1,12 @@
 using NBitcoin;
 using NBitcoin.Crypto;
-using NLightning.Domain.Money;
-using NLightning.Infrastructure.Protocol.Models;
 
 namespace NLightning.Infrastructure.Protocol.Transactions;
 
+using Domain.Money;
 using Domain.Protocol.Constants;
 using Domain.ValueObjects;
+using Models;
 using Outputs;
 
 /// <summary>

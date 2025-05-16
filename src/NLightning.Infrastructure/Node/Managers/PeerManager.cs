@@ -2,15 +2,15 @@ using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
-using NLightning.Domain.Node;
-using NLightning.Infrastructure.Node.Models;
-using NLightning.Infrastructure.Protocol.Models;
 
 namespace NLightning.Infrastructure.Node.Managers;
 
 using Domain.Exceptions;
+using Domain.Node.Options;
 using Domain.ValueObjects;
+using Infrastructure.Protocol.Models;
 using Interfaces;
+using Models;
 
 /// <summary>
 /// Service for managing peers.

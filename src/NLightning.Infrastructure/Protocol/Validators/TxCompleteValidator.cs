@@ -1,6 +1,6 @@
-namespace NLightning.Domain.Protocol.Validators;
+namespace NLightning.Infrastructure.Protocol.Validators;
 
-using Constants;
+using Domain.Protocol.Constants;
 
 public static class TxCompleteValidator
 {

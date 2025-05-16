@@ -1,13 +1,13 @@
 using System.Buffers;
 using System.Runtime.Serialization;
-using NLightning.Domain.Crypto.Constants;
-using NLightning.Domain.Serialization.ValueObjects;
-using NLightning.Domain.ValueObjects;
-using NLightning.Domain.ValueObjects.Interfaces;
-using NLightning.Infrastructure.Converters;
-using NLightning.Infrastructure.Serialization.Interfaces;
 
-namespace NLightning.Infrastructure.Serialization.Serializers.ValueObjects;
+namespace NLightning.Infrastructure.Serialization.ValueObjects;
+
+using NLightning.Domain.Crypto.Constants;
+using Converters;
+using Domain.Serialization.ValueObjects;
+using Domain.ValueObjects;
+using Domain.ValueObjects.Interfaces;
 
 public class WitnessTypeSerializer : IValueObjectTypeSerializer<Witness>
 {

@@ -1,7 +1,6 @@
-using NLightning.Domain.Protocol.Interfaces;
-using NLightning.Domain.Protocol.Payloads.Interfaces;
-
 namespace NLightning.Domain.Protocol.Payloads;
+
+using Interfaces;
 
 /// <summary>
 /// Placeholder payload for messages that will be deserialized later.

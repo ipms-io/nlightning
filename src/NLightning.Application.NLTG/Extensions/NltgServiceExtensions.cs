@@ -1,23 +1,23 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NLightning.Application.Factories;
-using NLightning.Application.Interfaces.Services;
-using NLightning.Application.NLTG.Managers;
-using NLightning.Domain.Factories;
-using NLightning.Domain.Node;
-using NLightning.Domain.Protocol.Interfaces;
-using NLightning.Infrastructure.Node.Factories;
-using NLightning.Infrastructure.Node.Interfaces;
-using NLightning.Infrastructure.Node.Managers;
-using NLightning.Infrastructure.Protocol.Factories;
-using NLightning.Infrastructure.Transport.Factories;
 
 namespace NLightning.Application.NLTG.Extensions;
 
-using Common.Interfaces;
 using Common.Options;
+using Domain.Bitcoin.Services;
+using Domain.Factories;
+using Domain.Node.Options;
+using Domain.Protocol.Factories;
+using Domain.Protocol.Managers;
+using Factories;
+using Infrastructure.Node.Factories;
+using Infrastructure.Node.Interfaces;
+using Infrastructure.Node.Managers;
+using Infrastructure.Protocol.Factories;
+using Infrastructure.Transport.Factories;
 using Interfaces;
+using Managers;
 using Services;
 
 public static class NltgServiceExtensions

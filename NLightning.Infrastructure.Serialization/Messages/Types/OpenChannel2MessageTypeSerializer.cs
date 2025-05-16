@@ -1,25 +1,31 @@
 using System.Runtime.Serialization;
-using NLightning.Domain.Protocol.Tlv;
 
 namespace NLightning.Infrastructure.Serialization.Messages.Types;
 
+using Domain.Protocol.Constants;
+using Domain.Protocol.Factories;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Payloads;
+using Domain.Protocol.Tlv;
 using Domain.Serialization.Factories;
-using Domain.Serialization.Messages;
+using Domain.Serialization.Messages.Types;
 using Exceptions;
+using Interfaces;
 
 public class OpenChannel2MessageTypeSerializer : IMessageTypeSerializer<OpenChannel2Message>
 {
     private readonly IPayloadTypeSerializerFactory _payloadTypeSerializerFactory;
-    private readonly ITlvTypeSerializerFactory _tlvTypeSerializerFactory;
+    private readonly ITlvConverterFactory _tlvConverterFactory;
+    private readonly ITlvStreamSerializer _tlvStreamSerializer;
 
     public OpenChannel2MessageTypeSerializer(IPayloadTypeSerializerFactory payloadTypeSerializerFactory,
-                                         ITlvTypeSerializerFactory tlvTypeSerializerFactory)
+                                             ITlvConverterFactory tlvConverterFactory,
+                                             ITlvStreamSerializer tlvStreamSerializer)
     {
         _payloadTypeSerializerFactory = payloadTypeSerializerFactory;
-        _tlvTypeSerializerFactory = tlvTypeSerializerFactory;
+        _tlvConverterFactory = tlvConverterFactory;
+        _tlvStreamSerializer = tlvStreamSerializer;
     }
     
     public async Task SerializeAsync(IMessage message, Stream stream)
@@ -32,31 +38,8 @@ public class OpenChannel2MessageTypeSerializer : IMessageTypeSerializer<OpenChan
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
 
-        if (openChannel2Message.UpfrontShutdownScriptTlv is not null)
-        {
-            var tlvSerializer =
-                _tlvTypeSerializerFactory.GetSerializer<UpfrontShutdownScriptTlv>()
-                ?? throw new SerializationException(
-                    $"No serializer found for tlv type {nameof(UpfrontShutdownScriptTlv)}");
-            await tlvSerializer.SerializeAsync(openChannel2Message.UpfrontShutdownScriptTlv, stream);
-        }
-
-        if (openChannel2Message.ChannelTypeTlv is not null)
-        {
-            var tlvSerializer = 
-                _tlvTypeSerializerFactory.GetSerializer<ChannelTypeTlv>()
-                ?? throw new SerializationException($"No serializer found for tlv type {nameof(ChannelTypeTlv)}");
-            await tlvSerializer.SerializeAsync(openChannel2Message.ChannelTypeTlv, stream);
-        }
-        
-        if (openChannel2Message.RequireConfirmedInputsTlv is not null)
-        {
-            var tlvSerializer = 
-                _tlvTypeSerializerFactory.GetSerializer<RequireConfirmedInputsTlv>()
-                ?? throw new SerializationException(
-                    $"No serializer found for tlv type {nameof(RequireConfirmedInputsTlv)}");
-            await tlvSerializer.SerializeAsync(openChannel2Message.RequireConfirmedInputsTlv, stream);
-        }
+        // Serialize the TLV stream
+        await _tlvStreamSerializer.SerializeAsync(openChannel2Message.Extension, stream);
     }
     
     /// <summary>
@@ -79,22 +62,37 @@ public class OpenChannel2MessageTypeSerializer : IMessageTypeSerializer<OpenChan
             if (stream.Position >= stream.Length)
                 return new OpenChannel2Message(payload);
 
-            var upfrontShutdownScriptTlvSerializer =
-                _tlvTypeSerializerFactory.GetSerializer<UpfrontShutdownScriptTlv>()
-                ?? throw new SerializationException(
-                    $"No serializer found for tlv type {nameof(UpfrontShutdownScriptTlv)}");
-            var upfrontShutdownScriptTlv = await upfrontShutdownScriptTlvSerializer.DeserializeAsync(stream);
-            
-            var channelTypeTlvSerializer =
-                _tlvTypeSerializerFactory.GetSerializer<ChannelTypeTlv>()
-                ?? throw new SerializationException($"No serializer found for tlv type {nameof(ChannelTypeTlv)}");
-            var channelTypeTlv = await channelTypeTlvSerializer.DeserializeAsync(stream);
+            var extension = await _tlvStreamSerializer.DeserializeAsync(stream);
+            if (extension is null)
+                return new OpenChannel2Message(payload);
 
-            var requireConfirmedInputsTlvSerializer =
-                _tlvTypeSerializerFactory.GetSerializer<RequireConfirmedInputsTlv>()
-                ?? throw new SerializationException(
-                    $"No serializer found for tlv type {nameof(RequireConfirmedInputsTlv)}");
-            var requireConfirmedInputsTlv = await requireConfirmedInputsTlvSerializer.DeserializeAsync(stream);
+            UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv = null;
+            if (extension.TryGetTlv(TlvConstants.UPFRONT_SHUTDOWN_SCRIPT, out var baseUpfrontShutdownTlv))
+            {
+                var tlvConverter = _tlvConverterFactory.GetConverter<UpfrontShutdownScriptTlv>()
+                                   ?? throw new SerializationException(
+                                       $"No serializer found for tlv type {nameof(UpfrontShutdownScriptTlv)}");
+                upfrontShutdownScriptTlv = tlvConverter.ConvertFromBase(baseUpfrontShutdownTlv!);
+            }
+
+            ChannelTypeTlv? channelTypeTlv = null;
+            if (extension.TryGetTlv(TlvConstants.CHANNEL_TYPE, out var baseChannelTypeTlv))
+            {
+                var tlvConverter =
+                    _tlvConverterFactory.GetConverter<ChannelTypeTlv>()
+                    ?? throw new SerializationException($"No serializer found for tlv type {nameof(ChannelTypeTlv)}");
+                channelTypeTlv = tlvConverter.ConvertFromBase(baseChannelTypeTlv!);
+            }
+
+            RequireConfirmedInputsTlv? requireConfirmedInputsTlv = null;
+            if (extension.TryGetTlv(TlvConstants.REQUIRE_CONFIRMED_INPUTS, out var baseRequireConfirmedInputsTlv))
+            {
+                var tlvConverter =
+                    _tlvConverterFactory.GetConverter<RequireConfirmedInputsTlv>()
+                    ?? throw new SerializationException(
+                        $"No serializer found for tlv type {nameof(RequireConfirmedInputsTlv)}");
+                requireConfirmedInputsTlv = tlvConverter.ConvertFromBase(baseRequireConfirmedInputsTlv!);
+            }
 
             return new OpenChannel2Message(payload, upfrontShutdownScriptTlv, channelTypeTlv,
                                            requireConfirmedInputsTlv);

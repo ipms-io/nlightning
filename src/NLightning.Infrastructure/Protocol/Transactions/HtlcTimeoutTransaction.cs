@@ -1,7 +1,8 @@
 using NBitcoin;
-using NLightning.Infrastructure.Protocol.Outputs;
 
 namespace NLightning.Infrastructure.Protocol.Transactions;
+
+using Outputs;
 
 public class HtlcTimeoutTransaction : BaseHtlcTransaction
 {

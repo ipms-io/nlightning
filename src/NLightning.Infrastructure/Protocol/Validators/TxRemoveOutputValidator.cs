@@ -1,6 +1,6 @@
-namespace NLightning.Domain.Protocol.Validators;
+namespace NLightning.Infrastructure.Protocol.Validators;
 
-using Payloads;
+using Domain.Protocol.Payloads;
 
 public static class TxRemoveOutputValidator
 {

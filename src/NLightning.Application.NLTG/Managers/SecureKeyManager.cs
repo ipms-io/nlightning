@@ -4,11 +4,11 @@ using System.Text;
 using System.Text.Json;
 using NBitcoin;
 using NLightning.Domain.Crypto.Constants;
+using NLightning.Domain.Protocol.Managers;
 using Serilog;
 
 namespace NLightning.Application.NLTG.Managers;
 
-using Common.Interfaces;
 using Constants;
 using Infrastructure.Crypto.Ciphers;
 using Infrastructure.Crypto.Factories;
