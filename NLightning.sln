@@ -74,6 +74,37 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.github\workflows\dotnet.wasm.yml = .github\workflows\dotnet.wasm.yml
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docfx", ".docfx", "{C8F657C8-A318-43BE-A979-AC9E82B5DE58}"
+	ProjectSection(SolutionItems) = preProject
+		.docfx\docfx.json = .docfx\docfx.json
+		.docfx\index.md = .docfx\index.md
+		.docfx\toc.yml = .docfx\toc.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{735305B0-B08D-4C48-A1DE-47E8DC2D8032}"
+	ProjectSection(SolutionItems) = preProject
+		.docfx\docs\toc.yml = .docfx\docs\toc.yml
+		.docfx\docs\authors.md = .docfx\docs\authors.md
+		.docfx\docs\license.md = .docfx\docs\license.md
+		.docfx\docs\features.md = .docfx\docs\features.md
+		.docfx\docs\supportus.md = .docfx\docs\supportus.md
+		.docfx\docs\versioning.md = .docfx\docs\versioning.md
+		.docfx\docs\contributing.md = .docfx\docs\contributing.md
+		.docfx\docs\static-helper-classes.md = .docfx\docs\static-helper-classes.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "bolt11", "bolt11", "{1D9EF48B-9D37-4996-8C26-56AC6245EAFF}"
+	ProjectSection(SolutionItems) = preProject
+		.docfx\docs\bolt11\quickstart.md = .docfx\docs\bolt11\quickstart.md
+		.docfx\docs\bolt11\webassembly.md = .docfx\docs\bolt11\webassembly.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "quickstart", "quickstart", "{9B420B23-5DAE-4CDE-A3DB-69663111750D}"
+	ProjectSection(SolutionItems) = preProject
+		.docfx\docs\quickstart\macos.md = .docfx\docs\quickstart\macos.md
+		.docfx\docs\quickstart\quickstart.md = .docfx\docs\quickstart\quickstart.md
+	EndProjectSection
+EndProject
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -346,5 +377,8 @@ Global
 		{4550DC12-8EE8-4C35-B438-873EE128DA1A} = {AF4411D4-8EE9-423E-8213-1C9D35E47882}
 		{BC559AD8-72B9-4ABF-A7FF-6305E141AB62} = {AF4411D4-8EE9-423E-8213-1C9D35E47882}
 		{CE0D32A4-4E0A-42BD-805B-2B09972BD798} = {2746A75F-A7F5-438E-B68F-6AB643F7FE54}
+		{735305B0-B08D-4C48-A1DE-47E8DC2D8032} = {C8F657C8-A318-43BE-A979-AC9E82B5DE58}
+		{1D9EF48B-9D37-4996-8C26-56AC6245EAFF} = {735305B0-B08D-4C48-A1DE-47E8DC2D8032}
+		{9B420B23-5DAE-4CDE-A3DB-69663111750D} = {735305B0-B08D-4C48-A1DE-47E8DC2D8032}
 	EndGlobalSection
 EndGlobal

@@ -40,7 +40,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Content Include="Bolt11/Vectors/ValidInvoices.txt" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="BOLT11/Vectors/ValidInvoices.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
