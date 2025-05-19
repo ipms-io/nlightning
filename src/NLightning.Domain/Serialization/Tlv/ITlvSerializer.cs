@@ -1,6 +1,6 @@
 namespace NLightning.Domain.Serialization.Tlv;
 
-using Protocol.Models;
+using Protocol.Tlv;
 
 public interface ITlvSerializer
 {

@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Text;
+using NLightning.Integration.Tests.TestCollections;
 using NLightning.Tests.Utils.Mocks;
-using NLightning.Tests.Utils.TestCollections;
 using NLightning.Tests.Utils.Vectors;
 
 namespace NLightning.Integration.Tests.BOLT8;

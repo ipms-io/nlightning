@@ -11,11 +11,11 @@ using Exceptions;
 
 public class TxAbortMessageTypeSerializer : IMessageTypeSerializer<TxAbortMessage>
 {
-    private readonly IPayloadTypeSerializerFactory _payloadTypeSerializerFactory;
+    private readonly IPayloadSerializerFactory _payloadSerializerFactory;
     
-    public TxAbortMessageTypeSerializer(IPayloadTypeSerializerFactory payloadTypeSerializerFactory)
+    public TxAbortMessageTypeSerializer(IPayloadSerializerFactory payloadSerializerFactory)
     {
-        _payloadTypeSerializerFactory = payloadTypeSerializerFactory;
+        _payloadSerializerFactory = payloadSerializerFactory;
     }
     
     public async Task SerializeAsync(IMessage message, Stream stream)
@@ -24,7 +24,7 @@ public class TxAbortMessageTypeSerializer : IMessageTypeSerializer<TxAbortMessag
             throw new SerializationException("Message is not of type TxAbortMessage");
             
         // Get the payload serializer
-        var payloadTypeSerializer = _payloadTypeSerializerFactory.GetSerializer(message.Type) 
+        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type) 
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
     }
@@ -40,7 +40,7 @@ public class TxAbortMessageTypeSerializer : IMessageTypeSerializer<TxAbortMessag
         try
         {
             // Deserialize payload
-            var payloadSerializer = _payloadTypeSerializerFactory.GetSerializer<TxAbortPayload>()
+            var payloadSerializer = _payloadSerializerFactory.GetSerializer<TxAbortPayload>()
                                     ?? throw new SerializationException("No serializer found for payload type");
             var payload = await payloadSerializer.DeserializeAsync(stream)
                           ?? throw new SerializationException("Error serializing payload");

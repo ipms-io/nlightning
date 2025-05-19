@@ -16,21 +16,17 @@ public class ShortChannelIdTlvConverter : ITlvConverter<ShortChannelIdTlv>
 
     public ShortChannelIdTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        var shortChannelIdTlv = (ShortChannelIdTlv)baseTlv;
-
-        if (shortChannelIdTlv.Type != TlvConstants.SHORT_CHANNEL_ID)
+        if (baseTlv.Type != TlvConstants.SHORT_CHANNEL_ID)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
 
-        if (shortChannelIdTlv.Length == 0)
+        if (baseTlv.Length == 0)
         {
             throw new InvalidCastException("Invalid length");
         }
         
-        shortChannelIdTlv.ShortChannelId = shortChannelIdTlv.Value;
-        
-        return shortChannelIdTlv;
+        return new ShortChannelIdTlv(baseTlv.Value);
     }
 
     BaseTlv ITlvConverter.ConvertFromBase(BaseTlv tlv)

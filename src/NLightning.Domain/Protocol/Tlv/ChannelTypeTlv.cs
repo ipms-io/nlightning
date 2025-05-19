@@ -1,7 +1,6 @@
 namespace NLightning.Domain.Protocol.Tlv;
 
 using Constants;
-using Models;
 
 /// <summary>
 /// Channel Type TLV.
@@ -14,7 +13,7 @@ public class ChannelTypeTlv : BaseTlv
     /// <summary>
     /// The channel type
     /// </summary>
-    public byte[] ChannelType { get; internal set; }
+    public byte[] ChannelType { get; }
 
     public ChannelTypeTlv(byte[] channelType) : base(TlvConstants.CHANNEL_TYPE)
     {

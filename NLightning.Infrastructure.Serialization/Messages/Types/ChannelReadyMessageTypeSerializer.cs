@@ -15,15 +15,15 @@ using Interfaces;
 
 public class ChannelReadyMessageTypeSerializer : IMessageTypeSerializer<ChannelReadyMessage>
 {
-    private readonly IPayloadTypeSerializerFactory _payloadTypeSerializerFactory;
+    private readonly IPayloadSerializerFactory _payloadSerializerFactory;
     private readonly ITlvConverterFactory _tlvConverterFactory;
     private readonly ITlvStreamSerializer _tlvStreamSerializer;
 
-    public ChannelReadyMessageTypeSerializer(IPayloadTypeSerializerFactory payloadTypeSerializerFactory,
+    public ChannelReadyMessageTypeSerializer(IPayloadSerializerFactory payloadSerializerFactory,
                                              ITlvConverterFactory tlvConverterFactory,
                                              ITlvStreamSerializer tlvStreamSerializer)
     {
-        _payloadTypeSerializerFactory = payloadTypeSerializerFactory;
+        _payloadSerializerFactory = payloadSerializerFactory;
         _tlvConverterFactory = tlvConverterFactory;
         _tlvStreamSerializer = tlvStreamSerializer;
     }
@@ -34,7 +34,7 @@ public class ChannelReadyMessageTypeSerializer : IMessageTypeSerializer<ChannelR
             throw new SerializationException($"Message is not of type {nameof(ChannelReadyMessage)}");
         
         // Get the payload serializer
-        var payloadTypeSerializer = _payloadTypeSerializerFactory.GetSerializer(message.Type) 
+        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type) 
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
 
@@ -53,7 +53,7 @@ public class ChannelReadyMessageTypeSerializer : IMessageTypeSerializer<ChannelR
         try
         {
             // Deserialize payload
-            var payloadSerializer = _payloadTypeSerializerFactory.GetSerializer<ChannelReadyPayload>()
+            var payloadSerializer = _payloadSerializerFactory.GetSerializer<ChannelReadyPayload>()
                                     ?? throw new SerializationException("No serializer found for payload type");
             var payload = await payloadSerializer.DeserializeAsync(stream)
                           ?? throw new SerializationException("Error serializing payload");

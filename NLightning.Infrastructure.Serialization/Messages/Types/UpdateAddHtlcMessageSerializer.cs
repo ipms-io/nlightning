@@ -13,17 +13,17 @@ using Domain.Serialization.Messages.Types;
 using Exceptions;
 using Interfaces;
 
-public class UpdateAddHtlcMessageTypeMessageTypeSerializer : IMessageTypeSerializer<UpdateAddHtlcMessage>
+public class UpdateAddHtlcMessageTypeSerializer : IMessageTypeSerializer<UpdateAddHtlcMessage>
 {
-    private readonly IPayloadTypeSerializerFactory _payloadTypeSerializerFactory;
+    private readonly IPayloadSerializerFactory _payloadSerializerFactory;
     private readonly ITlvConverterFactory _tlvConverterFactory;
     private readonly ITlvStreamSerializer _tlvStreamSerializer;
 
-    public UpdateAddHtlcMessageTypeMessageTypeSerializer(IPayloadTypeSerializerFactory payloadTypeSerializerFactory,
+    public UpdateAddHtlcMessageTypeSerializer(IPayloadSerializerFactory payloadSerializerFactory,
                                                          ITlvConverterFactory tlvConverterFactory,
                                                          ITlvStreamSerializer tlvStreamSerializer)
     {
-        _payloadTypeSerializerFactory = payloadTypeSerializerFactory;
+        _payloadSerializerFactory = payloadSerializerFactory;
         _tlvConverterFactory = tlvConverterFactory;
         _tlvStreamSerializer = tlvStreamSerializer;
     }
@@ -34,7 +34,7 @@ public class UpdateAddHtlcMessageTypeMessageTypeSerializer : IMessageTypeSeriali
             throw new SerializationException("Message is not of type UpdateAddHtlcMessage");
             
         // Get the payload serializer
-        var payloadTypeSerializer = _payloadTypeSerializerFactory.GetSerializer(message.Type) 
+        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type) 
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
         
@@ -53,7 +53,7 @@ public class UpdateAddHtlcMessageTypeMessageTypeSerializer : IMessageTypeSeriali
         try
         {
             // Deserialize payload
-            var payloadSerializer = _payloadTypeSerializerFactory.GetSerializer<UpdateAddHtlcPayload>()
+            var payloadSerializer = _payloadSerializerFactory.GetSerializer<UpdateAddHtlcPayload>()
                                     ?? throw new SerializationException("No serializer found for payload type");
             var payload = await payloadSerializer.DeserializeAsync(stream)
                           ?? throw new SerializationException("Error serializing payload");

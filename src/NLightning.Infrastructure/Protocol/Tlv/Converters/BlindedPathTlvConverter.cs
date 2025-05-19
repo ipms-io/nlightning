@@ -18,21 +18,17 @@ public class BlindedPathTlvConverter : ITlvConverter<BlindedPathTlv>
 
     public BlindedPathTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        var blindedPathTlv = (BlindedPathTlv)baseTlv;
-        
-        if (blindedPathTlv.Type != TlvConstants.BLINDED_PATH)
+        if (baseTlv.Type != TlvConstants.BLINDED_PATH)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
 
-        if (blindedPathTlv.Length == 0)
+        if (baseTlv.Length == 0)
         {
             throw new InvalidCastException("Invalid length");
         }
-
-        blindedPathTlv.PathKey = new PubKey(baseTlv.Value);
         
-        return blindedPathTlv;
+        return new BlindedPathTlv(new PubKey(baseTlv.Value));
     }
 
     BaseTlv ITlvConverter.ConvertFromBase(BaseTlv tlv)

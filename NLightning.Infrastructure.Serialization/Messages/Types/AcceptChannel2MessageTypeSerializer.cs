@@ -15,15 +15,15 @@ using Interfaces;
 
 public class AcceptChannel2MessageTypeSerializer : IMessageTypeSerializer<AcceptChannel2Message>
 {
-    private readonly IPayloadTypeSerializerFactory _payloadTypeSerializerFactory;
+    private readonly IPayloadSerializerFactory _payloadSerializerFactory;
     private readonly ITlvConverterFactory _tlvConverterFactory;
     private readonly ITlvStreamSerializer _tlvStreamSerializer;
 
-    public AcceptChannel2MessageTypeSerializer(IPayloadTypeSerializerFactory payloadTypeSerializerFactory,
+    public AcceptChannel2MessageTypeSerializer(IPayloadSerializerFactory payloadSerializerFactory,
                                                ITlvConverterFactory tlvConverterFactory,
                                                ITlvStreamSerializer tlvStreamSerializer)
     {
-        _payloadTypeSerializerFactory = payloadTypeSerializerFactory;
+        _payloadSerializerFactory = payloadSerializerFactory;
         _tlvConverterFactory = tlvConverterFactory;
         _tlvStreamSerializer = tlvStreamSerializer;
     }
@@ -34,7 +34,7 @@ public class AcceptChannel2MessageTypeSerializer : IMessageTypeSerializer<Accept
             throw new SerializationException($"Message is not of type {nameof(AcceptChannel2Message)}");
         
         // Get the payload serializer
-        var payloadTypeSerializer = _payloadTypeSerializerFactory.GetSerializer(message.Type) 
+        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type) 
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
 
@@ -53,7 +53,7 @@ public class AcceptChannel2MessageTypeSerializer : IMessageTypeSerializer<Accept
         try
         {
             // Deserialize payload
-            var payloadSerializer = _payloadTypeSerializerFactory.GetSerializer<AcceptChannel2Payload>()
+            var payloadSerializer = _payloadSerializerFactory.GetSerializer<AcceptChannel2Payload>()
                                     ?? throw new SerializationException("No serializer found for payload type");
             var payload = await payloadSerializer.DeserializeAsync(stream)
                           ?? throw new SerializationException("Error serializing payload");

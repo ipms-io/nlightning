@@ -14,21 +14,17 @@ public class NextFundingTlvConverter : ITlvConverter<NextFundingTlv>
 
     public NextFundingTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        var nextFundingTlv = (NextFundingTlv)baseTlv;
-        
-        if (nextFundingTlv.Type != TlvConstants.NEXT_FUNDING)
+        if (baseTlv.Type != TlvConstants.NEXT_FUNDING)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
 
-        if (nextFundingTlv.Length != 32)
+        if (baseTlv.Length != 32)
         {
             throw new InvalidCastException("Invalid length");
         }
-
-        nextFundingTlv.Value = nextFundingTlv.NextFundingTxId;
         
-        return nextFundingTlv;
+        return new NextFundingTlv(baseTlv.Value);
     }
 
     BaseTlv ITlvConverter.ConvertFromBase(BaseTlv tlv)

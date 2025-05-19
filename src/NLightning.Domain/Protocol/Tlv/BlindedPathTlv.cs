@@ -3,7 +3,6 @@ using NBitcoin;
 namespace NLightning.Domain.Protocol.Tlv;
 
 using Constants;
-using Models;
 
 /// <summary>
 /// Blinded Path TLV.
@@ -16,7 +15,7 @@ public class BlindedPathTlv : BaseTlv
     /// <summary>
     /// The blinded path key
     /// </summary>
-    public PubKey PathKey { get; internal set; }
+    public PubKey PathKey { get; }
 
     public BlindedPathTlv(PubKey pathKey) : base(TlvConstants.BLINDED_PATH)
     {

@@ -1,7 +1,6 @@
 namespace NLightning.Domain.Protocol.Tlv;
 
 using Constants;
-using Models;
 using Money;
 
 /// <summary>
@@ -15,12 +14,12 @@ public class FeeRangeTlv : BaseTlv
     /// <summary>
     /// The minimum acceptable fee in satoshis
     /// </summary>
-    public LightningMoney MinFeeAmount { get; internal set; }
+    public LightningMoney MinFeeAmount { get; }
 
     /// <summary>
     /// The maximum acceptable fee in satoshis
     /// </summary>
-    public LightningMoney MaxFeeAmount { get; internal set; }
+    public LightningMoney MaxFeeAmount { get; }
 
     public FeeRangeTlv(LightningMoney minFeeAmount, LightningMoney maxFeeAmount) : base(TlvConstants.FEE_RANGE)
     {

@@ -2,7 +2,7 @@ using System.Buffers;
 
 namespace NLightning.Infrastructure.Serialization.Tlv;
 
-using Domain.Protocol.Models;
+using Domain.Protocol.Tlv;
 using Domain.Serialization.Factories;
 using Domain.Serialization.Tlv;
 using Domain.Serialization.ValueObjects;

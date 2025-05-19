@@ -3,7 +3,6 @@ using NBitcoin;
 namespace NLightning.Domain.Protocol.Tlv;
 
 using Constants;
-using Models;
 
 /// <summary>
 /// Upfront Shutdown Script TLV.
@@ -17,7 +16,7 @@ public class UpfrontShutdownScriptTlv : BaseTlv
     /// <summary>
     /// The shutdown script to be used when closing the channel
     /// </summary>
-    public Script ShutdownScriptPubkey { get; internal set; }
+    public Script ShutdownScriptPubkey { get; }
 
     public UpfrontShutdownScriptTlv(Script shutdownScriptPubkey) : base(TlvConstants.UPFRONT_SHUTDOWN_SCRIPT)
     {

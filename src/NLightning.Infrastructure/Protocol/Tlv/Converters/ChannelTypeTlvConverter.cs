@@ -16,21 +16,17 @@ public class ChannelTypeTlvConverter : ITlvConverter<ChannelTypeTlv>
 
     public ChannelTypeTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        var channelTypeTlv = (ChannelTypeTlv)baseTlv;
-        
-        if (channelTypeTlv.Type != TlvConstants.CHANNEL_TYPE)
+        if (baseTlv.Type != TlvConstants.CHANNEL_TYPE)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
 
-        if (channelTypeTlv.Length == 0)
+        if (baseTlv.Length == 0)
         {
             throw new InvalidCastException("Invalid length");
         }
-
-        channelTypeTlv.ChannelType = baseTlv.Value;
         
-        return channelTypeTlv;
+        return new ChannelTypeTlv(baseTlv.Value);
     }
 
     BaseTlv ITlvConverter.ConvertFromBase(BaseTlv tlv)

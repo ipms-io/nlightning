@@ -22,14 +22,14 @@ public readonly struct ChainHash : IValueObject, IEquatable<ChainHash>
     /// </summary>
     /// <param name="value">The value of the chain hash.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is not 32 bytes.</exception>
-    public ChainHash(byte[] value)
+    public ChainHash(ReadOnlySpan<byte> value)
     {
         if (value.Length != 32)
         {
             throw new ArgumentOutOfRangeException(nameof(value), "ChainHash must be 32 bytes");
         }
 
-        _value = value;
+        _value = value.ToArray();
     }
 
     /// <summary>

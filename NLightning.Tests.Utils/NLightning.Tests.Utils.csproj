@@ -5,6 +5,17 @@
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <Configurations>Debug;Release;Debug.Native;Release.Native</Configurations>
+        <Platforms>AnyCPU</Platforms>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug.Native' ">
+      <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
+      <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release.Native' ">
+      <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
     </PropertyGroup>
 
     <ItemGroup>

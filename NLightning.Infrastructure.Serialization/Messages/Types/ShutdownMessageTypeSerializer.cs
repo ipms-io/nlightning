@@ -11,11 +11,11 @@ using Exceptions;
 
 public class ShutdownMessageTypeSerializer : IMessageTypeSerializer<ShutdownMessage>
 {
-    private readonly IPayloadTypeSerializerFactory _payloadTypeSerializerFactory;
+    private readonly IPayloadSerializerFactory _payloadSerializerFactory;
     
-    public ShutdownMessageTypeSerializer(IPayloadTypeSerializerFactory payloadTypeSerializerFactory)
+    public ShutdownMessageTypeSerializer(IPayloadSerializerFactory payloadSerializerFactory)
     {
-        _payloadTypeSerializerFactory = payloadTypeSerializerFactory;
+        _payloadSerializerFactory = payloadSerializerFactory;
     }
     
     public async Task SerializeAsync(IMessage message, Stream stream)
@@ -24,7 +24,7 @@ public class ShutdownMessageTypeSerializer : IMessageTypeSerializer<ShutdownMess
             throw new SerializationException("Message is not of type ShutdownMessage");
             
         // Get the payload serializer
-        var payloadTypeSerializer = _payloadTypeSerializerFactory.GetSerializer(message.Type) 
+        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type) 
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
     }
@@ -40,7 +40,7 @@ public class ShutdownMessageTypeSerializer : IMessageTypeSerializer<ShutdownMess
         try
         {
             // Deserialize payload
-            var payloadSerializer = _payloadTypeSerializerFactory.GetSerializer<ShutdownPayload>()
+            var payloadSerializer = _payloadSerializerFactory.GetSerializer<ShutdownPayload>()
                                     ?? throw new SerializationException("No serializer found for payload type");
             var payload = await payloadSerializer.DeserializeAsync(stream)
                           ?? throw new SerializationException("Error serializing payload");

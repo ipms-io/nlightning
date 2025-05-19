@@ -4,7 +4,7 @@ using Protocol.Messages.Interfaces;
 
 public interface IMessageSerializer
 {
-    Task SerializeAsync<TMessage>(TMessage message, Stream stream) where TMessage : IMessage;
+    Task SerializeAsync(IMessage message, Stream stream);
     Task<TMessage?> DeserializeMessageAsync<TMessage>(Stream stream) where TMessage : class, IMessage;
     Task<IMessage?> DeserializeMessageAsync(Stream stream);
 }

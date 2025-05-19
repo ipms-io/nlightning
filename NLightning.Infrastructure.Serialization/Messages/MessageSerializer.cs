@@ -15,11 +15,11 @@ public class MessageSerializer : IMessageSerializer
         _messageTypeSerializerFactory = messageTypeSerializerFactory;
     }
 
-    public async Task SerializeAsync<TMessage>(TMessage message, Stream stream) where TMessage : IMessage
+    public async Task SerializeAsync(IMessage message, Stream stream)
     {
-        var messageTypeSerializer = _messageTypeSerializerFactory.GetSerializer<TMessage>();
+        var messageTypeSerializer = _messageTypeSerializerFactory.GetSerializer(message.Type);
         if (messageTypeSerializer is null)
-            throw new InvalidOperationException($"No serializer found for message type {typeof(TMessage).Name}");
+            throw new InvalidOperationException($"No serializer found for message type {message.Type}");
         
         // Write the message type to the stream
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(message.Type));

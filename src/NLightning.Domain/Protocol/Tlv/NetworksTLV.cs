@@ -1,7 +1,6 @@
 namespace NLightning.Domain.Protocol.Tlv;
 
 using Constants;
-using Models;
 using ValueObjects;
 
 /// <summary>
@@ -18,7 +17,7 @@ public class NetworksTlv : BaseTlv
     /// <remarks>
     /// The chain hashes are the hashes of the chains that the node supports.
     /// </remarks>
-    public IEnumerable<ChainHash>? ChainHashes { get; internal set; }
+    public IEnumerable<ChainHash>? ChainHashes { get; }
 
     public NetworksTlv(IEnumerable<ChainHash> chainHashes) : base(TlvConstants.NETWORKS)
     {

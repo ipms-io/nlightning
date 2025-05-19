@@ -12,20 +12,16 @@ public class FeeRangeTlvConverter : ITlvConverter<FeeRangeTlv>
 {
     public BaseTlv ConvertToBase(FeeRangeTlv tlv)
     {
-        var minSatsBytes = EndianBitConverter.GetBytesBigEndian(tlv.MinFeeAmount.Satoshi);
-        var maxSatsBytes = EndianBitConverter.GetBytesBigEndian(tlv.MaxFeeAmount.Satoshi);
+        var tlvValue = new byte[sizeof(ulong) * 2];
+        EndianBitConverter.GetBytesBigEndian(tlv.MinFeeAmount.Satoshi).CopyTo(tlvValue, 0);
+        EndianBitConverter.GetBytesBigEndian(tlv.MaxFeeAmount.Satoshi).CopyTo(tlvValue, sizeof(ulong));
         
-        minSatsBytes.CopyTo(tlv.Value, 0);
-        maxSatsBytes.CopyTo(tlv.Value, sizeof(ulong));
-        
-        return tlv;
+        return new BaseTlv(tlv.Type, tlvValue);
     }
 
     public FeeRangeTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        var feeRangeTlv = (FeeRangeTlv)baseTlv;
-        
-        if (feeRangeTlv.Type != TlvConstants.FEE_RANGE)
+        if (baseTlv.Type != TlvConstants.FEE_RANGE)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
@@ -35,12 +31,12 @@ public class FeeRangeTlvConverter : ITlvConverter<FeeRangeTlv>
             throw new InvalidCastException("Invalid length");
         }
 
-        feeRangeTlv.MinFeeAmount = LightningMoney
+        var minFeeAmount = LightningMoney
             .FromUnit(EndianBitConverter.ToUInt64BigEndian(baseTlv.Value[..sizeof(ulong)]), LightningMoneyUnit.Satoshi);
-        feeRangeTlv.MaxFeeAmount = LightningMoney
+        var maxFeeAmount = LightningMoney
             .FromUnit(EndianBitConverter.ToUInt64BigEndian(baseTlv.Value[sizeof(ulong)..]), LightningMoneyUnit.Satoshi);
 
-        return feeRangeTlv;
+        return new FeeRangeTlv(minFeeAmount, maxFeeAmount);
     }
 
     BaseTlv ITlvConverter.ConvertFromBase(BaseTlv tlv)

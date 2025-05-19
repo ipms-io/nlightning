@@ -173,7 +173,7 @@ internal sealed class TransportService : ITransportService
 
         // Serialize message
         using var messageStream = new MemoryStream();
-        await _messageSerializer.SerializeAsync(message,messageStream);
+        await _messageSerializer.SerializeAsync(message, messageStream);
 
         // Encrypt message
         var buffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];

@@ -28,22 +28,22 @@ public class TlvStreamSerializer : ITlvStreamSerializer
         {
             var baseTlv = tlv switch
             {
-                BlindedPathTlv upfrontShutdownScriptTlv => _tlvConverterFactory
-                    .GetConverter<BlindedPathTlv>()?.ConvertToBase(upfrontShutdownScriptTlv),
-                ChannelTypeTlv upfrontShutdownScriptTlv => _tlvConverterFactory
-                    .GetConverter<ChannelTypeTlv>()?.ConvertToBase(upfrontShutdownScriptTlv),
-                FeeRangeTlv upfrontShutdownScriptTlv => _tlvConverterFactory
-                    .GetConverter<FeeRangeTlv>()?.ConvertToBase(upfrontShutdownScriptTlv),
-                FundingOutputContributionTlv upfrontShutdownScriptTlv => _tlvConverterFactory
-                    .GetConverter<FundingOutputContributionTlv>()?.ConvertToBase(upfrontShutdownScriptTlv),
-                NetworksTlv upfrontShutdownScriptTlv => _tlvConverterFactory
-                    .GetConverter<NetworksTlv>()?.ConvertToBase(upfrontShutdownScriptTlv),
-                NextFundingTlv upfrontShutdownScriptTlv => _tlvConverterFactory
-                    .GetConverter<NextFundingTlv>()?.ConvertToBase(upfrontShutdownScriptTlv),
-                RequireConfirmedInputsTlv upfrontShutdownScriptTlv => _tlvConverterFactory
-                    .GetConverter<RequireConfirmedInputsTlv>()?.ConvertToBase(upfrontShutdownScriptTlv),
-                ShortChannelIdTlv upfrontShutdownScriptTlv => _tlvConverterFactory
-                    .GetConverter<ShortChannelIdTlv>()?.ConvertToBase(upfrontShutdownScriptTlv),
+                BlindedPathTlv blindedPathTlv => _tlvConverterFactory
+                    .GetConverter<BlindedPathTlv>()?.ConvertToBase(blindedPathTlv),
+                ChannelTypeTlv channelTypeTlv => _tlvConverterFactory
+                    .GetConverter<ChannelTypeTlv>()?.ConvertToBase(channelTypeTlv),
+                FeeRangeTlv feeRangeTlv => _tlvConverterFactory
+                    .GetConverter<FeeRangeTlv>()?.ConvertToBase(feeRangeTlv),
+                FundingOutputContributionTlv fundingOutputContributionTlv => _tlvConverterFactory
+                    .GetConverter<FundingOutputContributionTlv>()?.ConvertToBase(fundingOutputContributionTlv),
+                NetworksTlv networksTlv => _tlvConverterFactory
+                    .GetConverter<NetworksTlv>()?.ConvertToBase(networksTlv),
+                NextFundingTlv nextFundingTlv => _tlvConverterFactory
+                    .GetConverter<NextFundingTlv>()?.ConvertToBase(nextFundingTlv),
+                RequireConfirmedInputsTlv requireConfirmedInputsTlv => _tlvConverterFactory
+                    .GetConverter<RequireConfirmedInputsTlv>()?.ConvertToBase(requireConfirmedInputsTlv),
+                ShortChannelIdTlv shortChannelIdTlv => _tlvConverterFactory
+                    .GetConverter<ShortChannelIdTlv>()?.ConvertToBase(shortChannelIdTlv),
                 UpfrontShutdownScriptTlv upfrontShutdownScriptTlv => _tlvConverterFactory
                     .GetConverter<UpfrontShutdownScriptTlv>()?.ConvertToBase(upfrontShutdownScriptTlv),
                 _ => null

@@ -14,19 +14,17 @@ public class RequireConfirmedInputsTlvConverter : ITlvConverter<RequireConfirmed
 
     public RequireConfirmedInputsTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        var requireConfirmedInputsTlv = (RequireConfirmedInputsTlv)baseTlv;
-
-        if (requireConfirmedInputsTlv.Type != TlvConstants.REQUIRE_CONFIRMED_INPUTS)
+        if (baseTlv.Type != TlvConstants.REQUIRE_CONFIRMED_INPUTS)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
 
-        if (requireConfirmedInputsTlv.Length != 0)
+        if (baseTlv.Length != 0)
         {
             throw new InvalidCastException("Invalid length");
         }
         
-        return requireConfirmedInputsTlv;
+        return new RequireConfirmedInputsTlv();
     }
 
     BaseTlv ITlvConverter.ConvertFromBase(BaseTlv tlv)

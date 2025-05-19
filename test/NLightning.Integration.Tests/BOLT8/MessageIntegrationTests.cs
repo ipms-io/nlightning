@@ -1,4 +1,4 @@
-using NLightning.Tests.Utils.TestCollections;
+using NLightning.Integration.Tests.TestCollections;
 
 namespace NLightning.Integration.Tests.BOLT8;
 

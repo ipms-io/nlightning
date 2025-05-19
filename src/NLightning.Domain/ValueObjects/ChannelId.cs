@@ -16,16 +16,7 @@ public readonly struct ChannelId : IValueObject, IEquatable<ChannelId>
 
     public static ChannelId Zero => new(new byte[LENGTH]);
 
-    public ChannelId(byte[] value)
-    {
-        if (value.Length != LENGTH)
-        {
-            throw new ArgumentException($"ChannelId must be {LENGTH} bytes", nameof(value));
-        }
-
-        _value = value;
-    }
-    public ChannelId(Span<byte> value)
+    public ChannelId(ReadOnlySpan<byte> value)
     {
         if (value.Length != LENGTH)
         {

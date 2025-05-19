@@ -11,11 +11,11 @@ using Exceptions;
 
 public class StfuMessageTypeSerializer : IMessageTypeSerializer<StfuMessage>
 {
-    private readonly IPayloadTypeSerializerFactory _payloadTypeSerializerFactory;
+    private readonly IPayloadSerializerFactory _payloadSerializerFactory;
     
-    public StfuMessageTypeSerializer(IPayloadTypeSerializerFactory payloadTypeSerializerFactory)
+    public StfuMessageTypeSerializer(IPayloadSerializerFactory payloadSerializerFactory)
     {
-        _payloadTypeSerializerFactory = payloadTypeSerializerFactory;
+        _payloadSerializerFactory = payloadSerializerFactory;
     }
     
     public async Task SerializeAsync(IMessage message, Stream stream)
@@ -24,7 +24,7 @@ public class StfuMessageTypeSerializer : IMessageTypeSerializer<StfuMessage>
             throw new SerializationException("Message is not of type StfuMessage");
             
         // Get the payload serializer
-        var payloadTypeSerializer = _payloadTypeSerializerFactory.GetSerializer(message.Type) 
+        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type) 
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
     }
@@ -40,7 +40,7 @@ public class StfuMessageTypeSerializer : IMessageTypeSerializer<StfuMessage>
         try
         {
             // Deserialize payload
-            var payloadSerializer = _payloadTypeSerializerFactory.GetSerializer<StfuPayload>()
+            var payloadSerializer = _payloadSerializerFactory.GetSerializer<StfuPayload>()
                                     ?? throw new SerializationException("No serializer found for payload type");
             var payload = await payloadSerializer.DeserializeAsync(stream)
                           ?? throw new SerializationException("Error serializing payload");

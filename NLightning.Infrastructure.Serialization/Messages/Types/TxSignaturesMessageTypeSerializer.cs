@@ -11,11 +11,11 @@ using Exceptions;
 
 public class TxSignaturesMessageTypeSerializer : IMessageTypeSerializer<TxSignaturesMessage>
 {
-    private readonly IPayloadTypeSerializerFactory _payloadTypeSerializerFactory;
+    private readonly IPayloadSerializerFactory _payloadSerializerFactory;
     
-    public TxSignaturesMessageTypeSerializer(IPayloadTypeSerializerFactory payloadTypeSerializerFactory)
+    public TxSignaturesMessageTypeSerializer(IPayloadSerializerFactory payloadSerializerFactory)
     {
-        _payloadTypeSerializerFactory = payloadTypeSerializerFactory;
+        _payloadSerializerFactory = payloadSerializerFactory;
     }
     
     public async Task SerializeAsync(IMessage message, Stream stream)
@@ -24,7 +24,7 @@ public class TxSignaturesMessageTypeSerializer : IMessageTypeSerializer<TxSignat
             throw new SerializationException("Message is not of type TxSignaturesMessage");
             
         // Get the payload serializer
-        var payloadTypeSerializer = _payloadTypeSerializerFactory.GetSerializer(message.Type) 
+        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type) 
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
     }
@@ -40,7 +40,7 @@ public class TxSignaturesMessageTypeSerializer : IMessageTypeSerializer<TxSignat
         try
         {
             // Deserialize payload
-            var payloadSerializer = _payloadTypeSerializerFactory.GetSerializer<TxSignaturesPayload>()
+            var payloadSerializer = _payloadSerializerFactory.GetSerializer<TxSignaturesPayload>()
                                     ?? throw new SerializationException("No serializer found for payload type");
             var payload = await payloadSerializer.DeserializeAsync(stream)
                           ?? throw new SerializationException("Error serializing payload");

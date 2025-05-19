@@ -20,7 +20,7 @@ public class PongPayload : IMessagePayload
     /// <summary>
     /// The ignored bytes.
     /// </summary>
-    public byte[] Ignored { get; }
+    public byte[] Ignored { get; internal init; }
 
     public PongPayload(ushort bytesLen)
     {

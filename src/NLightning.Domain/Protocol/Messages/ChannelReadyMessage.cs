@@ -22,7 +22,7 @@ public sealed class ChannelReadyMessage : BaseMessage
     public ShortChannelIdTlv? ShortChannelIdTlv { get; }
 
     public ChannelReadyMessage(ChannelReadyPayload payload, ShortChannelIdTlv? shortChannelIdTlv = null)
-        : base(MessageTypes.TX_ACK_RBF, payload)
+        : base(MessageTypes.CHANNEL_READY, payload)
     {
         ShortChannelIdTlv = shortChannelIdTlv;
 

@@ -18,21 +18,17 @@ public class UpfrontShutdownScriptTlvConverter : ITlvConverter<UpfrontShutdownSc
 
     public UpfrontShutdownScriptTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        var upfrontShutdownScriptTlv = (UpfrontShutdownScriptTlv)baseTlv;
-
-        if (upfrontShutdownScriptTlv.Type != TlvConstants.UPFRONT_SHUTDOWN_SCRIPT)
+        if (baseTlv.Type != TlvConstants.UPFRONT_SHUTDOWN_SCRIPT)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
 
-        if (upfrontShutdownScriptTlv.Length == 0)
+        if (baseTlv.Length == 0)
         {
             throw new InvalidCastException("Invalid length");
         }
         
-        upfrontShutdownScriptTlv.ShutdownScriptPubkey = new Script(upfrontShutdownScriptTlv.Value);
-        
-        return upfrontShutdownScriptTlv;
+        return new UpfrontShutdownScriptTlv(new Script(baseTlv.Value));
     }
 
     BaseTlv ITlvConverter.ConvertFromBase(BaseTlv tlv)

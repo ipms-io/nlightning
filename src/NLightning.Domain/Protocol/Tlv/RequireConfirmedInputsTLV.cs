@@ -1,7 +1,6 @@
 namespace NLightning.Domain.Protocol.Tlv;
 
 using Constants;
-using Models;
 
 /// <summary>
 /// Required Confirmed Inputs TLV.

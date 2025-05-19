@@ -2,13 +2,13 @@ using System.Text.Json;
 using MessagePack;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLightning.Domain.Bitcoin.Services;
 
 namespace NLightning.Application.NLTG.Services;
 
 using Common.Options;
+using Domain.Bitcoin.Services;
 using Domain.Money;
-using Infrastructure.Bitcoin.Caching;
+using Models;
 
 public class FeeService : IFeeService
 {

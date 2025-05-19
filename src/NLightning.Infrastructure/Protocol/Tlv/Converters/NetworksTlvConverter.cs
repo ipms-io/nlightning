@@ -15,14 +15,12 @@ public class NetworksTlvConverter : ITlvConverter<NetworksTlv>
 
     public NetworksTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        var networksTlv = (NetworksTlv)baseTlv;
-        
-        if (networksTlv.Type != TlvConstants.NETWORKS)
+        if (baseTlv.Type != TlvConstants.NETWORKS)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
 
-        if (networksTlv.Length % ChainHash.LENGTH != 0)
+        if (baseTlv.Length % ChainHash.LENGTH != 0)
         {
             throw new InvalidCastException("Invalid length");
         }
@@ -33,9 +31,8 @@ public class NetworksTlvConverter : ITlvConverter<NetworksTlv>
         {
             chainHashes.Add(baseTlv.Value[i..(i + ChainHash.LENGTH)]);
         }
-        networksTlv.ChainHashes = chainHashes;
         
-        return networksTlv;
+        return new NetworksTlv(chainHashes);
     }
 
     BaseTlv ITlvConverter.ConvertFromBase(BaseTlv tlv)

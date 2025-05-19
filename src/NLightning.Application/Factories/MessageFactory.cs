@@ -35,7 +35,7 @@ public class MessageFactory : IMessageFactory
     /// <returns>The Init message.</returns>
     /// <seealso cref="InitMessage"/>
     /// <seealso cref="InitPayload"/>
-    public IMessage CreateInitMessage()
+    public InitMessage CreateInitMessage()
     {
         // Get features from options
         var features = _nodeOptions.Features.GetNodeFeatures();
@@ -55,7 +55,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="WarningMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="ErrorPayload"/>
-    public IMessage CreateWarningMessage(string message, ChannelId? channelId)
+    public WarningMessage CreateWarningMessage(string message, ChannelId? channelId)
     {
         var payload = channelId is null ? new ErrorPayload(message) : new ErrorPayload(channelId.Value, message);
         return new WarningMessage(payload);
@@ -70,7 +70,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="WarningMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="ErrorPayload"/>
-    public IMessage CreateWarningMessage(byte[] data, ChannelId? channelId)
+    public WarningMessage CreateWarningMessage(byte[] data, ChannelId? channelId)
     {
         var payload = channelId is null ? new ErrorPayload(data) : new ErrorPayload(channelId.Value, data);
         return new WarningMessage(payload);
@@ -85,7 +85,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="StfuMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="StfuPayload"/>
-    public IMessage CreateStfuMessage(ChannelId channelId, bool initiator)
+    public StfuMessage CreateStfuMessage(ChannelId channelId, bool initiator)
     {
         var payload = new StfuPayload(channelId, initiator);
         return new StfuMessage(payload);
@@ -100,7 +100,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="ErrorMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="ErrorPayload"/>
-    public IMessage CreateErrorMessage(string message, ChannelId? channelId)
+    public ErrorMessage CreateErrorMessage(string message, ChannelId? channelId)
     {
         var payload = channelId is null ? new ErrorPayload(message) : new ErrorPayload(channelId.Value, message);
         return new ErrorMessage(payload);
@@ -115,7 +115,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="ErrorMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="ErrorPayload"/>
-    public IMessage CreateErrorMessage(byte[] data, ChannelId? channelId)
+    public ErrorMessage CreateErrorMessage(byte[] data, ChannelId? channelId)
     {
         var payload = channelId is null ? new ErrorPayload(data) : new ErrorPayload(channelId.Value, data);
         return new ErrorMessage(payload);
@@ -127,7 +127,7 @@ public class MessageFactory : IMessageFactory
     /// <returns>The Ping message.</returns>
     /// <seealso cref="PingMessage"/>
     /// <seealso cref="PingPayload"/>
-    public IMessage CreatePingMessage()
+    public PingMessage CreatePingMessage()
     {
         return new PingMessage();
     }
@@ -139,7 +139,7 @@ public class MessageFactory : IMessageFactory
     /// <returns>The Pong message.</returns>
     /// <seealso cref="PongMessage"/>
     /// <seealso cref="PongPayload"/>
-    public IMessage CreatePongMessage(IMessage pingMessage)
+    public PongMessage CreatePongMessage(IMessage pingMessage)
     {
         if (pingMessage is not PingMessage ping)
         {
@@ -163,7 +163,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="TxAddInputMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="TxAddInputPayload"/>
-    public IMessage CreateTxAddInputMessage(ChannelId channelId, ulong serialId, byte[] prevTx, uint prevTxVout,
+    public TxAddInputMessage CreateTxAddInputMessage(ChannelId channelId, ulong serialId, byte[] prevTx, uint prevTxVout,
                                             uint sequence)
     {
         var payload = new TxAddInputPayload(channelId, serialId, prevTx, prevTxVout, sequence);
@@ -182,7 +182,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="TxAddOutputMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="TxAddOutputPayload"/>
-    public IMessage CreateTxAddOutputMessage(ChannelId channelId, ulong serialId, LightningMoney amount, Script script)
+    public TxAddOutputMessage CreateTxAddOutputMessage(ChannelId channelId, ulong serialId, LightningMoney amount, Script script)
     {
         var payload = new TxAddOutputPayload(amount, channelId, script, serialId);
 
@@ -198,7 +198,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="TxRemoveInputMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="TxRemoveInputPayload"/>
-    public IMessage CreateTxRemoveInputMessage(ChannelId channelId, ulong serialId)
+    public TxRemoveInputMessage CreateTxRemoveInputMessage(ChannelId channelId, ulong serialId)
     {
         var payload = new TxRemoveInputPayload(channelId, serialId);
 
@@ -214,7 +214,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="TxRemoveOutputMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="TxRemoveOutputPayload"/>
-    public IMessage CreateTxRemoveOutputMessage(ChannelId channelId, ulong serialId)
+    public TxRemoveOutputMessage CreateTxRemoveOutputMessage(ChannelId channelId, ulong serialId)
     {
         var payload = new TxRemoveOutputPayload(channelId, serialId);
 
@@ -229,7 +229,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="TxCompleteMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="TxCompletePayload"/>
-    public IMessage CreateTxCompleteMessage(ChannelId channelId)
+    public TxCompleteMessage CreateTxCompleteMessage(ChannelId channelId)
     {
         var payload = new TxCompletePayload(channelId);
 
@@ -246,7 +246,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="TxSignaturesMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="TxSignaturesPayload"/>
-    public IMessage CreateTxSignaturesMessage(ChannelId channelId, byte[] txId, List<Witness> witnesses)
+    public TxSignaturesMessage CreateTxSignaturesMessage(ChannelId channelId, byte[] txId, List<Witness> witnesses)
     {
         var payload = new TxSignaturesPayload(channelId, txId, witnesses);
 
@@ -265,7 +265,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="TxInitRbfMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="TxInitRbfPayload"/>
-    public IMessage CreateTxInitRbfMessage(ChannelId channelId, uint locktime, uint feerate,
+    public TxInitRbfMessage CreateTxInitRbfMessage(ChannelId channelId, uint locktime, uint feerate,
                                            long fundingOutputContrubution, bool requireConfirmedInputs)
     {
         FundingOutputContributionTlv? fundingOutputContributionTlv = null;
@@ -299,7 +299,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="TlvStream"/>
     /// <seealso cref="FundingOutputContributionTlv"/>
     /// <seealso cref="RequireConfirmedInputsTlv"/>
-    public IMessage CreateTxAckRbfMessage(ChannelId channelId, long fundingOutputContrubution,
+    public TxAckRbfMessage CreateTxAckRbfMessage(ChannelId channelId, long fundingOutputContrubution,
                                           bool requireConfirmedInputs)
     {
         FundingOutputContributionTlv? fundingOutputContributionTlv = null;
@@ -329,7 +329,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="TxAbortMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="TxAbortPayload"/>
-    public IMessage CreateTxAbortMessage(ChannelId channelId, byte[] data)
+    public TxAbortMessage CreateTxAbortMessage(ChannelId channelId, byte[] data)
     {
         var payload = new TxAbortPayload(channelId, data);
 
@@ -350,7 +350,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="PubKey"/>
     /// <seealso cref="ShortChannelId"/>
     /// <seealso cref="ChannelReadyPayload"/>
-    public IMessage CreateChannelReadyMessage(ChannelId channelId, PubKey secondPerCommitmentPoint,
+    public ChannelReadyMessage CreateChannelReadyMessage(ChannelId channelId, PubKey secondPerCommitmentPoint,
                                               ShortChannelId? shortChannelId = null)
     {
         var payload = new ChannelReadyPayload(channelId, secondPerCommitmentPoint);
@@ -369,7 +369,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="Script"/>
     /// <seealso cref="ShutdownPayload"/>
-    public IMessage CreateShutdownMessage(ChannelId channelId, Script scriptPubkey)
+    public ShutdownMessage CreateShutdownMessage(ChannelId channelId, Script scriptPubkey)
     {
         var payload = new ShutdownPayload(channelId, scriptPubkey);
 
@@ -389,7 +389,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="ECDSASignature"/>
     /// <seealso cref="ClosingSignedPayload"/>
-    public IMessage CreateClosingSignedMessage(ChannelId channelId, ulong feeSatoshis, ECDSASignature signature,
+    public ClosingSignedMessage CreateClosingSignedMessage(ChannelId channelId, ulong feeSatoshis, ECDSASignature signature,
                                                ulong minFeeSatoshis, ulong maxFeeSatoshis)
     {
         var payload = new ClosingSignedPayload(channelId, feeSatoshis, signature);
@@ -422,7 +422,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="ChannelFlags"/>
     /// <seealso cref="Script"/>
     /// <seealso cref="OpenChannel2Payload"/>
-    public IMessage CreateOpenChannel2Message(ChannelId temporaryChannelId, uint fundingFeeRatePerKw,
+    public OpenChannel2Message CreateOpenChannel2Message(ChannelId temporaryChannelId, uint fundingFeeRatePerKw,
                                               uint commitmentFeeRatePerKw, ulong fundingSatoshis, PubKey fundingPubKey,
                                               PubKey revocationBasepoint, PubKey paymentBasepoint,
                                               PubKey delayedPaymentBasepoint, PubKey htlcBasepoint,
@@ -468,7 +468,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="PubKey"/>
     /// <seealso cref="Script"/>
     /// <seealso cref="AcceptChannel2Payload"/>
-    public IMessage CreateAcceptChannel2Message(ChannelId temporaryChannelId, LightningMoney fundingSatoshis,
+    public AcceptChannel2Message CreateAcceptChannel2Message(ChannelId temporaryChannelId, LightningMoney fundingSatoshis,
                                                 PubKey fundingPubKey, PubKey revocationBasepoint,
                                                 PubKey paymentBasepoint, PubKey delayedPaymentBasepoint,
                                                 PubKey htlcBasepoint, PubKey firstPerCommitmentPoint,
@@ -507,7 +507,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="UpdateAddHtlcMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="UpdateAddHtlcPayload"/>
-    public IMessage CreateUpdateAddHtlcMessage(ChannelId channelId, ulong id, ulong amountMsat,
+    public UpdateAddHtlcMessage CreateUpdateAddHtlcMessage(ChannelId channelId, ulong id, ulong amountMsat,
                                                ReadOnlyMemory<byte> paymentHash, uint cltvExpiry,
                                                ReadOnlyMemory<byte>? onionRoutingPacket = null)
     {
@@ -526,7 +526,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="UpdateFulfillHtlcMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="UpdateFulfillHtlcPayload"/>
-    public IMessage CreateUpdateFulfillHtlcMessage(ChannelId channelId, ulong id, ReadOnlyMemory<byte> preimage)
+    public UpdateFulfillHtlcMessage CreateUpdateFulfillHtlcMessage(ChannelId channelId, ulong id, ReadOnlyMemory<byte> preimage)
     {
         var payload = new UpdateFulfillHtlcPayload(channelId, id, preimage);
 
@@ -543,7 +543,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="UpdateFailHtlcMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="UpdateFailHtlcPayload"/>
-    public IMessage CreateUpdateFailHtlcMessage(ChannelId channelId, ulong id, ReadOnlyMemory<byte> reason)
+    public UpdateFailHtlcMessage CreateUpdateFailHtlcMessage(ChannelId channelId, ulong id, ReadOnlyMemory<byte> reason)
     {
         var payload = new UpdateFailHtlcPayload(channelId, id, reason);
 
@@ -561,7 +561,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="ECDSASignature"/>
     /// <seealso cref="CommitmentSignedPayload"/>
-    public IMessage CreateCommitmentSignedMessage(ChannelId channelId, ECDSASignature signature,
+    public CommitmentSignedMessage CreateCommitmentSignedMessage(ChannelId channelId, ECDSASignature signature,
                                                   IEnumerable<ECDSASignature> htlcSignatures)
     {
         var payload = new CommitmentSignedPayload(channelId, htlcSignatures, signature);
@@ -580,7 +580,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="ECDSASignature"/>
     /// <seealso cref="RevokeAndAckPayload"/>
-    public IMessage CreateCommitmentSignedMessage(ChannelId channelId, ReadOnlyMemory<byte> perCommitmentSecret,
+    public RevokeAndAckMessage CreateRevokeAndAckMessage(ChannelId channelId, ReadOnlyMemory<byte> perCommitmentSecret,
                                                   PubKey nextPerCommitmentPoint)
     {
         var payload = new RevokeAndAckPayload(channelId, nextPerCommitmentPoint, perCommitmentSecret);
@@ -597,7 +597,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="UpdateFeeMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="UpdateFeePayload"/>
-    public IMessage CreateUpdateFeeMessage(ChannelId channelId, uint feeratePerKw)
+    public UpdateFeeMessage CreateUpdateFeeMessage(ChannelId channelId, uint feeratePerKw)
     {
         var payload = new UpdateFeePayload(channelId, feeratePerKw);
 
@@ -615,7 +615,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="UpdateFailMalformedHtlcMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="UpdateFailMalformedHtlcPayload"/>
-    public IMessage CreateUpdateFailMalformedHtlcMessage(ChannelId channelId, ulong id,
+    public UpdateFailMalformedHtlcMessage CreateUpdateFailMalformedHtlcMessage(ChannelId channelId, ulong id,
                                                          ReadOnlyMemory<byte> sha256OfOnion, ushort failureCode)
     {
         var payload = new UpdateFailMalformedHtlcPayload(channelId, failureCode, id, sha256OfOnion);
@@ -635,7 +635,7 @@ public class MessageFactory : IMessageFactory
     /// <seealso cref="ChannelReestablishMessage"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="ChannelReestablishPayload"/>
-    public IMessage CreateChannelReestablishMessage(ChannelId channelId, ulong nextCommitmentNumber,
+    public ChannelReestablishMessage CreateChannelReestablishMessage(ChannelId channelId, ulong nextCommitmentNumber,
                                                     ulong nextRevocationNumber,
                                                     ReadOnlyMemory<byte> yourLastPerCommitmentSecret,
                                                     PubKey myCurrentPerCommitmentPoint)

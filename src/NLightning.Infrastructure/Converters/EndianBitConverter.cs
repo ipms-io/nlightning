@@ -222,29 +222,29 @@ public static class EndianBitConverter
     }
     #endregion
 
-    #region Back From LEBytes
+    #region Back From LE Bytes
     /// <summary>
-    /// Converts a byte array to a ulong in little-endian order.
+    /// Converts a byte array to an ulong in little-endian order.
     /// </summary>
     /// <param name="bytes">The byte array to convert.</param>
     /// <param name="padWithZero">If true, the byte array will be padded with zero if the length is less than 8.</param>
     /// <returns>The ulong representation of the byte array.</returns>
     /// <remarks>Padding with zero is useful when the byte array is used in a context where the length is known to be less than 8.</remarks>
-    public static ulong ToUInt64LittleEndian(byte[] bytes, bool padWithZero = false)
+    public static ulong ToUInt64LittleEndian(ReadOnlySpan<byte> bytes, bool padWithZero = false)
     {
         // pad with zero if the length is less than 8
+        var paddedBytes = bytes.ToArray();
         if (padWithZero && bytes.Length < 8)
         {
-            Span<byte> paddedBytes = stackalloc byte[8];
-            bytes.CopyTo(paddedBytes[(8 - bytes.Length)..]);
-            bytes = paddedBytes.ToArray();
+            paddedBytes = new byte[8];
+            bytes.CopyTo(paddedBytes.AsSpan()[(8 - bytes.Length)..]);
         }
 
         if (!BitConverter.IsLittleEndian)
         {
-            Array.Reverse(bytes);
+            Array.Reverse(paddedBytes);
         }
-        return BitConverter.ToUInt64(bytes, 0);
+        return BitConverter.ToUInt64(paddedBytes, 0);
     }
 
     /// <summary>
@@ -254,21 +254,21 @@ public static class EndianBitConverter
     /// <param name="padWithZero">If true, the byte array will be padded with zero if the length is less than 8.</param>
     /// <returns>The ulong representation of the byte array.</returns>
     /// <remarks>Padding with zero is useful when the byte array is used in a context where the length is known to be less than 8.</remarks>
-    public static long ToInt64LittleEndian(byte[] bytes, bool padWithZero = false)
+    public static long ToInt64LittleEndian(ReadOnlySpan<byte> bytes, bool padWithZero = false)
     {
         // pad with zero if the length is less than 8
+        var paddedBytes = bytes.ToArray();
         if (padWithZero && bytes.Length < 8)
         {
-            Span<byte> paddedBytes = stackalloc byte[8];
-            bytes.CopyTo(paddedBytes[(8 - bytes.Length)..]);
-            bytes = paddedBytes.ToArray();
+            paddedBytes = new byte[8];
+            bytes.CopyTo(paddedBytes.AsSpan()[(8 - bytes.Length)..]);
         }
 
         if (!BitConverter.IsLittleEndian)
         {
-            Array.Reverse(bytes);
+            Array.Reverse(paddedBytes);
         }
-        return BitConverter.ToInt64(bytes, 0);
+        return BitConverter.ToInt64(paddedBytes, 0);
     }
 
     /// <summary>
@@ -278,21 +278,21 @@ public static class EndianBitConverter
     /// <param name="padWithZero">If true, the byte array will be padded with zero if the length is less than 4.</param>
     /// <returns>The uint representation of the byte array.</returns>
     /// <remarks>Padding with zero is useful when the byte array is used in a context where the length is known to be less than 4.</remarks>
-    public static uint ToUInt32LittleEndian(byte[] bytes, bool padWithZero = false)
+    public static uint ToUInt32LittleEndian(ReadOnlySpan<byte> bytes, bool padWithZero = false)
     {
         // pad with zero if the length is less than 4
+        var paddedBytes = bytes.ToArray();
         if (padWithZero && bytes.Length < 4)
         {
-            Span<byte> paddedBytes = stackalloc byte[4];
-            bytes.CopyTo(paddedBytes[(4 - bytes.Length)..]);
-            bytes = paddedBytes.ToArray();
+            paddedBytes = new byte[4];
+            bytes.CopyTo(paddedBytes.AsSpan()[(4 - bytes.Length)..]);
         }
 
         if (!BitConverter.IsLittleEndian)
         {
-            Array.Reverse(bytes);
+            Array.Reverse(paddedBytes);
         }
-        return BitConverter.ToUInt32(bytes, 0);
+        return BitConverter.ToUInt32(paddedBytes, 0);
     }
 
     /// <summary>
@@ -302,21 +302,21 @@ public static class EndianBitConverter
     /// <param name="padWithZero">If true, the byte array will be padded with zero if the length is less than 4.</param>
     /// <returns>The uint representation of the byte array.</returns>
     /// <remarks>Padding with zero is useful when the byte array is used in a context where the length is known to be less than 4.</remarks>
-    public static int ToInt32LittleEndian(byte[] bytes, bool padWithZero = false)
+    public static int ToInt32LittleEndian(ReadOnlySpan<byte> bytes, bool padWithZero = false)
     {
         // pad with zero if the length is less than 4
+        var paddedBytes = bytes.ToArray();
         if (padWithZero && bytes.Length < 4)
         {
-            Span<byte> paddedBytes = stackalloc byte[4];
-            bytes.CopyTo(paddedBytes[(4 - bytes.Length)..]);
-            bytes = paddedBytes.ToArray();
+            paddedBytes = new byte[4];
+            bytes.CopyTo(paddedBytes.AsSpan()[(4 - bytes.Length)..]);
         }
 
         if (!BitConverter.IsLittleEndian)
         {
-            Array.Reverse(bytes);
+            Array.Reverse(paddedBytes);
         }
-        return BitConverter.ToInt32(bytes, 0);
+        return BitConverter.ToInt32(paddedBytes, 0);
     }
 
     /// <summary>
@@ -326,21 +326,21 @@ public static class EndianBitConverter
     /// <param name="padWithZero">If true, the byte array will be padded with zero if the length is less than 2.</param>
     /// <returns>The ushort representation of the byte array.</returns>
     /// <remarks>Padding with zero is useful when the byte array is used in a context where the length is known to be less than 2.</remarks>
-    public static ushort ToUInt16LittleEndian(byte[] bytes, bool padWithZero = false)
+    public static ushort ToUInt16LittleEndian(ReadOnlySpan<byte> bytes, bool padWithZero = false)
     {
         // pad with zero if the length is less than 2
+        var paddedBytes = bytes.ToArray();
         if (padWithZero && bytes.Length < 2)
         {
-            Span<byte> paddedBytes = stackalloc byte[2];
-            bytes.CopyTo(paddedBytes[(2 - bytes.Length)..]);
-            bytes = paddedBytes.ToArray();
+            paddedBytes = new byte[2];
+            bytes.CopyTo(paddedBytes.AsSpan()[(2 - bytes.Length)..]);
         }
 
         if (!BitConverter.IsLittleEndian)
         {
-            Array.Reverse(bytes);
+            Array.Reverse(paddedBytes);
         }
-        return BitConverter.ToUInt16(bytes, 0);
+        return BitConverter.ToUInt16(paddedBytes, 0);
     }
 
     /// <summary>
@@ -350,21 +350,21 @@ public static class EndianBitConverter
     /// <param name="padWithZero">If true, the byte array will be padded with zero if the length is less than 2.</param>
     /// <returns>The ushort representation of the byte array.</returns>
     /// <remarks>Padding with zero is useful when the byte array is used in a context where the length is known to be less than 2.</remarks>
-    public static short ToInt16LittleEndian(byte[] bytes, bool padWithZero = false)
+    public static short ToInt16LittleEndian(ReadOnlySpan<byte> bytes, bool padWithZero = false)
     {
         // pad with zero if the length is less than 2
+        var paddedBytes = bytes.ToArray();
         if (padWithZero && bytes.Length < 2)
         {
-            Span<byte> paddedBytes = stackalloc byte[2];
-            bytes.CopyTo(paddedBytes[(2 - bytes.Length)..]);
-            bytes = paddedBytes.ToArray();
+            paddedBytes = new byte[2];
+            bytes.CopyTo(paddedBytes.AsSpan()[(2 - bytes.Length)..]);
         }
 
         if (!BitConverter.IsLittleEndian)
         {
-            Array.Reverse(bytes);
+            Array.Reverse(paddedBytes);
         }
-        return BitConverter.ToInt16(bytes, 0);
+        return BitConverter.ToInt16(paddedBytes, 0);
     }
     #endregion
 
@@ -376,21 +376,21 @@ public static class EndianBitConverter
     /// <param name="padWithZero">If true, the byte array will be padded with zero if the length is less than 8.</param>
     /// <returns>The ulong representation of the byte array.</returns>
     /// <remarks>Padding with zero is useful when the byte array is used in a context where the length is known to be less than 8.</remarks>
-    public static ulong ToUInt64BigEndian(byte[] bytes, bool padWithZero = false)
+    public static ulong ToUInt64BigEndian(ReadOnlySpan<byte> bytes, bool padWithZero = false)
     {
         // pad with zero if the length is less than 8
+        var paddedBytes = bytes.ToArray();
         if (padWithZero && bytes.Length < 8)
         {
-            Span<byte> paddedBytes = stackalloc byte[8];
-            bytes.CopyTo(paddedBytes[(8 - bytes.Length)..]);
-            bytes = paddedBytes.ToArray();
+            paddedBytes = new byte[8];
+            bytes.CopyTo(paddedBytes.AsSpan()[(8 - bytes.Length)..]);
         }
 
         if (BitConverter.IsLittleEndian)
         {
-            Array.Reverse(bytes);
+            Array.Reverse(paddedBytes);
         }
-        return BitConverter.ToUInt64(bytes, 0);
+        return BitConverter.ToUInt64(paddedBytes, 0);
     }
 
     /// <summary>
@@ -403,18 +403,18 @@ public static class EndianBitConverter
     public static long ToInt64BigEndian(byte[] bytes, bool padWithZero = false)
     {
         // pad with zero if the length is less than 8
+        var paddedBytes = bytes.ToArray();
         if (padWithZero && bytes.Length < 8)
         {
-            Span<byte> paddedBytes = stackalloc byte[8];
-            bytes.CopyTo(paddedBytes[(8 - bytes.Length)..]);
-            bytes = paddedBytes.ToArray();
+            paddedBytes = new byte[8];
+            bytes.CopyTo(paddedBytes.AsSpan()[(8 - bytes.Length)..]);
         }
 
         if (BitConverter.IsLittleEndian)
         {
-            Array.Reverse(bytes);
+            Array.Reverse(paddedBytes);
         }
-        return BitConverter.ToInt64(bytes, 0);
+        return BitConverter.ToInt64(paddedBytes, 0);
     }
 
     /// <summary>
@@ -424,21 +424,21 @@ public static class EndianBitConverter
     /// <param name="padWithZero">If true, the byte array will be padded with zero if the length is less than 4.</param>
     /// <returns>The uint representation of the byte array.</returns>
     /// <remarks>Padding with zero is useful when the byte array is used in a context where the length is known to be less than 4.</remarks>
-    public static uint ToUInt32BigEndian(byte[] bytes, bool padWithZero = false)
+    public static uint ToUInt32BigEndian(ReadOnlySpan<byte> bytes, bool padWithZero = false)
     {
         // pad with zero if the length is less than 4
+        var paddedBytes = bytes.ToArray();
         if (padWithZero && bytes.Length < 4)
         {
-            Span<byte> paddedBytes = stackalloc byte[4];
-            bytes.CopyTo(paddedBytes[(4 - bytes.Length)..]);
-            bytes = paddedBytes.ToArray();
+            paddedBytes = new byte[4];
+            bytes.CopyTo(paddedBytes.AsSpan()[(4 - bytes.Length)..]);
         }
 
         if (BitConverter.IsLittleEndian)
         {
-            Array.Reverse(bytes);
+            Array.Reverse(paddedBytes);
         }
-        return BitConverter.ToUInt32(bytes, 0);
+        return BitConverter.ToUInt32(paddedBytes, 0);
     }
 
     /// <summary>
@@ -448,21 +448,21 @@ public static class EndianBitConverter
     /// <param name="padWithZero">If true, the byte array will be padded with zero if the length is less than 4.</param>
     /// <returns>The uint representation of the byte array.</returns>
     /// <remarks>Padding with zero is useful when the byte array is used in a context where the length is known to be less than 4.</remarks>
-    public static int ToInt32BigEndian(byte[] bytes, bool padWithZero = false)
+    public static int ToInt32BigEndian(ReadOnlySpan<byte> bytes, bool padWithZero = false)
     {
         // pad with zero if the length is less than 4
+        var paddedBytes = bytes.ToArray();
         if (padWithZero && bytes.Length < 4)
         {
-            Span<byte> paddedBytes = stackalloc byte[4];
-            bytes.CopyTo(paddedBytes[(4 - bytes.Length)..]);
-            bytes = paddedBytes.ToArray();
+            paddedBytes = new byte[4];
+            bytes.CopyTo(paddedBytes.AsSpan()[(4 - bytes.Length)..]);
         }
 
         if (BitConverter.IsLittleEndian)
         {
-            Array.Reverse(bytes);
+            Array.Reverse(paddedBytes);
         }
-        return BitConverter.ToInt32(bytes, 0);
+        return BitConverter.ToInt32(paddedBytes, 0);
     }
 
     /// <summary>
@@ -472,21 +472,21 @@ public static class EndianBitConverter
     /// <param name="padWithZero">If true, the byte array will be padded with zero if the length is less than 2.</param>
     /// <returns>The ushort representation of the byte array.</returns>
     /// <remarks>Padding with zero is useful when the byte array is used in a context where the length is known to be less than 2.</remarks>
-    public static ushort ToUInt16BigEndian(byte[] bytes, bool padWithZero = false)
+    public static ushort ToUInt16BigEndian(ReadOnlySpan<byte> bytes, bool padWithZero = false)
     {
         // pad with zero if the length is less than 2
+        var paddedBytes = bytes.ToArray();
         if (padWithZero && bytes.Length < 2)
         {
-            Span<byte> paddedBytes = stackalloc byte[2];
-            bytes.CopyTo(paddedBytes[(2 - bytes.Length)..]);
-            bytes = paddedBytes.ToArray();
+            paddedBytes = new byte[2];
+            bytes.CopyTo(paddedBytes.AsSpan()[(2 - bytes.Length)..]);
         }
 
         if (BitConverter.IsLittleEndian)
         {
-            Array.Reverse(bytes);
+            Array.Reverse(paddedBytes);
         }
-        return BitConverter.ToUInt16(bytes, 0);
+        return BitConverter.ToUInt16(paddedBytes, 0);
     }
 
     /// <summary>
@@ -496,21 +496,21 @@ public static class EndianBitConverter
     /// <param name="padWithZero">If true, the byte array will be padded with zero if the length is less than 2.</param>
     /// <returns>The ushort representation of the byte array.</returns>
     /// <remarks>Padding with zero is useful when the byte array is used in a context where the length is known to be less than 2.</remarks>
-    public static short ToInt16BigEndian(byte[] bytes, bool padWithZero = false)
+    public static short ToInt16BigEndian(ReadOnlySpan<byte> bytes, bool padWithZero = false)
     {
         // pad with zero if the length is less than 2
+        var paddedBytes = bytes.ToArray();
         if (padWithZero && bytes.Length < 2)
         {
-            Span<byte> paddedBytes = stackalloc byte[2];
-            bytes.CopyTo(paddedBytes[(2 - bytes.Length)..]);
-            bytes = paddedBytes.ToArray();
+            paddedBytes = new byte[2];
+            bytes.CopyTo(paddedBytes.AsSpan()[(2 - bytes.Length)..]);
         }
 
         if (BitConverter.IsLittleEndian)
         {
-            Array.Reverse(bytes);
+            Array.Reverse(paddedBytes);
         }
-        return BitConverter.ToInt16(bytes, 0);
+        return BitConverter.ToInt16(paddedBytes, 0);
     }
     #endregion
 }
