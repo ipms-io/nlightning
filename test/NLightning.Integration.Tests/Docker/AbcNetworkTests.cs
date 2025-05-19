@@ -67,10 +67,10 @@ public class AbcNetworkTests
         var valueObjectSerializerFactory = new ValueObjectSerializerFactory();
         var tlvConverterFactory = new TlvConverterFactory();
         var messageTypeSerializerFactory = new MessageTypeSerializerFactory(
-            new PayloadSerializerFactory(new FeatureSetSerializer(), valueObjectSerializerFactory), 
-            tlvConverterFactory, 
-            new TlvStreamSerializer(tlvConverterFactory, new TlvSerializer(valueObjectSerializerFactory)));
-        var messageSerializer = 
+            new PayloadSerializerFactory(new FeatureSetSerializer(), valueObjectSerializerFactory),
+                                         tlvConverterFactory,
+                                         new TlvStreamSerializer(tlvConverterFactory, new TlvSerializer(valueObjectSerializerFactory)));
+        var messageSerializer =
             new Infrastructure.Serialization.Messages.MessageSerializer(messageTypeSerializerFactory);
         var peerManager = new PeerManager(new Mock<ILogger<PeerManager>>().Object, nodeOptions,
             new PeerFactory(loggerFactory, messageFactory, new MessageServiceFactory(messageSerializer),
@@ -132,10 +132,10 @@ public class AbcNetworkTests
             var valueObjectSerializerFactory = new ValueObjectSerializerFactory();
             var tlvConverterFactory = new TlvConverterFactory();
             var messageTypeSerializerFactory = new MessageTypeSerializerFactory(
-                new PayloadSerializerFactory(new FeatureSetSerializer(), valueObjectSerializerFactory), 
-                tlvConverterFactory, 
+                new PayloadSerializerFactory(new FeatureSetSerializer(), valueObjectSerializerFactory),
+                tlvConverterFactory,
                 new TlvStreamSerializer(tlvConverterFactory, new TlvSerializer(valueObjectSerializerFactory)));
-            var messageSerializer = 
+            var messageSerializer =
                 new Infrastructure.Serialization.Messages.MessageSerializer(messageTypeSerializerFactory);
             var peerManager = new PeerManager(new Mock<ILogger<PeerManager>>().Object, nodeOptions,
                 new PeerFactory(loggerFactory, messageFactory, new MessageServiceFactory(messageSerializer),

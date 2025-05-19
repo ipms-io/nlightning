@@ -14,11 +14,11 @@ public class ShortChannelIdTlvConverterTests
         var expectedBaseTlv = new BaseTlv(1, shortChannelId);
         var expectedShortChannelIdTlv = new ShortChannelIdTlv(shortChannelId);
         var converter = new ShortChannelIdTlvConverter();
-    
+
         // Act
         var baseTlv = converter.ConvertToBase(expectedShortChannelIdTlv);
         var shortChannelIdTlv = converter.ConvertFromBase(expectedBaseTlv);
-    
+
         // Assert
         Assert.Equal(expectedShortChannelIdTlv, shortChannelIdTlv);
         Assert.Equal(expectedBaseTlv, baseTlv);

@@ -31,7 +31,7 @@ public class ChannelFlagTypeSerializerTests
         using var memoryStream = new MemoryStream([]); // Empty stream
 
         // When & Then
-        await Assert.ThrowsAsync<EndOfStreamException>(async () => 
+        await Assert.ThrowsAsync<EndOfStreamException>(async () =>
             await channelFlagsSerializer.DeserializeAsync(memoryStream));
     }
 }

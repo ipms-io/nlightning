@@ -15,7 +15,7 @@ public class UpdateFeeMessageTests
         _updateFeeMessageTypeSerializer =
             new UpdateFeeMessageTypeSerializer(SerializerHelper.PayloadSerializerFactory);
     }
-    
+
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsUpdateFeeMessage()
     {

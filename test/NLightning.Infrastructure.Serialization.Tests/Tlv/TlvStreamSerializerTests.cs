@@ -5,9 +5,8 @@ namespace NLightning.Infrastructure.Serialization.Tests.Tlv;
 
 using Domain.Protocol.Models;
 using Domain.Protocol.Tlv;
-using Domain.ValueObjects;
-using Serialization.Tlv;
 using Helpers;
+using Serialization.Tlv;
 
 public class TlvStreamSerializerTests
 {
@@ -18,7 +17,7 @@ public class TlvStreamSerializerTests
         _tlvStreamSerializer = new TlvStreamSerializer(SerializerHelper.TlvConverterFactory,
                                                        SerializerHelper.TlvSerializer);
     }
-    
+
     [Fact]
     public async Task Given_TlvStream_When_SerializedAndDeserialized_Then_DataIsPreserved()
     {

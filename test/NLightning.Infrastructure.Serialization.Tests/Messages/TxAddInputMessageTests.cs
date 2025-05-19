@@ -9,13 +9,13 @@ using Serialization.Messages.Types;
 public class TxAddInputMessageTests
 {
     private readonly TxAddInputMessageTypeSerializer _txAddInputMessageTypeSerializer;
-    
+
     public TxAddInputMessageTests()
     {
         _txAddInputMessageTypeSerializer =
             new TxAddInputMessageTypeSerializer(SerializerHelper.PayloadSerializerFactory);
     }
-    
+
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsTxAddInputMessage()
     {

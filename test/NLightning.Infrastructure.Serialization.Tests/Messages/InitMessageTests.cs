@@ -21,7 +21,7 @@ public class InitMessageTests
                                           SerializerHelper.TlvConverterFactory,
                                           SerializerHelper.TlvStreamSerializer);
     }
-    
+
     [Fact]
     public async Task Given_ValidStreamWithPayloadAndExtension_When_DeserializeAsync_Then_ReturnsInitMessageWithCorrectData()
     {

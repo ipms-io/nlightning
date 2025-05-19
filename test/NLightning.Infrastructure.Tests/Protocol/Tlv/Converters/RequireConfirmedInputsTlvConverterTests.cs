@@ -12,11 +12,11 @@ public class RequireConfirmedInputsTlvConverterTests
         var expectedBaseTlv = new BaseTlv(2);
         var expectedRequireConfirmedInputsTlv = new RequireConfirmedInputsTlv();
         var converter = new RequireConfirmedInputsTlvConverter();
-    
+
         // Act
         var baseTlv = converter.ConvertToBase(expectedRequireConfirmedInputsTlv);
         var requireConfirmedInputsTlv = converter.ConvertFromBase(expectedBaseTlv);
-    
+
         // Assert
         Assert.Equal(expectedRequireConfirmedInputsTlv, requireConfirmedInputsTlv);
         Assert.Equal(expectedBaseTlv, baseTlv);

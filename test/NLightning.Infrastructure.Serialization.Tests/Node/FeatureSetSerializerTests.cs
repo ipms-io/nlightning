@@ -13,7 +13,7 @@ public class FeatureSetSerializerTests
     {
         _featureSetSerializer = new FeatureSetSerializer();
     }
-    
+
     #region Serialization
     [Theory]
     [InlineData(Feature.OptionZeroconf, false, 7)]

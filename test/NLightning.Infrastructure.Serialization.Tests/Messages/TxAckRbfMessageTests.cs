@@ -13,7 +13,7 @@ using Serialization.Messages.Types;
 public class TxAckRbfMessageTests
 {
     private readonly TxAckRbfMessageTypeSerializer _txAckRbfMessageTypeSerializer;
-    
+
     public TxAckRbfMessageTests()
     {
         _txAckRbfMessageTypeSerializer =
@@ -21,7 +21,7 @@ public class TxAckRbfMessageTests
                                               SerializerHelper.TlvConverterFactory,
                                               SerializerHelper.TlvStreamSerializer);
     }
-    
+
     #region Deserialize
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsTxAckRbfMessage()

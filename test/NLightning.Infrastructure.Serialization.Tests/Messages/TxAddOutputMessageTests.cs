@@ -12,13 +12,13 @@ using Serialization.Messages.Types;
 public class TxAddOutputMessageTests
 {
     private readonly TxAddOutputMessageTypeSerializer _txAddOutputMessageTypeSerializer;
-    
+
     public TxAddOutputMessageTests()
     {
         _txAddOutputMessageTypeSerializer =
             new TxAddOutputMessageTypeSerializer(SerializerHelper.PayloadSerializerFactory);
     }
-    
+
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsTxAddOutputMessage()
     {

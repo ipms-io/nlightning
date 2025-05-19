@@ -10,7 +10,7 @@ public class BigSizeTypeSerializerTests
     {
         var testVectors = ReadTestVectors("Vectors/BigSize.txt").Where(x => x.Error == null);
         var bigSizeSerializer = new BigSizeTypeSerializer();
-        
+
         foreach (var testVector in testVectors)
         {
             // Given
@@ -23,7 +23,7 @@ public class BigSizeTypeSerializerTests
             Assert.Equal(testVector.Value, bigSizeValue.Value);
         }
     }
-    
+
     [Fact]
     public async Task Given_VectorInputs_When_DeserializeBigSize_Then_ErrorIsThrown()
     {
@@ -44,7 +44,7 @@ public class BigSizeTypeSerializerTests
             Task Deserialize() => bigSizeSerializer.DeserializeAsync(memoryStream);
         }
     }
-    
+
     [Fact]
     public async Task Given_VectorInputs_When_SerializeBigSize_Then_ResultIsKnown()
     {
@@ -64,7 +64,7 @@ public class BigSizeTypeSerializerTests
             Assert.Equal(testVector.Bytes, memoryStream.ToArray());
         }
     }
-    
+
     private class TestVector
     {
         public ulong Value { get; set; }

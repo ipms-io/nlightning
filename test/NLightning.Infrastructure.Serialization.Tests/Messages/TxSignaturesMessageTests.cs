@@ -15,7 +15,7 @@ public class TxSignaturesMessageTests
         _txSignaturesMessageTypeSerializer =
             new TxSignaturesMessageTypeSerializer(SerializerHelper.PayloadSerializerFactory);
     }
-    
+
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsTxSignaturesMessage()
     {

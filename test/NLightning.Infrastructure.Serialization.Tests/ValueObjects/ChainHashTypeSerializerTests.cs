@@ -33,7 +33,7 @@ public class ChainHashTypeSerializerTests
         using var memoryStream = new MemoryStream(new byte[16]); // Less than 32 bytes
 
         // When & Then
-        await Assert.ThrowsAsync<EndOfStreamException>(async () => 
+        await Assert.ThrowsAsync<EndOfStreamException>(async () =>
             await chainHashSerializer.DeserializeAsync(memoryStream));
     }
 }

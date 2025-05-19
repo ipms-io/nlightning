@@ -8,13 +8,13 @@ using Serialization.Messages.Types;
 public class PingMessageTests
 {
     private readonly PingMessageTypeSerializer _pingMessageTypeSerializer;
-    
+
     public PingMessageTests()
     {
         _pingMessageTypeSerializer =
             new PingMessageTypeSerializer(SerializerHelper.PayloadSerializerFactory);
     }
-    
+
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsPingMessageWithCorrectPayload()
     {

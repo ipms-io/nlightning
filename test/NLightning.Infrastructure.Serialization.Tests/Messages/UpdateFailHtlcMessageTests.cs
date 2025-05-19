@@ -15,7 +15,7 @@ public class UpdateFailHtlcMessageTests
         _updateFailHtlcMessageTypeSerializer =
             new UpdateFailHtlcMessageTypeSerializer(SerializerHelper.PayloadSerializerFactory);
     }
-    
+
     #region Deserialize
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsUpdateFailHtlcMessage()

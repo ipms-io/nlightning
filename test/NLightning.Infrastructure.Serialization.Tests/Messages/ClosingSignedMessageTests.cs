@@ -22,7 +22,7 @@ public class ClosingSignedMessageTests
                 SerializerHelper.TlvConverterFactory,
                 SerializerHelper.TlvStreamSerializer);
     }
-    
+
     #region Deserialize
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsClosingSignedMessage()

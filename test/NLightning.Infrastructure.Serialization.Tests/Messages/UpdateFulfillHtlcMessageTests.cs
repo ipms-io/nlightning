@@ -15,7 +15,7 @@ public class UpdateFulfillHtlcMessageTests
         _fulfillHtlcMessageTypeSerializer =
             new UpdateFulfillHtlcMessageTypeSerializer(SerializerHelper.PayloadSerializerFactory);
     }
-    
+
     #region Deserialize
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsUpdateFulfillHtlcMessage()

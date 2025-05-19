@@ -9,13 +9,13 @@ using Serialization.Messages.Types;
 public class TxAbortMessageTests
 {
     private readonly TxAbortMessageTypeSerializer _txAbortMessageTypeSerializer;
-    
+
     public TxAbortMessageTests()
     {
         _txAbortMessageTypeSerializer =
             new TxAbortMessageTypeSerializer(SerializerHelper.PayloadSerializerFactory);
     }
-    
+
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsTxAbortMessage()
     {

@@ -8,12 +8,12 @@ namespace NLightning.Infrastructure.Serialization.Tests.Tlv;
 public class TlvSerializerTests
 {
     private readonly TlvSerializer _tlvSerializer;
-    
+
     public TlvSerializerTests()
     {
         _tlvSerializer = new TlvSerializer(new ValueObjectSerializerFactory());
     }
-    
+
     [Fact]
     public async Task Given_TlvSerializer_When_SerializingBaseTlv_Then_BufferIsCorrect()
     {
@@ -21,13 +21,13 @@ public class TlvSerializerTests
         var baseTlv = new BaseTlv(0, 3, [0x01, 0x02, 0x03]);
         var expectedBuffer = new byte[] { 0x00, 0x03, 0x01, 0x02, 0x03 };
         using var stream = new MemoryStream();
-        
+
         // When
         await _tlvSerializer.SerializeAsync(baseTlv, stream);
         stream.Position = 0;
         var buffer = new byte[stream.Length];
         await stream.ReadExactlyAsync(buffer, 0, (int)stream.Length);
-        
+
         // Then
         Assert.Equal(expectedBuffer, buffer);
     }
@@ -40,19 +40,17 @@ public class TlvSerializerTests
         var expectedLength = new BigSize(3);
         byte[] expectedValue = [0x01, 0x02, 0x03];
         using var stream = new MemoryStream([0x00, 0x03, 0x01, 0x02, 0x03]);
-        
+
         // When
         var baseTlv = await _tlvSerializer.DeserializeAsync(stream);
-        
+
         // Then
         Assert.NotNull(baseTlv);
         Assert.Equal(expectedType, baseTlv.Type);
         Assert.Equal(expectedLength, baseTlv.Length);
         Assert.Equal(expectedValue, baseTlv.Value);
     }
-    
-    
-    
+
     // [Fact]
     // public async Task BlindedPathTlv_SerializationAndDeserialization_WorksCorrectly()
     // {
@@ -190,5 +188,5 @@ public class TlvSerializerTests
     //     Assert.Equal(shortChannelIdTlv.ShortChannelId, deserializedTlv.ShortChannelId);
     // }
     //
-    
+
 }

@@ -8,13 +8,13 @@ using Serialization.Messages.Types;
 public class PongMessageTests
 {
     private readonly PongMessageTypeSerializer _pongMessageTypeSerializer;
-    
+
     public PongMessageTests()
     {
         _pongMessageTypeSerializer =
             new PongMessageTypeSerializer(SerializerHelper.PayloadSerializerFactory);
     }
-    
+
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsPongMessageWithCorrectPayload()
     {

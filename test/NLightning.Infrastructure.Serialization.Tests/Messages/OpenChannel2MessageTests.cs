@@ -28,7 +28,7 @@ public class OpenChannel2MessageTests
                                                   SerializerHelper.TlvConverterFactory,
                                                   SerializerHelper.TlvStreamSerializer);
     }
-    
+
     #region Deserialize
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsOpenChannel2Payload()
@@ -159,7 +159,7 @@ public class OpenChannel2MessageTests
         var channelFlags = new ChannelFlags();
 
         var message = new OpenChannel2Message(
-            new OpenChannel2Payload(Network.MAINNET.ChainHash, channelFlags,COMMITMENT_FEERATE, delayedPaymentBasepoint,
+            new OpenChannel2Payload(Network.MAINNET.ChainHash, channelFlags, COMMITMENT_FEERATE, delayedPaymentBasepoint,
                                     _expectedDustLimitAmount, firstPerCommitmentPoint, fundingSatoshis, FUNDING_FEERATE,
                                     fundingPubKey, htlcBasepoint, _expectedHtlcMinimumAmount, _expectedLocktime,
                                     _expectedMaxAcceptedHtlcs, _expectedMaxHtlcValueInFlightAmount, paymentBasePoint,
@@ -198,7 +198,7 @@ public class OpenChannel2MessageTests
         var requireConfirmedInputsTlv = new RequireConfirmedInputsTlv();
 
         var message = new OpenChannel2Message(
-            new OpenChannel2Payload(Network.MAINNET.ChainHash, channelFlags,COMMITMENT_FEERATE, delayedPaymentBasepoint,
+            new OpenChannel2Payload(Network.MAINNET.ChainHash, channelFlags, COMMITMENT_FEERATE, delayedPaymentBasepoint,
                                     _expectedDustLimitAmount, firstPerCommitmentPoint, fundingSatoshis, FUNDING_FEERATE,
                                     fundingPubKey, htlcBasepoint, _expectedHtlcMinimumAmount, _expectedLocktime,
                                     _expectedMaxAcceptedHtlcs, _expectedMaxHtlcValueInFlightAmount, paymentBasePoint,

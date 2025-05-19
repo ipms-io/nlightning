@@ -11,13 +11,13 @@ using Serialization.Messages.Types;
 public class RevokeAndAckMessageTests
 {
     private readonly RevokeAndAckMessageTypeSerializer _revokeAndAckMessageTypeSerializer;
-    
+
     public RevokeAndAckMessageTests()
     {
         _revokeAndAckMessageTypeSerializer =
             new RevokeAndAckMessageTypeSerializer(SerializerHelper.PayloadSerializerFactory);
     }
-    
+
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsRevokeAndAckMessage()
     {

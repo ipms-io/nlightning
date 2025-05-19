@@ -15,11 +15,11 @@ public class UpfrontShutdownScriptTlvConverterTests
         var expectedBaseTlv = new BaseTlv(0, script.ToBytes());
         var expectedUpfrontShutdownScriptTlv = new UpfrontShutdownScriptTlv(script);
         var converter = new UpfrontShutdownScriptTlvConverter();
-    
+
         // Act
         var baseTlv = converter.ConvertToBase(expectedUpfrontShutdownScriptTlv);
         var upfrontShutdownScriptTlv = converter.ConvertFromBase(expectedBaseTlv);
-    
+
         // Assert
         Assert.Equal(expectedUpfrontShutdownScriptTlv, upfrontShutdownScriptTlv);
         Assert.Equal(expectedBaseTlv, baseTlv);

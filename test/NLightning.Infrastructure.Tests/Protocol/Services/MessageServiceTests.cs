@@ -8,7 +8,7 @@ using Infrastructure.Protocol.Services;
 public class MessageServiceTests
 {
     private readonly Mock<IMessageSerializer> _messageSerializerMock;
-    
+
     public MessageServiceTests()
     {
         _messageSerializerMock = new Mock<IMessageSerializer>();
@@ -38,7 +38,7 @@ public class MessageServiceTests
         var messageMock = new Mock<IMessage>();
         _messageSerializerMock.Setup(m => m.DeserializeMessageAsync(It.IsAny<Stream>()))
                               .ReturnsAsync(messageMock.Object);
-        
+
         var messageService = new MessageService(_messageSerializerMock.Object, transportServiceMock.Object);
         var stream = new MemoryStream();
 
@@ -46,7 +46,8 @@ public class MessageServiceTests
         var receivedMessage = Assert.RaisesAny<IMessage?>(
             h => messageService.MessageReceived += h,
             h => messageService.MessageReceived -= h,
-            () => {
+            () =>
+            {
                 // Simulate transport service receiving a message
                 transportServiceMock.Raise(t => t.MessageReceived += null, messageService, stream);
             });
@@ -80,7 +81,7 @@ public class MessageServiceTests
         // Then
         transportServiceMock.Verify(t => t.Dispose(), Times.Once());
     }
-    
+
     [Fact]
     public async Task Given_DisposedMessageService_When_SendMessageAsync_IsCalled_Then_ThrowsInvalidOperationException()
     {
@@ -88,10 +89,10 @@ public class MessageServiceTests
         var transportServiceMock = new Mock<ITransportService>();
         var messageService = new MessageService(_messageSerializerMock.Object, transportServiceMock.Object);
         var messageMock = new Mock<IMessage>();
-        
+
         // When
         messageService.Dispose();
-        
+
         // Then
         await Assert.ThrowsAsync<ObjectDisposedException>(() => messageService.SendMessageAsync(messageMock.Object));
     }

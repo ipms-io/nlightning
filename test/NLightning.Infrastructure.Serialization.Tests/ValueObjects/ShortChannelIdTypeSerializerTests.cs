@@ -8,7 +8,7 @@ public class ShortChannelIdTypeSerializerTests
     private const uint EXPECTED_BLOCK_HEIGHT = 870127;
     private const uint EXPECTED_TX_INDEX = 1237;
     private const ushort EXPECTED_OUTPUT_INDEX = 1;
-    
+
     [Fact]
     public async Task Given_ValidShortChannelId_When_SerializedAndDeserialized_Then_PropertiesRemainTheSame()
     {

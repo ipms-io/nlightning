@@ -15,11 +15,11 @@ public class FundingOutputContributionTlvConverterTests
         var expectedBaseTlv = new BaseTlv(0, EndianBitConverter.GetBytesBigEndian(amount.Satoshi));
         var expectedFundingOutputContributionTlv = new FundingOutputContributionTlv(amount);
         var converter = new FundingOutputContributionTlvConverter();
-    
+
         // Act
         var baseTlv = converter.ConvertToBase(expectedFundingOutputContributionTlv);
         var fundingOutputContributionTlv = converter.ConvertFromBase(expectedBaseTlv);
-    
+
         // Assert
         Assert.Equal(expectedFundingOutputContributionTlv, fundingOutputContributionTlv);
         Assert.Equal(expectedBaseTlv, baseTlv);

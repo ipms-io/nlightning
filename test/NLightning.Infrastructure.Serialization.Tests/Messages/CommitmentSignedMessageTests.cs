@@ -17,7 +17,7 @@ public class CommitmentSignedMessageTests
         _commitmentSignedMessageTypeSerializer =
             new CommitmentSignedMessageTypeSerializer(SerializerHelper.PayloadSerializerFactory);
     }
-    
+
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsCommitmentSignedMessage()
     {

@@ -9,13 +9,13 @@ using Serialization.Messages.Types;
 public class TxCompleteMessageTests
 {
     private readonly TxCompleteMessageTypeSerializer _txCompleteMessageTypeSerializer;
-    
+
     public TxCompleteMessageTests()
     {
         _txCompleteMessageTypeSerializer =
             new TxCompleteMessageTypeSerializer(SerializerHelper.PayloadSerializerFactory);
     }
-    
+
     [Fact]
     public async Task DeserializeAsync_GivenValidStream_ReturnsTxCompleteMessage()
     {

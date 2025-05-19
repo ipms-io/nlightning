@@ -15,11 +15,11 @@ public class NextFundingTlvConverterTests
         var expectedBaseTlv = new BaseTlv(0, nextFundingTxId);
         var expectedNextFundingTlv = new NextFundingTlv(nextFundingTxId);
         var converter = new NextFundingTlvConverter();
-    
+
         // Act
         var baseTlv = converter.ConvertToBase(expectedNextFundingTlv);
         var nextFundingTlv = converter.ConvertFromBase(expectedBaseTlv);
-    
+
         // Assert
         Assert.Equal(expectedNextFundingTlv, nextFundingTlv);
         Assert.Equal(expectedBaseTlv, baseTlv);

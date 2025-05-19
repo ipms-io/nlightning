@@ -13,7 +13,7 @@ using Serialization.Messages.Types;
 public class ChannelReestablishMessageTests
 {
     private readonly ChannelReestablishMessageTypeSerializer _channelReestablishMessageTypeSerializer;
-    
+
     public ChannelReestablishMessageTests()
     {
         _channelReestablishMessageTypeSerializer =
@@ -21,7 +21,7 @@ public class ChannelReestablishMessageTests
                                                         SerializerHelper.TlvConverterFactory,
                                                         SerializerHelper.TlvStreamSerializer);
     }
-    
+
     #region Deserialize
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsChannelReestablishMessage()

@@ -7,7 +7,7 @@ using Infrastructure.Serialization.ValueObjects;
 
 public class WitnessTypeSerializerTests
 {
-    
+
     [Fact]
     public async Task Given_ValidWitnessData_When_SerializedAndDeserialized_Then_DataIsPreserved()
     {
@@ -57,7 +57,7 @@ public class WitnessTypeSerializerTests
         await Assert.ThrowsAsync<SerializationException>(async () =>
             await witnessSerializer.DeserializeAsync(memoryStream));
     }
-    
+
     [Fact]
     public async Task Given_LargeWitnessData_When_SerializedAndDeserialized_Then_DataIsPreserved()
     {

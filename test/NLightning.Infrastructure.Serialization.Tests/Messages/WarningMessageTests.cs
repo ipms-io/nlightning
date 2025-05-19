@@ -14,7 +14,7 @@ public class WarningMessageTests
         _warningMessageTypeSerializer =
             new WarningMessageTypeSerializer(SerializerHelper.PayloadSerializerFactory);
     }
-    
+
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsWarningMessageWithCorrectPayload()
     {

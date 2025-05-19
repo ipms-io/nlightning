@@ -50,11 +50,7 @@ public class PostgresFixture : IDisposable
                 "POSTGRES_USER=superuser",
                 "POSTGRES_DB=nlightning"
             ]
-        });
-        
-        if (nodeContainer is null)
-            throw new NullReferenceException("Failed to create postgres container");
-        
+        }) ?? throw new NullReferenceException("Failed to create postgres container");
         _containerId = nodeContainer.ID;
         _ = await _client.Containers.StartContainerAsync(_containerId, new ContainerStartParameters());
 

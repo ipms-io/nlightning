@@ -23,12 +23,12 @@ public class AcceptChannel2MessageTypeSerializerTests
 
     public AcceptChannel2MessageTypeSerializerTests()
     {
-        _acceptChannel2TypeSerializer = 
+        _acceptChannel2TypeSerializer =
             new AcceptChannel2MessageTypeSerializer(SerializerHelper.PayloadSerializerFactory,
                                                     SerializerHelper.TlvConverterFactory,
                                                     SerializerHelper.TlvStreamSerializer);
     }
-    
+
     #region Deserialize
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsAcceptChannel2Message()

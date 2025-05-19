@@ -11,13 +11,13 @@ using Serialization.Messages.Types;
 public class ErrorMessageTests
 {
     private readonly ErrorMessageTypeSerializer _errorMessageTypeSerializer;
-    
+
     public ErrorMessageTests()
     {
         _errorMessageTypeSerializer =
             new ErrorMessageTypeSerializer(SerializerHelper.PayloadSerializerFactory);
     }
-    
+
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsErrorMessageWithCorrectPayload()
     {

@@ -13,11 +13,11 @@ public class ChannelTypeTlvConverterTests
         var expectedBaseTlv = new BaseTlv(1, channelType);
         var expectedChannelTypeTlv = new ChannelTypeTlv(channelType);
         var converter = new ChannelTypeTlvConverter();
-    
+
         // Act
         var baseTlv = converter.ConvertToBase(expectedChannelTypeTlv);
         var channelTypeTlv = converter.ConvertFromBase(expectedBaseTlv);
-    
+
         // Assert
         Assert.Equal(expectedChannelTypeTlv, channelTypeTlv);
         Assert.Equal(expectedBaseTlv, baseTlv);

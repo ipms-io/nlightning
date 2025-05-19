@@ -14,11 +14,11 @@ public class NetworksTlvConverterTests
         var expectedBaseTlv = new BaseTlv(1, chainHash);
         var expectedNetworksTlv = new NetworksTlv([chainHash]);
         var converter = new NetworksTlvConverter();
-    
+
         // Act
         var baseTlv = converter.ConvertToBase(expectedNetworksTlv);
         var networksTlv = converter.ConvertFromBase(expectedBaseTlv);
-    
+
         // Assert
         Assert.Equal(expectedNetworksTlv, networksTlv);
         Assert.Equal(expectedBaseTlv, baseTlv);

@@ -11,13 +11,13 @@ using Serialization.Messages.Types;
 public class ShutdownMessageTests
 {
     private readonly ShutdownMessageTypeSerializer _shutdownMessageTypeSerializer;
-    
+
     public ShutdownMessageTests()
     {
         _shutdownMessageTypeSerializer =
             new ShutdownMessageTypeSerializer(SerializerHelper.PayloadSerializerFactory);
     }
-    
+
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsShutdownMessage()
     {

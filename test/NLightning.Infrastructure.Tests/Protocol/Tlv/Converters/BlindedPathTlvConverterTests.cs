@@ -15,11 +15,11 @@ public class BlindedPathTlvConverterTests
         var expectedBaseTlv = new BaseTlv(0, pubkey.ToBytes());
         var expectedBlindedPathTlv = new BlindedPathTlv(pubkey);
         var converter = new BlindedPathTlvConverter();
-    
+
         // Act
         var baseTlv = converter.ConvertToBase(expectedBlindedPathTlv);
         var blindedPathTlv = converter.ConvertFromBase(expectedBaseTlv);
-    
+
         // Assert
         Assert.Equal(expectedBlindedPathTlv, blindedPathTlv);
         Assert.Equal(expectedBaseTlv, baseTlv);

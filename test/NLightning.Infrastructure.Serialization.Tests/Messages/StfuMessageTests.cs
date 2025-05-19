@@ -9,13 +9,13 @@ using Serialization.Messages.Types;
 public class StfuMessageTests
 {
     private readonly StfuMessageTypeSerializer _stfuMessageTypeSerializer;
-    
+
     public StfuMessageTests()
     {
         _stfuMessageTypeSerializer =
             new StfuMessageTypeSerializer(SerializerHelper.PayloadSerializerFactory);
     }
-    
+
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsStfuMessage()
     {

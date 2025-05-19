@@ -19,11 +19,11 @@ public class FeeRangeTlvConverterTests
         var expectedBaseTlv = new BaseTlv(1, tlvValue);
         var expectedFeeRangeTlv = new FeeRangeTlv(minFeeAmount, maxFeeAmount);
         var converter = new FeeRangeTlvConverter();
-    
+
         // Act
         var baseTlv = converter.ConvertToBase(expectedFeeRangeTlv);
         var feeRangeTlv = converter.ConvertFromBase(expectedBaseTlv);
-    
+
         // Assert
         Assert.Equal(expectedFeeRangeTlv, feeRangeTlv);
         Assert.Equal(expectedBaseTlv, baseTlv);

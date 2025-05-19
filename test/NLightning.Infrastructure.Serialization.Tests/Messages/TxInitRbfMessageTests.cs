@@ -1,5 +1,4 @@
 
-
 namespace NLightning.Infrastructure.Serialization.Tests.Messages;
 
 using Domain.Money;
@@ -14,7 +13,7 @@ using Serialization.Messages.Types;
 public class TxInitRbfMessageTests
 {
     private readonly TxInitRbfMessageTypeSerializer _txInitRbfMessageTypeSerializer;
-    
+
     public TxInitRbfMessageTests()
     {
         _txInitRbfMessageTypeSerializer =
@@ -22,7 +21,7 @@ public class TxInitRbfMessageTests
                                                SerializerHelper.TlvConverterFactory,
                                                SerializerHelper.TlvStreamSerializer);
     }
-    
+
     #region Deserialize
     [Fact]
     public async Task Given_ValidStream_When_DeserializeAsync_Then_ReturnsTxInitRbfMessage()

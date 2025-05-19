@@ -24,7 +24,7 @@ public class ChannelIdTypeSerializerTests
         // Then
         Assert.Equal(channelId, deserializedChannelId);
     }
-    
+
     [Fact]
     public async Task Given_InvalidStream_When_Deserialized_Then_ThrowsEndOfStreamException()
     {

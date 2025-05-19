@@ -50,11 +50,7 @@ public class SqlServerFixture : IDisposable
                 "MSSQL_SA_PASSWORD=Superuser1234*",
                 "ACCEPT_EULA=Y"
             ]
-        });
-
-        if (nodeContainer is null)
-            throw new NullReferenceException("Failed to create sqlServer container");
-        
+        }) ?? throw new NullReferenceException("Failed to create sqlServer container");
         _containerId = nodeContainer.ID;
         _ = await _client.Containers.StartContainerAsync(_containerId, new ContainerStartParameters());
 
