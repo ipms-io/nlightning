@@ -39,7 +39,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Application", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure", "src\NLightning.Infrastructure\NLightning.Infrastructure.csproj", "{833F2133-9D6B-4F0B-BD9E-B18B6535F2B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure.Serialization", "NLightning.Infrastructure.Serialization\NLightning.Infrastructure.Serialization.csproj", "{562BB245-FE0F-480E-91C5-13597620AEB1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure.Serialization", "src\NLightning.Infrastructure.Serialization\NLightning.Infrastructure.Serialization.csproj", "{562BB245-FE0F-480E-91C5-13597620AEB1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure.Tests", "test\NLightning.Infrastructure.Tests\NLightning.Infrastructure.Tests.csproj", "{0468A9F8-0451-4B4E-BD3B-42E38D5FA82A}"
 EndProject
@@ -47,13 +47,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Integration.Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure.Bitcoin.Tests", "test\NLightning.Infrastructure.Bitcoin.Tests\NLightning.Infrastructure.Bitcoin.Tests.csproj", "{62FD0563-66F7-4F18-A0A9-7FE0B02F1A47}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Tests.Utils", "NLightning.Tests.Utils\NLightning.Tests.Utils.csproj", "{F18B0771-FE03-4BD8-BC80-9987B242A8C7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Tests.Utils", "test\NLightning.Tests.Utils\NLightning.Tests.Utils.csproj", "{F18B0771-FE03-4BD8-BC80-9987B242A8C7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Bolt11.Tests", "test\NLightning.Bolt11.Tests\NLightning.Bolt11.Tests.csproj", "{E003AF34-AE6D-4E26-B8BE-0E1F4510FB8E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure.Serialization.Tests", "test\NLightning.Infrastructure.Serialization.Tests\NLightning.Infrastructure.Serialization.Tests.csproj", "{4550DC12-8EE8-4C35-B438-873EE128DA1A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Application.NLTG.Tests", "NLightning.Application.NLTG.Tests\NLightning.Application.NLTG.Tests.csproj", "{BC559AD8-72B9-4ABF-A7FF-6305E141AB62}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Application.NLTG.Tests", "test\NLightning.Application.NLTG.Tests\NLightning.Application.NLTG.Tests.csproj", "{BC559AD8-72B9-4ABF-A7FF-6305E141AB62}"
 EndProject
 EndProject
 Global

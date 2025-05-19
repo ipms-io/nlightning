@@ -27,8 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\NLightning.Infrastructure.Serialization\NLightning.Infrastructure.Serialization.csproj" />
-    <ProjectReference Include="..\..\NLightning.Tests.Utils\NLightning.Tests.Utils.csproj" />
+    <ProjectReference Include="..\NLightning.Tests.Utils\NLightning.Tests.Utils.csproj" />
+    <ProjectReference Include="..\..\src\NLightning.Infrastructure.Serialization\NLightning.Infrastructure.Serialization.csproj" />
     <ProjectReference Include="..\..\src\NLightning.Bolt11\NLightning.Bolt11.csproj" />
     <ProjectReference Include="..\..\src\NLightning.Domain\NLightning.Domain.csproj" />
     <ProjectReference Include="..\..\src\NLightning.Infrastructure.Bitcoin\NLightning.Infrastructure.Bitcoin.csproj" />

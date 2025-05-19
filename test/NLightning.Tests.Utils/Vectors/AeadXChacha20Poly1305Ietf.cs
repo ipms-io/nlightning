@@ -1,4 +1,4 @@
-namespace NLightning.Infrastructure.Tests.Crypto.Vectors;
+namespace NLightning.Tests.Utils.Vectors;
 
 public static class AeadXChacha20Poly1305IetfVector
 {

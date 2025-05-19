@@ -1,10 +1,8 @@
 using Newtonsoft.Json;
+using NLightning.Blazor.Tests.Helpers;
+using NLightning.Tests.Utils.Vectors;
 
-namespace NLightning.Blazor.Tests.Common.Crypto.Providers.JS;
-
-using Helpers;
-using Infrastructure;
-using NLightning.Common.Tests.Vectors;
+namespace NLightning.Blazor.Tests.Infrastructure.Crypto.Providers.JS;
 
 [Collection("Blazor Test Collection")]
 public class SodiumJsCryptoProviderTests : BlazorTestBase
@@ -39,8 +37,8 @@ public class SodiumJsCryptoProviderTests : BlazorTestBase
         Assert.NotNull(resultJson);
         var result = JsonHelper.Deserialize<EncodeResult>(resultJson);
         Assert.NotNull(result?.Result);
-        Assert.Equal(AeadChacha20Poly1305IetfVector.CIPHER.Length, result.Result.ClenP);
-        Assert.Equal(AeadChacha20Poly1305IetfVector.CIPHER, result.Result.CipherBytes);
+        Assert.Equal(AeadChacha20Poly1305IetfVector.Cipher.Length, result.Result.ClenP);
+        Assert.Equal(AeadChacha20Poly1305IetfVector.Cipher, result.Result.CipherBytes);
     }
 
     [Fact]
@@ -73,8 +71,8 @@ public class SodiumJsCryptoProviderTests : BlazorTestBase
         Assert.NotNull(resultJson);
         var result = JsonHelper.Deserialize<EncodeResult>(resultJson);
         Assert.NotNull(result?.Result);
-        Assert.Equal(AeadXChacha20Poly1305IetfVector.CIPHER.Length, result.Result.ClenP);
-        Assert.Equal(AeadXChacha20Poly1305IetfVector.CIPHER, result.Result.CipherBytes);
+        Assert.Equal(AeadXChacha20Poly1305IetfVector.Cipher.Length, result.Result.ClenP);
+        Assert.Equal(AeadXChacha20Poly1305IetfVector.Cipher, result.Result.CipherBytes);
     }
 
     public class EncodeResult

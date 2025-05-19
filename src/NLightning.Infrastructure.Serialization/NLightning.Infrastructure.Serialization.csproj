@@ -28,8 +28,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\src\NLightning.Domain\NLightning.Domain.csproj" />
-      <ProjectReference Include="..\src\NLightning.Infrastructure\NLightning.Infrastructure.csproj" />
+      <ProjectReference Include="..\NLightning.Domain\NLightning.Domain.csproj" />
+      <ProjectReference Include="..\NLightning.Infrastructure\NLightning.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,8 +1,9 @@
+using NLightning.Tests.Utils.Vectors;
+
 #if CRYPTO_LIBSODIUM
 namespace NLightning.Infrastructure.Tests.Crypto.Providers.Libsodium;
 
 using Infrastructure.Crypto.Providers.Libsodium;
-using Vectors;
 
 public class SodiumCryptoProviderTests
 {

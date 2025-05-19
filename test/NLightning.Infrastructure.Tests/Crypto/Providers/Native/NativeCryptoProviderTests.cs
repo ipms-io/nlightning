@@ -1,8 +1,9 @@
 #if CRYPTO_NATIVE
+using NLightning.Tests.Utils.Vectors;
+
 namespace NLightning.Infrastructure.Tests.Crypto.Providers.Native;
 
 using Infrastructure.Crypto.Providers.Native;
-using Vectors;
 
 public class NativeCryptoProviderTests
 {

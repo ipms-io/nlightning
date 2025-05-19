@@ -110,6 +110,12 @@
     <ProjectReference Include="..\NLightning.Domain\NLightning.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="wwwroot\blazorSodium.bundle.js" />
+    <_ContentIncludedByDefault Remove="wwwroot\blazorSodium.bundle.js.br" />
+    <_ContentIncludedByDefault Remove="wwwroot\blazorSodium.bundle.js.gz" />
+  </ItemGroup>
+
   <!--  Import regular sdk if the configuration calls for it  -->
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' And !$(Configuration.Contains('.Wasm'))"/>
   <!--  Import blazor sdk if the configuration calls for it  -->

@@ -16,7 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\src\NLightning.Application.NLTG\NLightning.Application.NLTG.csproj" />
+      <ProjectReference Include="..\..\src\NLightning.Application.NLTG\NLightning.Application.NLTG.csproj" />
     </ItemGroup>
 
 </Project>
