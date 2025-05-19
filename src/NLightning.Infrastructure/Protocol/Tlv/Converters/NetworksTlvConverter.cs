@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
 using Domain.Protocol.Constants;
@@ -34,11 +36,13 @@ public class NetworksTlvConverter : ITlvConverter<NetworksTlv>
         return new NetworksTlv(chainHashes);
     }
 
+    [ExcludeFromCodeCoverage]
     BaseTlv ITlvConverter.ConvertFromBase(BaseTlv tlv)
     {
         return ConvertFromBase(tlv);
     }
 
+    [ExcludeFromCodeCoverage]
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
         return ConvertToBase(tlv as NetworksTlv

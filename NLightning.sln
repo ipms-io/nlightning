@@ -55,6 +55,29 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure.S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Application.NLTG.Tests", "test\NLightning.Application.NLTG.Tests\NLightning.Application.NLTG.Tests.csproj", "{BC559AD8-72B9-4ABF-A7FF-6305E141AB62}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{765CBA3D-87EE-4108-A8D0-8F2270C7CFB6}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\testwithcoverage.sh = scripts\testwithcoverage.sh
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{2746A75F-A7F5-438E-B68F-6AB643F7FE54}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
+		.github\workflows\pr.wasm.yml = .github\workflows\pr.wasm.yml
+		.github\workflows\gh-pages.yml = .github\workflows\gh-pages.yml
+		.github\workflows\pr.yml = .github\workflows\pr.yml
+		.github\workflows\dotnet.wasm.yml = .github\workflows\dotnet.wasm.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{CE0D32A4-4E0A-42BD-805B-2B09972BD798}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\pr.yml = .github\workflows\pr.yml
+		.github\workflows\dotnet.yml = .github\workflows\dotnet.yml
+		.github\workflows\pr.wasm.yml = .github\workflows\pr.wasm.yml
+		.github\workflows\gh-pages.yml = .github\workflows\gh-pages.yml
+		.github\workflows\dotnet.wasm.yml = .github\workflows\dotnet.wasm.yml
+	EndProjectSection
+EndProject
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -326,5 +349,6 @@ Global
 		{E003AF34-AE6D-4E26-B8BE-0E1F4510FB8E} = {AF4411D4-8EE9-423E-8213-1C9D35E47882}
 		{4550DC12-8EE8-4C35-B438-873EE128DA1A} = {AF4411D4-8EE9-423E-8213-1C9D35E47882}
 		{BC559AD8-72B9-4ABF-A7FF-6305E141AB62} = {AF4411D4-8EE9-423E-8213-1C9D35E47882}
+		{CE0D32A4-4E0A-42BD-805B-2B09972BD798} = {2746A75F-A7F5-438E-B68F-6AB643F7FE54}
 	EndGlobalSection
 EndGlobal

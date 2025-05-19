@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
 using Domain.Protocol.Constants;
@@ -26,11 +28,13 @@ public class RequireConfirmedInputsTlvConverter : ITlvConverter<RequireConfirmed
         return new RequireConfirmedInputsTlv();
     }
 
+    [ExcludeFromCodeCoverage]
     BaseTlv ITlvConverter.ConvertFromBase(BaseTlv tlv)
     {
         return ConvertFromBase(tlv);
     }
 
+    [ExcludeFromCodeCoverage]
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
         return ConvertToBase(tlv as RequireConfirmedInputsTlv

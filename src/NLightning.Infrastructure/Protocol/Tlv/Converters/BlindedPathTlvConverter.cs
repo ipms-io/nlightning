@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using NBitcoin;
 
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
@@ -30,11 +31,13 @@ public class BlindedPathTlvConverter : ITlvConverter<BlindedPathTlv>
         return new BlindedPathTlv(new PubKey(baseTlv.Value));
     }
 
+    [ExcludeFromCodeCoverage]
     BaseTlv ITlvConverter.ConvertFromBase(BaseTlv tlv)
     {
         return ConvertFromBase(tlv);
     }
 
+    [ExcludeFromCodeCoverage]
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
         return ConvertToBase(tlv as BlindedPathTlv

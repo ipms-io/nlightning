@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using NLightning.Domain.Money;
 
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
@@ -31,11 +32,13 @@ public class FundingOutputContributionTlvConverter : ITlvConverter<FundingOutput
         return new FundingOutputContributionTlv(amount);
     }
 
+    [ExcludeFromCodeCoverage]
     BaseTlv ITlvConverter.ConvertFromBase(BaseTlv tlv)
     {
         return ConvertFromBase(tlv);
     }
 
+    [ExcludeFromCodeCoverage]
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
         return ConvertToBase(tlv as FundingOutputContributionTlv
