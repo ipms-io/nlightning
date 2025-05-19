@@ -23,24 +23,24 @@ public class OpenChannel2PayloadSerializer : IPayloadSerializer<OpenChannel2Payl
     {
         _valueObjectSerializerFactory = valueObjectSerializerFactory;
     }
-    
+
     public async Task SerializeAsync(IMessagePayload payload, Stream stream)
     {
         if (payload is not OpenChannel2Payload openChannel2Payload)
             throw new SerializationException($"Payload is not of type {nameof(OpenChannel2Payload)}");
-        
+
         // Get the ChainHash serializer
-        var chainHashSerializer = 
-            _valueObjectSerializerFactory.GetSerializer<ChainHash>() 
+        var chainHashSerializer =
+            _valueObjectSerializerFactory.GetSerializer<ChainHash>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChainHash)}");
         await chainHashSerializer.SerializeAsync(openChannel2Payload.ChainHash, stream);
-        
+
         // Get the ChannelId serializer
-        var channelIdSerializer = 
-            _valueObjectSerializerFactory.GetSerializer<ChannelId>() 
+        var channelIdSerializer =
+            _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(openChannel2Payload.TemporaryChannelId, stream);
-        
+
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.FundingFeeRatePerKw));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.CommitmentFeeRatePerKw));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.FundingAmount.Satoshi));
@@ -59,10 +59,10 @@ public class OpenChannel2PayloadSerializer : IPayloadSerializer<OpenChannel2Payl
         await stream.WriteAsync(openChannel2Payload.HtlcBasepoint.ToBytes());
         await stream.WriteAsync(openChannel2Payload.FirstPerCommitmentPoint.ToBytes());
         await stream.WriteAsync(openChannel2Payload.SecondPerCommitmentPoint.ToBytes());
-        
+
         // Get the ChannelFlags serializer
-        var channelFlagsSerializer = 
-            _valueObjectSerializerFactory.GetSerializer<ChannelFlags>() 
+        var channelFlagsSerializer =
+            _valueObjectSerializerFactory.GetSerializer<ChannelFlags>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelFlags)}");
         await channelFlagsSerializer.SerializeAsync(openChannel2Payload.ChannelFlags, stream);
     }
@@ -134,7 +134,7 @@ public class OpenChannel2PayloadSerializer : IPayloadSerializer<OpenChannel2Payl
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.PUBKEY_LEN]);
             var secondPerCommitmentPoint = new PubKey(buffer[..CryptoConstants.PUBKEY_LEN]);
-            
+
             // Get the ChannelFlags serializer
             var channelFlagsSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelFlags>()

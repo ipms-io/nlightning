@@ -21,18 +21,18 @@ public class ShutdownPayloadSerializer : IPayloadSerializer<ShutdownPayload>
     {
         _valueObjectSerializerFactory = valueObjectSerializerFactory;
     }
-    
+
     public async Task SerializeAsync(IMessagePayload payload, Stream stream)
     {
         if (payload is not ShutdownPayload shutdownPayload)
             throw new SerializationException($"Payload is not of type {nameof(ShutdownPayload)}");
-        
+
         // Get the value object serializer
-        var channelIdSerializer = 
-            _valueObjectSerializerFactory.GetSerializer<ChannelId>() 
+        var channelIdSerializer =
+            _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(shutdownPayload.ChannelId, stream);
-        
+
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(shutdownPayload.ScriptPubkeyLen));
         await stream.WriteAsync(shutdownPayload.ScriptPubkey.ToBytes());
     }
@@ -44,14 +44,14 @@ public class ShutdownPayloadSerializer : IPayloadSerializer<ShutdownPayload>
         try
         {
             // Get the value object serializer
-            var channelIdSerializer = 
+            var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
-            
+
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ushort)]);
             var len = EndianBitConverter.ToUInt16BigEndian(buffer[..sizeof(ushort)]);
-            
+
             if (len > ScriptConstants.MAX_SCRIPT_SIZE)
                 throw new SerializationException(
                     $"ScriptPubkey length {len} exceeds maximum size {ScriptConstants.MAX_SCRIPT_SIZE}");

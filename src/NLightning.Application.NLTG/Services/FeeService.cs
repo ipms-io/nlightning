@@ -180,7 +180,7 @@ public class FeeService : IFeeService
                 if (!cancellationToken.IsCancellationRequested)
                 {
                     await RefreshFeeRateAsync(cancellationToken);
-                    
+
                     // Wait for the cache time or until cancellation
                     await Task.Delay(_cacheTimeExpiration, cancellationToken);
                 }

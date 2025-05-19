@@ -382,7 +382,7 @@ public class FeatureSet
     {
         Changed?.Invoke(this, EventArgs.Empty);
     }
-    
+
     private static int GetLastIndexOfOne(BitArray bitArray)
     {
         for (var i = bitArray.Length - 1; i >= 0; i--)

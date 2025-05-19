@@ -3,7 +3,6 @@ using NLightning.Domain.Money;
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
 using Domain.Protocol.Constants;
-using Domain.Protocol.Models;
 using Domain.Protocol.Tlv;
 using Domain.Protocol.Tlv.Converters;
 using Infrastructure.Converters;
@@ -11,7 +10,7 @@ using Infrastructure.Converters;
 public class FundingOutputContributionTlvConverter : ITlvConverter<FundingOutputContributionTlv>
 {
     public BaseTlv ConvertToBase(FundingOutputContributionTlv tlv)
-    { 
+    {
         return new BaseTlv(tlv.Type, EndianBitConverter.GetBytesBigEndian(tlv.Amount.Satoshi));
     }
 
@@ -26,7 +25,7 @@ public class FundingOutputContributionTlvConverter : ITlvConverter<FundingOutput
         {
             throw new InvalidCastException("Invalid length");
         }
-        
+
         var amount = LightningMoney.Satoshis(EndianBitConverter.ToInt64BigEndian(baseTlv.Value));
 
         return new FundingOutputContributionTlv(amount);
@@ -39,7 +38,7 @@ public class FundingOutputContributionTlvConverter : ITlvConverter<FundingOutput
 
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
-        return ConvertToBase(tlv as FundingOutputContributionTlv 
+        return ConvertToBase(tlv as FundingOutputContributionTlv
                               ?? throw new InvalidCastException(
                                   $"Error casting BaseTlv to {nameof(FundingOutputContributionTlv)}"));
     }

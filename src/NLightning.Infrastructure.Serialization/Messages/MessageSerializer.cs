@@ -17,13 +17,11 @@ public class MessageSerializer : IMessageSerializer
 
     public async Task SerializeAsync(IMessage message, Stream stream)
     {
-        var messageTypeSerializer = _messageTypeSerializerFactory.GetSerializer(message.Type);
-        if (messageTypeSerializer is null)
-            throw new InvalidOperationException($"No serializer found for message type {message.Type}");
-        
+        var messageTypeSerializer = _messageTypeSerializerFactory.GetSerializer(message.Type) ?? throw new InvalidOperationException($"No serializer found for message type {message.Type}");
+
         // Write the message type to the stream
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(message.Type));
-        
+
         // Serialize the message
         await messageTypeSerializer.SerializeAsync(message, stream);
     }
@@ -34,7 +32,7 @@ public class MessageSerializer : IMessageSerializer
         var typeBytes = new byte[2];
         await stream.ReadExactlyAsync(typeBytes);
         var type = EndianBitConverter.ToUInt16BigEndian(typeBytes);
-        
+
         // Try to get the serializer for the message type
         var messageTypeSerializer = _messageTypeSerializerFactory.GetSerializer<TMessage>();
         if (messageTypeSerializer is not null)
@@ -48,11 +46,11 @@ public class MessageSerializer : IMessageSerializer
 
         return null;
 
-            // case MessageTypes.OPEN_CHANNEL:
-            // case MessageTypes.ACCEPT_CHANNEL:
-            // case MessageTypes.FUNDING_CREATED:
-            // case MessageTypes.FUNDING_SIGNED:
-            //     throw new InvalidMessageException("You must use OpenChannel2 flow");
+        // case MessageTypes.OPEN_CHANNEL:
+        // case MessageTypes.ACCEPT_CHANNEL:
+        // case MessageTypes.FUNDING_CREATED:
+        // case MessageTypes.FUNDING_SIGNED:
+        //     throw new InvalidMessageException("You must use OpenChannel2 flow");
     }
 
     public async Task<IMessage?> DeserializeMessageAsync(Stream stream)
@@ -61,7 +59,7 @@ public class MessageSerializer : IMessageSerializer
         var typeBytes = new byte[2];
         await stream.ReadExactlyAsync(typeBytes);
         var type = EndianBitConverter.ToUInt16BigEndian(typeBytes);
-        
+
         // Try to get the serializer for the message type
         var messageTypeSerializer = _messageTypeSerializerFactory.GetSerializer(type);
         if (messageTypeSerializer is not null)

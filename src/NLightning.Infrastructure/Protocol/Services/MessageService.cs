@@ -18,7 +18,7 @@ internal sealed class MessageService : IMessageService
 {
     private readonly IMessageSerializer _messageSerializer;
     private readonly ITransportService? _transportService;
-    
+
     private bool _disposed;
 
     /// <inheritdoc />
@@ -47,7 +47,7 @@ internal sealed class MessageService : IMessageService
     public async Task SendMessageAsync(IMessage message, CancellationToken cancellationToken = default)
     {
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(MessageService));
-        
+
         if (cancellationToken.IsCancellationRequested)
             return;
 
@@ -93,7 +93,7 @@ internal sealed class MessageService : IMessageService
     {
         if (_disposed)
             return;
-        
+
         if (disposing)
         {
             _transportService?.Dispose();

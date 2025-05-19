@@ -3,8 +3,8 @@ using NBitcoin;
 namespace NLightning.Infrastructure.Bitcoin.Transactions;
 
 using Comparers;
-using Domain.Protocol.Constants;
 using Domain.Money;
+using Domain.Protocol.Constants;
 using Outputs;
 
 public abstract class BaseTransaction

@@ -15,7 +15,7 @@ public class PongPayloadSerializer : IPayloadSerializer<PongPayload>
     {
         if (payload is not PongPayload pongPayload)
             throw new SerializationException($"Payload is not of type {nameof(PongPayload)}");
-        
+
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(pongPayload.BytesLength));
         await stream.WriteAsync(pongPayload.Ignored);
     }

@@ -20,7 +20,7 @@ public class ChannelIdTypeSerializer : IValueObjectTypeSerializer<ChannelId>
     {
         if (valueObject is not ChannelId channelId)
             throw new ArgumentException("Value object must be of type ChannelId.", nameof(valueObject));
-        
+
         await stream.WriteAsync(channelId);
     }
 
@@ -34,7 +34,7 @@ public class ChannelIdTypeSerializer : IValueObjectTypeSerializer<ChannelId>
     public async Task<ChannelId> DeserializeAsync(Stream stream)
     {
         var buffer = ArrayPool<byte>.Shared.Rent(ChannelId.LENGTH);
-        
+
         try
         {
             await stream.ReadExactlyAsync(buffer.AsMemory()[..ChannelId.LENGTH]);

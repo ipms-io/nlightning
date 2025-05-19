@@ -15,7 +15,7 @@ public class ValueObjectSerializerFactory : IValueObjectSerializerFactory
         RegisterSerializers();
     }
 
-    public IValueObjectTypeSerializer<TValueObjectType>? GetSerializer<TValueObjectType>() 
+    public IValueObjectTypeSerializer<TValueObjectType>? GetSerializer<TValueObjectType>()
         where TValueObjectType : IValueObject
     {
         return _serializers.GetValueOrDefault(typeof(TValueObjectType)) as IValueObjectTypeSerializer<TValueObjectType>;

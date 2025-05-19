@@ -22,18 +22,18 @@ public class TxAddOutputPayloadSerializer : IPayloadSerializer<TxAddOutputPayloa
     {
         _valueObjectSerializerFactory = valueObjectSerializerFactory;
     }
-    
+
     public async Task SerializeAsync(IMessagePayload payload, Stream stream)
     {
         if (payload is not TxAddOutputPayload txAddOutputPayload)
             throw new SerializationException($"Payload is not of type {nameof(TxAddOutputPayload)}");
-        
+
         // Get the value object serializer
-        var channelIdSerializer = 
-            _valueObjectSerializerFactory.GetSerializer<ChannelId>() 
+        var channelIdSerializer =
+            _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(txAddOutputPayload.ChannelId, stream);
-        
+
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(txAddOutputPayload.SerialId));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(txAddOutputPayload.Amount.Satoshi));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian((ushort)txAddOutputPayload.Script.Length));
@@ -47,7 +47,7 @@ public class TxAddOutputPayloadSerializer : IPayloadSerializer<TxAddOutputPayloa
         try
         {
             // Get the value object serializer
-            var channelIdSerializer = 
+            var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);

@@ -4,7 +4,6 @@ namespace NLightning.Common.Extensions;
 
 public static class BitArrayExtension
 {
-    
 
     public static int GetFirstIndexOfOne(this BitArray bitArray)
     {

@@ -438,7 +438,7 @@ public class LightningMoney : IMoney
         var zeros = new string('0', decPos);
         var rest = new string('#', 11 - decPos);
         var fmt = "{0:0" + ("." + zeros + rest) + "}";
-    
+
         return string.Format(CultureInfo.InvariantCulture, fmt, val);
     }
     #endregion

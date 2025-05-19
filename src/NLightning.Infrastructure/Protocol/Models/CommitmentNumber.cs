@@ -32,7 +32,7 @@ public sealed class CommitmentNumber
     {
         ArgumentNullException.ThrowIfNull(localPaymentBasepoint);
         ArgumentNullException.ThrowIfNull(remotePaymentBasepoint);
-        
+
         Value = initialValue;
         ObscuringFactor = CalculateObscuringFactor(localPaymentBasepoint, remotePaymentBasepoint);
     }
@@ -74,7 +74,7 @@ public sealed class CommitmentNumber
     private static ulong CalculateObscuringFactor(PubKey localBasepoint, PubKey remoteBasepoint)
     {
         using var sha256 = new Sha256();
-        
+
         // Hash the concatenation of payment basepoints
         sha256.AppendData(localBasepoint.ToBytes());
         sha256.AppendData(remoteBasepoint.ToBytes());

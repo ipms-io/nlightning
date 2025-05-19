@@ -14,7 +14,7 @@ public interface IValueObjectTypeSerializer
 /// <summary>
 /// Generic version for type safety
 /// </summary>
-public interface IValueObjectTypeSerializer<TValueObject>: IValueObjectTypeSerializer where TValueObject : IValueObject
+public interface IValueObjectTypeSerializer<TValueObject> : IValueObjectTypeSerializer where TValueObject : IValueObject
 {
     new Task<TValueObject> DeserializeAsync(Stream stream);
 }

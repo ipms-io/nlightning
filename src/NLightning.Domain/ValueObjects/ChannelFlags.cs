@@ -1,8 +1,7 @@
 namespace NLightning.Domain.ValueObjects;
 
-using Interfaces;
-
 using Enums;
+using Interfaces;
 
 /// <summary>
 /// Only the least-significant bit of channel_flags is currently defined: announce_channel. This indicates whether
@@ -11,7 +10,7 @@ using Enums;
 public readonly struct ChannelFlags : IValueObject, IEquatable<ChannelFlags>
 {
     private readonly byte _value;
-    
+
     public bool AnnounceChannel => ((ChannelFlag)_value).HasFlag(ChannelFlag.AnnounceChannel);
 
     public ChannelFlags(byte value)
@@ -22,7 +21,7 @@ public readonly struct ChannelFlags : IValueObject, IEquatable<ChannelFlags>
     {
         _value = (byte)value;
     }
-    
+
     #region Equality
     public override bool Equals(object? obj)
     {
@@ -42,7 +41,7 @@ public readonly struct ChannelFlags : IValueObject, IEquatable<ChannelFlags>
     {
         return _value.GetHashCode();
     }
-    
+
     public static bool operator ==(ChannelFlags left, ChannelFlags right) => left.Equals(right);
     public static bool operator !=(ChannelFlags left, ChannelFlags right) => !(left == right);
     #endregion

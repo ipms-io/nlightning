@@ -19,18 +19,18 @@ public class UpdateFeePayloadSerializer : IPayloadSerializer<UpdateFeePayload>
     {
         _valueObjectSerializerFactory = valueObjectSerializerFactory;
     }
-    
+
     public async Task SerializeAsync(IMessagePayload payload, Stream stream)
     {
         if (payload is not UpdateFeePayload updateFeePayload)
             throw new SerializationException($"Payload is not of type {nameof(UpdateFeePayload)}");
-        
+
         // Get the ChannelId serializer
-        var channelIdSerializer = 
-            _valueObjectSerializerFactory.GetSerializer<ChannelId>() 
+        var channelIdSerializer =
+            _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(updateFeePayload.ChannelId, stream);
-        
+
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(updateFeePayload.FeeratePerKw));
     }
 
@@ -41,11 +41,11 @@ public class UpdateFeePayloadSerializer : IPayloadSerializer<UpdateFeePayload>
         try
         {
             // Get the ChannelId serializer
-            var channelIdSerializer = 
+            var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
-            
+
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(uint)]);
             var feeratePerKw = EndianBitConverter.ToUInt32BigEndian(buffer[..sizeof(uint)]);
 

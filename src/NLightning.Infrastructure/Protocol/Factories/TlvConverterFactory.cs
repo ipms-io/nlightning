@@ -1,12 +1,11 @@
 namespace NLightning.Infrastructure.Protocol.Factories;
 
 using Domain.Protocol.Factories;
-using Domain.Protocol.Models;
 using Domain.Protocol.Tlv;
 using Domain.Protocol.Tlv.Converters;
 using Tlv.Converters;
 
-public class TlvConverterFactory: ITlvConverterFactory
+public class TlvConverterFactory : ITlvConverterFactory
 {
     private readonly Dictionary<Type, ITlvConverter> _converters = new();
 
@@ -14,7 +13,7 @@ public class TlvConverterFactory: ITlvConverterFactory
     {
         RegisterConverters();
     }
-    
+
     public ITlvConverter<TTlv>? GetConverter<TTlv>() where TTlv : BaseTlv
     {
         return _converters.GetValueOrDefault(typeof(TTlv)) as ITlvConverter<TTlv>;

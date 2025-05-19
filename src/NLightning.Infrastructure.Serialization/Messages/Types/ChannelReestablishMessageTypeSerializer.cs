@@ -27,14 +27,14 @@ public class ChannelReestablishMessageTypeSerializer : IMessageTypeSerializer<Ch
         _tlvConverterFactory = tlvConverterFactory;
         _tlvStreamSerializer = tlvStreamSerializer;
     }
-    
+
     public async Task SerializeAsync(IMessage message, Stream stream)
     {
         if (message is not ChannelReestablishMessage channelReestablishMessage)
             throw new SerializationException($"Message is not of type {nameof(ChannelReestablishMessage)}");
-            
+
         // Get the payload serializer
-        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type) 
+        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type)
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
 

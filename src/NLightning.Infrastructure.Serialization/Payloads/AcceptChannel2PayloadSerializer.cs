@@ -23,18 +23,18 @@ public class AcceptChannel2PayloadSerializer : IPayloadSerializer<AcceptChannel2
     {
         _valueObjectSerializerFactory = valueObjectSerializerFactory;
     }
-    
+
     public async Task SerializeAsync(IMessagePayload payload, Stream stream)
     {
         if (payload is not AcceptChannel2Payload acceptChannel2Payload)
             throw new SerializationException($"Payload is not of type {nameof(AcceptChannel2Payload)}");
-        
+
         // Get the value object serializer
-        var channelIdSerializer = 
-            _valueObjectSerializerFactory.GetSerializer<ChannelId>() 
+        var channelIdSerializer =
+            _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(acceptChannel2Payload.TemporaryChannelId, stream);
-        
+
         // Serialize other types
         await stream
             .WriteAsync(EndianBitConverter.GetBytesBigEndian((ulong)acceptChannel2Payload.FundingAmount.Satoshi));
@@ -59,11 +59,11 @@ public class AcceptChannel2PayloadSerializer : IPayloadSerializer<AcceptChannel2
     public async Task<AcceptChannel2Payload?> DeserializeAsync(Stream stream)
     {
         var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.PUBKEY_LEN);
-        
+
         try
         {
             // Get the value object serializer
-            var channelIdSerializer = 
+            var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var temporaryChannelId = await channelIdSerializer.DeserializeAsync(stream);
@@ -73,7 +73,7 @@ public class AcceptChannel2PayloadSerializer : IPayloadSerializer<AcceptChannel2
                                                           LightningMoneyUnit.Satoshi);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
-            var dustLimitSatoshis = 
+            var dustLimitSatoshis =
                 LightningMoney.FromUnit(EndianBitConverter.ToUInt64BigEndian(buffer[..sizeof(ulong)]),
                                         LightningMoneyUnit.Satoshi);
 

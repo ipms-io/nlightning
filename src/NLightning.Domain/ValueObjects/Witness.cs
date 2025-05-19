@@ -5,7 +5,7 @@ using Interfaces;
 public readonly struct Witness : IValueObject, IEquatable<Witness>
 {
     private readonly byte[] _value;
-    
+
     public ushort Length => (ushort)_value.Length;
 
     public Witness(byte[] value)
@@ -29,7 +29,7 @@ public readonly struct Witness : IValueObject, IEquatable<Witness>
         return _value.GetHashCode();
     }
     #endregion
-    
+
     #region Implicit Operators
     public static implicit operator byte[](Witness s) => s._value;
     public static implicit operator Witness(byte[] value) => new(value);

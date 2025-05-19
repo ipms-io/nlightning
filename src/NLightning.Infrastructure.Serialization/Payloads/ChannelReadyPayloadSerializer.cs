@@ -20,18 +20,18 @@ public class ChannelReadyPayloadSerializer : IPayloadSerializer<ChannelReadyPayl
     {
         _valueObjectSerializerFactory = valueObjectSerializerFactory;
     }
-    
+
     public async Task SerializeAsync(IMessagePayload payload, Stream stream)
     {
         if (payload is not ChannelReadyPayload channelReadyPayload)
             throw new SerializationException($"Payload is not of type {nameof(ChannelReadyPayload)}");
-        
+
         // Get the value object serializer
-        var channelIdSerializer = 
-            _valueObjectSerializerFactory.GetSerializer<ChannelId>() 
+        var channelIdSerializer =
+            _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(channelReadyPayload.ChannelId, stream);
-        
+
         // Serialize other types
         await stream.WriteAsync(channelReadyPayload.SecondPerCommitmentPoint.ToBytes());
     }
@@ -39,11 +39,11 @@ public class ChannelReadyPayloadSerializer : IPayloadSerializer<ChannelReadyPayl
     public async Task<ChannelReadyPayload?> DeserializeAsync(Stream stream)
     {
         var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.PUBKEY_LEN);
-        
+
         try
         {
             // Get the value object serializer
-            var channelIdSerializer = 
+            var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);

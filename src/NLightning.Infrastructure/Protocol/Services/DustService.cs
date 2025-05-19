@@ -5,7 +5,7 @@ namespace NLightning.Infrastructure.Protocol.Services;
 using Domain.Bitcoin.Services;
 using Domain.Protocol.Services;
 
-public class DustService: IDustService
+public class DustService : IDustService
 {
     private readonly IFeeService _feeService;
 

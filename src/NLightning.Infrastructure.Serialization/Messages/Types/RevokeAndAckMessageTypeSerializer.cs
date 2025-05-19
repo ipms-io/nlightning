@@ -12,19 +12,19 @@ using Exceptions;
 public class RevokeAndAckMessageTypeSerializer : IMessageTypeSerializer<RevokeAndAckMessage>
 {
     private readonly IPayloadSerializerFactory _payloadSerializerFactory;
-    
+
     public RevokeAndAckMessageTypeSerializer(IPayloadSerializerFactory payloadSerializerFactory)
     {
         _payloadSerializerFactory = payloadSerializerFactory;
     }
-    
+
     public async Task SerializeAsync(IMessage message, Stream stream)
     {
         if (message is not RevokeAndAckMessage)
             throw new SerializationException("Message is not of type RevokeAndAckMessage");
-            
+
         // Get the payload serializer
-        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type) 
+        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type)
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
     }

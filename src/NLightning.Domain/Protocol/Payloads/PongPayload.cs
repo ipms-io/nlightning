@@ -1,7 +1,7 @@
 namespace NLightning.Domain.Protocol.Payloads;
 
-using Messages;
 using Interfaces;
+using Messages;
 
 /// <summary>
 /// Represents a Pong payload.
@@ -26,7 +26,7 @@ public class PongPayload : IMessagePayload
     {
         BytesLength = bytesLen;
         Ignored = new byte[bytesLen];
-        
+
         // Fill the ignored bytes with random data
         new Random().NextBytes(Ignored);
     }

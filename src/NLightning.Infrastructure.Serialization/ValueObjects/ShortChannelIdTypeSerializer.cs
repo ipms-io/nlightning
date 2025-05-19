@@ -20,7 +20,7 @@ public class ShortChannelIdTypeSerializer : IValueObjectTypeSerializer<ShortChan
     {
         if (valueObject is not ShortChannelId shortChannelId)
             throw new ArgumentException("Value object must be of type ShortChannelId.", nameof(valueObject));
-        
+
         await stream.WriteAsync(shortChannelId);
     }
 
@@ -34,7 +34,7 @@ public class ShortChannelIdTypeSerializer : IValueObjectTypeSerializer<ShortChan
     public async Task<ShortChannelId> DeserializeAsync(Stream stream)
     {
         var buffer = ArrayPool<byte>.Shared.Rent(ShortChannelId.LENGTH);
-        
+
         try
         {
             await stream.ReadExactlyAsync(buffer.AsMemory()[..ShortChannelId.LENGTH]);

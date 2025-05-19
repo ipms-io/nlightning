@@ -23,18 +23,18 @@ public class ClosingSignedPayloadSerializer : IPayloadSerializer<ClosingSignedPa
     {
         _valueObjectSerializerFactory = valueObjectSerializerFactory;
     }
-    
+
     public async Task SerializeAsync(IMessagePayload payload, Stream stream)
     {
         if (payload is not ClosingSignedPayload closingSignedPayload)
             throw new SerializationException($"Payload is not of type {nameof(ClosingSignedPayload)}");
-        
+
         // Get the value object serializer
-        var channelIdSerializer = 
-            _valueObjectSerializerFactory.GetSerializer<ChannelId>() 
+        var channelIdSerializer =
+            _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(closingSignedPayload.ChannelId, stream);
-        
+
         // Serialize other types
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(closingSignedPayload.FeeAmount.Satoshi));
         await stream.WriteAsync(closingSignedPayload.Signature.ToCompact());
@@ -43,15 +43,15 @@ public class ClosingSignedPayloadSerializer : IPayloadSerializer<ClosingSignedPa
     public async Task<ClosingSignedPayload?> DeserializeAsync(Stream stream)
     {
         var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.MAX_SIGNATURE_SIZE);
-        
+
         try
         {
             // Get the value object serializer
-            var channelIdSerializer = 
+            var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
-            
+
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
             var feeSatoshis = LightningMoney.FromUnit(EndianBitConverter.ToUInt64BigEndian(buffer[..sizeof(ulong)]),
                                                       LightningMoneyUnit.Satoshi);

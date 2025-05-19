@@ -1,7 +1,6 @@
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
 using Domain.Protocol.Constants;
-using Domain.Protocol.Models;
 using Domain.Protocol.Tlv;
 using Domain.Protocol.Tlv.Converters;
 
@@ -23,7 +22,7 @@ public class RequireConfirmedInputsTlvConverter : ITlvConverter<RequireConfirmed
         {
             throw new InvalidCastException("Invalid length");
         }
-        
+
         return new RequireConfirmedInputsTlv();
     }
 
@@ -34,7 +33,7 @@ public class RequireConfirmedInputsTlvConverter : ITlvConverter<RequireConfirmed
 
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
-        return ConvertToBase(tlv as RequireConfirmedInputsTlv 
+        return ConvertToBase(tlv as RequireConfirmedInputsTlv
                              ?? throw new InvalidCastException(
                                  $"Error converting BaseTlv to {nameof(RequireConfirmedInputsTlv)}"));
     }

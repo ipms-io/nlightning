@@ -1,7 +1,7 @@
 namespace NLightning.Infrastructure.Factories;
 
-using Domain.ValueObjects;
 using Crypto.Hashes;
+using Domain.ValueObjects;
 
 public static class ChannelIdFactory
 {

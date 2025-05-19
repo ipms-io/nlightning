@@ -19,18 +19,18 @@ public class TxAbortPayloadSerializer : IPayloadSerializer<TxAbortPayload>
     {
         _valueObjectSerializerFactory = valueObjectSerializerFactory;
     }
-    
+
     public async Task SerializeAsync(IMessagePayload payload, Stream stream)
     {
         if (payload is not TxAbortPayload txAbortPayload)
             throw new SerializationException($"Payload is not of type {nameof(TxAbortPayload)}");
-        
+
         // Get the value object serializer
-        var channelIdSerializer = 
-            _valueObjectSerializerFactory.GetSerializer<ChannelId>() 
+        var channelIdSerializer =
+            _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(txAbortPayload.ChannelId, stream);
-        
+
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian((ushort)txAbortPayload.Data.Length));
         await stream.WriteAsync(txAbortPayload.Data);
     }
@@ -42,17 +42,17 @@ public class TxAbortPayloadSerializer : IPayloadSerializer<TxAbortPayload>
         try
         {
             // Get the value object serializer
-            var channelIdSerializer = 
+            var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
-            
+
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ushort)]);
             var length = EndianBitConverter.ToUInt16BigEndian(buffer[..sizeof(ushort)]);
 
             // Use only the first 256 bytes of the buffer
             length = Math.Min(length, (ushort)256);
-            
+
             var data = new byte[length];
             await stream.ReadExactlyAsync(data);
 

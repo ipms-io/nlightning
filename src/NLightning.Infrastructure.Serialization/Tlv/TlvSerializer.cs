@@ -17,7 +17,7 @@ public class TlvSerializer : ITlvSerializer
         _bigSizeSerializer = valueObjectSerializerFactory.GetSerializer<BigSize>()
                              ?? throw new ArgumentNullException(nameof(valueObjectSerializerFactory));
     }
-    
+
     /// <summary>
     /// Serializes a BaseTlv value into a stream.
     /// </summary>
@@ -47,12 +47,12 @@ public class TlvSerializer : ITlvSerializer
             return null;
 
         byte[]? value = null;
-        
+
         try
         {
             var type = await _bigSizeSerializer.DeserializeAsync(stream);
             var length = await _bigSizeSerializer.DeserializeAsync(stream);
-            
+
             value = ArrayPool<byte>.Shared.Rent(length);
             await stream.ReadExactlyAsync(value.AsMemory()[..(int)length]);
 

@@ -19,18 +19,18 @@ public class TxRemoveOutputPayloadSerializer : IPayloadSerializer<TxRemoveOutput
     {
         _valueObjectSerializerFactory = valueObjectSerializerFactory;
     }
-    
+
     public async Task SerializeAsync(IMessagePayload payload, Stream stream)
     {
         if (payload is not TxRemoveOutputPayload txRemoveOutputPayload)
             throw new SerializationException($"Payload is not of type {nameof(TxRemoveOutputPayload)}");
-        
+
         // Get the value object serializer
-        var channelIdSerializer = 
-            _valueObjectSerializerFactory.GetSerializer<ChannelId>() 
+        var channelIdSerializer =
+            _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(txRemoveOutputPayload.ChannelId, stream);
-        
+
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(txRemoveOutputPayload.SerialId));
     }
 
@@ -41,11 +41,11 @@ public class TxRemoveOutputPayloadSerializer : IPayloadSerializer<TxRemoveOutput
         try
         {
             // Get the value object serializer
-            var channelIdSerializer = 
+            var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
-            
+
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
             var serialId = EndianBitConverter.ToUInt64BigEndian(buffer[..sizeof(ulong)]);
 

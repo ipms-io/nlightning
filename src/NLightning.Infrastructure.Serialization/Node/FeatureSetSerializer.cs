@@ -66,7 +66,7 @@ public class FeatureSetSerializer : IFeatureSetSerializer
         // Otherwise, return the array starting from the first non-zero byte
         await stream.WriteAsync(trimmedBytes);
     }
-    
+
     /// <summary>
     /// Deserializes the features from a binary reader.
     /// </summary>

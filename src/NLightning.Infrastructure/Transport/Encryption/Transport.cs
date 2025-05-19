@@ -4,8 +4,8 @@ using Common.Utils;
 using Domain.Crypto.Constants;
 using Domain.Exceptions;
 using Domain.Transport;
-using Protocol.Constants;
 using Handshake.States;
+using Protocol.Constants;
 
 /// <inheritdoc/>
 internal sealed class Transport : ITransport

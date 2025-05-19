@@ -21,18 +21,18 @@ public class CommitmentSignedPayloadSerializer : IPayloadSerializer<CommitmentSi
     {
         _valueObjectSerializerFactory = valueObjectSerializerFactory;
     }
-    
+
     public async Task SerializeAsync(IMessagePayload payload, Stream stream)
     {
         if (payload is not CommitmentSignedPayload commitmentSignedPayload)
             throw new SerializationException($"Payload is not of type {nameof(CommitmentSignedPayload)}");
-        
+
         // Get the value object serializer
-        var channelIdSerializer = 
-            _valueObjectSerializerFactory.GetSerializer<ChannelId>() 
+        var channelIdSerializer =
+            _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(commitmentSignedPayload.ChannelId, stream);
-        
+
         // Serialize other types
         await stream.WriteAsync(commitmentSignedPayload.Signature.ToCompact());
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(commitmentSignedPayload.NumHtlcs));
@@ -45,15 +45,15 @@ public class CommitmentSignedPayloadSerializer : IPayloadSerializer<CommitmentSi
     public async Task<CommitmentSignedPayload?> DeserializeAsync(Stream stream)
     {
         var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.MAX_SIGNATURE_SIZE);
-        
+
         try
         {
             // Get the value object serializer
-            var channelIdSerializer = 
+            var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
-            
+
             await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.MAX_SIGNATURE_SIZE]);
             if (!ECDSASignature.TryParseFromCompact(buffer[..CryptoConstants.MAX_SIGNATURE_SIZE], out var signature))
             {

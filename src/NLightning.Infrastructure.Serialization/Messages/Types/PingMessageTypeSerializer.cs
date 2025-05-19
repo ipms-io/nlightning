@@ -12,19 +12,19 @@ using Exceptions;
 public class PingMessageTypeSerializer : IMessageTypeSerializer<PingMessage>
 {
     private readonly IPayloadSerializerFactory _payloadSerializerFactory;
-    
+
     public PingMessageTypeSerializer(IPayloadSerializerFactory payloadSerializerFactory)
     {
         _payloadSerializerFactory = payloadSerializerFactory;
     }
-    
+
     public async Task SerializeAsync(IMessage message, Stream stream)
     {
         if (message is not PingMessage)
             throw new SerializationException("Message is not of type PingMessage");
-            
+
         // Get the payload serializer
-        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type) 
+        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type)
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
     }

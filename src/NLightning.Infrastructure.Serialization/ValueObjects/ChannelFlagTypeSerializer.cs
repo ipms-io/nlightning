@@ -11,14 +11,14 @@ public class ChannelFlagTypeSerializer : IValueObjectTypeSerializer<ChannelFlags
     {
         if (valueObject is not ChannelFlags channelFlags)
             throw new ArgumentException("Value object must be of type ChannelFlags.", nameof(valueObject));
-        
+
         await stream.WriteAsync(new ReadOnlyMemory<byte>([channelFlags]));
     }
 
     public async Task<ChannelFlags> DeserializeAsync(Stream stream)
     {
         var buffer = ArrayPool<byte>.Shared.Rent(1);
-        
+
         try
         {
             await stream.ReadExactlyAsync(buffer.AsMemory()[..1]);

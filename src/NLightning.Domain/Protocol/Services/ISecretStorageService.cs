@@ -1,6 +1,6 @@
 namespace NLightning.Domain.Protocol.Services;
 
-public interface ISecretStorageService: IDisposable
+public interface ISecretStorageService : IDisposable
 {
-    
+
 }

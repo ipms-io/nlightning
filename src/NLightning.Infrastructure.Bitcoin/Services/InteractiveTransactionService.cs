@@ -1,9 +1,9 @@
 namespace NLightning.Infrastructure.Bitcoin.Services;
 
+using Domain.Money;
+using Domain.Protocol.Payloads;
 using Protocol.Interfaces;
 using Protocol.Validators;
-using Domain.Protocol.Payloads;
-using Domain.Money;
 
 public class InteractiveTransactionService : IInteractiveTransactionService
 {

@@ -9,11 +9,10 @@ using Crypto.Interfaces;
 using Domain.Protocol.Services;
 using Models;
 
-
 /// <summary>
 /// Provides efficient storage of per-commitment secrets
 /// </summary>
-public class SecretStorageService :ISecretStorageService
+public class SecretStorageService : ISecretStorageService
 {
     public const int SECRET_SIZE = 32;
 

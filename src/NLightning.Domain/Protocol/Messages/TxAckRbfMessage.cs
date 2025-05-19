@@ -22,7 +22,7 @@ public sealed class TxAckRbfMessage : BaseMessage
     public FundingOutputContributionTlv? FundingOutputContributionTlv { get; }
     public RequireConfirmedInputsTlv? RequireConfirmedInputsTlv { get; }
 
-    public TxAckRbfMessage(TxAckRbfPayload payload, FundingOutputContributionTlv? fundingOutputContributionTlv = null, 
+    public TxAckRbfMessage(TxAckRbfPayload payload, FundingOutputContributionTlv? fundingOutputContributionTlv = null,
                            RequireConfirmedInputsTlv? requireConfirmedInputsTlv = null)
         : base(MessageTypes.TX_ACK_RBF, payload)
     {

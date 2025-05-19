@@ -21,12 +21,12 @@ public class FundingOutputContributionTlv : BaseTlv
         Amount = amount;
         Length = sizeof(ulong);
     }
-    
+
     public override int GetHashCode()
     {
         return HashCode.Combine(Type, Length, Amount.GetHashCode());
     }
-    
+
     public override bool Equals(object? obj)
     {
         return obj is FundingOutputContributionTlv fundingOutputContributionTlv && Equals(fundingOutputContributionTlv);

@@ -1,7 +1,4 @@
 namespace NLightning.Domain.Protocol.Tlv.Converters;
-
-using Models;
-
 /// <summary>
 /// Interface for serializers that handle specific message types
 /// </summary>

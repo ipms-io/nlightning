@@ -27,14 +27,14 @@ public class AcceptChannel2MessageTypeSerializer : IMessageTypeSerializer<Accept
         _tlvConverterFactory = tlvConverterFactory;
         _tlvStreamSerializer = tlvStreamSerializer;
     }
-    
+
     public async Task SerializeAsync(IMessage message, Stream stream)
     {
         if (message is not AcceptChannel2Message acceptChannel2Message)
             throw new SerializationException($"Message is not of type {nameof(AcceptChannel2Message)}");
-        
+
         // Get the payload serializer
-        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type) 
+        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type)
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
 
@@ -57,7 +57,7 @@ public class AcceptChannel2MessageTypeSerializer : IMessageTypeSerializer<Accept
                                     ?? throw new SerializationException("No serializer found for payload type");
             var payload = await payloadSerializer.DeserializeAsync(stream)
                           ?? throw new SerializationException("Error serializing payload");
-            
+
             // Deserialize extension
             if (stream.Position >= stream.Length)
                 return new AcceptChannel2Message(payload);

@@ -18,12 +18,12 @@ public class TlvStreamSerializer : ITlvStreamSerializer
         _tlvConverterFactory = tlvConverterFactory;
         _tlvSerializer = tlvSerializer;
     }
-    
+
     public async Task SerializeAsync(TlvStream? tlvStream, Stream stream)
     {
         if (tlvStream is null)
             return;
-        
+
         foreach (var tlv in tlvStream.GetTlvs())
         {
             var baseTlv = tlv switch
@@ -47,11 +47,7 @@ public class TlvStreamSerializer : ITlvStreamSerializer
                 UpfrontShutdownScriptTlv upfrontShutdownScriptTlv => _tlvConverterFactory
                     .GetConverter<UpfrontShutdownScriptTlv>()?.ConvertToBase(upfrontShutdownScriptTlv),
                 _ => null
-            };
-            
-            if (baseTlv is null)
-                throw new SerializationException($"No converter found for tlv type {tlv.GetType().Name}");
-            
+            } ?? throw new SerializationException($"No converter found for tlv type {tlv.GetType().Name}");
             await _tlvSerializer.SerializeAsync(baseTlv, stream);
         }
     }

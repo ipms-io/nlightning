@@ -21,7 +21,7 @@ public class BigSizeTypeSerializer : IValueObjectTypeSerializer<BigSize>
     {
         if (valueObject is not BigSize bigSize)
             throw new ArgumentException("Value object must be of type BigSize.", nameof(valueObject));
-        
+
         if (bigSize < 0xfd)
         {
             await stream.WriteAsync(new[] { (byte)bigSize });
@@ -56,7 +56,7 @@ public class BigSizeTypeSerializer : IValueObjectTypeSerializer<BigSize>
             throw new ArgumentException("BigSize cannot be read from an empty stream.");
 
         var buffer = ArrayPool<byte>.Shared.Rent(sizeof(ulong));
-        
+
         try
         {
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(byte)]);
@@ -71,30 +71,30 @@ public class BigSizeTypeSerializer : IValueObjectTypeSerializer<BigSize>
                 case 0xfd when stream.Position + 2 > stream.Length:
                     throw new ArgumentException("BigSize cannot be read from a stream with insufficient data.");
                 case 0xfd:
-                {
-                    await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ushort)]);
-                    value = EndianBitConverter.ToUInt16BigEndian(buffer[..sizeof(ushort)]);
-                    break;
-                }
+                    {
+                        await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ushort)]);
+                        value = EndianBitConverter.ToUInt16BigEndian(buffer[..sizeof(ushort)]);
+                        break;
+                    }
                 case 0xfe when stream.Position + 4 > stream.Length:
                     throw new ArgumentException("BigSize cannot be read from a stream with insufficient data.");
                 case 0xfe:
-                {
-                    await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(uint)]);
-                    value = EndianBitConverter.ToUInt32BigEndian(buffer[..sizeof(uint)]);
-                    break;
-                }
-                default:
-                {
-                    if (stream.Position + 8 > stream.Length)
                     {
-                        throw new ArgumentException("BigSize cannot be read from a stream with insufficient data.");
+                        await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(uint)]);
+                        value = EndianBitConverter.ToUInt32BigEndian(buffer[..sizeof(uint)]);
+                        break;
                     }
+                default:
+                    {
+                        if (stream.Position + 8 > stream.Length)
+                        {
+                            throw new ArgumentException("BigSize cannot be read from a stream with insufficient data.");
+                        }
 
-                    await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
-                    value = EndianBitConverter.ToUInt64BigEndian(buffer[..sizeof(ulong)]);
-                    break;
-                }
+                        await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
+                        value = EndianBitConverter.ToUInt64BigEndian(buffer[..sizeof(ulong)]);
+                        break;
+                    }
             }
 
             return new BigSize(value);

@@ -20,7 +20,7 @@ public class ChainHashTypeSerializer : IValueObjectTypeSerializer<ChainHash>
     {
         if (valueObject is not ChainHash chainHash)
             throw new ArgumentException("Value object must be of type ChainHash.", nameof(valueObject));
-        
+
         await stream.WriteAsync(chainHash);
     }
 
@@ -34,7 +34,7 @@ public class ChainHashTypeSerializer : IValueObjectTypeSerializer<ChainHash>
     public async Task<ChainHash> DeserializeAsync(Stream stream)
     {
         var buffer = ArrayPool<byte>.Shared.Rent(ChainHash.LENGTH);
-        
+
         try
         {
             await stream.ReadExactlyAsync(buffer.AsMemory()[..ChainHash.LENGTH]);

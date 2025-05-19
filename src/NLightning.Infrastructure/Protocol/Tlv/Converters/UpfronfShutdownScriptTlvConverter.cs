@@ -3,7 +3,6 @@ using NBitcoin;
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
 using Domain.Protocol.Constants;
-using Domain.Protocol.Models;
 using Domain.Protocol.Tlv;
 using Domain.Protocol.Tlv.Converters;
 
@@ -12,7 +11,7 @@ public class UpfrontShutdownScriptTlvConverter : ITlvConverter<UpfrontShutdownSc
     public BaseTlv ConvertToBase(UpfrontShutdownScriptTlv tlv)
     {
         tlv.Value = tlv.ShutdownScriptPubkey.ToBytes();
-        
+
         return tlv;
     }
 
@@ -27,7 +26,7 @@ public class UpfrontShutdownScriptTlvConverter : ITlvConverter<UpfrontShutdownSc
         {
             throw new InvalidCastException("Invalid length");
         }
-        
+
         return new UpfrontShutdownScriptTlv(new Script(baseTlv.Value));
     }
 
@@ -38,7 +37,7 @@ public class UpfrontShutdownScriptTlvConverter : ITlvConverter<UpfrontShutdownSc
 
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
-        return ConvertToBase(tlv as UpfrontShutdownScriptTlv 
+        return ConvertToBase(tlv as UpfrontShutdownScriptTlv
                              ?? throw new InvalidCastException(
                                  $"Error converting BaseTlv to {nameof(UpfrontShutdownScriptTlv)}"));
     }

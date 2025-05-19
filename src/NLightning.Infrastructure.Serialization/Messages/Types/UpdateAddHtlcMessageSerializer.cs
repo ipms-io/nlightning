@@ -27,21 +27,21 @@ public class UpdateAddHtlcMessageTypeSerializer : IMessageTypeSerializer<UpdateA
         _tlvConverterFactory = tlvConverterFactory;
         _tlvStreamSerializer = tlvStreamSerializer;
     }
-    
+
     public async Task SerializeAsync(IMessage message, Stream stream)
     {
         if (message is not UpdateAddHtlcMessage updateAddHtlcMessage)
             throw new SerializationException("Message is not of type UpdateAddHtlcMessage");
-            
+
         // Get the payload serializer
-        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type) 
+        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type)
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
-        
+
         // Serialize the TLV stream
         await _tlvStreamSerializer.SerializeAsync(updateAddHtlcMessage.Extension, stream);
     }
-    
+
     /// <summary>
     /// Deserialize an UpdateAddHtlcMessage from a stream.
     /// </summary>
@@ -61,7 +61,7 @@ public class UpdateAddHtlcMessageTypeSerializer : IMessageTypeSerializer<UpdateA
             // Deserialize extension if available
             if (stream.Position >= stream.Length)
                 return new UpdateAddHtlcMessage(payload);
-            
+
             var extension = await _tlvStreamSerializer.DeserializeAsync(stream);
             if (extension is null)
                 return new UpdateAddHtlcMessage(payload);

@@ -20,18 +20,18 @@ public class RevokeAndAckPayloadSerializer : IPayloadSerializer<RevokeAndAckPayl
     {
         _valueObjectSerializerFactory = valueObjectSerializerFactory;
     }
-    
+
     public async Task SerializeAsync(IMessagePayload payload, Stream stream)
     {
         if (payload is not RevokeAndAckPayload revokeAndAckPayload)
             throw new SerializationException($"Payload is not of type {nameof(RevokeAndAckPayload)}");
-        
+
         // Get the value object serializer
-        var channelIdSerializer = 
-            _valueObjectSerializerFactory.GetSerializer<ChannelId>() 
+        var channelIdSerializer =
+            _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(revokeAndAckPayload.ChannelId, stream);
-        
+
         await stream.WriteAsync(revokeAndAckPayload.PerCommitmentSecret);
         await stream.WriteAsync(revokeAndAckPayload.NextPerCommitmentPoint.ToBytes());
     }
@@ -43,11 +43,11 @@ public class RevokeAndAckPayloadSerializer : IPayloadSerializer<RevokeAndAckPayl
         try
         {
             // Get the value object serializer
-            var channelIdSerializer = 
+            var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
-            
+
             var perCommitmentSecret = new byte[32];
             await stream.ReadExactlyAsync(perCommitmentSecret);
 

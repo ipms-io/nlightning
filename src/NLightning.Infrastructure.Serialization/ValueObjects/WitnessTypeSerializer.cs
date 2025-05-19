@@ -3,7 +3,6 @@ using System.Runtime.Serialization;
 
 namespace NLightning.Infrastructure.Serialization.ValueObjects;
 
-using NLightning.Domain.Crypto.Constants;
 using Converters;
 using Domain.Serialization.ValueObjects;
 using Domain.ValueObjects;
@@ -23,7 +22,7 @@ public class WitnessTypeSerializer : IValueObjectTypeSerializer<Witness>
     {
         if (valueObject is not Witness witness)
             throw new ArgumentException("Value object must be of type Witness.", nameof(valueObject));
-        
+
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(witness.Length));
         await stream.WriteAsync(witness);
     }

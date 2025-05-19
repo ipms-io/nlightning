@@ -9,7 +9,7 @@ using ValueObjects;
 public sealed class TlvStream
 {
     private readonly SortedDictionary<BigSize, BaseTlv> _tlvs = [];
-    
+
     /// <summary>
     /// Add a TLV to the stream
     /// </summary>

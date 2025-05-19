@@ -17,12 +17,12 @@ public class InitPayloadSerializer : IPayloadSerializer<InitPayload>
     {
         _featureSetSerializer = featureSetSerializer;
     }
-    
+
     public async Task SerializeAsync(IMessagePayload payload, Stream stream)
     {
         if (payload is not InitPayload initPayload)
             throw new SerializationException($"Payload is not of type {nameof(InitPayload)}");
-        
+
         await _featureSetSerializer.SerializeAsync(initPayload.FeatureSet, stream, true);
         await _featureSetSerializer.SerializeAsync(initPayload.FeatureSet, stream);
     }

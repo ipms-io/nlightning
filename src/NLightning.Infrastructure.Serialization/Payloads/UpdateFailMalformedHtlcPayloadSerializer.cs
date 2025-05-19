@@ -20,18 +20,18 @@ public class UpdateFailMalformedHtlcPayloadSerializer : IPayloadSerializer<Updat
     {
         _valueObjectSerializerFactory = valueObjectSerializerFactory;
     }
-    
+
     public async Task SerializeAsync(IMessagePayload payload, Stream stream)
     {
         if (payload is not UpdateFailMalformedHtlcPayload updateFailMalformedHtlcPayload)
             throw new SerializationException($"Payload is not of type {nameof(UpdateFailMalformedHtlcPayload)}");
-        
+
         // Get the ChannelId serializer
-        var channelIdSerializer = 
-            _valueObjectSerializerFactory.GetSerializer<ChannelId>() 
+        var channelIdSerializer =
+            _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(updateFailMalformedHtlcPayload.ChannelId, stream);
-        
+
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(updateFailMalformedHtlcPayload.Id));
         await stream.WriteAsync(updateFailMalformedHtlcPayload.Sha256OfOnion);
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(updateFailMalformedHtlcPayload.FailureCode));
@@ -44,11 +44,11 @@ public class UpdateFailMalformedHtlcPayloadSerializer : IPayloadSerializer<Updat
         try
         {
             // Get the ChannelId serializer
-            var channelIdSerializer = 
+            var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
-            
+
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
             var id = EndianBitConverter.ToUInt64BigEndian(buffer[..sizeof(ulong)]);
 

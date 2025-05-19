@@ -54,7 +54,8 @@ public readonly struct ShortChannelId : IValueObject, IEquatable<ShortChannelId>
         (uint)((channelId >> 40) & 0xFFFFFF), // BLOCK_HEIGHT
         (uint)((channelId >> 16) & 0xFFFF),   // TRANSACTION_INDEX
         (ushort)(channelId & 0xFF)            // OUTPUT_INDEX
-    ) { }
+    )
+    { }
 
     public static ShortChannelId Parse(string shortChannelId)
     {

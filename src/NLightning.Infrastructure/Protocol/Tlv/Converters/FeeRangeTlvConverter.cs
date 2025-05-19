@@ -3,7 +3,6 @@ namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 using Domain.Enums;
 using Domain.Money;
 using Domain.Protocol.Constants;
-using Domain.Protocol.Models;
 using Domain.Protocol.Tlv;
 using Domain.Protocol.Tlv.Converters;
 using Infrastructure.Converters;
@@ -15,7 +14,7 @@ public class FeeRangeTlvConverter : ITlvConverter<FeeRangeTlv>
         var tlvValue = new byte[sizeof(ulong) * 2];
         EndianBitConverter.GetBytesBigEndian(tlv.MinFeeAmount.Satoshi).CopyTo(tlvValue, 0);
         EndianBitConverter.GetBytesBigEndian(tlv.MaxFeeAmount.Satoshi).CopyTo(tlvValue, sizeof(ulong));
-        
+
         return new BaseTlv(tlv.Type, tlvValue);
     }
 
@@ -46,7 +45,7 @@ public class FeeRangeTlvConverter : ITlvConverter<FeeRangeTlv>
 
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
-        return ConvertToBase(tlv as FeeRangeTlv 
+        return ConvertToBase(tlv as FeeRangeTlv
                              ?? throw new InvalidCastException($"Error converting BaseTlv to {nameof(FeeRangeTlv)}"));
     }
 }

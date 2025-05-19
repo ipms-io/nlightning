@@ -20,26 +20,26 @@ public class TxSignaturesPayloadSerializer : IPayloadSerializer<TxSignaturesPayl
     {
         _valueObjectSerializerFactory = valueObjectSerializerFactory;
     }
-    
+
     public async Task SerializeAsync(IMessagePayload payload, Stream stream)
     {
         if (payload is not TxSignaturesPayload txSignaturesPayload)
             throw new SerializationException($"Payload is not of type {nameof(TxSignaturesPayload)}");
-        
+
         // Get the ChannelId serializer
-        var channelIdSerializer = 
-            _valueObjectSerializerFactory.GetSerializer<ChannelId>() 
+        var channelIdSerializer =
+            _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(txSignaturesPayload.ChannelId, stream);
-        
+
         await stream.WriteAsync(txSignaturesPayload.TxId);
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian((ushort)txSignaturesPayload.Witnesses.Count));
 
         // Get the Witness serializer
-        var witnessSerializer = 
-            _valueObjectSerializerFactory.GetSerializer<Witness>() 
+        var witnessSerializer =
+            _valueObjectSerializerFactory.GetSerializer<Witness>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(Witness)}");
-        
+
         foreach (var witness in txSignaturesPayload.Witnesses)
         {
             await witnessSerializer.SerializeAsync(witness, stream);
@@ -53,19 +53,19 @@ public class TxSignaturesPayloadSerializer : IPayloadSerializer<TxSignaturesPayl
         try
         {
             // Get the ChannelId serializer
-            var channelIdSerializer = 
+            var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
-            
+
             var txId = new byte[TransactionConstants.TX_ID_LENGTH];
             await stream.ReadExactlyAsync(txId);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ushort)]);
             var numWitnesses = EndianBitConverter.ToUInt16BigEndian(buffer[..sizeof(ushort)]);
-            
+
             // Get the Witness serializer
-            var witnessSerializer = 
+            var witnessSerializer =
                 _valueObjectSerializerFactory.GetSerializer<Witness>()
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(Witness)}");
 

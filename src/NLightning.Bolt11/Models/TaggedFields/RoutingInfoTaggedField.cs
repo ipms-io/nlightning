@@ -3,9 +3,9 @@ using NLightning.Common.Utils;
 
 namespace NLightning.Bolt11.Models.TaggedFields;
 
+using Constants;
 using Domain.Models;
 using Domain.ValueObjects;
-using Constants;
 using Enums;
 using Interfaces;
 

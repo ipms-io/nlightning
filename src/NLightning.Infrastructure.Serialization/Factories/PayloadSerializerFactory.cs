@@ -66,7 +66,7 @@ public class PayloadSerializerFactory : IPayloadSerializerFactory
         _serializers.Add(typeof(TxRemoveOutputPayload),
                          new TxRemoveOutputPayloadSerializer(_valueObjectSerializerFactory));
         _serializers.Add(typeof(TxSignaturesPayload), new TxSignaturesPayloadSerializer(_valueObjectSerializerFactory));
-        _serializers.Add(typeof(UpdateAddHtlcPayload), 
+        _serializers.Add(typeof(UpdateAddHtlcPayload),
                          new UpdateAddHtlcPayloadSerializer(_valueObjectSerializerFactory));
         _serializers.Add(typeof(UpdateFailHtlcPayload),
                          new UpdateFailHtlcPayloadSerializer(_valueObjectSerializerFactory));

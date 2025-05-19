@@ -1,7 +1,6 @@
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
 using Domain.Protocol.Constants;
-using Domain.Protocol.Models;
 using Domain.Protocol.Tlv;
 using Domain.Protocol.Tlv.Converters;
 
@@ -23,7 +22,7 @@ public class NextFundingTlvConverter : ITlvConverter<NextFundingTlv>
         {
             throw new InvalidCastException("Invalid length");
         }
-        
+
         return new NextFundingTlv(baseTlv.Value);
     }
 
@@ -34,7 +33,7 @@ public class NextFundingTlvConverter : ITlvConverter<NextFundingTlv>
 
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
-        return ConvertToBase(tlv as NextFundingTlv 
+        return ConvertToBase(tlv as NextFundingTlv
                              ?? throw new InvalidCastException(
                                  $"Error converting BaseTlv to {nameof(NextFundingTlv)}"));
     }

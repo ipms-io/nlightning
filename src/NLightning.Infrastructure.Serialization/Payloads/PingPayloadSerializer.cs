@@ -15,7 +15,7 @@ public class PingPayloadSerializer : IPayloadSerializer<PingPayload>
     {
         if (payload is not PingPayload pingPayload)
             throw new SerializationException($"Payload is not of type {nameof(PingPayload)}");
-        
+
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(pingPayload.NumPongBytes));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(pingPayload.BytesLength));
         await stream.WriteAsync(pingPayload.Ignored);

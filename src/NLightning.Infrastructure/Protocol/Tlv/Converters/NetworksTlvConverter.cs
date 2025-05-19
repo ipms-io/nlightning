@@ -1,7 +1,6 @@
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
 using Domain.Protocol.Constants;
-using Domain.Protocol.Models;
 using Domain.Protocol.Tlv;
 using Domain.Protocol.Tlv.Converters;
 using Domain.ValueObjects;
@@ -31,7 +30,7 @@ public class NetworksTlvConverter : ITlvConverter<NetworksTlv>
         {
             chainHashes.Add(baseTlv.Value[i..(i + ChainHash.LENGTH)]);
         }
-        
+
         return new NetworksTlv(chainHashes);
     }
 
@@ -42,7 +41,7 @@ public class NetworksTlvConverter : ITlvConverter<NetworksTlv>
 
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
-        return ConvertToBase(tlv as NetworksTlv 
+        return ConvertToBase(tlv as NetworksTlv
                              ?? throw new InvalidCastException($"Error converting BaseTlv to {nameof(NetworksTlv)}"));
     }
 }

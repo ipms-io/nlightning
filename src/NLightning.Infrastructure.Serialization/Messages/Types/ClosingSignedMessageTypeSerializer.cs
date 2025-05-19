@@ -27,14 +27,14 @@ public class ClosingSignedMessageTypeSerializer : IMessageTypeSerializer<Closing
         _tlvConverterFactory = tlvConverterFactory;
         _tlvStreamSerializer = tlvStreamSerializer;
     }
-    
+
     public async Task SerializeAsync(IMessage message, Stream stream)
     {
         if (message is not ClosingSignedMessage closingSignedMessage)
             throw new SerializationException("Message is not of type ClosingSignedMessage");
-            
+
         // Get the payload serializer
-        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type) 
+        var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type)
                                     ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
 
@@ -61,7 +61,7 @@ public class ClosingSignedMessageTypeSerializer : IMessageTypeSerializer<Closing
             // Deserialize extension
             if (stream.Position >= stream.Length)
                 throw new SerializationException("Required extension is missing");
-            
+
             var extension = await _tlvStreamSerializer.DeserializeAsync(stream);
             if (extension is null || !extension.TryGetTlv(TlvConstants.FEE_RANGE, out var baseFeeRangeTlv))
                 throw new SerializationException("Required extension is missing");

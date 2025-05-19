@@ -18,15 +18,15 @@ public class TxCompletePayloadSerializer : IPayloadSerializer<TxCompletePayload>
     {
         _valueObjectSerializerFactory = valueObjectSerializerFactory;
     }
-    
+
     public async Task SerializeAsync(IMessagePayload payload, Stream stream)
     {
         if (payload is not TxCompletePayload txAddOutputPayload)
             throw new SerializationException($"Payload is not of type {nameof(TxCompletePayload)}");
-        
+
         // Get the value object serializer
-        var channelIdSerializer = 
-            _valueObjectSerializerFactory.GetSerializer<ChannelId>() 
+        var channelIdSerializer =
+            _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(txAddOutputPayload.ChannelId, stream);
     }
@@ -38,7 +38,7 @@ public class TxCompletePayloadSerializer : IPayloadSerializer<TxCompletePayload>
         try
         {
             // Get the value object serializer
-            var channelIdSerializer = 
+            var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);

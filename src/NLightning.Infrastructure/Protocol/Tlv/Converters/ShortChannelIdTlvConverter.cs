@@ -1,7 +1,6 @@
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
 using Domain.Protocol.Constants;
-using Domain.Protocol.Models;
 using Domain.Protocol.Tlv;
 using Domain.Protocol.Tlv.Converters;
 
@@ -10,7 +9,7 @@ public class ShortChannelIdTlvConverter : ITlvConverter<ShortChannelIdTlv>
     public BaseTlv ConvertToBase(ShortChannelIdTlv tlv)
     {
         tlv.Value = tlv.ShortChannelId;
-        
+
         return tlv;
     }
 
@@ -25,7 +24,7 @@ public class ShortChannelIdTlvConverter : ITlvConverter<ShortChannelIdTlv>
         {
             throw new InvalidCastException("Invalid length");
         }
-        
+
         return new ShortChannelIdTlv(baseTlv.Value);
     }
 
@@ -36,7 +35,7 @@ public class ShortChannelIdTlvConverter : ITlvConverter<ShortChannelIdTlv>
 
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
-        return ConvertToBase(tlv as ShortChannelIdTlv 
+        return ConvertToBase(tlv as ShortChannelIdTlv
                              ?? throw new InvalidCastException(
                                  $"Error converting BaseTlv to {nameof(ShortChannelIdTlv)}"));
     }
