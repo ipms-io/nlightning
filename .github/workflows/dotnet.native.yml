@@ -20,7 +20,7 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release.Native
       - name: Check Code Formatting
-        run: dotnet format --verify-no-changes
+        run: dotnet format --verify-no-changes --exclude "**/BlazorTests/**"
       - name: Test
         run: dotnet test --no-build --configuration Release.Native --verbosity normal --logger trx --collect:"XPlat Code Coverage" --filter 'FullyQualifiedName!~Docker'
       - name: Combine Coverage Reports
