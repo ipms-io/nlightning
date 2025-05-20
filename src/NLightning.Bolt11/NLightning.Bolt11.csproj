@@ -6,7 +6,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk.Razor" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))"/>
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <LangVersion>default</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -49,39 +49,6 @@
     <AssemblyName>NLightning.Bolt11.Blazor</AssemblyName>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
   </PropertyGroup>
-
-  <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
-<!--    <Compile Include="..\NLightning.Infrastructure\Crypto\Providers\JS\*.cs" LinkBase="Infrastructure\Crypto\Providers\JS"/>-->
-
-<!--    <Content Include="..\NLightning.Infrastructure\wwwroot\*.js" LinkBase="wwwroot"/>-->
-<!--    <Content Include="..\NLightning.Infrastructure\wwwroot\*.gz" LinkBase="wwwroot"/>-->
-<!--    <Content Include="..\NLightning.Infrastructure\wwwroot\*.br" LinkBase="wwwroot"/>-->
-
-<!--    <PackageReference Include="Microsoft.JSInterop" Version="8.0.8"/>-->
-  </ItemGroup>
-
-  <!-- Check if this is being used in AOT projects -->
-  <PropertyGroup Condition="'$(PublishAot)' == 'true' Or $(Configuration.Contains('.Native'))">
-    <DefineConstants>CRYPTO_NATIVE;$(DefineConstants)</DefineConstants>
-  </PropertyGroup>
-
-  <ItemGroup Condition="'$(PublishAot)' == 'true' Or $(Configuration.Contains('.Native'))">
-<!--    <Compile Include="..\NLightning.Infrastructure\Crypto\Providers\Native\**\*.cs" LinkBase="Infrastructure\Crypto\Providers\Native"/>-->
-    
-<!--    <PackageReference Include="Portable.BouncyCastle" Version="1.8.6.7" />-->
-<!--    <PackageReference Include="Konscious.Security.Cryptography.Argon2" Version="1.3.1" />-->
-  </ItemGroup>
-
-  <!-- Check if this is being used in non-AOT and non-WASM projects -->
-  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' And '$(PublishAot)' != 'true' And !$(Configuration.Contains('.Wasm')) And !$(Configuration.Contains('.Native'))">
-    <DefineConstants>CRYPTO_LIBSODIUM;$(DefineConstants)</DefineConstants>
-  </PropertyGroup>
-
-  <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' And '$(PublishAot)' != 'true' And !$(Configuration.Contains('.Wasm')) And !$(Configuration.Contains('.Native'))">
-<!--    <Compile Include="..\NLightning.Infrastructure\Crypto\Providers\Libsodium\*.cs" LinkBase="Infrastructure\Crypto\Providers\Libsodium"/>-->
-
-<!--    <PackageReference Include="libsodium" Version="1.0.20.1" />-->
-  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\..\images\logo.png">

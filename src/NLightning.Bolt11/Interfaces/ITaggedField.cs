@@ -1,7 +1,6 @@
-using NLightning.Common.Utils;
-
 namespace NLightning.Bolt11.Interfaces;
 
+using Common.Utils;
 using Enums;
 
 /// <summary>

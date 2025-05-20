@@ -29,10 +29,10 @@ dotnet add package NLightning.Bolt11
 
 ```csharp
 // add the using directive
-using NLightning.Bolts.BOLT11;
-using NLightning.Common.Types
+using NLightning.Bolt11;
+using NLightning.Domain.ValueObjects;
 
-var expectedNetwork = Network.MAIN_NET;
+var expectedNetwork = Network.MAINNET;
 
 // decode the invoice string
 var invoice = Invoice.Decode(invoice_string, network);
@@ -51,12 +51,14 @@ Console.WriteLine("A list with all the props can be found at: https://nlightning
 ```csharp
 // add the using directive
 using NBitcoin;
-using NLightning.Bolts.BOLT11;
-using NLightning.Common.Types;
-using Network = NLightning.Common.Types.Network;
+using NLightning.Bolt11;
+using NLightning.Domain.ValueObjects;
+using NLightning.Domain.Money;
+using Network = NLightning.Domain.ValueObjects.Network;
 
 // create a new invoice
-var invoice = new Invoice(LightningMoney.Satoshis(100), "my description", uint256.One, uint256.Zero, Network.MAIN_NET);
+var invoice = new Invoice(LightningMoney.Satoshis(100), "my description", uint256.One, uint256.Zero, Network.MAINNET);
 
 // get invoice string
 var invoiceString = invoice.Encode(new Key());
+```

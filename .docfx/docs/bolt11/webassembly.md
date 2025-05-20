@@ -30,7 +30,7 @@ Blazor apps need to initialize the CryptoProvider in order to load the needed js
 
 ```csharp
 // Add the using directive
-using NLightning.Common.Crypto.Providers.JS;
+using NLightning.Infrastructure.Crypto.Providers.JS;
 
 // ...
 // Your app code

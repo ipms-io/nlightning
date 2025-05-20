@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-        <Configurations>Debug;Release;Debug.Native;Release.Native;Debug.Wasm;Release.Wasm</Configurations>
-        <Platforms>AnyCPU</Platforms>
+      <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+      <LangVersion>latest</LangVersion>
+      <ImplicitUsings>enable</ImplicitUsings>
+      <Nullable>enable</Nullable>
+      <Configurations>Debug;Release;Debug.Native;Release.Native;Debug.Wasm;Release.Wasm</Configurations>
+      <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug.Native' ">
@@ -34,7 +34,6 @@
     <ItemGroup>
       <Folder Include="Interfaces\Factories\" />
       <Folder Include="Interfaces\Managers\" />
-      <Folder Include="Options\" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,7 +1,10 @@
 # Your GitHub workflow file under .github/workflows/
 # Trigger the action on push to main
 on:
-  push:
+  workflow_run:
+    workflows: [ "NLightning Combined Coverage Report (Push)" ]
+    types:
+      - completed
     branches:
       - main
 
@@ -29,7 +32,15 @@ jobs:
     - name: Dotnet Setup
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 9.x
+        dotnet-version: 9.0.x
+        
+    - name: Download Coverage Reports
+      uses: dawidd6/action-download-artifact@v3
+      continue-on-error: true # Allow the docs to build even if there are no coverage reports
+      with:
+        workflow: combined-report.yml
+        name: coverage-docfx
+        path: .docfx/docs/coverage-reports/
 
     - run: dotnet tool update -g docfx
     - run: docfx .docfx/docfx.json
@@ -39,6 +50,7 @@ jobs:
       with:
         # Upload entire repository
         path: '.docfx/_site'
+        
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4

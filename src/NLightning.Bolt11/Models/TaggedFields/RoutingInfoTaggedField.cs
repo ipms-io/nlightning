@@ -1,8 +1,8 @@
 using NBitcoin;
-using NLightning.Common.Utils;
 
 namespace NLightning.Bolt11.Models.TaggedFields;
 
+using Common.Utils;
 using Constants;
 using Domain.Models;
 using Domain.ValueObjects;

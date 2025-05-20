@@ -35,12 +35,12 @@ dotnet add package NLightning.Bolt11.Blazor
 
 ```csharp
 // add the using directive
-using NLightning.Bolts.BOLT11;
+using NLightning.Bolt11.Models;
 
 // decode the invoice string
 var invoice = Invoice.Decode(invoice_string);
 
-// Get properties of the invoice
+// Get the properties from the invoice
 Console.WriteLine("Here's a few props from the invoice:")
 Console.WriteLine(invoice.Amount.MilliSatoshi);
 Console.WriteLine(invoice.Amount.Satoshi);

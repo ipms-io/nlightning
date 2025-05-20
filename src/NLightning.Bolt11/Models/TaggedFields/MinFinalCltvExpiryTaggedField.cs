@@ -1,8 +1,8 @@
 using System.Numerics;
-using NLightning.Common.Utils;
 
 namespace NLightning.Bolt11.Models.TaggedFields;
 
+using Common.Utils;
 using Enums;
 using Interfaces;
 
