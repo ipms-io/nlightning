@@ -73,6 +73,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.github\workflows\gh-pages.yml = .github\workflows\gh-pages.yml
 		.github\workflows\dotnet.wasm.yml = .github\workflows\dotnet.wasm.yml
 		.github\workflows\pr.native.yml = .github\workflows\pr.native.yml
+		.github\workflows\pr.combined-report.yml = .github\workflows\pr.combined-report.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docfx", ".docfx", "{C8F657C8-A318-43BE-A979-AC9E82B5DE58}"
