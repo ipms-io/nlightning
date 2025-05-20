@@ -12,6 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
       - name: Download Standard Coverage
         uses: dawidd6/action-download-artifact@v3
         with:
@@ -59,26 +64,6 @@ jobs:
           indicators: true
           output: both
           thresholds: '50 75'
-
-      - name: Copy Reports to DocFX
-        run: |
-          mkdir -p .docfx/docs/coverage-reports
-          cp -r combined-report/* .docfx/docs/coverage-reports/
-          # Create a markdown index page for the coverage reports
-          cat > .docfx/docs/coverage-reports/index.md << EOF
-          ---
-          title: Code Coverage Reports
-          ---
-
-          # NLightning Code Coverage Reports
-
-          These reports show the combined code coverage from all test configurations (Standard, Native, and WASM).
-
-          [View HTML Coverage Report](./index.html)
-
-          ![Line Coverage](./badge_linecoverage.svg)
-          ![Branch Coverage](./badge_branchcoverage.svg)
-          EOF
 
       - name: Upload Coverage for DocFX
         uses: actions/upload-artifact@v4

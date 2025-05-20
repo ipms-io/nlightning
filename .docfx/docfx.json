@@ -22,6 +22,13 @@
         "exclude": [
           "_site/**"
         ]
+      },
+      {
+        "files": [
+          "docs/coverage-reports/**/*.md",
+          "docs/coverage-reports/**/*.yml"
+        ],
+        "dest": "docs/coverage-reports"
       }
     ],
     "resource": [
@@ -29,6 +36,17 @@
         "src": "../",
         "files": [
           "images/**"
+        ]
+      },
+      {
+        "files": [
+          "docs/coverage-reports/**/*.png",
+          "docs/coverage-reports/**/*.jpg",
+          "docs/coverage-reports/**/*.gif",
+          "docs/coverage-reports/**/*.svg",
+          "docs/coverage-reports/**/*.html",
+          "docs/coverage-reports/**/*.js",
+          "docs/coverage-reports/**/*.css"
         ]
       }
     ],
