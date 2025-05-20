@@ -4,7 +4,6 @@ on:
     workflows: ["NLightning .NET Build & Tests (PR)", "NLightning.Native .NET Build & Tests (PR)", "NLightning.Wasm .NET Build & Tests (PR)"]
     types:
       - completed
-    branches: ["main"]
 
 jobs:
   combined-report:
