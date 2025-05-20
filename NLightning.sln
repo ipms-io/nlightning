@@ -104,6 +104,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "quickstart", "quickstart", 
 		.docfx\docs\quickstart\quickstart.md = .docfx\docs\quickstart\quickstart.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "coverage-reports", "coverage-reports", "{18F1E97C-8546-4359-93B3-8D1F5B1CC4B4}"
+	ProjectSection(SolutionItems) = preProject
+		.docfx\docs\coverage-reports\toc.yml = .docfx\docs\coverage-reports\toc.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Release|Any CPU = Release|Any CPU
@@ -378,5 +383,6 @@ Global
 		{735305B0-B08D-4C48-A1DE-47E8DC2D8032} = {C8F657C8-A318-43BE-A979-AC9E82B5DE58}
 		{1D9EF48B-9D37-4996-8C26-56AC6245EAFF} = {735305B0-B08D-4C48-A1DE-47E8DC2D8032}
 		{9B420B23-5DAE-4CDE-A3DB-69663111750D} = {735305B0-B08D-4C48-A1DE-47E8DC2D8032}
+		{18F1E97C-8546-4359-93B3-8D1F5B1CC4B4} = {735305B0-B08D-4C48-A1DE-47E8DC2D8032}
 	EndGlobalSection
 EndGlobal

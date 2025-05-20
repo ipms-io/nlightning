@@ -19,7 +19,7 @@ The code can, as well as building and running instructions, can be found on our
 
 ## Code Coverage
 
-View our [code coverage reports](docs/coverage-reports) to understand the test coverage status of our codebase.
+View our [code coverage reports](docs/coverage-reports/index.html) to understand the test coverage status of our codebase.
 
 ## Contact
 
