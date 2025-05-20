@@ -6,11 +6,12 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk.Razor" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))"/>
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <LangVersion>default</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>2.0.0</Version>
+    <Version>3.0.0</Version>
     <Configurations>Debug;Debug.Native;Debug.Wasm;Release;Release.Native;Release.Wasm</Configurations>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
@@ -18,11 +19,11 @@
   <PropertyGroup>
     <Authors>Nickolas Goline</Authors>
     <Description>A Bitcoin Lightning Invoice Decoder/Encoder implemented in C#</Description>
-    <Copyright>Copyright © Níckolas Goline 2024</Copyright>
+    <Copyright>Copyright © Níckolas Goline 2024-2025</Copyright>
     <RepositoryUrl>https://github.com/ipms-io/nlightning</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>2.0.0</AssemblyVersion>
-    <FileVersion>2.0.0</FileVersion>
+    <AssemblyVersion>3.0.0</AssemblyVersion>
+    <FileVersion>3.0.0</FileVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <Icon>logo.png</Icon>
     <PackageTags>lightning,invoice,bolt11,encoder,decoder</PackageTags>
@@ -32,35 +33,6 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageId>NLightning.Bolt11</PackageId>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="..\NLightning.Common\BitUtils\*.cs" LinkBase="Common\BitUtils"/>
-    <Compile Include="..\NLightning.Common\Constants\ChainConstants.cs" LinkBase="Common\Constants"/>
-    <Compile Include="..\NLightning.Common\Constants\CryptoConstants.cs" LinkBase="Common\Constants"/>
-    <Compile Include="..\NLightning.Common\Constants\NetworkConstants.cs" LinkBase="Common\Constants"/>
-    <Compile Include="..\NLightning.Common\Crypto\Ciphers\*.cs" LinkBase="Common\Crypto\Ciphers"/>
-    <Compile Include="..\NLightning.Common\Crypto\Functions\*.cs" LinkBase="Common\Crypto\Functions"/>
-    <Compile Include="..\NLightning.Common\Crypto\Hashes\*.cs" LinkBase="Common\Crypto\Hashes"/>
-    <Compile Include="..\NLightning.Common\Crypto\Primitives\*.cs" LinkBase="Common\Crypto\Primitives"/>
-    <Compile Include="..\NLightning.Common\Enums\LightningMoneyUnit.cs" LinkBase="Common\Enums"/>
-    <Compile Include="..\NLightning.Common\Enums\Feature.cs" LinkBase="Common\Enums" />
-    <Compile Include="..\NLightning.Common\Exceptions\*.cs" LinkBase="Common\Exceptions"/>
-    <Compile Include="..\NLightning.Common\Extensions\BitArrayExtension.cs" LinkBase="Common\Extensions"/>
-    <Compile Include="..\NLightning.Common\Factories\Crypto\CryptoFactory.cs" LinkBase="Common\Factories"/>
-    <Compile Include="..\NLightning.Common\Formatters\LightningFormatter.cs" LinkBase="Common\Formatters"/>
-    <Compile Include="..\NLightning.Common\Interfaces\Crypto\*.cs" LinkBase="Common\Interfaces\Crypto"/>
-    <Compile Include="..\NLightning.Common\Interfaces\ISecureKeyManager.cs" LinkBase="Common\Interfaces"/>
-    <Compile Include="..\NLightning.Common\Node\FeatureSet.cs" LinkBase="Common\Node"/>
-    <Compile Include="..\NLightning.Common\Types\BigSize.cs" LinkBase="Common\Types"/>
-    <Compile Include="..\NLightning.Common\Types\ChainHash.cs" LinkBase="Common\Types"/>
-    <Compile Include="..\NLightning.Common\Types\LightningMoney.cs" LinkBase="Common\Types"/>
-    <Compile Include="..\NLightning.Common\Types\Network.cs" LinkBase="Common\Types"/>
-    <Compile Include="..\NLightning.Common\Types\ShortChannelId.cs" LinkBase="Common\Types"/>
-    <Compile Include="..\NLightning.Common\Types\Tlv.cs" LinkBase="Common\Types"/>
-    <Compile Include="..\NLightning.Bolts\BOLT9\**\*.cs" LinkBase="Bolts\BOLT9"/>
-    <Compile Include="..\NLightning.Bolts\BOLT11\**\*.cs" LinkBase="Bolts\BOLT11"/>
-    <Compile Remove="..\NLightning.Bolts\BOLT9\**" />
-  </ItemGroup>
 
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))">
     <DefineConstants>DEBUG;$(DefineConstants)</DefineConstants>
@@ -78,43 +50,6 @@
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
-    <Compile Include="..\NLightning.Common\Crypto\Providers\JS\*.cs" LinkBase="Common\Crypto\Providers\JS"/>
-
-    <Content Include="..\NLightning.Common\wwwroot\*.js" LinkBase="wwwroot"/>
-    <Content Include="..\NLightning.Common\wwwroot\*.gz" LinkBase="wwwroot"/>
-    <Content Include="..\NLightning.Common\wwwroot\*.br" LinkBase="wwwroot"/>
-
-    <PackageReference Include="Microsoft.JSInterop" Version="8.0.8"/>
-  </ItemGroup>
-
-  <!-- Check if this is being used in AOT projects -->
-  <PropertyGroup Condition="'$(PublishAot)' == 'true' Or $(Configuration.Contains('.Native'))">
-    <DefineConstants>CRYPTO_NATIVE;$(DefineConstants)</DefineConstants>
-  </PropertyGroup>
-
-  <ItemGroup Condition="'$(PublishAot)' == 'true' Or $(Configuration.Contains('.Native'))">
-    <Compile Include="..\NLightning.Common\Crypto\Providers\Native\**\*.cs" LinkBase="Common\Crypto\Providers\Native"/>
-    
-    <PackageReference Include="Portable.BouncyCastle" Version="1.8.6.7" />
-    <PackageReference Include="Konscious.Security.Cryptography.Argon2" Version="1.3.1" />
-  </ItemGroup>
-
-  <!-- Check if this is being used in non-AOT and non-WASM projects -->
-  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' And '$(PublishAot)' != 'true' And !$(Configuration.Contains('.Wasm')) And !$(Configuration.Contains('.Native'))">
-    <DefineConstants>CRYPTO_LIBSODIUM;$(DefineConstants)</DefineConstants>
-  </PropertyGroup>
-
-  <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' And '$(PublishAot)' != 'true' And !$(Configuration.Contains('.Wasm')) And !$(Configuration.Contains('.Native'))">
-    <Compile Include="..\NLightning.Common\Crypto\Providers\Libsodium\*.cs" LinkBase="Common\Crypto\Providers\Libsodium"/>
-
-    <PackageReference Include="libsodium" Version="1.0.20.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NBitcoin" Version="7.0.50" />
-  </ItemGroup>
-
   <ItemGroup>
     <None Include="..\..\images\logo.png">
       <Pack>True</Pack>
@@ -128,6 +63,10 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NLightning.Infrastructure\NLightning.Infrastructure.csproj" />
   </ItemGroup>
 
   <!--  Import regular sdk if the configuration calls for it  -->

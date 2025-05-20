@@ -8,8 +8,14 @@ root_dir=$(pwd)
 
 # List of directories with test projects
 directories=(
-  "/test/NLightning.Bolts.Tests"
+  "/test/NLightning.Application.NLTG.Tests"
+  "/test/NLightning.Bolt11.Tests"
   "/test/NLightning.Common.Tests"
+  "/test/NLightning.Domain.Tests"
+  "/test/NLightning.Infrastructure.Bitcoin.Tests"
+  "/test/NLightning.Infrastructure.Serialization.Tests"
+  "/test/NLightning.Infrastructure.Tests"
+  "/test/NLightning.Integration.Tests"
 )
 
 # Delete coverage directory

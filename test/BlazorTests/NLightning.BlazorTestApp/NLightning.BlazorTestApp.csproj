@@ -1,13 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Configurations>Release.Wasm;Debug.Wasm</Configurations>
     <Platforms>AnyCPU</Platforms>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <RootNamespace>NLightning.BlazorTestApp</RootNamespace>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release.Wasm' ">
@@ -19,23 +20,20 @@
     <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
     <DefineConstants>DEBUG;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
-
+  
   <ItemGroup>
-    <Compile Include="../../NLightning.Common.Tests/Vectors/AeadChacha20Poly1305Ietf.cs" LinkBase="Vectors"/>
-    <Compile Include="..\..\NLightning.Common.Tests\Vectors\AeadXChacha20Poly1305Ietf.cs">
-      <LinkBase>Vectors/</LinkBase>
-      <Link>Vectors\AeadXChacha20Poly1305Ietf.cs</Link>
-    </Compile>
+    <Compile Include="../../NLightning.Tests.Utils/Vectors/AeadChacha20Poly1305Ietf.cs" LinkBase="Vectors" />
+    <Compile Include="../../NLightning.Tests.Utils/Vectors/AeadXChacha20Poly1305Ietf.cs" LinkBase="Vectors" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.12" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.12" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.NET.ILLink.Tasks" Version="8.0.12" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.5" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.ILLink.Tasks" Version="9.0.5" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\NLightning.Common\NLightning.Common.csproj"/>
+    <ProjectReference Include="..\..\..\src\NLightning.Infrastructure\NLightning.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

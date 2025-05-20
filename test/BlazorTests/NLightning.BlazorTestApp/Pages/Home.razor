@@ -1,6 +1,6 @@
 ﻿@page "/"
-@using NLightning.Common.Crypto.Providers.JS
-@using NLightning.Common.Tests.Vectors
+@using NLightning.Infrastructure.Crypto.Providers.JS
+@using NLightning.Tests.Utils.Vectors
 
 <PageTitle>Test</PageTitle>
 
@@ -35,13 +35,13 @@
     {
         // Arrange
         var cryptoProvider = new SodiumJsCryptoProvider();
-        Span<byte> cipher = new byte[AeadChacha20Poly1305IetfVector.MESSAGE.Length + 16];
+        Span<byte> cipher = new byte[AeadChacha20Poly1305IetfVector.Message.Length + 16];
 
         // Act
-        cryptoProvider.AeadChaCha20Poly1305IetfEncrypt(AeadChacha20Poly1305IetfVector.KEY,
-                                                       AeadChacha20Poly1305IetfVector.PUBLIC_NONCE, null,
-                                                       AeadChacha20Poly1305IetfVector.AUTHENTICATION_DATA,
-                                                       AeadChacha20Poly1305IetfVector.MESSAGE, cipher, out var clenP);
+        cryptoProvider.AeadChaCha20Poly1305IetfEncrypt(AeadChacha20Poly1305IetfVector.Key,
+                                                       AeadChacha20Poly1305IetfVector.PublicNonce, null,
+                                                       AeadChacha20Poly1305IetfVector.AuthenticationData,
+                                                       AeadChacha20Poly1305IetfVector.Message, cipher, out var clenP);
 
         // Expose Results 
         _aeadChacha20Poly1305IetfResult = $"{{\"Result\":{{\"ClenP\":{clenP},\"Cipher\":\"{Convert.ToHexString(cipher)}\"}}}}";
@@ -57,13 +57,13 @@
     {
         // Arrange
         var cryptoProvider = new SodiumJsCryptoProvider();
-        Span<byte> cipher = new byte[AeadXChacha20Poly1305IetfVector.MESSAGE.Length + 16];
+        Span<byte> cipher = new byte[AeadXChacha20Poly1305IetfVector.Message.Length + 16];
 
         // Act
-        cryptoProvider.AeadXChaCha20Poly1305IetfEncrypt(AeadXChacha20Poly1305IetfVector.KEY,
-                                                        AeadXChacha20Poly1305IetfVector.PUBLIC_NONCE,
-                                                        AeadXChacha20Poly1305IetfVector.AUTHENTICATION_DATA,
-                                                        AeadXChacha20Poly1305IetfVector.MESSAGE, cipher, out var clenP);
+        cryptoProvider.AeadXChaCha20Poly1305IetfEncrypt(AeadXChacha20Poly1305IetfVector.Key,
+                                                        AeadXChacha20Poly1305IetfVector.PublicNonce,
+                                                        AeadXChacha20Poly1305IetfVector.AuthenticationData,
+                                                        AeadXChacha20Poly1305IetfVector.Message, cipher, out var clenP);
 
         // Expose Results 
         _aeadXChacha20Poly1305IetfResult = $"{{\"Result\":{{\"ClenP\":{clenP},\"Cipher\":\"{Convert.ToHexString(cipher)}\"}}}}";

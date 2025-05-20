@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## v3.0.0
+
+Moved all needed classes to `NLightning.Bolt11` project.
+
+### Added
+
+- Added all base classes to the `NLightning.Bolt11` project;
+- Added dependency to `NLightning.Infrastructure`;
+
+### Breaking Changes
+
+- All namespaces have been changed to conform to new project structure;
+
 ## v2.0.0
 
 Removal of `SecureKeyManager` static class and introduction of `ISecureKeyManager` interface.
