@@ -18,7 +18,7 @@ jobs:
         with:
           dotnet-version: 9.0.x
       - name: Build
-        run: dotnet build --configuration Release.Native
+        run: dotnet build --configuration Release.Native -p:MSBuildWarningsAsMessages=MSB4121
       - name: Check Code Formatting
         run: dotnet format --verify-no-changes --exclude "**/BlazorTests/**"
       - name: Test
