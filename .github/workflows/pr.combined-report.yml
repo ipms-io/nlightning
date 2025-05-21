@@ -11,6 +11,11 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event.workflow_run.conclusion == 'failure' }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
       
       - name: Download Standard Coverage
         uses: dawidd6/action-download-artifact@v3
@@ -80,3 +85,37 @@ jobs:
             $(cat code-coverage-results.md)
             
             _Report generated from Standard, Native, and WASM test runs_
+
+      - name: Download Standard Test Results
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: pr.yml
+          name: test-results
+          path: test-results/standard
+
+      - name: Download Native Test Results
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: pr.native.yml
+          name: test-results.Native
+          path: test-results/native
+
+      - name: Download WASM Test Results
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: pr.wasm.yml
+          name: test-results.Wasm
+          path: test-results/wasm
+
+      - name: List All Downloaded Files
+        run: find test-results -type f | sort
+            
+      - name: Publish Combined Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2.16.1
+        if: always()
+        with:
+          trx_files: "${{ github.workspace }}/test-results/**/*.trx"
+          deduplicate_classes_by_file_name: true
+          comment_title: "Combined Test Results"
+          check_name: "Combined Test Results"
+          commit: ${{ steps.pr-number.outputs.sourceHeadSha }}
