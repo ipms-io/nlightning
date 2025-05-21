@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## v3.0.1
+
+Upgrade `NLightning.Infrastructure` to `v0.0.2` to fix an issue with `staticwebassets` not being copied to the
+output directory on publish.
+
+### Changed
+
+- Upgraded `NLightning.Infrastructure` to `v0.0.2`.
+
 ## v3.0.0
 
 Moved all needed classes to `NLightning.Bolt11` project.

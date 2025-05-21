@@ -1,9 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Tests.Utils.Mocks;
 
 using Infrastructure.Crypto.Functions;
 using Infrastructure.Crypto.Interfaces;
 using Infrastructure.Crypto.Primitives;
 
+[ExcludeFromCodeCoverage]
 internal class FakeFixedKeyDh(byte[] privateKey) : IEcdh
 {
     private readonly Ecdh _ecdh = new();

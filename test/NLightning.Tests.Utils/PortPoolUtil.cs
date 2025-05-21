@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Tests.Utils;
 
+[ExcludeFromCodeCoverage]
 public static class PortPoolUtil
 {
     private static readonly Random s_random = new();

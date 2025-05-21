@@ -48,7 +48,9 @@ this command, the CI pipeline will fail, and your pull request will not be merge
 To automatically format code before every commit, run the following command in your project directory:
 
 ```sh
-echo -e '#!/bin/sh\n\ndotnet build -c Debug.Wasm\ndotnet format\n\nif ! git diff --quiet; then\n    echo "Code formatting changes have been made. \
+echo -e '#!/bin/sh\n\ndotnet build\ndotnet format --exclude "**/BlazorTests/**"\n\n \
+cd test/BlazorTests/NLightning.BlazorTestApp\ndotnet build -c Release.Wasm\ndotnet format\n\ncd ../../..\n\n \
+if ! git diff --quiet; then\n    echo "Code formatting changes have been made. \
 Please review and commit them."\n    exit 1\nfi' > .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
 ```
 

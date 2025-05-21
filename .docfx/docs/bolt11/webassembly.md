@@ -44,6 +44,8 @@ await builder.Build().RunAsync();
 #### Decode the invoice
 
 ```blazor
+@using NLightning.Bolt11.Models
+
 <button @onclick="DecodeInvoice">Decode</button>
 <br/>
 @if (invoice != null)
