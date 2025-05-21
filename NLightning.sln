@@ -106,7 +106,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "quickstart", "quickstart", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "coverage-reports", "coverage-reports", "{18F1E97C-8546-4359-93B3-8D1F5B1CC4B4}"
 	ProjectSection(SolutionItems) = preProject
-		.docfx\docs\coverage-reports\index.md = .docfx\docs\coverage-reports\index.md
 		.docfx\docs\coverage-reports\toc.yml = .docfx\docs\coverage-reports\toc.yml
 	EndProjectSection
 EndProject

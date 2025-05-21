@@ -1,6 +1,6 @@
 - name: Docs
   href: ./docs/
 - name: Coverage Reports
-  href: ./docs/coverage-reports/
+  href: ./docs/coverage-reports/index.html
 - name: API
   href: ./api/
