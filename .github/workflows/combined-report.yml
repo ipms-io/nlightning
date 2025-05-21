@@ -65,6 +65,11 @@ jobs:
           output: both
           thresholds: '50 75'
 
+      - name: Copy Reports to DocFX
+        run: |
+          mkdir -p .docfx/docs/coverage-reports
+          cp -r combined-report/* .docfx/docs/coverage-reports/
+
       - name: Upload Coverage for DocFX
         uses: actions/upload-artifact@v4
         with:
