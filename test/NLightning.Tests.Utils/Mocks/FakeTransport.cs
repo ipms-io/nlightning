@@ -1,7 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Tests.Utils.Mocks;
 
 using Domain.Transport;
 
+[ExcludeFromCodeCoverage]
 public class FakeTransport : ITransport
 {
     public int ReadMessageLength(ReadOnlySpan<byte> lc)

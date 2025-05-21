@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using NBitcoin;
 
 namespace NLightning.Tests.Utils.Mocks;
@@ -5,6 +6,7 @@ namespace NLightning.Tests.Utils.Mocks;
 using Domain.Transport;
 using Infrastructure.Transport.Interfaces;
 
+[ExcludeFromCodeCoverage]
 internal class FakeHandshakeService : IHandshakeService, ITestHandshakeService
 {
     private int _steps = 2;

@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Tests.Utils.Vectors;
 
+[ExcludeFromCodeCoverage]
 internal static class InitiatorValidKeysVector
 {
     public static byte[] RemoteStaticPublicKey => Convert.FromHexString("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7");

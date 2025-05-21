@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace NLightning.Tests.Utils.Vectors;
 
+[ExcludeFromCodeCoverage]
 public static class AeadChacha20Poly1305IetfVector
 {
     #pragma warning disable format

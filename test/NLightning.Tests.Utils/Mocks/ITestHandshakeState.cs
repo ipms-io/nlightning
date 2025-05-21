@@ -1,6 +1,6 @@
-using NLightning.Infrastructure.Transport.Encryption;
-
 namespace NLightning.Tests.Utils.Mocks;
+
+using Infrastructure.Transport.Encryption;
 
 internal interface ITestHandshakeState
 {
