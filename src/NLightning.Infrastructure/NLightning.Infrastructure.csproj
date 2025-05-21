@@ -11,7 +11,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>0.0.1</Version>
+    <Version>0.0.2</Version>
     <Configurations>Debug;Release;Debug.Native;Debug.Wasm;Release.Native;Release.Wasm</Configurations>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
@@ -19,19 +19,20 @@
   <PropertyGroup>
     <Authors>Nickolas Goline</Authors>
     <Description>Infrastructure Library for NLightning</Description>
-    <Copyright>Copyright © Níckolas Goline 2025</Copyright>
+    <Copyright>Copyright © Níckolas Goline 2024-2025</Copyright>
     <RepositoryUrl>https://github.com/ipms-io/nlightning</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>0.0.1</AssemblyVersion>
-    <FileVersion>0.0.1</FileVersion>
+    <AssemblyVersion>0.0.2</AssemblyVersion>
+    <FileVersion>0.0.2</FileVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <Icon>logo.png</Icon>
-    <PackageTags>lightning,invoice,bolt11,encoder,decoder</PackageTags>
+    <PackageTags>lightning-network,bitcoin,crypto,infrastructure,dotnet,cryptography,cross-platform,libsodium,blazor,webassembly,aot</PackageTags>
     <PackageProjectUrl>https://nlightning.ipms.io/api/NLightning.Infrastructure.html</PackageProjectUrl>
     <PackageIcon>logo.png</PackageIcon>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageId>NLightning.Infrastructure</PackageId>
+    <PackageReleaseNotes>Disabled the `Build Compression` for the `*.Wasm` target.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))">
@@ -44,8 +45,6 @@
 
   <ItemGroup>
     <Content Remove="wwwroot\*.js"/>
-    <Content Remove="wwwroot\*.gz"/>
-    <Content Remove="wwwroot\*.br"/>
   </ItemGroup>
 
   <!-- Check if this is being used in WASM projects -->
@@ -54,12 +53,11 @@
     <PackageId>NLightning.Infrastructure.Blazor</PackageId>
     <AssemblyName>NLightning.Infrastructure.Blazor</AssemblyName>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <DisableBuildCompression>true</DisableBuildCompression>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
     <Content Include="wwwroot\*.js" LinkBase="wwwroot" CopyToOutputDirectory="PreserveNewest"/>
-    <Content Include="wwwroot\*.gz" LinkBase="wwwroot" CopyToOutputDirectory="PreserveNewest"/>
-    <Content Include="wwwroot\*.br" LinkBase="wwwroot" CopyToOutputDirectory="PreserveNewest"/>
 
     <PackageReference Include="Microsoft.JSInterop" Version="8.0.8"/>
   </ItemGroup>

@@ -24,7 +24,7 @@ Follow the steps below to install and decode bolt11 invoices.
 Install the package from NuGet:
 
 ```bash
-# For the "regular" version of the package run
+# For the "standard" version of the package run
 dotnet add package NLightning.Bolt11
 
 # For the Blazor WebAssembly version run
@@ -71,6 +71,8 @@ await builder.Build().RunAsync();
 #### Decode the invoice
 
 ```blazor
+@using NLightning.Bolt11.Models
+
 <button @onclick="DecodeInvoice">Decode</button>
 <br/>
 @if (invoice != null)

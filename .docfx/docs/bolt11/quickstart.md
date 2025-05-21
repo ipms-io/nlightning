@@ -29,7 +29,7 @@ dotnet add package NLightning.Bolt11
 
 ```csharp
 // add the using directive
-using NLightning.Bolt11;
+using NLightning.Bolt11.Models;
 using NLightning.Domain.ValueObjects;
 
 var expectedNetwork = Network.MAINNET;
@@ -51,7 +51,7 @@ Console.WriteLine("A list with all the props can be found at: https://nlightning
 ```csharp
 // add the using directive
 using NBitcoin;
-using NLightning.Bolt11;
+using NLightning.Bolt11.Models;
 using NLightning.Domain.ValueObjects;
 using NLightning.Domain.Money;
 using Network = NLightning.Domain.ValueObjects.Network;

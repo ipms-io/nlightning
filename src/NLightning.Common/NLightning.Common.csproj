@@ -6,9 +6,28 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>1.0.0</Version>
+    <Version>0.0.1</Version>
     <Configurations>Debug;Release;Debug.Native;Debug.Wasm;Release.Native;Release.Wasm</Configurations>
     <Platforms>AnyCPU</Platforms>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Nickolas Goline</Authors>
+    <Description>Common Library for NLightning</Description>
+    <Copyright>Copyright © Níckolas Goline 2024-2025</Copyright>
+    <RepositoryUrl>https://github.com/ipms-io/nlightning</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <AssemblyVersion>0.0.1</AssemblyVersion>
+    <FileVersion>0.0.1</FileVersion>
+    <NeutralLanguage>en</NeutralLanguage>
+    <Icon>logo.png</Icon>
+    <PackageTags>lightning-network,bitcoin,crypto,infrastructure,dotnet,cryptography,cross-platform,libsodium,blazor,webassembly,aot</PackageTags>
+    <PackageProjectUrl>https://nlightning.ipms.io/api/NLightning.Common.html</PackageProjectUrl>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageId>NLightning.Common</PackageId>
+    <PackageReleaseNotes>Initial release of NLightning.Common library.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))">
@@ -20,13 +39,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NLightning.Domain\NLightning.Domain.csproj" />
+    <None Include="..\..\images\logo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
-    <_ContentIncludedByDefault Remove="wwwroot\blazorSodium.bundle.js" />
-    <_ContentIncludedByDefault Remove="wwwroot\blazorSodium.bundle.js.br" />
-    <_ContentIncludedByDefault Remove="wwwroot\blazorSodium.bundle.js.gz" />
+    <ProjectReference Include="..\NLightning.Domain\NLightning.Domain.csproj" />
   </ItemGroup>
 
 </Project>
