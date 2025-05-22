@@ -14,7 +14,7 @@ using ValueObjects;
 /// <param name="channelId">The channel ID.</param>
 public class ChannelReestablishPayload(ChannelId channelId, PubKey myCurrentPerCommitmentPoint,
                                        ulong nextCommitmentNumber, ulong nextRevocationNumber,
-                                       ReadOnlyMemory<byte> yourLastPerCommitmentSecret) : IMessagePayload
+                                       ReadOnlyMemory<byte> yourLastPerCommitmentSecret) : IChannelMessagePayload
 {
     /// <summary>
     /// Gets the channel ID.

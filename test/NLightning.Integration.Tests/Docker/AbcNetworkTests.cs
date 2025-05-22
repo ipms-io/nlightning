@@ -5,6 +5,7 @@ using Lnrpc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
+using NLightning.Application.Factories;
 using NLightning.Tests.Utils;
 using ServiceStack;
 using ServiceStack.Text;
@@ -12,12 +13,10 @@ using Xunit.Abstractions;
 
 namespace NLightning.Integration.Tests.Docker;
 
-using Application.Factories;
 using Domain.Enums;
 using Domain.Node.Options;
 using Domain.Protocol.Constants;
 using Fixtures;
-using Infrastructure.Node.Factories;
 using Infrastructure.Node.Managers;
 using Infrastructure.Protocol.Factories;
 using Infrastructure.Protocol.Models;
@@ -73,7 +72,7 @@ public class AbcNetworkTests
         var messageSerializer =
             new Infrastructure.Serialization.Messages.MessageSerializer(messageTypeSerializerFactory);
         var peerManager = new PeerManager(new Mock<ILogger<PeerManager>>().Object, nodeOptions,
-            new PeerFactory(loggerFactory, messageFactory, new MessageServiceFactory(messageSerializer),
+            new PeerServiceFactory(loggerFactory, messageFactory, new MessageServiceFactory(messageSerializer),
                             new PingPongServiceFactory(messageFactory, nodeOptions), secureKeyManager,
                             new TransportServiceFactory(loggerFactory, messageSerializer, nodeOptions), nodeOptions));
 
@@ -138,7 +137,7 @@ public class AbcNetworkTests
             var messageSerializer =
                 new Infrastructure.Serialization.Messages.MessageSerializer(messageTypeSerializerFactory);
             var peerManager = new PeerManager(new Mock<ILogger<PeerManager>>().Object, nodeOptions,
-                new PeerFactory(loggerFactory, messageFactory, new MessageServiceFactory(messageSerializer),
+                new PeerServiceFactory(loggerFactory, messageFactory, new MessageServiceFactory(messageSerializer),
                     new PingPongServiceFactory(messageFactory, nodeOptions), secureKeyManager,
                     new TransportServiceFactory(loggerFactory, messageSerializer, nodeOptions), nodeOptions));
 

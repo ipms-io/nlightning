@@ -12,7 +12,7 @@ using Tlv;
 /// The update_add_htlc message offers a new htlc to the peer.
 /// The message type is 128.
 /// </remarks>
-public sealed class UpdateAddHtlcMessage : BaseMessage
+public sealed class UpdateAddHtlcMessage : BaseChannelMessage
 {
     /// <summary>
     /// The payload of the message.
@@ -22,7 +22,7 @@ public sealed class UpdateAddHtlcMessage : BaseMessage
     public BlindedPathTlv? BlindedPathTlv { get; }
 
     public UpdateAddHtlcMessage(UpdateAddHtlcPayload payload, BlindedPathTlv? blindedPathTlv = null)
-        : base(MessageTypes.UPDATE_ADD_HTLC, payload)
+        : base(MessageTypes.UpdateAddHtlc, payload)
     {
         BlindedPathTlv = blindedPathTlv;
 

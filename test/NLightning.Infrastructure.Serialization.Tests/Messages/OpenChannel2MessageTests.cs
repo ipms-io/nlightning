@@ -55,7 +55,7 @@ public class OpenChannel2MessageTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(Network.MAINNET.ChainHash, result.Payload.ChainHash);
-        Assert.Equal(expectedChannelId, result.Payload.TemporaryChannelId);
+        Assert.Equal(expectedChannelId, result.Payload.ChannelId);
         Assert.Equal(EXPECTED_FUNDING_FEERATE, result.Payload.FundingFeeRatePerKw);
         Assert.Equal(EXPECTED_COMMITMENT_FEERATE, result.Payload.CommitmentFeeRatePerKw);
         Assert.Equal(expectedFundingSatoshis, result.Payload.FundingAmount);
@@ -103,7 +103,7 @@ public class OpenChannel2MessageTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(Network.MAINNET.ChainHash, result.Payload.ChainHash);
-        Assert.Equal(expectedChannelId, result.Payload.TemporaryChannelId);
+        Assert.Equal(expectedChannelId, result.Payload.ChannelId);
         Assert.Equal(EXPECTED_FUNDING_FEERATE, result.Payload.FundingFeeRatePerKw);
         Assert.Equal(EXPECTED_COMMITMENT_FEERATE, result.Payload.CommitmentFeeRatePerKw);
         Assert.Equal(expectedFundingSatoshis, result.Payload.FundingAmount);

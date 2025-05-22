@@ -12,7 +12,7 @@ using Tlv;
 /// The tx_ack_rbf message acknowledges the replacement of the transaction.
 /// The message type is 73.
 /// </remarks>
-public sealed class TxAckRbfMessage : BaseMessage
+public sealed class TxAckRbfMessage : BaseChannelMessage
 {
     /// <summary>
     /// The payload of the message.
@@ -24,7 +24,7 @@ public sealed class TxAckRbfMessage : BaseMessage
 
     public TxAckRbfMessage(TxAckRbfPayload payload, FundingOutputContributionTlv? fundingOutputContributionTlv = null,
                            RequireConfirmedInputsTlv? requireConfirmedInputsTlv = null)
-        : base(MessageTypes.TX_ACK_RBF, payload)
+        : base(MessageTypes.TxAckRbf, payload)
     {
         FundingOutputContributionTlv = fundingOutputContributionTlv;
         RequireConfirmedInputsTlv = requireConfirmedInputsTlv;

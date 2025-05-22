@@ -3,12 +3,13 @@ using NBitcoin;
 namespace NLightning.Infrastructure.Bitcoin.Outputs;
 
 using Comparers;
+using Domain.Bitcoin.Outputs;
 using Domain.Money;
 
 /// <summary>
 /// Represents a transaction output.
 /// </summary>
-public abstract class BaseOutput
+public abstract class BaseOutput : IOutput
 {
     /// <summary>
     /// Gets the amount of the output in satoshis.
@@ -32,6 +33,8 @@ public abstract class BaseOutput
     /// Output is nonexistent if this is -1.
     /// </remarks>
     public int Index { get; set; }
+
+    public bool IsPlaceHolder { get; set; }
 
     public Script RedeemScript { get; }
 
@@ -81,17 +84,23 @@ public abstract class BaseOutput
 
     public ScriptCoin ToCoin()
     {
-        if (Index == -1)
-            throw new InvalidOperationException("Output is nonexistent. Sign the transaction first.");
+        if (!IsPlaceHolder)
+        {
+            if (Index == -1)
+                throw new InvalidOperationException("Output is nonexistent. Sign the transaction first.");
 
-        if (TxId is null || TxId == uint256.Zero || TxId == uint256.One)
-            throw new InvalidOperationException("Transaction ID is not set. Sign the transaction first.");
+            if (TxId is null || TxId == uint256.Zero || TxId == uint256.One)
+                throw new InvalidOperationException("Transaction ID is not set. Sign the transaction first.");
 
-        if (Amount.IsZero)
-            throw new InvalidOperationException("You can't spend a zero amount output.");
+            if (Amount.IsZero)
+                throw new InvalidOperationException("You can't spend a zero amount output.");
+        }
 
         return new ScriptCoin(TxId, checked((uint)Index), Amount, ScriptPubKey, RedeemScript);
     }
 
-    public int CompareTo(BaseOutput? other) => other is null ? 1 : TransactionOutputComparer.Instance.Compare(this, other);
+    public int CompareTo(IOutput? other) =>
+        other is BaseOutput baseOutput
+            ? TransactionOutputComparer.Instance.Compare(this, baseOutput)
+            : 1;
 }

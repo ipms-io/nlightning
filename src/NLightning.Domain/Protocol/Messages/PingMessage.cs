@@ -10,7 +10,7 @@ using Payloads;
 /// The ping message is used to check if the other party is still alive.
 /// The message type is 18.
 /// </remarks>
-public sealed class PingMessage() : BaseMessage(MessageTypes.PING, new PingPayload())
+public sealed class PingMessage() : BaseMessage(MessageTypes.Ping, new PingPayload())
 {
     /// <summary>
     /// The payload of the message.

@@ -13,7 +13,7 @@ using ValueObjects;
 /// <param name="channelId">The channel id.</param>
 /// <seealso cref="TxCompleteMessage"/>
 /// <seealso cref="ValueObjects.ChannelId"/>
-public class TxCompletePayload(ChannelId channelId) : IMessagePayload
+public class TxCompletePayload(ChannelId channelId) : IChannelMessagePayload
 {
     /// <summary>
     /// The channel id.

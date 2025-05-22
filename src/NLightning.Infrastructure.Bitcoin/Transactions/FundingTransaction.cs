@@ -4,6 +4,7 @@ namespace NLightning.Infrastructure.Bitcoin.Transactions;
 
 using Domain.Money;
 using Domain.Protocol.Constants;
+using Domain.Protocol.Signers;
 using Outputs;
 
 /// <summary>
@@ -42,7 +43,7 @@ public class FundingTransaction : BaseTransaction
         _dustLimitAmount = dustLimitAmount;
 
         // Create the funding and change output
-        FundingOutput = new FundingOutput(pubkey1, pubkey2, amountSats);
+        FundingOutput = new FundingOutput(amountSats, pubkey1, pubkey2);
         ChangeOutput = new ChangeOutput(changeScript);
 
         AddOutput(FundingOutput);
@@ -65,7 +66,7 @@ public class FundingTransaction : BaseTransaction
         _dustLimitAmount = dustLimitAmount;
 
         // Create the funding and change output
-        FundingOutput = new FundingOutput(pubkey1, pubkey2, amountSats);
+        FundingOutput = new FundingOutput(amountSats, pubkey1, pubkey2);
         ChangeOutput = new ChangeOutput(redeemScript, changeScript);
 
         AddOutput(FundingOutput);
@@ -112,9 +113,9 @@ public class FundingTransaction : BaseTransaction
         }
     }
 
-    internal new void SignTransaction(params BitcoinSecret[] secrets)
+    internal new void SignTransaction(ILightningSigner signer, params BitcoinSecret[] secrets)
     {
-        base.SignTransaction(secrets);
+        base.SignTransaction(signer, secrets);
         // Set funding output fields
         FundingOutput.TxId = TxId;
 

@@ -10,7 +10,7 @@ using ValueObjects;
 /// Initializes a new instance of the TxAckRbfPayload class.
 /// </remarks>
 /// <param name="channelId">The channel ID.</param>
-public class TxAckRbfPayload(ChannelId channelId) : IMessagePayload
+public class TxAckRbfPayload(ChannelId channelId) : IChannelMessagePayload
 {
     /// <summary>
     /// Gets the channel ID.

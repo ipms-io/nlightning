@@ -15,7 +15,7 @@ using ValueObjects;
 /// </remarks>
 /// <seealso cref="TxAddOutputMessage"/>
 /// <seealso cref="ValueObjects.ChannelId"/>
-public class TxAddOutputPayload : IMessagePayload
+public class TxAddOutputPayload : IChannelMessagePayload
 {
     /// <summary>
     /// The channel id.

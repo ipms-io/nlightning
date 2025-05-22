@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
-[assembly: InternalsVisibleTo("NLightning.Application.NLTG")]
+[assembly: InternalsVisibleTo("NLightning.Node")]
 [assembly: InternalsVisibleTo("NLightning.Bolt11")]
 [assembly: InternalsVisibleTo("NLightning.Bolt11.Blazor")]
 [assembly: InternalsVisibleTo("NLightning.Infrastructure.Bitcoin")]

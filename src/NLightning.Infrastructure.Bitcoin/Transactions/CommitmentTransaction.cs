@@ -3,8 +3,11 @@ using NBitcoin.Crypto;
 
 namespace NLightning.Infrastructure.Bitcoin.Transactions;
 
+using Domain.Bitcoin.Outputs;
+using Domain.Bitcoin.Transactions;
 using Domain.Money;
 using Domain.Protocol.Constants;
+using Domain.Protocol.Signers;
 using Domain.ValueObjects;
 using Outputs;
 using Protocol.Models;
@@ -12,7 +15,7 @@ using Protocol.Models;
 /// <summary>
 /// Represents a commitment transaction.
 /// </summary>
-public class CommitmentTransaction : BaseTransaction
+public class CommitmentTransaction : BaseTransaction, ICommitmentTransaction
 {
     #region Private Fields
     private readonly LightningMoney _anchorAmount;
@@ -35,7 +38,6 @@ public class CommitmentTransaction : BaseTransaction
     #endregion
 
     #region Constructors
-
     /// <summary>
     /// Initializes a new instance of the <see cref="CommitmentTransaction"/> class.
     /// </summary>
@@ -47,7 +49,7 @@ public class CommitmentTransaction : BaseTransaction
     /// <param name="localPaymentBasepoint">The local public key.</param>
     /// <param name="remotePaymentBasepoint">The remote public key.</param>
     /// <param name="localDelayedPubKey">The local delayed public key.</param>
-    /// <param name="revocationPubKey">The revocation public key.</param>
+    /// <param name="remoteRevocationPubKey">The revocation public key.</param>
     /// <param name="toLocalAmount">The amount for the to_local output in satoshis.</param>
     /// <param name="toRemoteAmount">The amount for the to_remote output in satoshis.</param>
     /// <param name="toSelfDelay">The to_self_delay in blocks.</param>
@@ -56,16 +58,16 @@ public class CommitmentTransaction : BaseTransaction
     internal CommitmentTransaction(LightningMoney anchorAmount, LightningMoney dustLimitAmount,
                                    bool mustTrimHtlcOutputs, Network network, FundingOutput fundingOutput,
                                    PubKey localPaymentBasepoint, PubKey remotePaymentBasepoint,
-                                   PubKey localDelayedPubKey, PubKey revocationPubKey, LightningMoney toLocalAmount,
-                                   LightningMoney toRemoteAmount, uint toSelfDelay, CommitmentNumber commitmentNumber,
-                                   bool isChannelFunder)
+                                   PubKey localDelayedPubKey, PubKey remoteRevocationPubKey,
+                                   LightningMoney toLocalAmount, LightningMoney toRemoteAmount, uint toSelfDelay,
+                                   CommitmentNumber commitmentNumber, bool isChannelFunder)
         : base(!anchorAmount.IsZero, network, TransactionConstants.COMMITMENT_TRANSACTION_VERSION, SigHash.All,
                (fundingOutput.ToCoin(), commitmentNumber.CalculateSequence()))
     {
         ArgumentNullException.ThrowIfNull(localPaymentBasepoint);
         ArgumentNullException.ThrowIfNull(remotePaymentBasepoint);
         ArgumentNullException.ThrowIfNull(localDelayedPubKey);
-        ArgumentNullException.ThrowIfNull(revocationPubKey);
+        ArgumentNullException.ThrowIfNull(remoteRevocationPubKey);
 
         if (toLocalAmount.IsZero && toRemoteAmount.IsZero)
         {
@@ -98,7 +100,7 @@ public class CommitmentTransaction : BaseTransaction
         }
 
         // to_local output
-        ToLocalOutput = new ToLocalOutput(localDelayedPubKey, revocationPubKey, toSelfDelay, localAmount);
+        ToLocalOutput = new ToLocalOutput(localDelayedPubKey, remoteRevocationPubKey, toSelfDelay, localAmount);
         AddOutput(ToLocalOutput);
 
         // to_remote output
@@ -144,10 +146,11 @@ public class CommitmentTransaction : BaseTransaction
         AddOutput(receivedHtlcOutput);
     }
 
-    public void AppendRemoteSignatureAndSign(ECDSASignature remoteSignature, PubKey remotePubKey)
+    public List<ECDSASignature> AppendRemoteSignatureAndSign(ILightningSigner signer, ECDSASignature remoteSignature,
+                                                             PubKey remotePubKey)
     {
-        AppendRemoteSignatureToTransaction(new TransactionSignature(remoteSignature), remotePubKey);
-        SignTransactionWithExistingKeys();
+        AppendRemoteSignatureToTransaction(signer, new TransactionSignature(remoteSignature), remotePubKey);
+        return SignTransactionWithExistingKeys(signer);
     }
 
     public Transaction GetSignedTransaction()
@@ -158,6 +161,12 @@ public class CommitmentTransaction : BaseTransaction
         }
 
         throw new InvalidOperationException("You have to sign and finalize the transaction first.");
+    }
+
+    public void ReplaceFundingOutput(IFundingOutput oldFundingOutput, IFundingOutput newFundingOutput)
+    {
+        RemoveCoin(oldFundingOutput.ToCoin());
+        AddCoin(newFundingOutput.ToCoin(), CommitmentNumber.CalculateSequence());
     }
     #endregion
 
@@ -248,11 +257,13 @@ public class CommitmentTransaction : BaseTransaction
         AddOrderedOutputsToTransaction();
     }
 
-    internal new void SignTransaction(params BitcoinSecret[] secrets)
+    internal new List<ECDSASignature> SignTransaction(ILightningSigner signer, params BitcoinSecret[] secrets)
     {
-        base.SignTransaction(secrets);
+        var signatures = base.SignTransaction(signer, secrets);
 
         SetTxIdAndIndexes();
+
+        return signatures;
     }
     #endregion
 

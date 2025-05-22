@@ -33,10 +33,10 @@
     <ProjectReference Include="..\..\src\NLightning.Domain\NLightning.Domain.csproj" />
     <ProjectReference Include="..\..\src\NLightning.Infrastructure.Bitcoin\NLightning.Infrastructure.Bitcoin.csproj" />
     <ProjectReference Include="..\..\src\NLightning.Infrastructure\NLightning.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\src\NLightning.Models.Postgres\NLightning.Models.Postgres.csproj" />
-    <ProjectReference Include="..\..\src\NLightning.Models.Sqlite\NLightning.Models.Sqlite.csproj" />
-    <ProjectReference Include="..\..\src\NLightning.Models.SqlServer\NLightning.Models.SqlServer.csproj" />
-    <ProjectReference Include="..\..\src\NLightning.Models\NLightning.Models.csproj" />
+    <ProjectReference Include="..\..\src\NLightning.Infrastructure.Persistence.Postgres\NLightning.Infrastructure.Persistence.Postgres.csproj" />
+    <ProjectReference Include="..\..\src\NLightning.Infrastructure.Persistence.Sqlite\NLightning.Infrastructure.Persistence.Sqlite.csproj" />
+    <ProjectReference Include="..\..\src\NLightning.Infrastructure.Persistence.SqlServer\NLightning.Infrastructure.Persistence.SqlServer.csproj" />
+    <ProjectReference Include="..\..\src\NLightning.Infrastructure.Persistence\NLightning.Infrastructure.Persistence.csproj" />
   </ItemGroup>
   
   <ItemGroup>

@@ -1,13 +1,15 @@
 namespace NLightning.Domain.Node.Options;
 
 using Money;
+using Protocol.Constants;
+using ValueObjects;
 
 public class NodeOptions
 {
     /// <summary>
     /// The network to connect to. Can be "mainnet", "testnet", or "regtest"
     /// </summary>
-    public string Network { get; set; } = "mainnet";
+    public Network Network { get; set; } = NetworkConstants.MAINNET;
 
     /// <summary>
     /// True if NLTG should run in Daemon mode (background)
@@ -42,16 +44,18 @@ public class NodeOptions
 
     public bool MustTrimHtlcOutputs { get; set; }
 
-    public LightningMoney DustLimitAmount { get; set; } = LightningMoney.Satoshis(546);
+    public LightningMoney DustLimitAmount { get; set; } = LightningMoney.Satoshis(354);
 
     public ulong DefaultCltvExpiry { get; set; }
 
     public bool HasAnchorOutputs => !AnchorAmount.IsZero;
 
-    public ushort MaxAcceptedHtlcs { get; set; }
+    public ushort MaxAcceptedHtlcs { get; set; } = 5;
     public LightningMoney HtlcMinimumAmount { get; set; } = LightningMoney.Satoshis(1);
     public uint Locktime { get; set; }
     public ushort ToSelfDelay { get; set; }
     public LightningMoney MaxHtlcValueInFlight { get; set; } = LightningMoney.Satoshis(1_000_000);
     public uint MinimumDepth { get; set; } = 3;
+    public LightningMoney MinimumChannelSize { get; set; } = LightningMoney.Satoshis(20_000);
+    public LightningMoney ChannelReserveAmount { get; set; } = LightningMoney.Satoshis(546);
 }

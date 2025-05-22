@@ -9,7 +9,7 @@ using ValueObjects;
 /// <remarks>
 /// Initializes a new instance of the UpdateFeePayload class.
 /// </remarks>
-public class UpdateFeePayload(ChannelId channelId, uint feeratePerKw) : IMessagePayload
+public class UpdateFeePayload(ChannelId channelId, uint feeratePerKw) : IChannelMessagePayload
 {
     /// <summary>
     /// The channel_id this message refers to

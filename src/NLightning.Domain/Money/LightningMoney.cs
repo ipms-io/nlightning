@@ -319,6 +319,18 @@ public class LightningMoney : IMoney
 
         return MilliSatoshis(checked((ulong)right * left._milliSatoshi));
     }
+    public static LightningMoney operator *(decimal left, LightningMoney right)
+    {
+        ArgumentNullException.ThrowIfNull(right);
+
+        return MilliSatoshis((ulong)(left * right._milliSatoshi));
+    }
+    public static LightningMoney operator *(LightningMoney left, decimal right)
+    {
+        ArgumentNullException.ThrowIfNull(left);
+
+        return MilliSatoshis((ulong)(right * left._milliSatoshi));
+    }
 
     public static LightningMoney operator /(LightningMoney left, ulong right)
     {

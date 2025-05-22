@@ -12,7 +12,7 @@ using ValueObjects;
 /// Initializes a new instance of the CommitmentSignedPayload class.
 /// </remarks>
 public class CommitmentSignedPayload(ChannelId channelId, IEnumerable<ECDSASignature> htlcSignatures,
-                                     ECDSASignature signature) : IMessagePayload
+                                     ECDSASignature signature) : IChannelMessagePayload
 {
     /// <summary>
     /// The channel_id this message refers to

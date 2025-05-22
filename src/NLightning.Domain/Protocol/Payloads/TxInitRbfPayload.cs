@@ -19,7 +19,7 @@ using ValueObjects;
 /// <param name="locktime">The locktime.</param>
 /// <seealso cref="TxInitRbfMessage"/>
 /// <seealso cref="ValueObjects.ChannelId"/>
-public class TxInitRbfPayload(ChannelId channelId, uint feerate, uint locktime) : IMessagePayload
+public class TxInitRbfPayload(ChannelId channelId, uint feerate, uint locktime) : IChannelMessagePayload
 {
     /// <summary>
     /// The channel ID.

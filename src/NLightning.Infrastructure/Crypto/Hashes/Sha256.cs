@@ -3,13 +3,14 @@ using System.Diagnostics;
 namespace NLightning.Infrastructure.Crypto.Hashes;
 
 using Domain.Crypto.Constants;
+using Domain.Crypto.Hashes;
 using Factories;
 using Interfaces;
 
 /// <summary>
 /// SHA-256 from <see href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf">FIPS 180-4</see>.
 /// </summary>
-public sealed class Sha256 : IDisposable
+public sealed class Sha256 : ISha256
 {
     private readonly ICryptoProvider _cryptoProvider;
     private readonly IntPtr _state;

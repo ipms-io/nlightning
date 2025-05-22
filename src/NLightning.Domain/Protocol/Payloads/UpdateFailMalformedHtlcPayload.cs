@@ -10,7 +10,7 @@ using ValueObjects;
 /// Initializes a new instance of the UpdateFailMalformedHtlcPayload class.
 /// </remarks>
 public class UpdateFailMalformedHtlcPayload(ChannelId channelId, ushort failureCode, ulong id,
-                                            ReadOnlyMemory<byte> sha256OfOnion) : IMessagePayload
+                                            ReadOnlyMemory<byte> sha256OfOnion) : IChannelMessagePayload
 {
     /// <summary>
     /// The channel_id this message refers to

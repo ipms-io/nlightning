@@ -94,7 +94,7 @@ public class KeyDerivationService : IKeyDerivationService
     /// <summary>
     /// Generates per-commitment secret from seed and index
     /// </summary>
-    public static byte[] GeneratePerCommitmentSecret(byte[] seed, ulong index)
+    public byte[] GeneratePerCommitmentSecret(byte[] seed, ulong index)
     {
         using var sha256 = new Sha256();
 

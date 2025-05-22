@@ -11,13 +11,13 @@ public static class WeightConstants
     public const int P2SH_OUTPUT_WEIGHT = 33 * 4; // | 8         | 1             | 23         |
     public const int P2WPKH_OUTPUT_WEIGHT = 31 * 4; // | 8         | 1             | 22         |
     public const int P2WSH_OUTPUT_WEIGHT = 43 * 4; // | 8         | 1             | 34         |
-    public const int P2UNKOWN_S_OUTPUT_WEIGHT = 51 * 4; // | 8         | 1             | 42         |
+    public const int P2UNKNOWN_S_OUTPUT_WEIGHT = 51 * 4; // | 8         | 1             | 42         |
 
-    public const int P2PKH_INTPUT_WEIGHT = 148; // At Least
-    public const int P2SH_INTPUT_WEIGHT = 148; // At Least
-    public const int P2WPKH_INTPUT_WEIGHT = 41; // At Least
-    public const int P2WSH_INTPUT_WEIGHT = P2WPKH_INTPUT_WEIGHT;
-    public const int P2UNKOWN_S_INTPUT_WEIGHT = P2WPKH_INTPUT_WEIGHT;
+    public const int P2PKH_INPUT_WEIGHT = 148; // At Least
+    public const int P2SH_INPUT_WEIGHT = 148; // At Least
+    public const int P2WPKH_INPUT_WEIGHT = 41; // At Least
+    public const int P2WSH_INPUT_WEIGHT = P2WPKH_INPUT_WEIGHT;
+    public const int P2UNKNOWN_S_INPUT_WEIGHT = P2WPKH_INPUT_WEIGHT;
     // ReSharper enable InconsistentNaming
 
     public const int WITNESS_HEADER = 2; // flag, marker

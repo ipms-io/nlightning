@@ -25,7 +25,7 @@ public class FeaturesTaggedFieldTests
 
         // Assert
         Assert.Equal(TaggedFieldTypes.FEATURES, taggedField.Type);
-        Assert.True(features.IsCompatible(taggedField.Value));
+        Assert.True(features.IsCompatible(taggedField.Value, out var _));
         Assert.Equal(expectedLength, taggedField.Length);
     }
 

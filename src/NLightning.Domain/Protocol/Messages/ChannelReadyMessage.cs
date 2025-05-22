@@ -12,7 +12,7 @@ using Tlv;
 /// The channel_ready message indicates that the funding transaction has sufficient confirms for channel use.
 /// The message type is 36.
 /// </remarks>
-public sealed class ChannelReadyMessage : BaseMessage
+public sealed class ChannelReadyMessage : BaseChannelMessage
 {
     /// <summary>
     /// The payload of the message.
@@ -22,7 +22,7 @@ public sealed class ChannelReadyMessage : BaseMessage
     public ShortChannelIdTlv? ShortChannelIdTlv { get; }
 
     public ChannelReadyMessage(ChannelReadyPayload payload, ShortChannelIdTlv? shortChannelIdTlv = null)
-        : base(MessageTypes.CHANNEL_READY, payload)
+        : base(MessageTypes.ChannelReady, payload)
     {
         ShortChannelIdTlv = shortChannelIdTlv;
 

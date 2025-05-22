@@ -9,7 +9,7 @@ using ValueObjects;
 /// <remarks>
 /// Initializes a new instance of the UpdateFailHtlcPayload class.
 /// </remarks>
-public class UpdateFailHtlcPayload(ChannelId channelId, ulong id, ReadOnlyMemory<byte> reason) : IMessagePayload
+public class UpdateFailHtlcPayload(ChannelId channelId, ulong id, ReadOnlyMemory<byte> reason) : IChannelMessagePayload
 {
     /// <summary>
     /// The channel_id this message refers to

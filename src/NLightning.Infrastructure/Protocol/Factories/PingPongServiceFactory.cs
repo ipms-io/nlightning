@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Options;
+using NLightning.Application.Node.Services;
+using NLightning.Application.Node.Services.Interfaces;
 
 namespace NLightning.Infrastructure.Protocol.Factories;
 
-using Domain.Factories;
+using Application.Factories;
 using Domain.Node.Options;
-using Domain.Protocol.Factories;
 using Domain.Protocol.Services;
-using Services;
 
 /// <summary>
 /// Factory for creating a ping pong service.

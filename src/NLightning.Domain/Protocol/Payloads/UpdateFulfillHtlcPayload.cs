@@ -10,7 +10,7 @@ using ValueObjects;
 /// Initializes a new instance of the UpdateFulfillHtlcPayload class.
 /// </remarks>
 public class UpdateFulfillHtlcPayload(ChannelId channelId, ulong id, ReadOnlyMemory<byte> paymentPreimage)
-    : IMessagePayload
+    : IChannelMessagePayload
 {
     /// <summary>
     /// The channel_id this message refers to

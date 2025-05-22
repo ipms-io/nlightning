@@ -8,7 +8,7 @@ using Interfaces;
 /// <remarks>
 /// A chain hash is a 32-byte hash used to identify a chain.
 /// </remarks>
-public readonly struct ChainHash : IValueObject, IEquatable<ChainHash>
+public readonly record struct ChainHash : IValueObject
 {
     /// <summary>
     /// The length of a chain hash.
@@ -32,42 +32,7 @@ public readonly struct ChainHash : IValueObject, IEquatable<ChainHash>
         _value = value.ToArray();
     }
 
-    /// <summary>
-    /// Compares two chain hashes for equality.
-    /// </summary>
-    /// <param name="other">The chain hash to compare to.</param>
-    /// <returns>True if the chain hashes are equal, otherwise false.</returns>
-    public bool Equals(ChainHash other)
-    {
-        return _value.SequenceEqual(other._value);
-    }
-
-    public override bool Equals(object? obj)
-    {
-        if (obj is ChainHash other)
-        {
-            return Equals(other);
-        }
-
-        return false;
-    }
-
-    public override int GetHashCode()
-    {
-        return BitConverter.ToInt32(_value, 0);
-    }
-
     public static implicit operator byte[](ChainHash c) => c._value;
     public static implicit operator ReadOnlyMemory<byte>(ChainHash c) => c._value;
     public static implicit operator ChainHash(byte[] value) => new(value);
-
-    public static bool operator ==(ChainHash left, ChainHash right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(ChainHash left, ChainHash right)
-    {
-        return !(left == right);
-    }
 }

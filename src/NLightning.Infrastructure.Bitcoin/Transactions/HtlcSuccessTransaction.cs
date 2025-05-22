@@ -1,14 +1,16 @@
 using NBitcoin;
+using NBitcoin.Crypto;
 
 namespace NLightning.Infrastructure.Bitcoin.Transactions;
 
+using Domain.Protocol.Signers;
 using Outputs;
 
-public class HtlcSuccessTransaction : BaseHtlcTransaction
+public class BaseHtlcSuccessTransaction : BaseHtlcTransaction
 {
     public byte[] PaymentPreimage { get; }
 
-    public HtlcSuccessTransaction(Network network, bool hasAnchorOutputs, BaseHtlcOutput output,
+    public BaseHtlcSuccessTransaction(Network network, bool hasAnchorOutputs, BaseHtlcOutput output,
                                   PubKey revocationPubKey, PubKey localDelayedPubKey, ulong toSelfDelay,
                                   ulong amountMilliSats, byte[] paymentPreimage)
         : base(hasAnchorOutputs, network, output, revocationPubKey, localDelayedPubKey, toSelfDelay, amountMilliSats)
@@ -17,7 +19,7 @@ public class HtlcSuccessTransaction : BaseHtlcTransaction
         PaymentPreimage = paymentPreimage;
     }
 
-    protected new void SignTransaction(params BitcoinSecret[] secrets)
+    protected new List<ECDSASignature> SignTransaction(ILightningSigner signer, params BitcoinSecret[] secrets)
     {
         var witness = new WitScript(
             Op.GetPushOp(0), // OP_0
@@ -26,6 +28,6 @@ public class HtlcSuccessTransaction : BaseHtlcTransaction
             Op.GetPushOp(PaymentPreimage) // Payment pre-image for HTLC-success
         );
 
-        base.SignTransaction(secrets);
+        return base.SignTransaction(signer, secrets);
     }
 }

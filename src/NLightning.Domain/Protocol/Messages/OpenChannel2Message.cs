@@ -12,7 +12,7 @@ using Tlv;
 /// The open_channel2 message is sent to another peer in order to start the channel negotiation.
 /// The message type is 64.
 /// </remarks>
-public sealed class OpenChannel2Message : BaseMessage
+public sealed class OpenChannel2Message : BaseChannelMessage
 {
     /// <summary>
     /// The payload of the message.
@@ -24,7 +24,7 @@ public sealed class OpenChannel2Message : BaseMessage
     public RequireConfirmedInputsTlv? RequireConfirmedInputsTlv { get; }
 
     public OpenChannel2Message(OpenChannel2Payload payload, UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv = null, ChannelTypeTlv? channelTypeTlv = null, RequireConfirmedInputsTlv? requireConfirmedInputsTlv = null)
-        : base(MessageTypes.OPEN_CHANNEL_2, payload)
+        : base(MessageTypes.OpenChannel2, payload)
     {
         UpfrontShutdownScriptTlv = upfrontShutdownScriptTlv;
         ChannelTypeTlv = channelTypeTlv;

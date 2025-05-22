@@ -5,6 +5,7 @@ namespace NLightning.Infrastructure.Bitcoin.Transactions;
 
 using Domain.Money;
 using Domain.Protocol.Constants;
+using Domain.Protocol.Signers;
 using Outputs;
 
 public abstract class BaseHtlcTransaction : BaseTransaction
@@ -35,9 +36,9 @@ public abstract class BaseHtlcTransaction : BaseTransaction
         HtlcResolutionOutput.Index = 0;
     }
 
-    public void AppendRemoteSignatureAndSign(ECDSASignature remoteSignature, PubKey remotePubKey)
+    public void AppendRemoteSignatureAndSign(ILightningSigner signer, ECDSASignature remoteSignature, PubKey remotePubKey)
     {
-        AppendRemoteSignatureToTransaction(new TransactionSignature(remoteSignature), remotePubKey);
-        SignTransactionWithExistingKeys();
+        AppendRemoteSignatureToTransaction(signer, new TransactionSignature(remoteSignature), remotePubKey);
+        SignTransactionWithExistingKeys(signer);
     }
 }

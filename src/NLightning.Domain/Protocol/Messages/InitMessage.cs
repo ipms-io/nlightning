@@ -21,7 +21,7 @@ public sealed class InitMessage : BaseMessage
 
     public NetworksTlv? NetworksTlv { get; }
 
-    public InitMessage(InitPayload payload, NetworksTlv? networksTlv = null) : base(MessageTypes.INIT, payload)
+    public InitMessage(InitPayload payload, NetworksTlv? networksTlv = null) : base(MessageTypes.Init, payload)
     {
         NetworksTlv = networksTlv;
 

@@ -5,7 +5,6 @@ using NBitcoin;
 
 namespace NLightning.Infrastructure.Tests.Node.Models;
 
-using Application.Factories;
 using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Node.Options;
@@ -13,7 +12,6 @@ using Domain.Protocol.Constants;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Services;
-using Infrastructure.Node.Models;
 using Infrastructure.Protocol.Models;
 
 public class PeerTests

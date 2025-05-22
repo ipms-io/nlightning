@@ -12,7 +12,7 @@ using Messages.Types;
 public class MessageTypeSerializerFactory : IMessageTypeSerializerFactory
 {
     private readonly Dictionary<Type, IMessageTypeSerializer> _serializers = new();
-    private readonly Dictionary<ushort, Type> _ushortTypeDictionary = new();
+    private readonly Dictionary<MessageTypes, Type> _messageTypeDictionary = new();
     private readonly IPayloadSerializerFactory _payloadSerializerFactory;
     private readonly ITlvConverterFactory _tlvConverterFactory;
     private readonly ITlvStreamSerializer _tlvStreamSerializer;
@@ -34,9 +34,9 @@ public class MessageTypeSerializerFactory : IMessageTypeSerializerFactory
         return _serializers.GetValueOrDefault(typeof(TMessageType)) as IMessageTypeSerializer<TMessageType>;
     }
 
-    public IMessageTypeSerializer? GetSerializer(ushort messageType)
+    public IMessageTypeSerializer? GetSerializer(MessageTypes messageType)
     {
-        var type = _ushortTypeDictionary.GetValueOrDefault(messageType);
+        var type = _messageTypeDictionary.GetValueOrDefault(messageType);
         if (type is null)
             return null;
 
@@ -104,33 +104,33 @@ public class MessageTypeSerializerFactory : IMessageTypeSerializerFactory
 
     private void RegisterTypeDictionary()
     {
-        _ushortTypeDictionary.Add(MessageTypes.ACCEPT_CHANNEL_2, typeof(AcceptChannel2Message));
-        _ushortTypeDictionary.Add(MessageTypes.CHANNEL_READY, typeof(ChannelReadyMessage));
-        _ushortTypeDictionary.Add(MessageTypes.CHANNEL_REESTABLISH, typeof(ChannelReestablishMessage));
-        _ushortTypeDictionary.Add(MessageTypes.CLOSING_SIGNED, typeof(ClosingSignedMessage));
-        _ushortTypeDictionary.Add(MessageTypes.COMMITMENT_SIGNED, typeof(CommitmentSignedMessage));
-        _ushortTypeDictionary.Add(MessageTypes.ERROR, typeof(ErrorMessage));
-        _ushortTypeDictionary.Add(MessageTypes.INIT, typeof(InitMessage));
-        _ushortTypeDictionary.Add(MessageTypes.OPEN_CHANNEL_2, typeof(OpenChannel2Message));
-        _ushortTypeDictionary.Add(MessageTypes.PING, typeof(PingMessage));
-        _ushortTypeDictionary.Add(MessageTypes.PONG, typeof(PingMessage));
-        _ushortTypeDictionary.Add(MessageTypes.REVOKE_AND_ACK, typeof(RevokeAndAckMessage));
-        _ushortTypeDictionary.Add(MessageTypes.SHUTDOWN, typeof(ShutdownMessage));
-        _ushortTypeDictionary.Add(MessageTypes.STFU, typeof(StfuMessage));
-        _ushortTypeDictionary.Add(MessageTypes.TX_ABORT, typeof(TxAbortMessage));
-        _ushortTypeDictionary.Add(MessageTypes.TX_ACK_RBF, typeof(TxAckRbfMessage));
-        _ushortTypeDictionary.Add(MessageTypes.TX_ADD_INPUT, typeof(TxAddInputMessage));
-        _ushortTypeDictionary.Add(MessageTypes.TX_ADD_OUTPUT, typeof(TxAddOutputMessage));
-        _ushortTypeDictionary.Add(MessageTypes.TX_COMPLETE, typeof(TxCompleteMessage));
-        _ushortTypeDictionary.Add(MessageTypes.TX_INIT_RBF, typeof(TxInitRbfMessage));
-        _ushortTypeDictionary.Add(MessageTypes.TX_REMOVE_INPUT, typeof(TxRemoveInputMessage));
-        _ushortTypeDictionary.Add(MessageTypes.TX_REMOVE_OUTPUT, typeof(TxRemoveOutputMessage));
-        _ushortTypeDictionary.Add(MessageTypes.TX_SIGNATURES, typeof(TxSignaturesMessage));
-        _ushortTypeDictionary.Add(MessageTypes.UPDATE_ADD_HTLC, typeof(UpdateAddHtlcMessage));
-        _ushortTypeDictionary.Add(MessageTypes.UPDATE_FAIL_HTLC, typeof(UpdateFailHtlcMessage));
-        _ushortTypeDictionary.Add(MessageTypes.UPDATE_FAIL_MALFORMED_HTLC, typeof(UpdateFailMalformedHtlcMessage));
-        _ushortTypeDictionary.Add(MessageTypes.UPDATE_FEE, typeof(UpdateFeeMessage));
-        _ushortTypeDictionary.Add(MessageTypes.UPDATE_FULFILL_HTLC, typeof(UpdateFulfillHtlcMessage));
-        _ushortTypeDictionary.Add(MessageTypes.WARNING, typeof(WarningMessage));
+        _messageTypeDictionary.Add(MessageTypes.AcceptChannel2, typeof(AcceptChannel2Message));
+        _messageTypeDictionary.Add(MessageTypes.ChannelReady, typeof(ChannelReadyMessage));
+        _messageTypeDictionary.Add(MessageTypes.ChannelReestablish, typeof(ChannelReestablishMessage));
+        _messageTypeDictionary.Add(MessageTypes.ClosingSigned, typeof(ClosingSignedMessage));
+        _messageTypeDictionary.Add(MessageTypes.CommitmentSigned, typeof(CommitmentSignedMessage));
+        _messageTypeDictionary.Add(MessageTypes.Error, typeof(ErrorMessage));
+        _messageTypeDictionary.Add(MessageTypes.Init, typeof(InitMessage));
+        _messageTypeDictionary.Add(MessageTypes.OpenChannel2, typeof(OpenChannel2Message));
+        _messageTypeDictionary.Add(MessageTypes.Ping, typeof(PingMessage));
+        _messageTypeDictionary.Add(MessageTypes.Pong, typeof(PingMessage));
+        _messageTypeDictionary.Add(MessageTypes.RevokeAndAck, typeof(RevokeAndAckMessage));
+        _messageTypeDictionary.Add(MessageTypes.Shutdown, typeof(ShutdownMessage));
+        _messageTypeDictionary.Add(MessageTypes.Stfu, typeof(StfuMessage));
+        _messageTypeDictionary.Add(MessageTypes.TxAbort, typeof(TxAbortMessage));
+        _messageTypeDictionary.Add(MessageTypes.TxAckRbf, typeof(TxAckRbfMessage));
+        _messageTypeDictionary.Add(MessageTypes.TxAddInput, typeof(TxAddInputMessage));
+        _messageTypeDictionary.Add(MessageTypes.TxAddOutput, typeof(TxAddOutputMessage));
+        _messageTypeDictionary.Add(MessageTypes.TxComplete, typeof(TxCompleteMessage));
+        _messageTypeDictionary.Add(MessageTypes.TxInitRbf, typeof(TxInitRbfMessage));
+        _messageTypeDictionary.Add(MessageTypes.TxRemoveInput, typeof(TxRemoveInputMessage));
+        _messageTypeDictionary.Add(MessageTypes.TxRemoveOutput, typeof(TxRemoveOutputMessage));
+        _messageTypeDictionary.Add(MessageTypes.TxSignatures, typeof(TxSignaturesMessage));
+        _messageTypeDictionary.Add(MessageTypes.UpdateAddHtlc, typeof(UpdateAddHtlcMessage));
+        _messageTypeDictionary.Add(MessageTypes.UpdateFailHtlc, typeof(UpdateFailHtlcMessage));
+        _messageTypeDictionary.Add(MessageTypes.UpdateFailMalformedHtlc, typeof(UpdateFailMalformedHtlcMessage));
+        _messageTypeDictionary.Add(MessageTypes.UpdateFee, typeof(UpdateFeeMessage));
+        _messageTypeDictionary.Add(MessageTypes.UpdateFufillHtlc, typeof(UpdateFulfillHtlcMessage));
+        _messageTypeDictionary.Add(MessageTypes.Warning, typeof(WarningMessage));
     }
 }
