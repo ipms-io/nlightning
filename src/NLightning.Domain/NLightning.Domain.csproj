@@ -38,7 +38,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NBitcoin" Version="8.0.8" />
+    <PackageReference Include="NBitcoin" Version="8.0.13" />
   </ItemGroup>
   
   <ItemGroup>
@@ -54,6 +54,10 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Node\Models\" />
   </ItemGroup>
 
 </Project>

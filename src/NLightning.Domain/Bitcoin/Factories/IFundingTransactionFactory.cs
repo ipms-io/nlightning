@@ -2,8 +2,8 @@ using NBitcoin;
 
 namespace NLightning.Domain.Bitcoin.Factories;
 
-using Transactions;
 using Money;
+using Transactions;
 
 public interface IFundingTransactionFactory
 {

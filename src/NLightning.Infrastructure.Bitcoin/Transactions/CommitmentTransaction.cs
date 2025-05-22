@@ -3,6 +3,8 @@ using NBitcoin.Crypto;
 
 namespace NLightning.Infrastructure.Bitcoin.Transactions;
 
+using Domain.Bitcoin.Outputs;
+using Domain.Bitcoin.Transactions;
 using Domain.Money;
 using Domain.Protocol.Constants;
 using Domain.Protocol.Signers;
@@ -13,7 +15,7 @@ using Protocol.Models;
 /// <summary>
 /// Represents a commitment transaction.
 /// </summary>
-public class CommitmentTransaction : BaseTransaction
+public class CommitmentTransaction : BaseTransaction, ICommitmentTransaction
 {
     #region Private Fields
     private readonly LightningMoney _anchorAmount;
@@ -161,7 +163,7 @@ public class CommitmentTransaction : BaseTransaction
         throw new InvalidOperationException("You have to sign and finalize the transaction first.");
     }
 
-    public void ReplaceFundingOutput(FundingOutput oldFundingOutput, FundingOutput newFundingOutput)
+    public void ReplaceFundingOutput(IFundingOutput oldFundingOutput, IFundingOutput newFundingOutput)
     {
         RemoveCoin(oldFundingOutput.ToCoin());
         AddCoin(newFundingOutput.ToCoin(), CommitmentNumber.CalculateSequence());
@@ -260,7 +262,7 @@ public class CommitmentTransaction : BaseTransaction
         var signatures = base.SignTransaction(signer, secrets);
 
         SetTxIdAndIndexes();
-        
+
         return signatures;
     }
     #endregion

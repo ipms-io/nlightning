@@ -5,10 +5,10 @@ using NBitcoin.Crypto;
 
 namespace NLightning.Application.Managers;
 
+using Domain.Bitcoin.Factories;
 using Domain.Channels;
 using Domain.Enums;
 using Domain.Exceptions;
-using Domain.Factories;
 using Domain.Node.Options;
 using Domain.Protocol.Constants;
 using Domain.Protocol.Factories;
@@ -18,10 +18,7 @@ using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Signers;
 using Domain.Protocol.Tlv;
 using Domain.ValueObjects;
-using Infrastructure.Bitcoin.Factories.Interfaces;
-using Infrastructure.Bitcoin.Outputs;
-using Infrastructure.Bitcoin.Transactions;
-using Infrastructure.Factories;
+using Factories;
 
 public class ChannelManager : IChannelManager
 {
@@ -33,26 +30,32 @@ public class ChannelManager : IChannelManager
     private readonly Dictionary<(PubKey, ChannelId), IChannelMessage> _temporaryChannelLastReceivedMessage = [];
 
     private readonly IChannelFactory _channelFactory;
+    private readonly IChannelIdFactory _channelIdFactory;
     private readonly ICommitmentTransactionFactory _commitmentTransactionFactory;
+    private readonly IFundingOutputFactory _fundingOutputFactory;
     private readonly ILogger<ChannelManager> _logger;
     private readonly IMessageFactory _messageFactory;
     private readonly NodeOptions _nodeOptions;
     private readonly ILightningSigner _lightningSigner;
 
-    public ChannelManager(IChannelFactory channelFactory, ICommitmentTransactionFactory commitmentTransactionFactory,
-                          ILogger<ChannelManager> logger, IMessageFactory messageFactory,
-                          IOptions<NodeOptions> nodeOptions, ILightningSigner lightningSigner)
+    public ChannelManager(IChannelFactory channelFactory, IChannelIdFactory channelIdFactory,
+                          ICommitmentTransactionFactory commitmentTransactionFactory,
+                          IFundingOutputFactory fundingOutputFactory, ILogger<ChannelManager> logger,
+                          IMessageFactory messageFactory, IOptions<NodeOptions> nodeOptions,
+                          ILightningSigner lightningSigner)
     {
         _channelFactory = channelFactory;
+        _channelIdFactory = channelIdFactory;
         _commitmentTransactionFactory = commitmentTransactionFactory;
+        _fundingOutputFactory = fundingOutputFactory;
         _logger = logger;
         _messageFactory = messageFactory;
         _nodeOptions = nodeOptions.Value;
         _lightningSigner = lightningSigner;
     }
 
-    public IChannelMessage? HandleChannelMessage(IChannelMessage message, FeatureOptions negotiatedFeatures,
-                                                 PubKey peerPubKey)
+    public IChannelMessage HandleChannelMessage(IChannelMessage message, FeatureOptions negotiatedFeatures,
+                                                PubKey peerPubKey)
     {
         // Check if the channel exists on the state dictionary
         _channelStates.TryGetValue(message.Payload.ChannelId, out var channelState);
@@ -79,8 +82,8 @@ public class ChannelManager : IChannelManager
         }
     }
 
-    private IChannelMessage HandleOpenChannel1Message(ChannelState channelState, OpenChannel1Message message,
-                                                      FeatureOptions negotiatedFeatures, PubKey peerPubKey)
+    private AcceptChannel1Message HandleOpenChannel1Message(ChannelState channelState, OpenChannel1Message message,
+                                                            FeatureOptions negotiatedFeatures, PubKey peerPubKey)
     {
         var payload = message.Payload;
 
@@ -123,8 +126,8 @@ public class ChannelManager : IChannelManager
         return acceptChannel1ReplyMessage;
     }
 
-    private FundingSignedMessage? HandleFundingCreatedMessage(ChannelState channelState, FundingCreatedMessage message,
-                                                         PubKey peerPubKey)
+    private FundingSignedMessage HandleFundingCreatedMessage(ChannelState channelState, FundingCreatedMessage message,
+                                                              PubKey peerPubKey)
     {
         var payload = message.Payload;
 
@@ -146,29 +149,19 @@ public class ChannelManager : IChannelManager
         // Get the channel
         var channel = _temporaryChannels[temporaryChannelTuple];
 
-        // Get existing funding output
-        var existingFundingOutput =
-            channel.FundingOutput as FundingOutput
-            ?? throw new ChannelErrorException("Channel has no funding output", payload.ChannelId,
-                                               "Sorry, we had an internal error");
+        if (channel.CommitmentTransaction is null)
+            throw new ChannelErrorException("Commitment transaction is not set for channel", payload.ChannelId,
+                                            "Sorry, we had an internal error");
 
         // Create the new funding output
-        var fundingOutput = new FundingOutput(channel.LocalFundingPubKey, channel.PeerFundingPubKey,
-                                              existingFundingOutput.Amount)
-        {
-            Index = payload.FundingOutputIndex,
-            TxId = payload.FundingTxId
-        };
+        var fundingOutput = _fundingOutputFactory
+            .Create(channel.FundingOutput.Amount, payload.FundingOutputIndex, channel.LocalFundingPubKey,
+                    channel.PeerFundingPubKey, payload.FundingTxId);
 
         // Replace commitment transaction with new funding transaction
-        var commitmentTransaction =
-            channel.CommitmentTransaction as CommitmentTransaction
-            ?? throw new ChannelErrorException("Channel has no commitment transaction", payload.ChannelId,
-                                               "Sorry, we had an internal error");
-
         try
         {
-            commitmentTransaction.ReplaceFundingOutput(existingFundingOutput, fundingOutput);
+            channel.CommitmentTransaction.ReplaceFundingOutput(channel.FundingOutput, fundingOutput);
         }
         catch (Exception e)
         {
@@ -179,7 +172,7 @@ public class ChannelManager : IChannelManager
         List<ECDSASignature>? signatures;
         try
         {
-            signatures = commitmentTransaction
+            signatures = channel.CommitmentTransaction
                 .AppendRemoteSignatureAndSign(_lightningSigner, payload.Signature, channel.PeerFundingPubKey);
         }
         catch (Exception e)
@@ -188,7 +181,7 @@ public class ChannelManager : IChannelManager
                                             "Sorry, we had an internal error");
         }
 
-        if (!commitmentTransaction.IsValid || signatures is not { Count: 2 })
+        if (!channel.CommitmentTransaction.IsValid || signatures is not { Count: 2 })
             throw new ChannelErrorException("Commitment transaction is invalid", payload.ChannelId,
                                             "Sorry, we had an internal error");
 
@@ -199,11 +192,10 @@ public class ChannelManager : IChannelManager
                                                "Sorry, we had an internal error");
 
         // Create a new channelId
-        var channelId = ChannelIdFactory.CreateV1(payload.FundingTxId.ToBytes(), payload.FundingOutputIndex);
+        var channelId = _channelIdFactory.CreateV1(payload.FundingTxId.ToBytes(), payload.FundingOutputIndex);
 
         // Create the funding signed message
-        var fundingSignedMessage = _messageFactory
-            .CreatedFundingSignedMessage(channelId, ourSignature);
+        var fundingSignedMessage = _messageFactory.CreatedFundingSignedMessage(channelId, ourSignature);
 
         // Add the channel to the dictionary
         _channelStates.Add(channelId, ChannelState.V1FundingSigned);

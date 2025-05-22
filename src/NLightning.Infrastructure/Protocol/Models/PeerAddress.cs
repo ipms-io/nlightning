@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.RegularExpressions;
 using NBitcoin;
+using NLightning.Domain.ValueObjects;
 
 namespace NLightning.Infrastructure.Protocol.Models;
 
@@ -37,12 +38,31 @@ public sealed partial class PeerAddress
     public PeerAddress(string address)
     {
         var parts = address.Split('@');
+        if (parts.Length != 2)
+            throw new FormatException("Invalid address format, should be pubkey@host:port");
+
         PubKey = new PubKey(parts[0]);
 
-        var hostPort = parts[1].Split(':');
-        Host = IPAddress.Parse(hostPort[0]);
-        Port = int.Parse(hostPort[1]);
+        // Check if the address starts with http
+        if (address.StartsWith("http"))
+        {
+            // split on first // to get the address
+            var host = address.Split("//")[1];
+            Host = Dns.GetHostAddresses(host.Split(":")[0])[0];
+
+            // Port may have an extra / at the end. use regex to keep only the number in the port
+            Port = int.Parse(OnlyDigitsRegex().Match(host.Split(":")[1]).Value);
+        }
+        else
+        {
+            var hostPort = address.Split(':');
+            Host = IPAddress.Parse(hostPort[0]);
+            Port = int.Parse(hostPort[1]);
+        }
     }
+
+    public PeerAddress(PeerNodeInfo peerNodeInfo) : this(peerNodeInfo.Address)
+    { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PeerAddress"/> class.

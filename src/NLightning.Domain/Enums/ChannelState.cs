@@ -1,6 +1,6 @@
 namespace NLightning.Domain.Enums;
 
-public enum ChannelState: byte
+public enum ChannelState : byte
 {
     None = 0,
     V1Opening = 1,

@@ -33,12 +33,12 @@ public class OpenChannel1PayloadSerializer : IPayloadSerializer<OpenChannel1Payl
             _valueObjectSerializerFactory.GetSerializer<ChainHash>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChainHash)}");
         await chainHashSerializer.SerializeAsync(openChannel1Payload.ChainHash, stream);
-        
+
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(openChannel1Payload.ChannelId, stream);
-        
+
         var channelFlagsSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelFlags>()
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelFlags)}");
@@ -68,7 +68,7 @@ public class OpenChannel1PayloadSerializer : IPayloadSerializer<OpenChannel1Payl
         await stream.WriteAsync(openChannel1Payload.DelayedPaymentBasepoint.ToBytes());
         await stream.WriteAsync(openChannel1Payload.HtlcBasepoint.ToBytes());
         await stream.WriteAsync(openChannel1Payload.FirstPerCommitmentPoint.ToBytes());
-        
+
         await channelFlagsSerializer.SerializeAsync(openChannel1Payload.ChannelFlags, stream);
     }
 
@@ -83,12 +83,12 @@ public class OpenChannel1PayloadSerializer : IPayloadSerializer<OpenChannel1Payl
                 _valueObjectSerializerFactory.GetSerializer<ChainHash>()
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChainHash)}");
             var chainHash = await chainHashSerializer.DeserializeAsync(stream);
-            
+
             var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var temporaryChannelId = await channelIdSerializer.DeserializeAsync(stream);
-        
+
             var channelFlagsSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelFlags>()
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelFlags)}");
@@ -96,11 +96,11 @@ public class OpenChannel1PayloadSerializer : IPayloadSerializer<OpenChannel1Payl
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
             var fundingSatoshis = LightningMoney
                 .Satoshis(EndianBitConverter.ToUInt64BigEndian(buffer.AsSpan()[..sizeof(ulong)]));
-            
+
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
             var pushAmount = LightningMoney
                 .Satoshis(EndianBitConverter.ToUInt64BigEndian(buffer.AsSpan()[..sizeof(ulong)]));
-            
+
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
             var dustLimitSatoshis = LightningMoney
                 .Satoshis(EndianBitConverter.ToUInt64BigEndian(buffer.AsSpan()[..sizeof(ulong)]));
@@ -146,7 +146,7 @@ public class OpenChannel1PayloadSerializer : IPayloadSerializer<OpenChannel1Payl
             var firstPerCommitmentPoint = new PubKey(buffer.AsSpan()[..CryptoConstants.PUBKEY_LEN]);
 
             var channelFlags = await channelFlagsSerializer.DeserializeAsync(stream);
-            
+
             return new OpenChannel1Payload(chainHash, temporaryChannelId, fundingSatoshis, pushAmount,
                                            dustLimitSatoshis, maxHtlcValueInFlightMsat, channelReserveAmount,
                                            htlcMinimumAmount, feeRatePerKw, toSelfDelay, maxAcceptedHtlcs,

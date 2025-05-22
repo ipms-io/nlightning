@@ -8,7 +8,7 @@ using Interfaces;
 /// <remarks>
 /// The short channel id is a unique description of the funding transaction.
 /// </remarks>
-public readonly struct ShortChannelId : IValueObject, IEquatable<ShortChannelId>
+public readonly record struct ShortChannelId : IValueObject
 {
     private readonly byte[] _value;
 
@@ -77,28 +77,6 @@ public readonly struct ShortChannelId : IValueObject, IEquatable<ShortChannelId>
     {
         return $"{BlockHeight}x{TransactionIndex}x{OutputIndex}";
     }
-
-    public override bool Equals(object? obj)
-    {
-        if (obj is ShortChannelId other)
-        {
-            return Equals(other);
-        }
-
-        return false;
-    }
-
-    public bool Equals(ShortChannelId other)
-    {
-        return BlockHeight == other.BlockHeight &&
-               TransactionIndex == other.TransactionIndex &&
-               OutputIndex == other.OutputIndex;
-    }
-
-    public override int GetHashCode()
-    {
-        return HashCode.Combine(BlockHeight, TransactionIndex, OutputIndex);
-    }
     #endregion
 
     #region Implicit Operators
@@ -108,15 +86,5 @@ public readonly struct ShortChannelId : IValueObject, IEquatable<ShortChannelId>
     public static implicit operator ReadOnlySpan<byte>(ShortChannelId s) => s._value;
     public static implicit operator ShortChannelId(Span<byte> value) => new(value.ToArray());
     public static implicit operator ShortChannelId(ulong value) => new(value);
-
-    public static bool operator ==(ShortChannelId left, ShortChannelId right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(ShortChannelId left, ShortChannelId right)
-    {
-        return !(left == right);
-    }
     #endregion
 }

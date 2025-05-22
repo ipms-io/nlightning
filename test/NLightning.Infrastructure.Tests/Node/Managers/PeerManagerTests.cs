@@ -8,12 +8,9 @@ using NBitcoin;
 namespace NLightning.Infrastructure.Tests.Node.Managers;
 
 using Domain.Exceptions;
-using Domain.Factories;
 using Domain.Node.Options;
 using Domain.Protocol.Services;
-using Infrastructure.Node.Interfaces;
 using Infrastructure.Node.Managers;
-using Infrastructure.Node.Models;
 using Infrastructure.Protocol.Models;
 using NLightning.Tests.Utils;
 

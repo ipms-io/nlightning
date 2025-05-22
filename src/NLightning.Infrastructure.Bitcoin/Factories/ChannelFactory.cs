@@ -4,7 +4,7 @@ using NBitcoin;
 
 namespace NLightning.Infrastructure.Bitcoin.Factories;
 
-using Domain.Protocol.Services;
+using Crypto.Hashes;
 using Domain.Bitcoin.Factories;
 using Domain.Bitcoin.Services;
 using Domain.Channels;
@@ -16,8 +16,8 @@ using Domain.Protocol.Constants;
 using Domain.Protocol.Factories;
 using Domain.Protocol.Managers;
 using Domain.Protocol.Messages;
+using Domain.Protocol.Services;
 using Infrastructure.Protocol.Services;
-using Interfaces;
 using Outputs;
 using Protocol.Models;
 using Transactions;
@@ -26,20 +26,17 @@ public class ChannelFactory : IChannelFactory
 {
     private readonly ICommitmentTransactionFactory _commitmentTransactionFactory;
     private readonly IFeeService _feeService;
-    private readonly IFundingTransactionFactory _fundingTransactionFactory;
     private readonly IKeyDerivationService _keyDerivationService;
     private readonly ILogger<ChannelFactory> _logger;
     private readonly NodeOptions _nodeOptions;
     private readonly ISecureKeyManager _secureKeyManager;
 
     public ChannelFactory(ICommitmentTransactionFactory commitmentTransactionFactory, IFeeService feeService,
-                          IFundingTransactionFactory fundingTransactionFactory,
                           IKeyDerivationService keyDerivationService, ILogger<ChannelFactory> logger,
                           IOptions<NodeOptions> nodeOptions, ISecureKeyManager secureKeyManager)
     {
         _commitmentTransactionFactory = commitmentTransactionFactory;
         _feeService = feeService;
-        _fundingTransactionFactory = fundingTransactionFactory;
         _keyDerivationService = keyDerivationService;
         _logger = logger;
         _nodeOptions = nodeOptions.Value;
@@ -212,12 +209,13 @@ public class ChannelFactory : IChannelFactory
         ourPerCommitmentStorage.InsertSecret(firstPerCommitmentSecretBytes, CryptoConstants.FIRST_PER_COMMITMENT_INDEX);
 
         // Generate the commitment number
-        var commitmentNumber = new CommitmentNumber(localPaymentBasepoint, payload.PaymentBasepoint);
+        using var sha256 = new Sha256();
+        var commitmentNumber = new CommitmentNumber(localPaymentBasepoint, payload.PaymentBasepoint, sha256);
 
         // Create a commitment transaction
         try
         {
-            var fundingOutput = new FundingOutput(localFundingPubKey, payload.FundingPubKey, payload.FundingAmount,
+            var fundingOutput = new FundingOutput(payload.FundingAmount, localFundingPubKey, payload.FundingPubKey,
                                                   true);
             var tx = _commitmentTransactionFactory
                 .CreateCommitmentTransaction(peerOptions, fundingOutput, localPaymentBasepoint,

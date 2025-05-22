@@ -2,8 +2,8 @@ using NBitcoin;
 
 namespace NLightning.Domain.Protocol.Payloads;
 
-using Money;
 using Interfaces;
+using Money;
 using ValueObjects;
 
 /// <summary>

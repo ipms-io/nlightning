@@ -8,7 +8,7 @@ using Interfaces;
 /// <remarks>
 /// The channel id is a unique identifier for a channel.
 /// </remarks>
-public readonly struct ChannelId : IValueObject, IEquatable<ChannelId>
+public readonly record struct ChannelId : IValueObject
 {
     public const int LENGTH = 32;
 
@@ -27,44 +27,16 @@ public readonly struct ChannelId : IValueObject, IEquatable<ChannelId>
     }
 
     #region Overrides
-
     public override string ToString()
     {
         return Convert.ToHexString(_value);
     }
-
-    public override bool Equals(object? obj)
-    {
-        if (obj is ChannelId other)
-        {
-            return Equals(other);
-        }
-
-        return false;
-    }
-
-    public bool Equals(ChannelId other) => _value.SequenceEqual(other._value);
-
-    public override int GetHashCode()
-    {
-        return BitConverter.ToInt32(_value, 0);
-    }
     #endregion
 
-    #region Operators
+    #region Implicit Conversions
     public static implicit operator byte[](ChannelId c) => c._value;
     public static implicit operator ReadOnlyMemory<byte>(ChannelId c) => c._value;
     public static implicit operator ChannelId(byte[] value) => new(value);
     public static implicit operator ChannelId(Span<byte> value) => new(value);
-
-    public static bool operator ==(ChannelId left, ChannelId right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(ChannelId left, ChannelId right)
-    {
-        return !(left == right);
-    }
     #endregion
 }

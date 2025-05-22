@@ -17,7 +17,7 @@ public abstract class BaseTransaction : ITransaction
     private readonly TransactionBuilder _builder;
     private readonly List<(Coin, Sequence)> _coins = [];
 
-    private Transaction _transaction;
+    private readonly Transaction _transaction;
     #endregion
 
     #region Protected Properties
@@ -83,8 +83,6 @@ public abstract class BaseTransaction : ITransaction
     #region Protected Methods
     protected void SetLockTime(LockTime lockTime)
     {
-        ArgumentNullException.ThrowIfNull(lockTime);
-
         _transaction.LockTime = lockTime;
     }
 
@@ -97,7 +95,7 @@ public abstract class BaseTransaction : ITransaction
         // Check if the output amount is greater than the input amount
         return TotalOutputAmount + (fees ?? LightningMoney.Zero) <= TotalInputAmount;
     }
-    
+
     protected void CalculateAndCheckFees(LightningMoney currentFeePerKw)
     {
         // Calculate transaction fee
@@ -107,7 +105,7 @@ public abstract class BaseTransaction : ITransaction
         if (!CheckTransactionAmounts(CalculatedFee))
             throw new InvalidOperationException("Output amount cannot exceed input amount.");
     }
-    
+
     protected void CalculateTransactionFee(LightningMoney currentFeePerKw)
     {
         var outputWeight = CalculateOutputWeight();
@@ -115,7 +113,7 @@ public abstract class BaseTransaction : ITransaction
 
         CalculatedFee.Satoshi = (outputWeight + inputWeight) * currentFeePerKw.Satoshi / 1000L;
     }
-    
+
     #region Signature Management
     protected List<ECDSASignature> SignTransaction(ILightningSigner signer, params BitcoinSecret[] secrets)
     {
@@ -145,9 +143,9 @@ public abstract class BaseTransaction : ITransaction
     protected List<ECDSASignature> SignTransactionWithExistingKeys(ILightningSigner signer)
     {
         ArgumentNullException.ThrowIfNull(signer);
-    
+
         var signatures = signer.ExtractSignatures(_transaction);
-    
+
         TxId = _transaction.GetHash();
         Finalized = true;
 
@@ -255,7 +253,7 @@ public abstract class BaseTransaction : ITransaction
         return inputWeight;
     }
     #endregion
-    
+
     #region Input Management
     protected void AddCoin(Coin coin, Sequence sequence)
     {

@@ -6,7 +6,6 @@ namespace NLightning.Infrastructure.Serialization.Payloads;
 
 using Converters;
 using Domain.Crypto.Constants;
-using Domain.Enums;
 using Domain.Money;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Payloads.Interfaces;

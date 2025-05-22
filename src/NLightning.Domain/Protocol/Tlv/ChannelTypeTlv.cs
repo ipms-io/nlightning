@@ -16,7 +16,7 @@ public class ChannelTypeTlv : BaseTlv
     /// The channel type
     /// </summary>
     public byte[] ChannelType { get; }
-    
+
     /// <summary>
     /// The channel type features
     /// </summary>

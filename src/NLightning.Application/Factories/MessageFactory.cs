@@ -4,7 +4,6 @@ using NBitcoin.Crypto;
 
 namespace NLightning.Application.Factories;
 
-using Domain.Factories;
 using Domain.Money;
 using Domain.Node.Options;
 using Domain.Protocol.Messages;

@@ -1,7 +1,8 @@
+using NLightning.Infrastructure.Protocol.Factories;
+
 namespace NLightning.Infrastructure.Tests.Factories;
 
 using Infrastructure.Crypto.Hashes;
-using Infrastructure.Factories;
 
 public class ChannelIdFactoryTests
 {

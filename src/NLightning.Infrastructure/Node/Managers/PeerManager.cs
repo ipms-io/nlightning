@@ -2,15 +2,16 @@ using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
+using NLightning.Application.Node.Services.Interfaces;
 
 namespace NLightning.Infrastructure.Node.Managers;
 
 using Domain.Exceptions;
 using Domain.Node.Options;
-using Domain.ValueObjects;
-using Infrastructure.Protocol.Models;
 using Interfaces;
-using Models;
+using NLightning.Application.Factories.Interfaces;
+using NLightning.Application.Node;
+using Protocol.Models;
 
 /// <summary>
 /// Service for managing peers.
@@ -23,14 +24,14 @@ public sealed class PeerManager : IPeerManager
 {
     private readonly ILogger<PeerManager> _logger;
     private readonly IOptions<NodeOptions> _nodeOptions;
-    private readonly IPeerFactory _peerFactory;
-    private readonly Dictionary<PubKey, Peer> _peers = [];
+    private readonly IPeerServiceFactory _peerServiceFactory;
+    private readonly Dictionary<PubKey, IPeerService> _peers = [];
 
-    public PeerManager(ILogger<PeerManager> logger, IOptions<NodeOptions> nodeOptions, IPeerFactory peerFactory)
+    public PeerManager(ILogger<PeerManager> logger, IOptions<NodeOptions> nodeOptions, IPeerServiceFactory peerServiceFactory)
     {
         _logger = logger;
         _nodeOptions = nodeOptions;
-        _peerFactory = peerFactory;
+        _peerServiceFactory = peerServiceFactory;
     }
 
     /// <inheritdoc />
@@ -53,7 +54,7 @@ public sealed class PeerManager : IPeerManager
             throw new ConnectionException($"Failed to connect to peer {peerAddress.Host}:{peerAddress.Port}", e);
         }
 
-        var peer = await _peerFactory.CreateConnectedPeerAsync(peerAddress, tcpClient);
+        var peer = await _peerServiceFactory.CreateConnectedPeerAsync(peerAddress.PubKey, tcpClient);
         peer.DisconnectEvent += (_, _) =>
         {
             _peers.Remove(peerAddress.PubKey);
@@ -68,14 +69,14 @@ public sealed class PeerManager : IPeerManager
     public async Task AcceptPeerAsync(TcpClient tcpClient)
     {
         // Create the peer
-        var peer = await _peerFactory.CreateConnectingPeerAsync(tcpClient);
+        var peer = await _peerServiceFactory.CreateConnectingPeerAsync(tcpClient);
         peer.DisconnectEvent += (_, _) =>
         {
-            _peers.Remove(peer.PeerAddress.PubKey);
-            _logger.LogError("{Peer} disconnected", peer.PeerAddress.PubKey);
+            _peers.Remove(peer.PeerPubKey);
+            _logger.LogError("{Peer} disconnected", peer.PeerPubKey);
         };
 
-        _peers.Add(peer.PeerAddress.PubKey, peer);
+        _peers.Add(peer.PeerPubKey, peer);
     }
 
     /// <inheritdoc />

@@ -9,13 +9,8 @@ using Interfaces;
 /// <remarks>
 /// Initializes a new instance of the <see cref="BigSize"/> struct.
 /// </remarks>
-public readonly struct BigSize(ulong value) : IValueObject, IComparable, IEquatable<BigSize>
+public readonly record struct BigSize(ulong Value) : IValueObject, IComparable
 {
-    /// <summary>
-    /// The uint representation of the big size.
-    /// </summary>
-    public ulong Value { get; } = value;
-
     #region Implicit Conversions
     public static implicit operator ulong(BigSize bigSize) => bigSize.Value;
     public static implicit operator BigSize(ulong value) => new(value);
@@ -105,38 +100,12 @@ public readonly struct BigSize(ulong value) : IValueObject, IComparable, IEquata
     #endregion
 
     #region Equality
-    public override bool Equals(object? obj)
-    {
-        return obj is BigSize bigSize && Value == bigSize.Value;
-    }
-    public bool Equals(BigSize other)
-    {
-        return Value == other.Value;
-    }
-
-    public override int GetHashCode()
-    {
-        return Value.GetHashCode();
-    }
-
     public int CompareTo(object? obj)
     {
         if (obj is not BigSize bigSize)
-        {
             throw new ArgumentException("Object is not a BigSize");
-        }
 
         return Value.CompareTo(bigSize.Value);
-    }
-
-    public static bool operator ==(BigSize left, BigSize right)
-    {
-        return left.Value == right.Value;
-    }
-
-    public static bool operator !=(BigSize left, BigSize right)
-    {
-        return !(left == right);
     }
 
     public static bool operator <(BigSize left, BigSize right)

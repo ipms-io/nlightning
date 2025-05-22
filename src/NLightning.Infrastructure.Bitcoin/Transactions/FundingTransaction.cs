@@ -43,7 +43,7 @@ public class FundingTransaction : BaseTransaction
         _dustLimitAmount = dustLimitAmount;
 
         // Create the funding and change output
-        FundingOutput = new FundingOutput(pubkey1, pubkey2, amountSats);
+        FundingOutput = new FundingOutput(amountSats, pubkey1, pubkey2);
         ChangeOutput = new ChangeOutput(changeScript);
 
         AddOutput(FundingOutput);
@@ -66,7 +66,7 @@ public class FundingTransaction : BaseTransaction
         _dustLimitAmount = dustLimitAmount;
 
         // Create the funding and change output
-        FundingOutput = new FundingOutput(pubkey1, pubkey2, amountSats);
+        FundingOutput = new FundingOutput(amountSats, pubkey1, pubkey2);
         ChangeOutput = new ChangeOutput(redeemScript, changeScript);
 
         AddOutput(FundingOutput);

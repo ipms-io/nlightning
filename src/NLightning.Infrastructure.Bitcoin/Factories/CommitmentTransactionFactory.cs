@@ -2,13 +2,13 @@ using NBitcoin;
 
 namespace NLightning.Infrastructure.Bitcoin.Factories;
 
+using Domain.Bitcoin.Factories;
 using Domain.Bitcoin.Outputs;
-using Domain.Bitcoin.Transactions;
 using Domain.Bitcoin.Services;
+using Domain.Bitcoin.Transactions;
 using Domain.Money;
 using Domain.Node.Options;
 using Domain.Protocol.Signers;
-using Interfaces;
 using Outputs;
 using Protocol.Models;
 using Transactions;

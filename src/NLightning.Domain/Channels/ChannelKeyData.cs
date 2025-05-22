@@ -13,7 +13,7 @@ public class ChannelKeyData
     public PubKey PaymentBasepoint { get; init; }
     public PubKey DelayedPaymentBasepoint { get; init; }
     public PubKey HtlcBasepoint { get; init; }
-    
+
     public ChannelKeyData(ChannelId channelId, uint keyIndex, PubKey fundingPubKey, PubKey revocationBasepoint,
                           PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint)
     {

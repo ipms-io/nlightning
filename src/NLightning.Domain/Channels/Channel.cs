@@ -32,18 +32,18 @@ public class Channel
     public Script? PeerShutdownScriptPubKey { get; set; }
     public ShortChannelId? ShortChannelId { get; private set; }
     public ChannelState State { get; private set; }
-    public IOutput FundingOutput { get; }
+    public IFundingOutput FundingOutput { get; }
 
     public ITransaction? FundingTransaction { get; }
-    public ITransaction? CommitmentTransaction { get; }
+    public ICommitmentTransaction? CommitmentTransaction { get; }
 
     public Channel(ChannelId channelId, PubKey firstPerCommitmentPoint, bool isInitiator, uint keyIndex,
                    uint minimumDepth, PubKey peerFundingPubKey, Script? peerShutdownScriptPubKey,
                    ISecretStorageService secretStorageService, ISecureKeyManager secureKeyManager,
-                   NodeOptions nodeOptions, ITransaction commitmentTransaction, PubKey localDelayedPaymentBasepoint,
-                   PubKey localFirstPerCommitmentPoint, PubKey localFundingPubKey, PubKey localHtlcBasepoint,
-                   PubKey localPaymentBasepoint, PubKey localRevocationBasepoint, Script? localUpfrontShutdownScript,
-                   IOutput fundingOutput)
+                   NodeOptions nodeOptions, ICommitmentTransaction commitmentTransaction,
+                   PubKey localDelayedPaymentBasepoint, PubKey localFirstPerCommitmentPoint, PubKey localFundingPubKey,
+                   PubKey localHtlcBasepoint, PubKey localPaymentBasepoint, PubKey localRevocationBasepoint,
+                   Script? localUpfrontShutdownScript, IFundingOutput fundingOutput)
     {
         _keyIndex = keyIndex;
         _secretStorageService = secretStorageService;

@@ -1,8 +1,8 @@
 namespace NLightning.Domain.Protocol.Factories;
 
 using Channels;
-using Node.Options;
 using Messages;
+using Node.Options;
 
 public interface IChannelFactory
 {

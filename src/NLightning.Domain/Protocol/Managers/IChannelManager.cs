@@ -7,6 +7,6 @@ using Node.Options;
 
 public interface IChannelManager
 {
-    IChannelMessage? HandleChannelMessage(IChannelMessage message, FeatureOptions negotiatedFeatures,
-                                          PubKey peerPubKey);
+    IChannelMessage HandleChannelMessage(IChannelMessage message, FeatureOptions negotiatedFeatures,
+                                         PubKey peerPubKey);
 }
