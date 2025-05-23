@@ -67,7 +67,7 @@ public class OpenChannel1MessageTypeSerializer : IMessageTypeSerializer<OpenChan
                 return new OpenChannel1Message(payload);
 
             UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv = null;
-            if (extension.TryGetTlv(TlvConstants.UPFRONT_SHUTDOWN_SCRIPT, out var baseUpfrontShutdownTlv))
+            if (extension.TryGetTlv(TlvConstants.UpfrontShutdownScript, out var baseUpfrontShutdownTlv))
             {
                 var tlvConverter = _tlvConverterFactory.GetConverter<UpfrontShutdownScriptTlv>()
                                    ?? throw new SerializationException(
@@ -76,7 +76,7 @@ public class OpenChannel1MessageTypeSerializer : IMessageTypeSerializer<OpenChan
             }
 
             ChannelTypeTlv? channelTypeTlv = null;
-            if (extension.TryGetTlv(TlvConstants.CHANNEL_TYPE, out var baseChannelTypeTlv))
+            if (extension.TryGetTlv(TlvConstants.ChannelType, out var baseChannelTypeTlv))
             {
                 var tlvConverter =
                     _tlvConverterFactory.GetConverter<ChannelTypeTlv>()

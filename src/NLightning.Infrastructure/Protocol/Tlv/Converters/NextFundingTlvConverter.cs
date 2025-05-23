@@ -15,7 +15,7 @@ public class NextFundingTlvConverter : ITlvConverter<NextFundingTlv>
 
     public NextFundingTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        if (baseTlv.Type != TlvConstants.NEXT_FUNDING)
+        if (baseTlv.Type != TlvConstants.NextFunding)
         {
             throw new InvalidCastException("Invalid TLV type");
         }

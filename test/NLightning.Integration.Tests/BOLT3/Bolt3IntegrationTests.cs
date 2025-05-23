@@ -19,8 +19,8 @@ using Vectors;
 
 public class Bolt3IntegrationTests
 {
-    private static Sha256 s_sha256 = new Sha256();
-    
+    private static readonly Sha256 s_sha256 = new();
+
     private OfferedHtlcOutput? _offeredHtlc2;
     private OfferedHtlcOutput? _offeredHtlc3;
     private OfferedHtlcOutput? _offeredHtlc5;

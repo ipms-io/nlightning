@@ -22,7 +22,7 @@ public class InitiatorIntegrationTests
         // Arrange
         var initiator = new HandshakeState(true, InitiatorValidKeysVector.LocalStaticPrivateKey,
                                            InitiatorValidKeysVector.RemoteStaticPublicKey, s_dhFake);
-        Span<byte> messageBuffer = stackalloc byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        Span<byte> messageBuffer = stackalloc byte[ProtocolConstants.MaxMessageLength];
 
         try
         {
@@ -48,7 +48,7 @@ public class InitiatorIntegrationTests
         // Arrange
         var initiator = new HandshakeState(true, InitiatorValidKeysVector.LocalStaticPrivateKey,
                                            InitiatorValidKeysVector.RemoteStaticPublicKey, s_dhFake);
-        Span<byte> messageBuffer = stackalloc byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        Span<byte> messageBuffer = stackalloc byte[ProtocolConstants.MaxMessageLength];
 
         try
         {
@@ -77,7 +77,7 @@ public class InitiatorIntegrationTests
         // Arrange
         var initiator = new HandshakeState(true, InitiatorValidKeysVector.LocalStaticPrivateKey,
                                            InitiatorValidKeysVector.RemoteStaticPublicKey, s_dhFake);
-        Span<byte> messageBuffer = stackalloc byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        Span<byte> messageBuffer = stackalloc byte[ProtocolConstants.MaxMessageLength];
 
         try
         {
@@ -108,7 +108,7 @@ public class InitiatorIntegrationTests
         // Arrange
         var initiator = new HandshakeState(true, InitiatorValidKeysVector.LocalStaticPrivateKey,
                                            InitiatorValidKeysVector.RemoteStaticPublicKey, s_dhFake);
-        Span<byte> messageBuffer = stackalloc byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        Span<byte> messageBuffer = stackalloc byte[ProtocolConstants.MaxMessageLength];
         const BindingFlags FLAGS = BindingFlags.Instance | BindingFlags.NonPublic;
 
         try
@@ -157,7 +157,7 @@ public class InitiatorIntegrationTests
         // Arrange
         var initiator = new HandshakeState(true, InitiatorValidKeysVector.LocalStaticPrivateKey,
                                            InitiatorValidKeysVector.RemoteStaticPublicKey, s_dhFake);
-        var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        var messageBuffer = new byte[ProtocolConstants.MaxMessageLength];
         var inputBytes = Convert.FromHexString(actTwoInput);
 
         try

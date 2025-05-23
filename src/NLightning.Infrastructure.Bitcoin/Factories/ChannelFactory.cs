@@ -60,7 +60,7 @@ public class ChannelFactory : IChannelFactory
             throw new ChannelErrorException("We can only accept dual fund channels");
 
         // Check if this is a large channel and if we support it
-        if (payload.FundingAmount >= ChannelConstants.LARGE_CHANNEL_AMOUNT
+        if (payload.FundingAmount >= ChannelConstants.LargeChannelAmount
             && negotiatedFeatures.LargeChannels == FeatureSupport.No
            ) throw new ChannelErrorException("We don't support large channels");
 
@@ -73,8 +73,8 @@ public class ChannelFactory : IChannelFactory
             throw new ChannelErrorException("Funding amount is too small");
 
         // Check if dust_limit_satoshis is too small
-        if (payload.DustLimitAmount < ChannelConstants.MIN_DUST_LIMIT_AMOUNT)
-            peerOptions.DustLimitAmount = ChannelConstants.MIN_DUST_LIMIT_AMOUNT;
+        if (payload.DustLimitAmount < ChannelConstants.MinDustLimitAmount)
+            peerOptions.DustLimitAmount = ChannelConstants.MinDustLimitAmount;
         // throw new ChannelErrorException("Dust limit amount is too small");
 
         // Check if we consider dust_limit_satoshis too large. IE. 20% bigger than our dust limit
@@ -152,7 +152,7 @@ public class ChannelFactory : IChannelFactory
         // throw new ChannelErrorException("Max accepted htlcs is too small");
 
         // Check max_accepted_htlcs is too large
-        if (payload.MaxAcceptedHtlcs > ChannelConstants.MAX_ACCEPTED_HTLCS)
+        if (payload.MaxAcceptedHtlcs > ChannelConstants.MaxAcceptedHtlcs)
             peerOptions.MaxAcceptedHtlcs = _nodeOptions.MaxAcceptedHtlcs;
         // throw new ChannelErrorException("Max accepted htlcs is too small");
 
@@ -163,12 +163,12 @@ public class ChannelFactory : IChannelFactory
 
         // Check if we consider fee_rate_per_kw too large
         // TODO: Get actual amount from FeeService
-        if (payload.FeeRatePerKw > ChannelConstants.MAX_FEE_PER_KW)
+        if (payload.FeeRatePerKw > ChannelConstants.MaxFeePerKw)
             throw new ChannelErrorException("Fee rate per kw is too large");
 
         // Check if we consider fee_rate_per_kw too small. IE. 20% smaller than our fee rate
         // TODO: Get actual amount from FeeService
-        if (payload.FeeRatePerKw < ChannelConstants.MIN_FEE_PER_KW
+        if (payload.FeeRatePerKw < ChannelConstants.MinFeePerKw
             || payload.FeeRatePerKw < _feeService.GetCachedFeeRatePerKw() * 0.8M
            ) throw new ChannelErrorException("Fee rate per kw is too small");
         #endregion

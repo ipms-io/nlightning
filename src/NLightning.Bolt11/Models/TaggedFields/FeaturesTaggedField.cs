@@ -14,7 +14,7 @@ using Interfaces;
 /// <seealso cref="ITaggedField"/>
 internal sealed class FeaturesTaggedField : ITaggedField
 {
-    public TaggedFieldTypes Type => TaggedFieldTypes.FEATURES;
+    public TaggedFieldTypes Type => TaggedFieldTypes.Features;
     internal FeatureSet Value { get; }
     public short Length { get; }
 

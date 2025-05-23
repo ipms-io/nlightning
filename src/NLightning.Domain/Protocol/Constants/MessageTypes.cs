@@ -40,7 +40,7 @@ public enum MessageTypes : ushort
 
     #region Commitment
     UpdateAddHtlc = 128,
-    UpdateFufillHtlc = 130,
+    UpdateFulfillHtlc = 130,
     UpdateFailHtlc = 131,
     CommitmentSigned = 132,
     RevokeAndAck = 133,

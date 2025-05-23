@@ -16,7 +16,7 @@ public class ShortChannelIdTlv : BaseTlv
     /// </summary>
     public ShortChannelId ShortChannelId { get; }
 
-    public ShortChannelIdTlv(ShortChannelId shortChannelId) : base(TlvConstants.SHORT_CHANNEL_ID)
+    public ShortChannelIdTlv(ShortChannelId shortChannelId) : base(TlvConstants.ShortChannelId)
     {
         ShortChannelId = shortChannelId;
 

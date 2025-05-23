@@ -17,7 +17,7 @@ public class ShortChannelIdTlvConverter : ITlvConverter<ShortChannelIdTlv>
 
     public ShortChannelIdTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        if (baseTlv.Type != TlvConstants.SHORT_CHANNEL_ID)
+        if (baseTlv.Type != TlvConstants.ShortChannelId)
         {
             throw new InvalidCastException("Invalid TLV type");
         }

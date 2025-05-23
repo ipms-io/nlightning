@@ -19,7 +19,7 @@ public class TaggedFieldListTests
 
         var field = new MockTaggedField
         {
-            Type = TaggedFieldTypes.DESCRIPTION,
+            Type = TaggedFieldTypes.Description,
             Length = 10
         };
 
@@ -36,11 +36,11 @@ public class TaggedFieldListTests
     public void Given_TaggedFieldListWithExistingField_When_AddSameType_Then_ArgumentExceptionIsThrown()
     {
         // Given
-        var list = new TaggedFieldList { new MockTaggedField { Type = TaggedFieldTypes.DESCRIPTION } };
+        var list = new TaggedFieldList { new MockTaggedField { Type = TaggedFieldTypes.Description } };
 
         // When / Then
         var ex = Assert.Throws<ArgumentException>(() =>
-            list.Add(new MockTaggedField { Type = TaggedFieldTypes.DESCRIPTION })
+            list.Add(new MockTaggedField { Type = TaggedFieldTypes.Description })
         );
 
         Assert.Contains("already contains a tagged field of type DESCRIPTION", ex.Message);
@@ -50,11 +50,11 @@ public class TaggedFieldListTests
     public void Given_TaggedFieldListWithDescription_When_AddDescriptionHash_Then_ArgumentExceptionIsThrown()
     {
         // Given
-        var list = new TaggedFieldList { new MockTaggedField { Type = TaggedFieldTypes.DESCRIPTION } };
+        var list = new TaggedFieldList { new MockTaggedField { Type = TaggedFieldTypes.Description } };
 
         // When / Then
         var ex = Assert.Throws<ArgumentException>(() =>
-            list.Add(new MockTaggedField { Type = TaggedFieldTypes.DESCRIPTION_HASH })
+            list.Add(new MockTaggedField { Type = TaggedFieldTypes.DescriptionHash })
         );
 
         Assert.Contains("already contains a tagged field of type DESCRIPTION_HASH", ex.Message);
@@ -64,11 +64,11 @@ public class TaggedFieldListTests
     public void Given_TaggedFieldListWithDescriptionHash_When_AddDescription_Then_ArgumentExceptionIsThrown()
     {
         // Given
-        var list = new TaggedFieldList { new MockTaggedField { Type = TaggedFieldTypes.DESCRIPTION_HASH } };
+        var list = new TaggedFieldList { new MockTaggedField { Type = TaggedFieldTypes.DescriptionHash } };
 
         // When / Then
         var ex = Assert.Throws<ArgumentException>(() =>
-            list.Add(new MockTaggedField { Type = TaggedFieldTypes.DESCRIPTION })
+            list.Add(new MockTaggedField { Type = TaggedFieldTypes.Description })
         );
 
         Assert.Contains("already contains a tagged field of type DESCRIPTION", ex.Message);
@@ -81,8 +81,8 @@ public class TaggedFieldListTests
         var list = new TaggedFieldList
         {
             // When
-            new MockTaggedField { Type = TaggedFieldTypes.FALLBACK_ADDRESS },
-            new MockTaggedField { Type = TaggedFieldTypes.FALLBACK_ADDRESS }
+            new MockTaggedField { Type = TaggedFieldTypes.FallbackAddress },
+            new MockTaggedField { Type = TaggedFieldTypes.FallbackAddress }
         };
 
         // Then
@@ -99,8 +99,8 @@ public class TaggedFieldListTests
 
         var fields = new List<ITaggedField>
         {
-            new MockTaggedField { Type = TaggedFieldTypes.DESCRIPTION },
-            new MockTaggedField { Type = TaggedFieldTypes.FALLBACK_ADDRESS }
+            new MockTaggedField { Type = TaggedFieldTypes.Description },
+            new MockTaggedField { Type = TaggedFieldTypes.FallbackAddress }
         };
 
         // When
@@ -120,7 +120,7 @@ public class TaggedFieldListTests
         var eventRaised = false;
         list.Changed += (_, _) => eventRaised = true;
 
-        var field = new MockTaggedField { Type = TaggedFieldTypes.DESCRIPTION };
+        var field = new MockTaggedField { Type = TaggedFieldTypes.Description };
         list.Add(field);
 
         // When
@@ -141,7 +141,7 @@ public class TaggedFieldListTests
         list.Changed += (_, _) => eventCount++;
 
         // When
-        var removed = list.Remove(new MockTaggedField { Type = TaggedFieldTypes.DESCRIPTION });
+        var removed = list.Remove(new MockTaggedField { Type = TaggedFieldTypes.Description });
 
         // Then
         Assert.False(removed, "Remove should return false for a non-existing item.");
@@ -156,7 +156,7 @@ public class TaggedFieldListTests
         var eventRaised = false;
         list.Changed += (_, _) => eventRaised = true;
 
-        list.Add(new MockTaggedField { Type = TaggedFieldTypes.DESCRIPTION });
+        list.Add(new MockTaggedField { Type = TaggedFieldTypes.Description });
 
         // When
         list.RemoveAt(0);
@@ -174,11 +174,11 @@ public class TaggedFieldListTests
         var eventCount = 0;
         list.Changed += (_, _) => eventCount++;
 
-        list.Add(new MockTaggedField { Type = TaggedFieldTypes.DESCRIPTION });
-        list.Add(new MockTaggedField { Type = TaggedFieldTypes.FALLBACK_ADDRESS });
+        list.Add(new MockTaggedField { Type = TaggedFieldTypes.Description });
+        list.Add(new MockTaggedField { Type = TaggedFieldTypes.FallbackAddress });
 
         // When
-        var removed = list.RemoveAll(x => x.Type == TaggedFieldTypes.DESCRIPTION);
+        var removed = list.RemoveAll(x => x.Type == TaggedFieldTypes.Description);
 
         // Then
         Assert.Equal(1, removed);
@@ -194,9 +194,9 @@ public class TaggedFieldListTests
         var eventRaised = false;
         list.Changed += (_, _) => eventRaised = true;
 
-        list.Add(new MockTaggedField { Type = TaggedFieldTypes.DESCRIPTION });
-        list.Add(new MockTaggedField { Type = TaggedFieldTypes.FALLBACK_ADDRESS });
-        list.Add(new MockTaggedField { Type = TaggedFieldTypes.EXPIRY_TIME });
+        list.Add(new MockTaggedField { Type = TaggedFieldTypes.Description });
+        list.Add(new MockTaggedField { Type = TaggedFieldTypes.FallbackAddress });
+        list.Add(new MockTaggedField { Type = TaggedFieldTypes.ExpiryTime });
 
         // When
         list.RemoveRange(1, 2);
@@ -211,11 +211,11 @@ public class TaggedFieldListTests
     {
         // Given
         var list = new TaggedFieldList();
-        var field = new MockTaggedField { Type = TaggedFieldTypes.DESCRIPTION };
+        var field = new MockTaggedField { Type = TaggedFieldTypes.Description };
         list.Add(field);
 
         // When
-        var found = list.TryGet(TaggedFieldTypes.DESCRIPTION, out MockTaggedField? result);
+        var found = list.TryGet(TaggedFieldTypes.Description, out MockTaggedField? result);
 
         // Then
         Assert.True(found);
@@ -230,7 +230,7 @@ public class TaggedFieldListTests
         var list = new TaggedFieldList();
 
         // When
-        var found = list.TryGet(TaggedFieldTypes.DESCRIPTION, out MockTaggedField? result);
+        var found = list.TryGet(TaggedFieldTypes.Description, out MockTaggedField? result);
 
         // Then
         Assert.False(found);
@@ -242,13 +242,13 @@ public class TaggedFieldListTests
     {
         // Given
         var list = new TaggedFieldList();
-        var field1 = new MockTaggedField { Type = TaggedFieldTypes.FALLBACK_ADDRESS };
-        var field2 = new MockTaggedField { Type = TaggedFieldTypes.FALLBACK_ADDRESS };
+        var field1 = new MockTaggedField { Type = TaggedFieldTypes.FallbackAddress };
+        var field2 = new MockTaggedField { Type = TaggedFieldTypes.FallbackAddress };
         list.Add(field1);
         list.Add(field2);
 
         // When
-        var found = list.TryGetAll(TaggedFieldTypes.FALLBACK_ADDRESS, out List<MockTaggedField> items);
+        var found = list.TryGetAll(TaggedFieldTypes.FallbackAddress, out List<MockTaggedField> items);
 
         // Then
         Assert.True(found);
@@ -265,7 +265,7 @@ public class TaggedFieldListTests
         var list = new TaggedFieldList();
 
         // When
-        var found = list.TryGetAll(TaggedFieldTypes.FALLBACK_ADDRESS, out List<MockTaggedField> items);
+        var found = list.TryGetAll(TaggedFieldTypes.FallbackAddress, out List<MockTaggedField> items);
 
         // Then
         Assert.False(found);
@@ -278,8 +278,8 @@ public class TaggedFieldListTests
         // Given
         var list = new TaggedFieldList
         {
-            new MockTaggedField { Type = TaggedFieldTypes.DESCRIPTION, Length = 5 },
-            new MockTaggedField { Type = TaggedFieldTypes.FALLBACK_ADDRESS, Length = 10 }
+            new MockTaggedField { Type = TaggedFieldTypes.Description, Length = 5 },
+            new MockTaggedField { Type = TaggedFieldTypes.FallbackAddress, Length = 10 }
         };
 
         // When
@@ -295,8 +295,8 @@ public class TaggedFieldListTests
         // Given
         var list = new TaggedFieldList
         {
-            new MockTaggedField { Type = TaggedFieldTypes.DESCRIPTION, Length = 2 },
-            new MockTaggedField { Type = TaggedFieldTypes.FALLBACK_ADDRESS, Length = 1 }
+            new MockTaggedField { Type = TaggedFieldTypes.Description, Length = 2 },
+            new MockTaggedField { Type = TaggedFieldTypes.FallbackAddress, Length = 1 }
         };
         var bitWriter = new BitWriter(50);
 

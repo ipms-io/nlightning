@@ -29,7 +29,7 @@ internal sealed class Transport : ITransport
     /// <inheritdoc/>
     /// <exception cref="ObjectDisposedException">Thrown if the current instance has already been disposed.</exception>
     /// <exception cref="InvalidOperationException">Thrown if the responder has attempted to write a message to a one-way stream.</exception>
-    /// <exception cref="ArgumentException">Thrown if the encrypted payload was greater than <see cref="ProtocolConstants.MAX_MESSAGE_LENGTH"/> bytes in length, or if the output buffer did not have enough space to hold the ciphertext.</exception>
+    /// <exception cref="ArgumentException">Thrown if the encrypted payload was greater than <see cref="ProtocolConstants.MaxMessageLength"/> bytes in length, or if the output buffer did not have enough space to hold the ciphertext.</exception>
     public int WriteMessage(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Transport));
@@ -55,9 +55,9 @@ internal sealed class Transport : ITransport
     {
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Transport));
 
-        if (lc.Length != ProtocolConstants.MESSAGE_HEADER_SIZE)
+        if (lc.Length != ProtocolConstants.MessageHeaderSize)
         {
-            throw new ArgumentException($"Lightning Message Header must be {ProtocolConstants.MESSAGE_HEADER_SIZE} bytes in length.");
+            throw new ArgumentException($"Lightning Message Header must be {ProtocolConstants.MessageHeaderSize} bytes in length.");
         }
 
         // Decrypt the payload length from the message buffer
@@ -97,14 +97,14 @@ internal sealed class Transport : ITransport
     /// Thrown if the responder has attempted to write a message to a one-way stream.
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// Thrown if the encrypted payload was greater than <see cref="ProtocolConstants.MAX_MESSAGE_LENGTH"/>
+    /// Thrown if the encrypted payload was greater than <see cref="ProtocolConstants.MaxMessageLength"/>
     /// bytes in length, or if the output buffer did not have enough space to hold the ciphertext.
     /// </exception>
     private int WriteMessagePart(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
-        if (payload.Length + CryptoConstants.CHACHA20_POLY1305_TAG_LEN > ProtocolConstants.MAX_MESSAGE_LENGTH)
+        if (payload.Length + CryptoConstants.CHACHA20_POLY1305_TAG_LEN > ProtocolConstants.MaxMessageLength)
         {
-            throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MAX_MESSAGE_LENGTH} bytes in length.");
+            throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MaxMessageLength} bytes in length.");
         }
 
         if (payload.Length + CryptoConstants.CHACHA20_POLY1305_TAG_LEN > messageBuffer.Length)
@@ -134,7 +134,7 @@ internal sealed class Transport : ITransport
     /// Thrown if the initiator has attempted to read a message from a one-way stream.
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// Thrown if the message was greater than <see cref="ProtocolConstants.MAX_MESSAGE_LENGTH"/>
+    /// Thrown if the message was greater than <see cref="ProtocolConstants.MaxMessageLength"/>
     /// bytes in length, or if the output buffer did not have enough space to hold the plaintext.
     /// </exception>
     /// <exception cref="System.Security.Cryptography.CryptographicException">
@@ -144,8 +144,8 @@ internal sealed class Transport : ITransport
     {
         switch (message.Length)
         {
-            case > ProtocolConstants.MAX_MESSAGE_LENGTH:
-                throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MAX_MESSAGE_LENGTH} bytes in length.");
+            case > ProtocolConstants.MaxMessageLength:
+                throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MaxMessageLength} bytes in length.");
             case < CryptoConstants.CHACHA20_POLY1305_TAG_LEN:
                 throw new ArgumentException($"Noise message must be greater than or equal to {CryptoConstants.CHACHA20_POLY1305_TAG_LEN} bytes in length.");
         }

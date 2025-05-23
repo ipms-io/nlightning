@@ -66,7 +66,7 @@ public class InitMessageTypeSerializer : IMessageTypeSerializer<InitMessage>
                 return new InitMessage(payload);
 
             NetworksTlv? networksTlv = null;
-            if (extension.TryGetTlv(TlvConstants.NETWORKS, out var baseNetworkTlv))
+            if (extension.TryGetTlv(TlvConstants.Networks, out var baseNetworkTlv))
             {
                 var tlvConverter = _tlvConverterFactory.GetConverter<NetworksTlv>()
                                    ?? throw new SerializationException(

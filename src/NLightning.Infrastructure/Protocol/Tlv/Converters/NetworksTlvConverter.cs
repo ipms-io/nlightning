@@ -16,7 +16,7 @@ public class NetworksTlvConverter : ITlvConverter<NetworksTlv>
 
     public NetworksTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        if (baseTlv.Type != TlvConstants.NETWORKS)
+        if (baseTlv.Type != TlvConstants.Networks)
         {
             throw new InvalidCastException("Invalid TLV type");
         }

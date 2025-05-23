@@ -19,7 +19,7 @@ public class NetworksTlv : BaseTlv
     /// </remarks>
     public IEnumerable<ChainHash>? ChainHashes { get; }
 
-    public NetworksTlv(IEnumerable<ChainHash> chainHashes) : base(TlvConstants.NETWORKS)
+    public NetworksTlv(IEnumerable<ChainHash> chainHashes) : base(TlvConstants.Networks)
     {
         ChainHashes = chainHashes.ToList();
 

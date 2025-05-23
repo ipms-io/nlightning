@@ -67,7 +67,7 @@ public class AcceptChannel2MessageTypeSerializer : IMessageTypeSerializer<Accept
                 return new AcceptChannel2Message(payload);
 
             UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv = null;
-            if (extension.TryGetTlv(TlvConstants.UPFRONT_SHUTDOWN_SCRIPT, out var baseUpfrontShutdownTlv))
+            if (extension.TryGetTlv(TlvConstants.UpfrontShutdownScript, out var baseUpfrontShutdownTlv))
             {
                 var tlvConverter = _tlvConverterFactory.GetConverter<UpfrontShutdownScriptTlv>()
                                    ?? throw new SerializationException(
@@ -76,7 +76,7 @@ public class AcceptChannel2MessageTypeSerializer : IMessageTypeSerializer<Accept
             }
 
             ChannelTypeTlv? channelTypeTlv = null;
-            if (extension.TryGetTlv(TlvConstants.CHANNEL_TYPE, out var baseChannelTypeTlv))
+            if (extension.TryGetTlv(TlvConstants.ChannelType, out var baseChannelTypeTlv))
             {
                 var tlvConverter =
                     _tlvConverterFactory.GetConverter<ChannelTypeTlv>()
@@ -85,7 +85,7 @@ public class AcceptChannel2MessageTypeSerializer : IMessageTypeSerializer<Accept
             }
 
             RequireConfirmedInputsTlv? requireConfirmedInputsTlv = null;
-            if (extension.TryGetTlv(TlvConstants.REQUIRE_CONFIRMED_INPUTS, out var baseRequireConfirmedInputsTlv))
+            if (extension.TryGetTlv(TlvConstants.RequireConfirmedInputs, out var baseRequireConfirmedInputsTlv))
             {
                 var tlvConverter =
                     _tlvConverterFactory.GetConverter<RequireConfirmedInputsTlv>()

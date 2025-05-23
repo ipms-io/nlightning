@@ -67,7 +67,7 @@ public class TxInitRbfMessageTypeSerializer : IMessageTypeSerializer<TxInitRbfMe
                 return new TxInitRbfMessage(payload);
 
             FundingOutputContributionTlv? fundingOutputContributionTlv = null;
-            if (extension.TryGetTlv(TlvConstants.FUNDING_OUTPUT_CONTRIBUTION, out var baseFundingOutputContributionTlv))
+            if (extension.TryGetTlv(TlvConstants.FundingOutputContribution, out var baseFundingOutputContributionTlv))
             {
                 var tlvConverter = _tlvConverterFactory.GetConverter<FundingOutputContributionTlv>()
                                    ?? throw new SerializationException(
@@ -76,7 +76,7 @@ public class TxInitRbfMessageTypeSerializer : IMessageTypeSerializer<TxInitRbfMe
             }
 
             RequireConfirmedInputsTlv? requireConfirmedInputsTlv = null;
-            if (extension.TryGetTlv(TlvConstants.REQUIRE_CONFIRMED_INPUTS, out var baserequireConfirmedInputsTlv))
+            if (extension.TryGetTlv(TlvConstants.RequireConfirmedInputs, out var baserequireConfirmedInputsTlv))
             {
                 var tlvConverter =
                     _tlvConverterFactory.GetConverter<RequireConfirmedInputsTlv>()

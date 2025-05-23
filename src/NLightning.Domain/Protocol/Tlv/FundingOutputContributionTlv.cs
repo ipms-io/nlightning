@@ -16,7 +16,7 @@ public class FundingOutputContributionTlv : BaseTlv
     /// </summary>
     public LightningMoney Amount { get; }
 
-    public FundingOutputContributionTlv(LightningMoney amount) : base(TlvConstants.FUNDING_OUTPUT_CONTRIBUTION)
+    public FundingOutputContributionTlv(LightningMoney amount) : base(TlvConstants.FundingOutputContribution)
     {
         Amount = amount;
         Length = sizeof(ulong);

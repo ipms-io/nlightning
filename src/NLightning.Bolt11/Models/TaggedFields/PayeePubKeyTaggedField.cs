@@ -16,7 +16,7 @@ using Interfaces;
 /// <seealso cref="ITaggedField"/>
 internal sealed class PayeePubKeyTaggedField : ITaggedField
 {
-    public TaggedFieldTypes Type => TaggedFieldTypes.PAYEE_PUB_KEY;
+    public TaggedFieldTypes Type => TaggedFieldTypes.PayeePubKey;
     internal PubKey Value { get; }
     public short Length => TaggedFieldConstants.PAYEE_PUBKEY_LENGTH;
 

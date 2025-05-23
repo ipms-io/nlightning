@@ -18,7 +18,7 @@ public class DescriptionTaggedFieldTests
         var taggedField = new DescriptionTaggedField(value);
 
         // Assert
-        Assert.Equal(TaggedFieldTypes.DESCRIPTION, taggedField.Type);
+        Assert.Equal(TaggedFieldTypes.Description, taggedField.Type);
         Assert.Equal(value, taggedField.Value);
         Assert.Equal(expectedLength, taggedField.Length);
     }

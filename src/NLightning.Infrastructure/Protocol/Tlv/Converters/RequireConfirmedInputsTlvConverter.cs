@@ -15,7 +15,7 @@ public class RequireConfirmedInputsTlvConverter : ITlvConverter<RequireConfirmed
 
     public RequireConfirmedInputsTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        if (baseTlv.Type != TlvConstants.REQUIRE_CONFIRMED_INPUTS)
+        if (baseTlv.Type != TlvConstants.RequireConfirmedInputs)
         {
             throw new InvalidCastException("Invalid TLV type");
         }

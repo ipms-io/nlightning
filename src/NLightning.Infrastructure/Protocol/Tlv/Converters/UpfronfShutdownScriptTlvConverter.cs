@@ -18,7 +18,7 @@ public class UpfrontShutdownScriptTlvConverter : ITlvConverter<UpfrontShutdownSc
 
     public UpfrontShutdownScriptTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        if (baseTlv.Type != TlvConstants.UPFRONT_SHUTDOWN_SCRIPT)
+        if (baseTlv.Type != TlvConstants.UpfrontShutdownScript)
         {
             throw new InvalidCastException("Invalid TLV type");
         }

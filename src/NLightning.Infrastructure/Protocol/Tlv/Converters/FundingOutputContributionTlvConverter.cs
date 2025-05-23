@@ -17,7 +17,7 @@ public class FundingOutputContributionTlvConverter : ITlvConverter<FundingOutput
 
     public FundingOutputContributionTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        if (baseTlv.Type != TlvConstants.FUNDING_OUTPUT_CONTRIBUTION)
+        if (baseTlv.Type != TlvConstants.FundingOutputContribution)
         {
             throw new InvalidCastException("Invalid TLV type");
         }

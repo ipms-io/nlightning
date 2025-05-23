@@ -130,7 +130,7 @@ public class MessageTypeSerializerFactory : IMessageTypeSerializerFactory
         _messageTypeDictionary.Add(MessageTypes.UpdateFailHtlc, typeof(UpdateFailHtlcMessage));
         _messageTypeDictionary.Add(MessageTypes.UpdateFailMalformedHtlc, typeof(UpdateFailMalformedHtlcMessage));
         _messageTypeDictionary.Add(MessageTypes.UpdateFee, typeof(UpdateFeeMessage));
-        _messageTypeDictionary.Add(MessageTypes.UpdateFufillHtlc, typeof(UpdateFulfillHtlcMessage));
+        _messageTypeDictionary.Add(MessageTypes.UpdateFulfillHtlc, typeof(UpdateFulfillHtlcMessage));
         _messageTypeDictionary.Add(MessageTypes.Warning, typeof(WarningMessage));
     }
 }

@@ -16,8 +16,8 @@ using Protocol.Constants;
 /// <remarks> See <see href="https://github.com/lightning/bolts/blob/master/08-transport.md">Lightning Bolt8</see> for specific implementation information.</remarks>
 internal sealed class HandshakeState : IHandshakeState
 {
-    private const byte HANDSHAKE_VERSION = 0x00;
-    private static readonly HandshakePattern s_handshakePattern = HandshakePattern.XK;
+    private const byte HandshakeVersion = 0x00;
+    private static readonly HandshakePattern s_handshakePattern = HandshakePattern.Xk;
 
     private readonly SymmetricState _state;
     private readonly Role _role;
@@ -66,11 +66,11 @@ internal sealed class HandshakeState : IHandshakeState
             throw new ArgumentException("Invalid remote static public key.", nameof(rs));
         }
 
-        _state = new SymmetricState(ProtocolConstants.NAME);
-        _state.MixHash(ProtocolConstants.PROLOGUE);
+        _state = new SymmetricState(ProtocolConstants.Name);
+        _state.MixHash(ProtocolConstants.Prologue);
 
-        _role = initiator ? Role.ALICE : Role.BOB;
-        _initiator = Role.ALICE;
+        _role = initiator ? Role.Alice : Role.Bob;
+        _initiator = Role.Alice;
         _turnToWrite = initiator;
         _s = _dh.GenerateKeyPair(s);
         _rs = rs.ToArray();
@@ -82,7 +82,7 @@ internal sealed class HandshakeState : IHandshakeState
     /// <inheritdoc/>
     /// <exception cref="ObjectDisposedException">Thrown if the current instance has already been disposed.</exception>
     /// <exception cref="InvalidOperationException">Thrown if the call to <see cref="ReadMessage"/> was expected or the handshake has already been completed.</exception>
-    /// <exception cref="ArgumentException">Thrown if the output was greater than <see cref="ProtocolConstants.MAX_MESSAGE_LENGTH"/> bytes in length, or if the output buffer did not have enough space to hold the ciphertext.</exception>
+    /// <exception cref="ArgumentException">Thrown if the output was greater than <see cref="ProtocolConstants.MaxMessageLength"/> bytes in length, or if the output buffer did not have enough space to hold the ciphertext.</exception>
     public (int, byte[]?, Encryption.Transport?) WriteMessage(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(HandshakeState));
@@ -95,9 +95,9 @@ internal sealed class HandshakeState : IHandshakeState
         var overhead = _messagePatterns.Peek().Overhead(CryptoConstants.PUBKEY_LEN, _state.HasKeys());
         var ciphertextSize = payload.Length + overhead;
 
-        if (ciphertextSize > ProtocolConstants.MAX_MESSAGE_LENGTH)
+        if (ciphertextSize > ProtocolConstants.MaxMessageLength)
         {
-            throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MAX_MESSAGE_LENGTH} bytes in length.");
+            throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MaxMessageLength} bytes in length.");
         }
 
         if (ciphertextSize > messageBuffer.Length)
@@ -114,7 +114,7 @@ internal sealed class HandshakeState : IHandshakeState
         var messageBufferLength = messageBuffer.Length;
 
         // write version to message buffer
-        messageBuffer[0] = HANDSHAKE_VERSION;
+        messageBuffer[0] = HandshakeVersion;
 
         foreach (var token in next.Tokens)
         {
@@ -149,7 +149,7 @@ internal sealed class HandshakeState : IHandshakeState
     /// <inheritdoc/>
     /// <exception cref="ObjectDisposedException">Thrown if the current instance has already been disposed.</exception>
     /// <exception cref="InvalidOperationException">Thrown if the call to <see cref="WriteMessage"/> was expected or the handshake has already been completed.</exception>
-    /// <exception cref="ArgumentException">Thrown if the message was greater than <see cref="ProtocolConstants.MAX_MESSAGE_LENGTH"/> bytes in length, or if the output buffer did not have enough space to hold the plaintext.</exception>
+    /// <exception cref="ArgumentException">Thrown if the message was greater than <see cref="ProtocolConstants.MaxMessageLength"/> bytes in length, or if the output buffer did not have enough space to hold the plaintext.</exception>
     /// <exception cref="System.Security.Cryptography.CryptographicException">Thrown if the decryption of the message has failed.</exception>
     public (int, byte[]?, Encryption.Transport?) ReadMessage(ReadOnlySpan<byte> message, Span<byte> payloadBuffer)
     {
@@ -163,9 +163,9 @@ internal sealed class HandshakeState : IHandshakeState
         var overhead = _messagePatterns.Peek().Overhead(CryptoConstants.PUBKEY_LEN, _state.HasKeys());
         var plaintextSize = message.Length - overhead;
 
-        if (message.Length > ProtocolConstants.MAX_MESSAGE_LENGTH)
+        if (message.Length > ProtocolConstants.MaxMessageLength)
         {
-            throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MAX_MESSAGE_LENGTH} bytes in length.");
+            throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MaxMessageLength} bytes in length.");
         }
 
         if (message.Length != overhead)
@@ -218,7 +218,7 @@ internal sealed class HandshakeState : IHandshakeState
         {
             if (token == Token.S)
             {
-                _state.MixHash(_role == Role.ALICE ? _s.PublicKeyBytes : _rs);
+                _state.MixHash(_role == Role.Alice ? _s.PublicKeyBytes : _rs);
             }
         }
 
@@ -226,7 +226,7 @@ internal sealed class HandshakeState : IHandshakeState
         {
             if (token == Token.S)
             {
-                _state.MixHash(_role == Role.ALICE ? _rs : _s.PublicKeyBytes);
+                _state.MixHash(_role == Role.Alice ? _rs : _s.PublicKeyBytes);
             }
         }
     }
@@ -268,7 +268,7 @@ internal sealed class HandshakeState : IHandshakeState
         Debug.Assert(_re == null);
 
         // Check version
-        if (buffer[0] != HANDSHAKE_VERSION)
+        if (buffer[0] != HandshakeVersion)
         {
             throw new InvalidOperationException("Invalid handshake version.");
         }
@@ -284,7 +284,7 @@ internal sealed class HandshakeState : IHandshakeState
     private ReadOnlySpan<byte> ReadS(ReadOnlySpan<byte> message)
     {
         // Check version
-        if (message[0] != HANDSHAKE_VERSION)
+        if (message[0] != HandshakeVersion)
         {
             throw new InvalidOperationException("Invalid handshake version.");
         }
@@ -301,7 +301,7 @@ internal sealed class HandshakeState : IHandshakeState
 
     private void ProcessEs()
     {
-        if (_role == Role.ALICE)
+        if (_role == Role.Alice)
         {
             DhAndMixKey(_e, _rs);
         }
@@ -313,7 +313,7 @@ internal sealed class HandshakeState : IHandshakeState
 
     private void ProcessSe()
     {
-        if (_role == Role.ALICE)
+        if (_role == Role.Alice)
         {
             DhAndMixKey(_s, _re);
         }
@@ -350,12 +350,6 @@ internal sealed class HandshakeState : IHandshakeState
         _state.Dispose();
         _e?.Dispose();
         _s.Dispose();
-    }
-
-    private enum Role
-    {
-        ALICE,
-        BOB
     }
 
     public void Dispose()

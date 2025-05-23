@@ -23,8 +23,8 @@ public class MessageIntegrationTests
                 ((Span<byte>)initializedParties.InitiatorRk).ToArray());
 
             var message = "hello"u8.ToArray();
-            var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-            var receivedMessageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+            var messageBuffer = new byte[ProtocolConstants.MaxMessageLength];
+            var receivedMessageBuffer = new byte[ProtocolConstants.MaxMessageLength];
 
             for (var i = 0; i < 1002; i++)
             {

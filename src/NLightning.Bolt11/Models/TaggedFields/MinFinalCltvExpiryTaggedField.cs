@@ -15,7 +15,7 @@ using Interfaces;
 /// <seealso cref="ITaggedField"/>
 internal sealed class MinFinalCltvExpiryTaggedField : ITaggedField
 {
-    public TaggedFieldTypes Type => TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY;
+    public TaggedFieldTypes Type => TaggedFieldTypes.MinFinalCltvExpiry;
     internal ushort Value { get; }
     public short Length { get; }
 

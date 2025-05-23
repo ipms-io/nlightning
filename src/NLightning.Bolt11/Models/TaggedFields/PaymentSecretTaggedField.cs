@@ -16,7 +16,7 @@ using Interfaces;
 /// <seealso cref="ITaggedField"/>
 internal sealed class PaymentSecretTaggedField : ITaggedField
 {
-    public TaggedFieldTypes Type => TaggedFieldTypes.PAYMENT_SECRET;
+    public TaggedFieldTypes Type => TaggedFieldTypes.PaymentSecret;
     internal uint256 Value { get; }
     public short Length => TaggedFieldConstants.HASH_LENGTH;
 

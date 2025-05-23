@@ -22,7 +22,7 @@ public class ChannelTypeTlv : BaseTlv
     /// </summary>
     public FeatureSet Features { get; }
 
-    public ChannelTypeTlv(byte[] channelType) : base(TlvConstants.CHANNEL_TYPE)
+    public ChannelTypeTlv(byte[] channelType) : base(TlvConstants.ChannelType)
     {
         ChannelType = channelType;
         Features = FeatureSet.DeserializeFromBytes(channelType);

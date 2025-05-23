@@ -18,7 +18,7 @@ public class MinFinalCltvExpiryTaggedFieldTests
         var taggedField = new MinFinalCltvExpiryTaggedField(expiry);
 
         // Assert
-        Assert.Equal(TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY, taggedField.Type);
+        Assert.Equal(TaggedFieldTypes.MinFinalCltvExpiry, taggedField.Type);
         Assert.Equal(expiry, taggedField.Value);
         Assert.Equal(expectedLength, taggedField.Length);
     }

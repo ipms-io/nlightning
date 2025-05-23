@@ -67,7 +67,7 @@ public class ChannelReadyMessageTypeSerializer : IMessageTypeSerializer<ChannelR
                 return new ChannelReadyMessage(payload);
 
             ShortChannelIdTlv? shortChannelIdTlv = null;
-            if (extension.TryGetTlv(TlvConstants.SHORT_CHANNEL_ID, out var baseShortChannelId))
+            if (extension.TryGetTlv(TlvConstants.ShortChannelId, out var baseShortChannelId))
             {
                 var tlvConverter = _tlvConverterFactory.GetConverter<ShortChannelIdTlv>()
                                    ?? throw new SerializationException(

@@ -24,16 +24,16 @@ internal class TaggedFieldList : List<ITaggedField>
     internal new void Add(ITaggedField taggedField)
     {
         // Check for uniqueness
-        if (this.Any(x => x.Type.Equals(taggedField.Type)) && taggedField.Type != TaggedFieldTypes.FALLBACK_ADDRESS)
+        if (this.Any(x => x.Type.Equals(taggedField.Type)) && taggedField.Type != TaggedFieldTypes.FallbackAddress)
         {
             throw new ArgumentException($"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
         }
 
         switch (taggedField.Type)
         {
-            case TaggedFieldTypes.DESCRIPTION when this.Any(x => x.Type.Equals(TaggedFieldTypes.DESCRIPTION_HASH)):
+            case TaggedFieldTypes.Description when this.Any(x => x.Type.Equals(TaggedFieldTypes.DescriptionHash)):
                 throw new ArgumentException($"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
-            case TaggedFieldTypes.DESCRIPTION_HASH when this.Any(x => x.Type.Equals(TaggedFieldTypes.DESCRIPTION)):
+            case TaggedFieldTypes.DescriptionHash when this.Any(x => x.Type.Equals(TaggedFieldTypes.Description)):
                 throw new ArgumentException($"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
             default:
                 base.Add(taggedField);

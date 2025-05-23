@@ -18,7 +18,7 @@ public class UpfrontShutdownScriptTlv : BaseTlv
     /// </summary>
     public Script ShutdownScriptPubkey { get; }
 
-    public UpfrontShutdownScriptTlv(Script shutdownScriptPubkey) : base(TlvConstants.UPFRONT_SHUTDOWN_SCRIPT)
+    public UpfrontShutdownScriptTlv(Script shutdownScriptPubkey) : base(TlvConstants.UpfrontShutdownScript)
     {
         ShutdownScriptPubkey = shutdownScriptPubkey;
 

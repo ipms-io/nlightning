@@ -105,7 +105,7 @@ public class PayloadSerializerFactory : IPayloadSerializerFactory
         _messageTypeDictionary.Add(MessageTypes.UpdateFailHtlc, typeof(UpdateFailHtlcPayload));
         _messageTypeDictionary.Add(MessageTypes.UpdateFailMalformedHtlc, typeof(UpdateFailMalformedHtlcPayload));
         _messageTypeDictionary.Add(MessageTypes.UpdateFee, typeof(UpdateFeePayload));
-        _messageTypeDictionary.Add(MessageTypes.UpdateFufillHtlc, typeof(UpdateFulfillHtlcPayload));
+        _messageTypeDictionary.Add(MessageTypes.UpdateFulfillHtlc, typeof(UpdateFulfillHtlcPayload));
         _messageTypeDictionary.Add(MessageTypes.Warning, typeof(ErrorPayload));
     }
 }

@@ -18,7 +18,7 @@ public class ExpiryTimeTaggedFieldTests
         var taggedField = new ExpiryTimeTaggedField(value);
 
         // Assert
-        Assert.Equal(TaggedFieldTypes.EXPIRY_TIME, taggedField.Type);
+        Assert.Equal(TaggedFieldTypes.ExpiryTime, taggedField.Type);
         Assert.Equal(value, taggedField.Value);
         Assert.Equal(expectedLength, taggedField.Length);
     }

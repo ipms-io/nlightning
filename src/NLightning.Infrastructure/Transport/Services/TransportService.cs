@@ -77,7 +77,7 @@ internal sealed class TransportService : ITransportService
                 _logger.LogTrace("We're initiator, writing Act One");
 
                 // Write Act One
-                var len = _handshakeService.PerformStep(ProtocolConstants.EMPTY_MESSAGE, writeBuffer, out _);
+                var len = _handshakeService.PerformStep(ProtocolConstants.EmptyMessage, writeBuffer, out _);
                 await stream.WriteAsync(writeBuffer.AsMemory()[..len], networkTimeoutCancellationTokenSource.Token);
                 await stream.FlushAsync(networkTimeoutCancellationTokenSource.Token);
 
@@ -176,7 +176,7 @@ internal sealed class TransportService : ITransportService
         await _messageSerializer.SerializeAsync(message, messageStream);
 
         // Encrypt message
-        var buffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        var buffer = new byte[ProtocolConstants.MaxMessageLength];
         var size = _transport.WriteMessage(messageStream.ToArray(), buffer);
 
         // Write message to stream
@@ -211,15 +211,15 @@ internal sealed class TransportService : ITransportService
 
                 // Read response
                 var stream = _tcpClient.GetStream();
-                var memory = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH].AsMemory();
-                var lenRead = await stream.ReadAsync(memory[..ProtocolConstants.MESSAGE_HEADER_SIZE], _cts.Token);
+                var memory = new byte[ProtocolConstants.MaxMessageLength].AsMemory();
+                var lenRead = await stream.ReadAsync(memory[..ProtocolConstants.MessageHeaderSize], _cts.Token);
                 if (lenRead != 18)
                 {
                     throw new ConnectionException("Peer sent wrong length");
                 }
 
-                var messageLen = _transport.ReadMessageLength(memory.Span[..ProtocolConstants.MESSAGE_HEADER_SIZE]);
-                if (messageLen > ProtocolConstants.MAX_MESSAGE_LENGTH)
+                var messageLen = _transport.ReadMessageLength(memory.Span[..ProtocolConstants.MessageHeaderSize]);
+                if (messageLen > ProtocolConstants.MaxMessageLength)
                 {
                     throw new ConnectionException("Peer sent message too long");
                 }

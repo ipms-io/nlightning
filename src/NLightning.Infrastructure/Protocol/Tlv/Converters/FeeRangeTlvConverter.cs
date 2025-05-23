@@ -22,7 +22,7 @@ public class FeeRangeTlvConverter : ITlvConverter<FeeRangeTlv>
 
     public FeeRangeTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        if (baseTlv.Type != TlvConstants.FEE_RANGE)
+        if (baseTlv.Type != TlvConstants.FeeRange)
         {
             throw new InvalidCastException("Invalid TLV type");
         }

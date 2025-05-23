@@ -207,7 +207,7 @@ public sealed class PeerService : IPeerService
 
         // Check if Chains are compatible
         if (initMessage.Extension != null
-            && initMessage.Extension.TryGetTlv(TlvConstants.NETWORKS, out var networksTlv))
+            && initMessage.Extension.TryGetTlv(TlvConstants.Networks, out var networksTlv))
         {
             // Check if ChainHash contained in networksTlv.ChainHashes exists in our ChainHashes
             var networkChainHashes = ((NetworksTlv)networksTlv!).ChainHashes;

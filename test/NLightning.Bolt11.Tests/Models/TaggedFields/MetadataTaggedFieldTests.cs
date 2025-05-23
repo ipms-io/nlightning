@@ -18,7 +18,7 @@ public class MetadataTaggedFieldTests
         var taggedField = new MetadataTaggedField(metadata);
 
         // Assert
-        Assert.Equal(TaggedFieldTypes.METADATA, taggedField.Type);
+        Assert.Equal(TaggedFieldTypes.Metadata, taggedField.Type);
         Assert.Equal(metadata, taggedField.Value);
         Assert.Equal(expectedLength, taggedField.Length);
     }

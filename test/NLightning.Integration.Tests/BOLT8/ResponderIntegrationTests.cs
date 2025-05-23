@@ -23,7 +23,7 @@ public class ResponderIntegrationTests
         var responder = new HandshakeState(false, ResponderValidKeysVector.LocalStaticPrivateKey,
                                            ResponderValidKeysVector.LocalStaticPublicKey, s_dhFake);
 
-        Span<byte> messageBuffer = stackalloc byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        Span<byte> messageBuffer = stackalloc byte[ProtocolConstants.MaxMessageLength];
 
         try
         {
@@ -49,7 +49,7 @@ public class ResponderIntegrationTests
         // Arrange
         var responder = new HandshakeState(false, ResponderValidKeysVector.LocalStaticPrivateKey,
                                            ResponderValidKeysVector.LocalStaticPublicKey, s_dhFake);
-        Span<byte> messageBuffer = stackalloc byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        Span<byte> messageBuffer = stackalloc byte[ProtocolConstants.MaxMessageLength];
 
         try
         {
@@ -78,7 +78,7 @@ public class ResponderIntegrationTests
         // Arrange
         var responder = new HandshakeState(false, ResponderValidKeysVector.LocalStaticPrivateKey,
                                            ResponderValidKeysVector.LocalStaticPublicKey, s_dhFake);
-        Span<byte> messageBuffer = stackalloc byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        Span<byte> messageBuffer = stackalloc byte[ProtocolConstants.MaxMessageLength];
 
         try
         {
@@ -109,7 +109,7 @@ public class ResponderIntegrationTests
         // Arrange
         var responder = new HandshakeState(false, ResponderValidKeysVector.LocalStaticPrivateKey,
                                            ResponderValidKeysVector.LocalStaticPublicKey, s_dhFake);
-        Span<byte> messageBuffer = stackalloc byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        Span<byte> messageBuffer = stackalloc byte[ProtocolConstants.MaxMessageLength];
         const BindingFlags FLAGS = BindingFlags.Instance | BindingFlags.NonPublic;
 
         try
@@ -170,7 +170,7 @@ public class ResponderIntegrationTests
         // Arrange
         var responder = new HandshakeState(false, ResponderValidKeysVector.LocalStaticPrivateKey,
                                            ResponderValidKeysVector.LocalStaticPublicKey, s_dhFake);
-        var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        var messageBuffer = new byte[ProtocolConstants.MaxMessageLength];
         var inputBytes = Convert.FromHexString(actOneInput);
 
         try
@@ -196,7 +196,7 @@ public class ResponderIntegrationTests
         // Arrange
         var responder = new HandshakeState(false, ResponderValidKeysVector.LocalStaticPrivateKey,
                                            ResponderValidKeysVector.LocalStaticPublicKey, s_dhFake);
-        var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        var messageBuffer = new byte[ProtocolConstants.MaxMessageLength];
         var inputBytes = Convert.FromHexString(actOneInput);
 
         try

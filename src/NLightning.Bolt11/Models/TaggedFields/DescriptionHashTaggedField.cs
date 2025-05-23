@@ -16,7 +16,7 @@ using Interfaces;
 /// <seealso cref="ITaggedField"/>
 internal sealed class DescriptionHashTaggedField : ITaggedField
 {
-    public TaggedFieldTypes Type => TaggedFieldTypes.DESCRIPTION_HASH;
+    public TaggedFieldTypes Type => TaggedFieldTypes.DescriptionHash;
     internal uint256 Value { get; }
     public short Length => TaggedFieldConstants.HASH_LENGTH;
 

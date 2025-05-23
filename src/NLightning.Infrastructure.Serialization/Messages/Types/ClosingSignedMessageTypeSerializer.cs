@@ -63,7 +63,7 @@ public class ClosingSignedMessageTypeSerializer : IMessageTypeSerializer<Closing
                 throw new SerializationException("Required extension is missing");
 
             var extension = await _tlvStreamSerializer.DeserializeAsync(stream);
-            if (extension is null || !extension.TryGetTlv(TlvConstants.FEE_RANGE, out var baseFeeRangeTlv))
+            if (extension is null || !extension.TryGetTlv(TlvConstants.FeeRange, out var baseFeeRangeTlv))
                 throw new SerializationException("Required extension is missing");
 
             var tlvConverter = _tlvConverterFactory.GetConverter<FeeRangeTlv>()

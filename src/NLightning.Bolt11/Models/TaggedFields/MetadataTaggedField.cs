@@ -13,7 +13,7 @@ using Interfaces;
 /// <seealso cref="ITaggedField"/>
 internal sealed class MetadataTaggedField : ITaggedField
 {
-    public TaggedFieldTypes Type => TaggedFieldTypes.METADATA;
+    public TaggedFieldTypes Type => TaggedFieldTypes.Metadata;
     internal byte[] Value { get; }
     public short Length { get; }
 

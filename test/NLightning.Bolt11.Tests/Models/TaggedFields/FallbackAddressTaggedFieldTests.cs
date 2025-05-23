@@ -23,7 +23,7 @@ public class FallbackAddressTaggedFieldTests
         var taggedField = new FallbackAddressTaggedField(bitcoinAddress);
 
         // Assert
-        Assert.Equal(TaggedFieldTypes.FALLBACK_ADDRESS, taggedField.Type);
+        Assert.Equal(TaggedFieldTypes.FallbackAddress, taggedField.Type);
         Assert.Equal(bitcoinAddress, taggedField.Value);
         Assert.Equal(expectedLength, taggedField.Length);
     }

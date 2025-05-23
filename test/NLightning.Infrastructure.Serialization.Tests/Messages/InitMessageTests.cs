@@ -39,7 +39,7 @@ public class InitMessageTests
         BaseTlv? tlv = null;
         Assert.NotNull(initMessage);
         Assert.Equal(expectedPayload.FeatureSet.ToString(), initMessage.Payload.FeatureSet.ToString());
-        var hasTlv = initMessage.Extension?.TryGetTlv(TlvConstants.NETWORKS, out tlv);
+        var hasTlv = initMessage.Extension?.TryGetTlv(TlvConstants.Networks, out tlv);
         Assert.True(hasTlv);
         Assert.Equal(expectedTlv.Value, tlv!.Value);
     }

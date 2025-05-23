@@ -17,7 +17,7 @@ public class ChannelTypeTlvConverter : ITlvConverter<ChannelTypeTlv>
 
     public ChannelTypeTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        if (baseTlv.Type != TlvConstants.CHANNEL_TYPE)
+        if (baseTlv.Type != TlvConstants.ChannelType)
         {
             throw new InvalidCastException("Invalid TLV type");
         }

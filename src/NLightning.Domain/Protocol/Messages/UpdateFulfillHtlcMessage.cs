@@ -12,7 +12,7 @@ using Payloads;
 /// </remarks>
 /// <param name="payload"></param>
 public sealed class UpdateFulfillHtlcMessage(UpdateFulfillHtlcPayload payload)
-    : BaseChannelMessage(MessageTypes.UpdateFufillHtlc, payload)
+    : BaseChannelMessage(MessageTypes.UpdateFulfillHtlc, payload)
 {
     /// <summary>
     /// The payload of the message.

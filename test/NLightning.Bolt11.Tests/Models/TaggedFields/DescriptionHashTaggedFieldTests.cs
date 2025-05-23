@@ -34,7 +34,7 @@ public class DescriptionHashTaggedFieldTests
         var taggedField = new DescriptionHashTaggedField(expectedValue);
 
         // Assert
-        Assert.Equal(TaggedFieldTypes.DESCRIPTION_HASH, taggedField.Type);
+        Assert.Equal(TaggedFieldTypes.DescriptionHash, taggedField.Type);
         Assert.Equal(expectedValue, taggedField.Value);
         Assert.Equal(TaggedFieldConstants.HASH_LENGTH, taggedField.Length);
     }

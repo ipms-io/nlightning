@@ -15,7 +15,7 @@ using Interfaces;
 /// <seealso cref="ITaggedField"/>
 public sealed class ExpiryTimeTaggedField : ITaggedField
 {
-    public TaggedFieldTypes Type => TaggedFieldTypes.EXPIRY_TIME;
+    public TaggedFieldTypes Type => TaggedFieldTypes.ExpiryTime;
     internal int Value { get; }
     public short Length { get; }
 

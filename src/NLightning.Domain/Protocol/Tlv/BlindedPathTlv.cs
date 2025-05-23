@@ -17,7 +17,7 @@ public class BlindedPathTlv : BaseTlv
     /// </summary>
     public PubKey PathKey { get; }
 
-    public BlindedPathTlv(PubKey pathKey) : base(TlvConstants.BLINDED_PATH)
+    public BlindedPathTlv(PubKey pathKey) : base(TlvConstants.BlindedPath)
     {
         PathKey = pathKey;
 

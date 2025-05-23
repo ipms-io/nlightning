@@ -21,12 +21,12 @@ internal sealed class PreMessagePattern
     /// <summary>
     /// The "e, s" pre-message pattern.
     /// </summary>
-    public static readonly PreMessagePattern ES = new(Token.E, Token.S);
+    public static readonly PreMessagePattern Es = new(Token.E, Token.S);
 
     /// <summary>
     /// The empty pre-message pattern.
     /// </summary>
-    public static readonly PreMessagePattern EMPTY = new();
+    public static readonly PreMessagePattern Empty = new();
 
     /// <summary>
     /// Gets the tokens of the pre-message pattern.

@@ -62,7 +62,7 @@ internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> loca
     private int InitiatorWriteActOne(Span<byte> outMessage)
     {
         // Write act one
-        return _handshakeState.WriteMessage(ProtocolConstants.EMPTY_MESSAGE, outMessage).Item1;
+        return _handshakeState.WriteMessage(ProtocolConstants.EmptyMessage, outMessage).Item1;
     }
 
     /// <summary>
@@ -79,7 +79,7 @@ internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> loca
         _ = _handshakeState.ReadMessage(actTwoMessage, outMessage);
 
         // Write act three
-        (var messageSize, _, transport) = _handshakeState.WriteMessage(ProtocolConstants.EMPTY_MESSAGE, outMessage);
+        (var messageSize, _, transport) = _handshakeState.WriteMessage(ProtocolConstants.EmptyMessage, outMessage);
 
         return messageSize;
     }
@@ -110,7 +110,7 @@ internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> loca
     private int ResponderReadActThree(ReadOnlySpan<byte> actThreeMessage, out ITransport? transport)
     {
         // Read act three
-        var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        var messageBuffer = new byte[ProtocolConstants.MaxMessageLength];
         (var messageSize, _, transport) = _handshakeState.ReadMessage(actThreeMessage, messageBuffer);
 
         return messageSize;

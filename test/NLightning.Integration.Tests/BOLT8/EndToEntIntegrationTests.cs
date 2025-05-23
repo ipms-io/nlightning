@@ -19,8 +19,8 @@ public class EndToEntIntegrationTests
         // Given
         var initiator = new HandshakeState(true, InitiatorValidKeysVector.LocalStaticPrivateKey, InitiatorValidKeysVector.RemoteStaticPublicKey);
         var responder = new HandshakeState(false, ResponderValidKeysVector.LocalStaticPrivateKey, ResponderValidKeysVector.LocalStaticPublicKey);
-        var initiatorMessageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
-        var responderMessageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        var initiatorMessageBuffer = new byte[ProtocolConstants.MaxMessageLength];
+        var responderMessageBuffer = new byte[ProtocolConstants.MaxMessageLength];
 
         try
         {

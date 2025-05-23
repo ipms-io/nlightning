@@ -37,25 +37,25 @@ public class InvoiceIntegrationTests
             {
                 switch (taggedField.Key)
                 {
-                    case TaggedFieldTypes.PAYMENT_SECRET:
+                    case TaggedFieldTypes.PaymentSecret:
                         Assert.Equal(taggedField.Value, invoice.PaymentSecret);
                         break;
-                    case TaggedFieldTypes.PAYMENT_HASH:
+                    case TaggedFieldTypes.PaymentHash:
                         Assert.Equal(taggedField.Value, invoice.PaymentHash);
                         break;
-                    case TaggedFieldTypes.DESCRIPTION_HASH:
+                    case TaggedFieldTypes.DescriptionHash:
                         Assert.Equal(taggedField.Value, invoice.DescriptionHash);
                         break;
-                    case TaggedFieldTypes.FALLBACK_ADDRESS:
+                    case TaggedFieldTypes.FallbackAddress:
                         Assert.Equal(taggedField.Value, invoice.FallbackAddresses?.FirstOrDefault());
                         break;
-                    case TaggedFieldTypes.DESCRIPTION:
+                    case TaggedFieldTypes.Description:
                         Assert.Equal(taggedField.Value, invoice.Description);
                         break;
-                    case TaggedFieldTypes.EXPIRY_TIME:
+                    case TaggedFieldTypes.ExpiryTime:
                         Assert.Equal(taggedField.Value, invoice.ExpiryDate);
                         break;
-                    case TaggedFieldTypes.ROUTING_INFO:
+                    case TaggedFieldTypes.RoutingInfo:
                         Assert.NotNull(invoice.RoutingInfos);
                         var expectedRoutingInfo = taggedField.Value as RoutingInfoCollection ?? throw new NullReferenceException("TaggedFieldTypes.ROUTING_INFO is null");
                         Assert.Equal(expectedRoutingInfo.Count, invoice.RoutingInfos.Count);
@@ -69,19 +69,19 @@ public class InvoiceIntegrationTests
                             Assert.Equal(expectedRoutingInfo[i].CltvExpiryDelta, invoice.RoutingInfos[i].CltvExpiryDelta);
                         }
                         break;
-                    case TaggedFieldTypes.FEATURES:
+                    case TaggedFieldTypes.Features:
                         var expectedFeatures = taggedField.Value as FeatureSet;
                         Assert.NotNull(expectedFeatures);
                         Assert.NotNull(invoice.Features);
                         Assert.True(expectedFeatures.IsCompatible(invoice.Features));
                         break;
-                    case TaggedFieldTypes.METADATA:
+                    case TaggedFieldTypes.Metadata:
                         Assert.Equal(taggedField.Value, invoice.Metadata);
                         break;
-                    case TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY:
+                    case TaggedFieldTypes.MinFinalCltvExpiry:
                         Assert.Equal(taggedField.Value, invoice.MinFinalCltvExpiry);
                         break;
-                    case TaggedFieldTypes.PAYEE_PUB_KEY:
+                    case TaggedFieldTypes.PayeePubKey:
                         Assert.Equal(taggedField.Value, invoice.PayeePubKey);
                         break;
                     default:
@@ -126,37 +126,37 @@ public class InvoiceIntegrationTests
             {
                 switch (taggedField.Key)
                 {
-                    case TaggedFieldTypes.PAYMENT_SECRET:
+                    case TaggedFieldTypes.PaymentSecret:
                         invoice.PaymentSecret = taggedField.Value as uint256 ?? throw new InvalidCastException("Unable to cast taggedField to uint256");
                         break;
-                    case TaggedFieldTypes.PAYMENT_HASH:
+                    case TaggedFieldTypes.PaymentHash:
                         invoice.PaymentHash = taggedField.Value as uint256 ?? throw new InvalidCastException("Unable to cast taggedField to uint256");
                         break;
-                    case TaggedFieldTypes.DESCRIPTION_HASH:
+                    case TaggedFieldTypes.DescriptionHash:
                         invoice.DescriptionHash = taggedField.Value as uint256;
                         break;
-                    case TaggedFieldTypes.FALLBACK_ADDRESS:
+                    case TaggedFieldTypes.FallbackAddress:
                         invoice.FallbackAddresses = [taggedField.Value as BitcoinAddress ?? throw new InvalidCastException("Unable to cast taggedField to BitcoinAddress")];
                         break;
-                    case TaggedFieldTypes.DESCRIPTION:
+                    case TaggedFieldTypes.Description:
                         invoice.Description = taggedField.Value as string;
                         break;
-                    case TaggedFieldTypes.EXPIRY_TIME:
+                    case TaggedFieldTypes.ExpiryTime:
                         invoice.ExpiryDate = taggedField.Value as DateTimeOffset? ?? throw new InvalidCastException("Unable to cast taggedField to DateTimeOffset");
                         break;
-                    case TaggedFieldTypes.ROUTING_INFO:
+                    case TaggedFieldTypes.RoutingInfo:
                         invoice.RoutingInfos = taggedField.Value as RoutingInfoCollection;
                         break;
-                    case TaggedFieldTypes.FEATURES:
+                    case TaggedFieldTypes.Features:
                         invoice.Features = taggedField.Value as FeatureSet;
                         break;
-                    case TaggedFieldTypes.METADATA:
+                    case TaggedFieldTypes.Metadata:
                         invoice.Metadata = taggedField.Value as byte[];
                         break;
-                    case TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY:
+                    case TaggedFieldTypes.MinFinalCltvExpiry:
                         invoice.MinFinalCltvExpiry = taggedField.Value as ushort?;
                         break;
-                    case TaggedFieldTypes.PAYEE_PUB_KEY:
+                    case TaggedFieldTypes.PayeePubKey:
                         invoice.PayeePubKey = taggedField.Value as PubKey;
                         break;
                     default:
@@ -234,7 +234,7 @@ public class InvoiceIntegrationTests
                     Array.Reverse(data);
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.PAYMENT_HASH, new uint256(data));
+                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.PaymentHash, new uint256(data));
             }
             else if (line.StartsWith("s="))
             {
@@ -249,7 +249,7 @@ public class InvoiceIntegrationTests
                     Array.Reverse(data);
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.PAYMENT_SECRET, new uint256(data));
+                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.PaymentSecret, new uint256(data));
             }
             else if (line.StartsWith("d="))
             {
@@ -258,7 +258,7 @@ public class InvoiceIntegrationTests
                     throw new InvalidOperationException("d line without invoice line");
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.DESCRIPTION, line[2..]);
+                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.Description, line[2..]);
             }
             else if (line.StartsWith("x="))
             {
@@ -267,7 +267,7 @@ public class InvoiceIntegrationTests
                     throw new InvalidOperationException("x line without invoice line");
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.EXPIRY_TIME, DateTimeOffset.FromUnixTimeSeconds(currentInvoice.ExpectedTimestamp!.Value + long.Parse(line[2..])));
+                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.ExpiryTime, DateTimeOffset.FromUnixTimeSeconds(currentInvoice.ExpectedTimestamp!.Value + long.Parse(line[2..])));
             }
             else if (line.StartsWith("h="))
             {
@@ -285,7 +285,7 @@ public class InvoiceIntegrationTests
                     Array.Reverse(hash);
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.DESCRIPTION_HASH, new uint256(hash));
+                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.DescriptionHash, new uint256(hash));
             }
             else if (line.StartsWith("f="))
             {
@@ -309,7 +309,7 @@ public class InvoiceIntegrationTests
                     network = NBitcoin.Network.RegTest;
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.FALLBACK_ADDRESS, BitcoinAddress.Create(line[2..], network));
+                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.FallbackAddress, BitcoinAddress.Create(line[2..], network));
             }
             else if (line.StartsWith("r="))
             {
@@ -337,7 +337,7 @@ public class InvoiceIntegrationTests
                     routingInfo.Add(new RoutingInfo(pubKey, shortChannelId, feeBaseMsat, feeProportionalMillionths, cltvExpiryDelta));
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.ROUTING_INFO, routingInfo);
+                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.RoutingInfo, routingInfo);
             }
             else if (line.StartsWith("9="))
             {
@@ -346,7 +346,7 @@ public class InvoiceIntegrationTests
                     throw new InvalidOperationException("f line without invoice line");
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.FEATURES, FeatureSet.DeserializeFromBytes(Convert.FromHexString(line[2..])));
+                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.Features, FeatureSet.DeserializeFromBytes(Convert.FromHexString(line[2..])));
             }
             else if (line.StartsWith("m="))
             {
@@ -355,7 +355,7 @@ public class InvoiceIntegrationTests
                     throw new InvalidOperationException("m line without invoice line");
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.METADATA, Convert.FromHexString(line[2..]));
+                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.Metadata, Convert.FromHexString(line[2..]));
             }
             else if (line.StartsWith("c="))
             {
@@ -364,7 +364,7 @@ public class InvoiceIntegrationTests
                     throw new InvalidOperationException("c line without invoice line");
                 }
 
-                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY, ushort.Parse(line[2..]));
+                currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.MinFinalCltvExpiry, ushort.Parse(line[2..]));
             }
             else if (line.StartsWith("ignoreEncode="))
             {

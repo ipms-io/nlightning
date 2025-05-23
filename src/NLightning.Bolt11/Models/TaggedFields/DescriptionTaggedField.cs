@@ -17,7 +17,7 @@ internal sealed class DescriptionTaggedField : ITaggedField
 {
     private readonly byte[] _data;
 
-    public TaggedFieldTypes Type => TaggedFieldTypes.DESCRIPTION;
+    public TaggedFieldTypes Type => TaggedFieldTypes.Description;
     internal string Value { get; }
     public short Length { get; }
 

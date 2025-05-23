@@ -67,7 +67,7 @@ public class ChannelReestablishMessageTypeSerializer : IMessageTypeSerializer<Ch
                 return new ChannelReestablishMessage(payload);
 
             NextFundingTlv? nextFundingTlv = null;
-            if (extension.TryGetTlv(TlvConstants.NEXT_FUNDING, out var baseNextFundingTlv))
+            if (extension.TryGetTlv(TlvConstants.NextFunding, out var baseNextFundingTlv))
             {
                 var tlvConverter = _tlvConverterFactory.GetConverter<NextFundingTlv>()
                                    ?? throw new SerializationException(

@@ -46,7 +46,7 @@ public partial class Invoice
 
     private readonly ISecureKeyManager? _secureKeyManager;
 
-    private TaggedFieldList _taggedFields { get; } = [];
+    private TaggedFieldList TaggedFields { get; } = [];
 
     private string? _invoiceString;
     #endregion
@@ -93,13 +93,13 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.PAYMENT_HASH, out PaymentHashTaggedField? paymentHash)
+            return TaggedFields.TryGet(TaggedFieldTypes.PaymentHash, out PaymentHashTaggedField? paymentHash)
                 ? paymentHash!.Value
                 : new uint256();
         }
         internal set
         {
-            _taggedFields.Add(new PaymentHashTaggedField(value));
+            TaggedFields.Add(new PaymentHashTaggedField(value));
         }
     }
 
@@ -115,7 +115,7 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.ROUTING_INFO, out RoutingInfoTaggedField? routingInfo)
+            return TaggedFields.TryGet(TaggedFieldTypes.RoutingInfo, out RoutingInfoTaggedField? routingInfo)
                 ? routingInfo!.Value
                 : null;
         }
@@ -123,7 +123,7 @@ public partial class Invoice
         {
             if (value != null)
             {
-                _taggedFields.Add(new RoutingInfoTaggedField(value));
+                TaggedFields.Add(new RoutingInfoTaggedField(value));
                 value.Changed += OnTaggedFieldsChanged;
             }
         }
@@ -140,7 +140,7 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.FEATURES, out FeaturesTaggedField? features)
+            return TaggedFields.TryGet(TaggedFieldTypes.Features, out FeaturesTaggedField? features)
                 ? features!.Value
                 : null;
         }
@@ -148,7 +148,7 @@ public partial class Invoice
         {
             if (value != null)
             {
-                _taggedFields.Add(new FeaturesTaggedField(value));
+                TaggedFields.Add(new FeaturesTaggedField(value));
                 value.Changed += OnTaggedFieldsChanged;
             }
         }
@@ -165,14 +165,14 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.EXPIRY_TIME, out ExpiryTimeTaggedField? expireIn)
+            return TaggedFields.TryGet(TaggedFieldTypes.ExpiryTime, out ExpiryTimeTaggedField? expireIn)
                 ? DateTimeOffset.FromUnixTimeSeconds(Timestamp + expireIn!.Value)
                 : DateTimeOffset.FromUnixTimeSeconds(Timestamp + InvoiceConstants.DEFAULT_EXPIRATION_SECONDS);
         }
         set
         {
             var expireIn = value.ToUnixTimeSeconds() - Timestamp;
-            _taggedFields.Add(new ExpiryTimeTaggedField((int)expireIn));
+            TaggedFields.Add(new ExpiryTimeTaggedField((int)expireIn));
         }
     }
 
@@ -187,8 +187,8 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields
-                .TryGetAll(TaggedFieldTypes.FALLBACK_ADDRESS, out List<FallbackAddressTaggedField> fallbackAddress)
+            return TaggedFields
+                .TryGetAll(TaggedFieldTypes.FallbackAddress, out List<FallbackAddressTaggedField> fallbackAddress)
                     ? fallbackAddress.Select(x => x.Value).ToList()
                     : null;
         }
@@ -196,7 +196,7 @@ public partial class Invoice
         {
             if (value != null)
             {
-                _taggedFields.AddRange(value.Select(x => new FallbackAddressTaggedField(x)));
+                TaggedFields.AddRange(value.Select(x => new FallbackAddressTaggedField(x)));
             }
         }
     }
@@ -211,7 +211,7 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.DESCRIPTION, out DescriptionTaggedField? description)
+            return TaggedFields.TryGet(TaggedFieldTypes.Description, out DescriptionTaggedField? description)
                 ? description!.Value
                 : null;
         }
@@ -219,7 +219,7 @@ public partial class Invoice
         {
             if (value != null)
             {
-                _taggedFields.Add(new DescriptionTaggedField(value));
+                TaggedFields.Add(new DescriptionTaggedField(value));
             }
         }
     }
@@ -235,13 +235,13 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.PAYMENT_SECRET, out PaymentSecretTaggedField? paymentSecret)
+            return TaggedFields.TryGet(TaggedFieldTypes.PaymentSecret, out PaymentSecretTaggedField? paymentSecret)
                 ? paymentSecret!.Value
                 : new uint256();
         }
         internal set
         {
-            _taggedFields.Add(new PaymentSecretTaggedField(value));
+            TaggedFields.Add(new PaymentSecretTaggedField(value));
         }
     }
 
@@ -256,7 +256,7 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField? payeePubKey)
+            return TaggedFields.TryGet(TaggedFieldTypes.PayeePubKey, out PayeePubKeyTaggedField? payeePubKey)
                 ? payeePubKey!.Value
                 : null;
         }
@@ -264,7 +264,7 @@ public partial class Invoice
         {
             if (value != null)
             {
-                _taggedFields.Add(new PayeePubKeyTaggedField(value));
+                TaggedFields.Add(new PayeePubKeyTaggedField(value));
             }
         }
     }
@@ -280,8 +280,8 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields
-                .TryGet(TaggedFieldTypes.DESCRIPTION_HASH, out DescriptionHashTaggedField? descriptionHash)
+            return TaggedFields
+                .TryGet(TaggedFieldTypes.DescriptionHash, out DescriptionHashTaggedField? descriptionHash)
                     ? descriptionHash!.Value
                     : null;
         }
@@ -289,7 +289,7 @@ public partial class Invoice
         {
             if (value != null)
             {
-                _taggedFields.Add(new DescriptionHashTaggedField(value));
+                TaggedFields.Add(new DescriptionHashTaggedField(value));
             }
         }
     }
@@ -304,8 +304,8 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields
-                .TryGet(TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY, out MinFinalCltvExpiryTaggedField? minFinalCltvExpiry)
+            return TaggedFields
+                .TryGet(TaggedFieldTypes.MinFinalCltvExpiry, out MinFinalCltvExpiryTaggedField? minFinalCltvExpiry)
                     ? minFinalCltvExpiry!.Value
                     : null;
         }
@@ -313,7 +313,7 @@ public partial class Invoice
         {
             if (value.HasValue)
             {
-                _taggedFields.Add(new MinFinalCltvExpiryTaggedField(value.Value));
+                TaggedFields.Add(new MinFinalCltvExpiryTaggedField(value.Value));
             }
         }
     }
@@ -328,7 +328,7 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.METADATA, out MetadataTaggedField? metadata)
+            return TaggedFields.TryGet(TaggedFieldTypes.Metadata, out MetadataTaggedField? metadata)
                 ? metadata!.Value
                 : null;
         }
@@ -336,7 +336,7 @@ public partial class Invoice
         {
             if (value != null)
             {
-                _taggedFields.Add(new MetadataTaggedField(value));
+                TaggedFields.Add(new MetadataTaggedField(value));
             }
         }
     }
@@ -374,7 +374,7 @@ public partial class Invoice
         PaymentHash = paymentHash;
         PaymentSecret = paymentSecret;
 
-        _taggedFields.Changed += OnTaggedFieldsChanged;
+        TaggedFields.Changed += OnTaggedFieldsChanged;
     }
 
     /// <summary>
@@ -407,7 +407,7 @@ public partial class Invoice
         PaymentHash = paymentHash;
         PaymentSecret = paymentSecret;
 
-        _taggedFields.Changed += OnTaggedFieldsChanged;
+        TaggedFields.Changed += OnTaggedFieldsChanged;
     }
 
     /// <summary>
@@ -428,7 +428,7 @@ public partial class Invoice
         Timestamp = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Signature = new CompactSignature(0, new byte[64]);
 
-        _taggedFields.Changed += OnTaggedFieldsChanged;
+        TaggedFields.Changed += OnTaggedFieldsChanged;
     }
 
     /// <summary>
@@ -455,10 +455,10 @@ public partial class Invoice
         HumanReadablePart = humanReadablePart;
         Amount = amount;
         Timestamp = timestamp;
-        _taggedFields = taggedFields;
+        TaggedFields = taggedFields;
         Signature = signature;
 
-        _taggedFields.Changed += OnTaggedFieldsChanged;
+        TaggedFields.Changed += OnTaggedFieldsChanged;
     }
     #endregion
 
@@ -538,7 +538,7 @@ public partial class Invoice
                                       new CompactSignature(signature[^1], signature[..^1]));
 
             // Get pubkey from tagged fields
-            if (taggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField? pubkeyTaggedField))
+            if (taggedFields.TryGet(TaggedFieldTypes.PayeePubKey, out PayeePubKeyTaggedField? pubkeyTaggedField))
             {
                 invoice.PayeePubKey = pubkeyTaggedField?.Value;
             }
@@ -567,7 +567,7 @@ public partial class Invoice
         try
         {
             // Calculate the size needed for the buffer
-            var sizeInBits = 35 + (_taggedFields.CalculateSizeInBits() * 5) + (_taggedFields.Count * 15);
+            var sizeInBits = 35 + (TaggedFields.CalculateSizeInBits() * 5) + (TaggedFields.Count * 15);
 
             // Initialize the BitWriter buffer
             var bitWriter = new BitWriter(sizeInBits);
@@ -576,7 +576,7 @@ public partial class Invoice
             bitWriter.WriteInt64AsBits(Timestamp, 35);
 
             // Write the tagged fields
-            _taggedFields.WriteToBitWriter(bitWriter);
+            TaggedFields.WriteToBitWriter(bitWriter);
 
             // Sign the invoice
             var compactSignature = SignInvoice(HumanReadablePart, bitWriter, nodeKey);

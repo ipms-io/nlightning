@@ -17,7 +17,7 @@ internal sealed class FallbackAddressTaggedField : ITaggedField
 {
     private readonly byte[] _data;
 
-    public TaggedFieldTypes Type => TaggedFieldTypes.FALLBACK_ADDRESS;
+    public TaggedFieldTypes Type => TaggedFieldTypes.FallbackAddress;
     internal BitcoinAddress Value { get; }
     public short Length { get; }
 

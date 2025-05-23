@@ -18,7 +18,7 @@ public class BlindedPathTlvConverter : ITlvConverter<BlindedPathTlv>
 
     public BlindedPathTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        if (baseTlv.Type != TlvConstants.BLINDED_PATH)
+        if (baseTlv.Type != TlvConstants.BlindedPath)
         {
             throw new InvalidCastException("Invalid TLV type");
         }

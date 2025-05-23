@@ -67,7 +67,7 @@ public class UpdateAddHtlcMessageTypeSerializer : IMessageTypeSerializer<UpdateA
                 return new UpdateAddHtlcMessage(payload);
 
             BlindedPathTlv? blindedPathTlv = null;
-            if (extension.TryGetTlv(TlvConstants.UPFRONT_SHUTDOWN_SCRIPT, out var baseBlindedPathTlv))
+            if (extension.TryGetTlv(TlvConstants.UpfrontShutdownScript, out var baseBlindedPathTlv))
             {
                 var tlvConverter = _tlvConverterFactory.GetConverter<BlindedPathTlv>()
                                    ?? throw new SerializationException(

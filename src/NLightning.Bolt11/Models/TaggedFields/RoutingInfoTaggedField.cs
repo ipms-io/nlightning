@@ -19,7 +19,7 @@ using Interfaces;
 /// <seealso cref="ITaggedField"/>
 internal sealed class RoutingInfoTaggedField : ITaggedField
 {
-    public TaggedFieldTypes Type => TaggedFieldTypes.ROUTING_INFO;
+    public TaggedFieldTypes Type => TaggedFieldTypes.RoutingInfo;
     internal RoutingInfoCollection Value { get; }
     public short Length { get; private set; }
 

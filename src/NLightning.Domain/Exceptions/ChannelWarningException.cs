@@ -21,7 +21,8 @@ public class ChannelWarningException : ErrorException
         PeerMessage = peerMessage;
     }
 
-    public ChannelWarningException(string message, Exception innerException, string? peerMessage = null) : base(message)
+    public ChannelWarningException(string message, Exception innerException, string? peerMessage = null)
+        : base(message, innerException)
     {
         PeerMessage = peerMessage;
     }
@@ -33,7 +34,7 @@ public class ChannelWarningException : ErrorException
     }
     public ChannelWarningException(string message, ChannelId? channelId, Exception innerException,
                                    string? peerMessage = null)
-        : base(message)
+        : base(message, innerException)
     {
         ChannelId = channelId;
         PeerMessage = peerMessage;

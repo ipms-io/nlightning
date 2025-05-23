@@ -117,35 +117,17 @@ dotnet_style_allow_multiple_blank_lines_experimental = false
 # --- Naming Conventions ---
 
 # Re-use existing naming rules
-dotnet_naming_style.all_upper_style.capitalization = all_upper
 dotnet_naming_style.pascal_case_style.capitalization = pascal_case
 dotnet_naming_style.camel_case_style.capitalization = camel_case
 
-# Constants are uppercase
-dotnet_naming_rule.constants_should_be_upper_case.severity = error
-dotnet_naming_rule.constants_should_be_upper_case.symbols = constants
-dotnet_naming_rule.constants_should_be_upper_case.style = all_upper_style
+# Private const fields are PascalCase and start with
+dotnet_naming_rule.private_const_fields_should_be_camel_case.severity = error
+dotnet_naming_rule.private_const_fields_should_be_camel_case.symbols = private_const_fields
+dotnet_naming_rule.private_const_fields_should_be_camel_case.style = pascal_case_style
 
-dotnet_naming_symbols.constants.applicable_kinds = field, local
-dotnet_naming_symbols.constants.required_modifiers = const
-
-# Non-private static fields are PascalCase
-dotnet_naming_rule.non_private_static_fields_should_be_pascal_case.severity = error
-dotnet_naming_rule.non_private_static_fields_should_be_pascal_case.symbols = non_private_static_fields
-dotnet_naming_rule.non_private_static_fields_should_be_pascal_case.style = pascal_case_style
-
-dotnet_naming_symbols.non_private_static_fields.applicable_kinds = field
-dotnet_naming_symbols.non_private_static_fields.applicable_accessibilities = public, protected, internal, protected_internal, private_protected
-dotnet_naming_symbols.non_private_static_fields.required_modifiers = static
-
-# Static readonly fields (public/internal) are uppercase
-dotnet_naming_rule.public_static_readonly_fields_should_be_all_upper.severity = error
-dotnet_naming_rule.public_static_readonly_fields_should_be_all_upper.symbols = public_static_readonly_fields
-dotnet_naming_rule.public_static_readonly_fields_should_be_all_upper.style = all_upper_style
-
-dotnet_naming_symbols.public_static_readonly_fields.applicable_kinds = field
-dotnet_naming_symbols.public_static_readonly_fields.applicable_accessibilities = public, internal, protected, protected_internal, private_protected
-dotnet_naming_symbols.public_static_readonly_fields.required_modifiers = static, readonly
+dotnet_naming_symbols.private_const_fields.applicable_kinds = field
+dotnet_naming_symbols.private_const_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_const_fields.required_modifiers = const
 
 # Private static fields are camelCase and start with s_
 dotnet_naming_rule.private_static_fields_should_be_camel_case.severity = error
@@ -189,7 +171,7 @@ dotnet_naming_rule.members_should_be_pascal_case.severity = error
 dotnet_naming_rule.members_should_be_pascal_case.symbols = other_pascal_case_members
 dotnet_naming_rule.members_should_be_pascal_case.style = pascal_case_style
 
-dotnet_naming_symbols.other_pascal_case_members.applicable_kinds = class, struct, interface, enum, delegate, method, property, event
+dotnet_naming_symbols.other_pascal_case_members.applicable_kinds = *
 
 # Prefer "var" everywhere
 csharp_style_var_for_built_in_types = true:warning

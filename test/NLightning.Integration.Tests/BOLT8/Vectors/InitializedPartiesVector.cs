@@ -24,12 +24,12 @@ internal sealed class InitializedPartiesVector
 
         var flags = BindingFlags.Instance | BindingFlags.NonPublic;
 
-        var initiatorMessageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        var initiatorMessageBuffer = new byte[ProtocolConstants.MaxMessageLength];
         Transport? initiatorTransport;
         Span<byte> initiatorMessage;
         int initiatorMessageSize;
 
-        var responderMessageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        var responderMessageBuffer = new byte[ProtocolConstants.MaxMessageLength];
         Transport? responderTransport;
         Span<byte> responderMessage;
         int responderMessageSize;
