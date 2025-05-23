@@ -1,17 +1,17 @@
 using Microsoft.Extensions.Options;
 using NBitcoin;
 using NBitcoin.Crypto;
+using NLightning.Domain.Money;
+using NLightning.Domain.Node.Options;
+using NLightning.Domain.Protocol.Messages;
+using NLightning.Domain.Protocol.Messages.Interfaces;
+using NLightning.Domain.Protocol.Models;
+using NLightning.Domain.Protocol.Payloads;
+using NLightning.Domain.Protocol.Tlv;
+using NLightning.Domain.ValueObjects;
+using Network = NLightning.Domain.ValueObjects.Network;
 
-namespace NLightning.Application.Factories;
-
-using Domain.Money;
-using Domain.Node.Options;
-using Domain.Protocol.Messages;
-using Domain.Protocol.Messages.Interfaces;
-using Domain.Protocol.Models;
-using Domain.Protocol.Payloads;
-using Domain.Protocol.Tlv;
-using Domain.ValueObjects;
+namespace NLightning.Application.Protocol.Factories;
 
 /// <summary>
 /// Factory for creating messages.

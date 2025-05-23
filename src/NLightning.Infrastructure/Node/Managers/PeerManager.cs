@@ -2,6 +2,7 @@ using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
+using NLightning.Application.Node.Factories;
 using NLightning.Application.Node.Services.Interfaces;
 
 namespace NLightning.Infrastructure.Node.Managers;
@@ -9,8 +10,6 @@ namespace NLightning.Infrastructure.Node.Managers;
 using Domain.Exceptions;
 using Domain.Node.Options;
 using Interfaces;
-using NLightning.Application.Factories.Interfaces;
-using NLightning.Application.Node;
 using Protocol.Models;
 
 /// <summary>

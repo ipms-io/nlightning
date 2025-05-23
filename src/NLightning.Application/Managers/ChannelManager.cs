@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
 using NBitcoin.Crypto;
+using NLightning.Application.Protocol.Factories;
 
 namespace NLightning.Application.Managers;
 
@@ -18,7 +19,6 @@ using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Signers;
 using Domain.Protocol.Tlv;
 using Domain.ValueObjects;
-using Factories;
 
 public class ChannelManager : IChannelManager
 {

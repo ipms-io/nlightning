@@ -5,14 +5,13 @@ using Microsoft.Extensions.Options;
 using NBitcoin;
 using NLightning.Application.Node.Services;
 using NLightning.Application.Node.Services.Interfaces;
+using NLightning.Application.Protocol.Factories;
+using NLightning.Domain.Exceptions;
+using NLightning.Domain.Node.Options;
+using NLightning.Domain.Protocol.Factories;
+using NLightning.Domain.Protocol.Managers;
 
-namespace NLightning.Application.Factories;
-
-using Domain.Exceptions;
-using Domain.Node.Options;
-using Domain.Protocol.Factories;
-using Domain.Protocol.Managers;
-using Interfaces;
+namespace NLightning.Application.Node.Factories;
 
 public class PeerServiceFactory : IPeerServiceFactory
 {

@@ -2,12 +2,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NLightning.Application.Node.Factories;
+using NLightning.Application.Protocol.Factories;
 using NLightning.Infrastructure.Bitcoin.Options;
 
 namespace NLightning.Node.Extensions;
 
-using Application.Factories;
-using Application.Factories.Interfaces;
 using Application.Managers;
 using Application.Node.Services.Interfaces;
 using Domain.Bitcoin.Factories;

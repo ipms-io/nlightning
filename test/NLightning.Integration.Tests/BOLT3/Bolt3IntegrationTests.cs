@@ -2,6 +2,7 @@ using System.Reflection;
 using Microsoft.Extensions.Options;
 using NBitcoin;
 using NBitcoin.Policy;
+using NLightning.Infrastructure.Crypto.Hashes;
 
 namespace NLightning.Integration.Tests.BOLT3;
 
@@ -18,6 +19,8 @@ using Vectors;
 
 public class Bolt3IntegrationTests
 {
+    private static Sha256 s_sha256 = new Sha256();
+    
     private OfferedHtlcOutput? _offeredHtlc2;
     private OfferedHtlcOutput? _offeredHtlc3;
     private OfferedHtlcOutput? _offeredHtlc5;
@@ -27,12 +30,12 @@ public class Bolt3IntegrationTests
     private ReceivedHtlcOutput? _receivedHtlc4;
 
     private readonly CommitmentNumber _commitmentNumber = new(AppendixCVectors.NODE_A_PAYMENT_BASEPOINT,
-                                                              AppendixCVectors.NODE_B_PAYMENT_BASEPOINT,
+                                                              AppendixCVectors.NODE_B_PAYMENT_BASEPOINT, s_sha256,
                                                               AppendixCVectors.COMMITMENT_NUMBER);
 
-    private readonly FundingOutput _fundingOutput = new(AppendixCVectors.NODE_A_FUNDING_PUBKEY,
-                                                        AppendixCVectors.NODE_B_FUNDING_PUBKEY,
-                                                        AppendixBVectors.FUNDING_SATOSHIS)
+    private readonly FundingOutput _fundingOutput = new(AppendixBVectors.FUNDING_SATOSHIS,
+                                                        AppendixCVectors.NODE_A_FUNDING_PUBKEY,
+                                                        AppendixCVectors.NODE_B_FUNDING_PUBKEY)
     {
         TxId = AppendixBVectors.EXPECTED_TX_ID,
         Index = 0
@@ -59,7 +62,8 @@ public class Bolt3IntegrationTests
         feeServiceMock
             .Setup(x => x.GetCachedFeeRatePerKw())
             .Returns(new LightningMoney(15000, LightningMoneyUnit.Satoshi));
-        var fundingTransactionFactory = new FundingTransactionFactory(feeServiceMock.Object, nodeOptions);
+        var fundingTransactionFactory =
+            new FundingTransactionFactory(feeServiceMock.Object, nodeOptions, _lightningSigner);
 
         var fundingInputCoin = new Coin(AppendixBVectors.INPUT_TX, AppendixBVectors.INPUT_INDEX);
 

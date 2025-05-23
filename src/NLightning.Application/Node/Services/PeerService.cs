@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using NBitcoin;
-using NLightning.Application.Factories;
 using NLightning.Application.Node.Services.Interfaces;
+using NLightning.Application.Protocol.Factories;
 using NLightning.Domain.Exceptions;
 using NLightning.Domain.Node.Options;
 using NLightning.Domain.Protocol.Constants;

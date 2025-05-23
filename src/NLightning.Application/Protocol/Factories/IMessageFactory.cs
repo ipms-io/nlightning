@@ -1,13 +1,12 @@
 using NBitcoin;
 using NBitcoin.Crypto;
+using NLightning.Domain.Money;
+using NLightning.Domain.Protocol.Messages;
+using NLightning.Domain.Protocol.Messages.Interfaces;
+using NLightning.Domain.Protocol.Tlv;
+using NLightning.Domain.ValueObjects;
 
-namespace NLightning.Application.Factories;
-
-using Domain.Money;
-using Domain.Protocol.Messages;
-using Domain.Protocol.Messages.Interfaces;
-using Domain.Protocol.Tlv;
-using Domain.ValueObjects;
+namespace NLightning.Application.Protocol.Factories;
 
 public interface IMessageFactory
 {

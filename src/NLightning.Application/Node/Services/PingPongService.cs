@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Options;
-using NLightning.Application.Factories;
+using NLightning.Application.Protocol.Factories;
 using NLightning.Domain.Exceptions;
 using NLightning.Domain.Node.Options;
 using NLightning.Domain.Protocol.Messages;
