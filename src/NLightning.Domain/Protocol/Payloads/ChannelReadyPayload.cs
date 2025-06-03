@@ -1,4 +1,7 @@
-using NBitcoin;
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Crypto;
+using NLightning.Domain.Crypto.ValueObjects;
+using NLightning.Domain.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Payloads;
 
@@ -12,12 +15,12 @@ using ValueObjects;
 /// Initializes a new instance of the ChannelReadyPayload class.
 /// </remarks>
 /// <param name="channelId">The channel ID.</param>
-public class ChannelReadyPayload(ChannelId channelId, PubKey secondPerCommitmentPoint) : IChannelMessagePayload
+public class ChannelReadyPayload(ChannelId channelId, CompactPubKey secondPerCommitmentPoint) : IChannelMessagePayload
 {
     /// <summary>
     /// Gets the channel ID.
     /// </summary>
     public ChannelId ChannelId { get; } = channelId;
 
-    public PubKey SecondPerCommitmentPoint { get; } = secondPerCommitmentPoint;
+    public CompactPubKey SecondPerCommitmentPoint { get; } = secondPerCommitmentPoint;
 }

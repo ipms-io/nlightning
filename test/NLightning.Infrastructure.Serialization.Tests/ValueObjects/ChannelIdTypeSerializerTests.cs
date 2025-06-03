@@ -1,3 +1,5 @@
+using NLightning.Domain.Channels.ValueObjects;
+
 namespace NLightning.Infrastructure.Serialization.Tests.ValueObjects;
 
 using Domain.ValueObjects;

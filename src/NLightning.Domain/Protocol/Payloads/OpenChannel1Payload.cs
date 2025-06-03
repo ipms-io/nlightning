@@ -1,10 +1,13 @@
-using NBitcoin;
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Crypto;
+using NLightning.Domain.Crypto.ValueObjects;
+using NLightning.Domain.Protocol.ValueObjects;
+using NLightning.Domain.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Payloads;
 
 using Interfaces;
 using Money;
-using ValueObjects;
 
 /// <summary>
 /// Represents the payload for the open_channel message.
@@ -79,32 +82,32 @@ public class OpenChannel1Payload : IChannelMessagePayload
     /// <summary>
     /// funding_pubkey is the public key in the 2-of-2 multisig script of the funding transaction output.
     /// </summary>
-    public PubKey FundingPubKey { get; }
+    public CompactPubKey FundingPubKey { get; }
 
     /// <summary>
     /// revocation_basepoint is used to regenerate the scripts required for the penalty transaction
     /// </summary>
-    public PubKey RevocationBasepoint { get; }
+    public CompactPubKey RevocationBasepoint { get; }
 
     /// <summary>
     /// payment_basepoint is used to produce payment signatures for the protocol
     /// </summary>
-    public PubKey PaymentBasepoint { get; }
+    public CompactPubKey PaymentBasepoint { get; }
 
     /// <summary>
     /// delayed_payment_basepoint is used to regenerate the scripts required for the penalty transaction
     /// </summary>
-    public PubKey DelayedPaymentBasepoint { get; }
+    public CompactPubKey DelayedPaymentBasepoint { get; }
 
     /// <summary>
     /// htlc_basepoint is used to produce HTLC signatures for the protocol
     /// </summary>
-    public PubKey HtlcBasepoint { get; }
+    public CompactPubKey HtlcBasepoint { get; }
 
     /// <summary>
     /// first_per_commitment_point is the per-commitment point used for the first commitment transaction
     /// </summary>
-    public PubKey FirstPerCommitmentPoint { get; }
+    public CompactPubKey FirstPerCommitmentPoint { get; }
 
     /// <summary>
     /// Only the least-significant bit of channel_flags is currently defined: announce_channel. This indicates whether
@@ -116,9 +119,9 @@ public class OpenChannel1Payload : IChannelMessagePayload
                                LightningMoney pushAmount, LightningMoney dustLimitAmount,
                                LightningMoney maxHtlcValueInFlight, LightningMoney channelReserveAmount,
                                LightningMoney htlcMinimumAmount, LightningMoney feeRatePerKw, ushort toSelfDelay,
-                               ushort maxAcceptedHtlcs, PubKey fundingPubKey, PubKey revocationBasepoint,
-                               PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint,
-                               PubKey firstPerCommitmentPoint, ChannelFlags channelFlags)
+                               ushort maxAcceptedHtlcs, CompactPubKey fundingPubKey, CompactPubKey revocationBasepoint,
+                               CompactPubKey paymentBasepoint, CompactPubKey delayedPaymentBasepoint, CompactPubKey htlcBasepoint,
+                               CompactPubKey firstPerCommitmentPoint, ChannelFlags channelFlags)
     {
         ChainHash = chainHash;
         ChannelId = channelId;

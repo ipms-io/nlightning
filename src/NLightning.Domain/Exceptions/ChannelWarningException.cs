@@ -2,16 +2,16 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace NLightning.Domain.Exceptions;
 
-using ValueObjects;
+using Channels.ValueObjects;
 
 /// <summary>
-/// Represents an exception that is thrown when a channel error occurs.
+/// Represents an exception thrown when a channel error occurs.
 /// </summary>
 /// <remarks>
 /// We usually want to close the connection when this exception is thrown.
 /// </remarks>
 [ExcludeFromCodeCoverage]
-public class ChannelWarningException : ErrorException
+public class ChannelWarningException : WarningException
 {
     public ChannelId? ChannelId { get; }
     public string? PeerMessage { get; }

@@ -5,23 +5,33 @@ namespace NLightning.Tests.Utils.Vectors;
 [ExcludeFromCodeCoverage]
 public static class AeadChacha20Poly1305IetfVector
 {
-    #pragma warning disable format
-    public static readonly byte[] MESSAGE = "Ladies and Gentlemen of the class of \'99: If I could offer you only one tip for the future, sunscreen would be it."u8.ToArray();
-    public static readonly byte[] AUTHENTICATION_DATA = [
+#pragma warning disable format
+    public static readonly byte[] Message =
+        "Ladies and Gentlemen of the class of \'99: If I could offer you only one tip for the future, sunscreen would be it."u8
+           .ToArray();
+
+    public static readonly byte[] AuthenticationData =
+    [
         0x50, 0x51, 0x52, 0x53, 0xc0, 0xc1, 0xc2, 0xc3,
         0xc4, 0xc5, 0xc6, 0xc7
     ];
-    public static readonly byte[] PUBLIC_NONCE = [
+
+    public static readonly byte[] PublicNonce =
+    [
         0x07, 0x00, 0x00, 0x00, 0x40, 0x41, 0x42, 0x43,
         0x44, 0x45, 0x46, 0x47
     ];
-    public static readonly byte[] KEY = [
+
+    public static readonly byte[] Key =
+    [
         0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87,
         0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0x8f,
         0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97,
         0x98, 0x99, 0x9a, 0x9b, 0x9c, 0x9d, 0x9e, 0x9f
     ];
-    public static readonly byte[] CIPHER = [
+
+    public static readonly byte[] Cipher =
+    [
         0xd3, 0x1a, 0x8d, 0x34, 0x64, 0x8e, 0x60, 0xdb,
         0x7b, 0x86, 0xaf, 0xbc, 0x53, 0xef, 0x7e, 0xc2,
         0xa4, 0xad, 0xed, 0x51, 0x29, 0x6e, 0x08, 0xfe,
@@ -40,5 +50,5 @@ public static class AeadChacha20Poly1305IetfVector
         0xe2, 0x6a, 0x7e, 0x90, 0x2e, 0xcb, 0xd0, 0x60,
         0x06, 0x91
     ];
-    #pragma warning restore format
+#pragma warning restore format
 }

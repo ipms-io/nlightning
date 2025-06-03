@@ -2,18 +2,17 @@ using NBitcoin;
 
 namespace NLightning.Infrastructure.Bitcoin.Outputs;
 
-using Domain.Bitcoin.Outputs;
 using Domain.Money;
 
-public class FundingOutput : BaseOutput, IFundingOutput
+public class FundingOutput : BaseOutput
 {
     public override ScriptType ScriptType => ScriptType.P2WSH;
 
     public PubKey LocalPubKey { get; }
     public PubKey RemotePubKey { get; }
 
-    public FundingOutput(LightningMoney amount, PubKey localPubKey, PubKey remotePubKey, bool isPlaceHolder = false)
-        : base(CreateMultisigScript(localPubKey, remotePubKey), amount)
+    public FundingOutput(LightningMoney amount, PubKey localPubKey, PubKey remotePubKey)
+        : base(amount, CreateMultisigScript(localPubKey, remotePubKey))
     {
         ArgumentNullException.ThrowIfNull(localPubKey);
         ArgumentNullException.ThrowIfNull(remotePubKey);
@@ -26,12 +25,6 @@ public class FundingOutput : BaseOutput, IFundingOutput
 
         LocalPubKey = localPubKey;
         RemotePubKey = remotePubKey;
-
-        if (isPlaceHolder)
-        {
-            IsPlaceHolder = isPlaceHolder;
-            Index = 0;
-        }
     }
 
     private static Script CreateMultisigScript(PubKey localPubKey, PubKey remotePubKey)

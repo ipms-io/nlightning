@@ -2,7 +2,7 @@ namespace NLightning.Node.Constants;
 
 public static class DaemonConstants
 {
-    public const string DAEMON_FOLDER = "nltg";
-    public const string KEY_FILE = "nltg.key.json";
-    public const string PID_FILE = "nltg.pid";
+    public const string DaemonFolder = "nltg";
+    public const string KeyFile = "nltg.key.json";
+    public const string PidFile = "nltg.pid";
 }

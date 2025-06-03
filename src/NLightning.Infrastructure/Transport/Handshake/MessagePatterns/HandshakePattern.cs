@@ -37,9 +37,9 @@ internal sealed class HandshakePattern
     public static readonly HandshakePattern Xk = new(
         PreMessagePattern.Empty,
         PreMessagePattern.S,
-        new MessagePattern(Token.E, Token.ES),
-        new MessagePattern(Token.E, Token.EE),
-        new MessagePattern(Token.S, Token.SE)
+        new MessagePattern(Token.E, Token.Es),
+        new MessagePattern(Token.E, Token.Ee),
+        new MessagePattern(Token.S, Token.Se)
     );
 
     internal HandshakePattern(PreMessagePattern initiator, PreMessagePattern responder, params MessagePattern[] patterns)

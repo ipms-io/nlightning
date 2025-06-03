@@ -1,9 +1,8 @@
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NBitcoin;
-using NLightning.Application.Node.Factories;
-using NLightning.Application.Node.Services.Interfaces;
+using NLightning.Application.Node.Interfaces;
+using NLightning.Domain.Crypto.ValueObjects;
 
 namespace NLightning.Infrastructure.Node.Managers;
 
@@ -24,9 +23,10 @@ public sealed class PeerManager : IPeerManager
     private readonly ILogger<PeerManager> _logger;
     private readonly IOptions<NodeOptions> _nodeOptions;
     private readonly IPeerServiceFactory _peerServiceFactory;
-    private readonly Dictionary<PubKey, IPeerService> _peers = [];
+    private readonly Dictionary<CompactPubKey, IPeerService> _peers = [];
 
-    public PeerManager(ILogger<PeerManager> logger, IOptions<NodeOptions> nodeOptions, IPeerServiceFactory peerServiceFactory)
+    public PeerManager(ILogger<PeerManager> logger, IOptions<NodeOptions> nodeOptions,
+                       IPeerServiceFactory peerServiceFactory)
     {
         _logger = logger;
         _nodeOptions = nodeOptions;
@@ -79,7 +79,7 @@ public sealed class PeerManager : IPeerManager
     }
 
     /// <inheritdoc />
-    public void DisconnectPeer(PubKey pubKey)
+    public void DisconnectPeer(CompactPubKey pubKey)
     {
         if (_peers.TryGetValue(pubKey, out var peer))
         {

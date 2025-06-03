@@ -1,3 +1,6 @@
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.ValueObjects;
+
 namespace NLightning.Domain.Protocol.Payloads;
 
 using Interfaces;
@@ -18,7 +21,7 @@ using ValueObjects;
 /// <param name="feerate">The feerate.</param>
 /// <param name="locktime">The locktime.</param>
 /// <seealso cref="TxInitRbfMessage"/>
-/// <seealso cref="ValueObjects.ChannelId"/>
+/// <seealso cref="Channels.ValueObjects.ChannelId"/>
 public class TxInitRbfPayload(ChannelId channelId, uint feerate, uint locktime) : IChannelMessagePayload
 {
     /// <summary>

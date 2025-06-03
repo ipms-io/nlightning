@@ -1,4 +1,5 @@
-using NBitcoin;
+using NLightning.Domain.Crypto;
+using NLightning.Domain.Crypto.ValueObjects;
 
 namespace NLightning.Domain.Channels;
 
@@ -8,14 +9,14 @@ public class ChannelKeyData
 {
     public ChannelId ChannelId { get; set; }
     public uint KeyIndex { get; init; }
-    public PubKey FundingPubKey { get; init; }
-    public PubKey RevocationBasepoint { get; init; }
-    public PubKey PaymentBasepoint { get; init; }
-    public PubKey DelayedPaymentBasepoint { get; init; }
-    public PubKey HtlcBasepoint { get; init; }
+    public CompactPubKey FundingPubKey { get; init; }
+    public CompactPubKey RevocationBasepoint { get; init; }
+    public CompactPubKey PaymentBasepoint { get; init; }
+    public CompactPubKey DelayedPaymentBasepoint { get; init; }
+    public CompactPubKey HtlcBasepoint { get; init; }
 
-    public ChannelKeyData(ChannelId channelId, uint keyIndex, PubKey fundingPubKey, PubKey revocationBasepoint,
-                          PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint)
+    public ChannelKeyData(ChannelId channelId, uint keyIndex, CompactPubKey fundingPubKey, CompactPubKey revocationBasepoint,
+        CompactPubKey paymentBasepoint, CompactPubKey delayedPaymentBasepoint, CompactPubKey htlcBasepoint)
     {
         ChannelId = channelId;
         KeyIndex = keyIndex;

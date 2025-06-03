@@ -1,10 +1,10 @@
-using NLightning.Common.Utils;
+using NLightning.Domain.Serialization.Interfaces;
+using NLightning.Domain.Utils;
 
 namespace NLightning.Infrastructure.Protocol.Services;
 
 using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Services;
-using Domain.Serialization.Messages;
 using Domain.Transport;
 
 /// <summary>

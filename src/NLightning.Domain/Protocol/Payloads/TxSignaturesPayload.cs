@@ -1,3 +1,6 @@
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.ValueObjects;
+
 namespace NLightning.Domain.Protocol.Payloads;
 
 using Interfaces;
@@ -11,7 +14,7 @@ using ValueObjects;
 /// The tx_signatures payload signals the provision of transaction signatures.
 /// </remarks>
 /// <seealso cref="TxSignaturesMessage"/>
-/// <seealso cref="ValueObjects.ChannelId"/>
+/// <seealso cref="Channels.ValueObjects.ChannelId"/>
 /// <seealso cref="Witness"/>
 public class TxSignaturesPayload : IChannelMessagePayload
 {

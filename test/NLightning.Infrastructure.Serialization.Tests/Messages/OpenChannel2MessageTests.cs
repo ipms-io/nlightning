@@ -1,4 +1,6 @@
 using NBitcoin;
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Protocol.ValueObjects;
 
 namespace NLightning.Infrastructure.Serialization.Tests.Messages;
 
@@ -54,7 +56,7 @@ public class OpenChannel2MessageTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(Network.MAINNET.ChainHash, result.Payload.ChainHash);
+        Assert.Equal(BitcoinNetwork.Mainnet.ChainHash, result.Payload.ChainHash);
         Assert.Equal(expectedChannelId, result.Payload.ChannelId);
         Assert.Equal(EXPECTED_FUNDING_FEERATE, result.Payload.FundingFeeRatePerKw);
         Assert.Equal(EXPECTED_COMMITMENT_FEERATE, result.Payload.CommitmentFeeRatePerKw);
@@ -102,7 +104,7 @@ public class OpenChannel2MessageTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(Network.MAINNET.ChainHash, result.Payload.ChainHash);
+        Assert.Equal(BitcoinNetwork.Mainnet.ChainHash, result.Payload.ChainHash);
         Assert.Equal(expectedChannelId, result.Payload.ChannelId);
         Assert.Equal(EXPECTED_FUNDING_FEERATE, result.Payload.FundingFeeRatePerKw);
         Assert.Equal(EXPECTED_COMMITMENT_FEERATE, result.Payload.CommitmentFeeRatePerKw);
@@ -159,7 +161,7 @@ public class OpenChannel2MessageTests
         var channelFlags = new ChannelFlags();
 
         var message = new OpenChannel2Message(
-            new OpenChannel2Payload(Network.MAINNET.ChainHash, channelFlags, COMMITMENT_FEERATE, delayedPaymentBasepoint,
+            new OpenChannel2Payload(BitcoinNetwork.Mainnet.ChainHash, channelFlags, COMMITMENT_FEERATE, delayedPaymentBasepoint,
                                     _expectedDustLimitAmount, firstPerCommitmentPoint, fundingSatoshis, FUNDING_FEERATE,
                                     fundingPubKey, htlcBasepoint, _expectedHtlcMinimumAmount, _expectedLocktime,
                                     _expectedMaxAcceptedHtlcs, _expectedMaxHtlcValueInFlightAmount, paymentBasePoint,
@@ -198,7 +200,7 @@ public class OpenChannel2MessageTests
         var requireConfirmedInputsTlv = new RequireConfirmedInputsTlv();
 
         var message = new OpenChannel2Message(
-            new OpenChannel2Payload(Network.MAINNET.ChainHash, channelFlags, COMMITMENT_FEERATE, delayedPaymentBasepoint,
+            new OpenChannel2Payload(BitcoinNetwork.Mainnet.ChainHash, channelFlags, COMMITMENT_FEERATE, delayedPaymentBasepoint,
                                     _expectedDustLimitAmount, firstPerCommitmentPoint, fundingSatoshis, FUNDING_FEERATE,
                                     fundingPubKey, htlcBasepoint, _expectedHtlcMinimumAmount, _expectedLocktime,
                                     _expectedMaxAcceptedHtlcs, _expectedMaxHtlcValueInFlightAmount, paymentBasePoint,

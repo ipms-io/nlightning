@@ -1,12 +1,12 @@
 using System.Buffers;
 using System.Runtime.Serialization;
+using NLightning.Domain.Interfaces;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.ValueObjects;
 
 using Converters;
-using Domain.Serialization.ValueObjects;
 using Domain.ValueObjects;
-using Domain.ValueObjects.Interfaces;
 
 public class WitnessTypeSerializer : IValueObjectTypeSerializer<Witness>
 {

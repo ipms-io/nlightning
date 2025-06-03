@@ -1,29 +1,30 @@
 namespace NLightning.Domain.Tests.ValueObjects;
 
-using Domain.ValueObjects;
+using Domain.Channels.ValueObjects;
 
 public class ShortChannelIdTests
 {
-    private const ulong EXPECTED_SHORT_CHANNEL_ID = 956714754222915585;
-    private const uint EXPECTED_BLOCK_HEIGHT = 870127;
-    private const uint EXPECTED_TX_INDEX = 1237;
-    private const ushort EXPECTED_OUTPUT_INDEX = 1;
-    private const string EXPECTED_STRING = "870127x1237x1";
+    private const ulong ExpectedShortChannelId = 956714754222915585;
+    private const uint ExpectedBlockHeight = 870127;
+    private const uint ExpectedTxIndex = 1237;
+    private const ushort ExpectedOutputIndex = 1;
+    private const string ExpectedString = "870127x1237x1";
 
     private readonly byte[] _expectedValue = [0x0D, 0x46, 0xEF, 0x00, 0x04, 0xD5, 0x00, 0x01];
 
     #region Constructor Tests
+
     [Fact]
     public void Given_ValidParameters_When_ConstructorCalled_Then_PropertiesAreSetCorrectly()
     {
         // Given
         // When
-        var shortChannelId = new ShortChannelId(EXPECTED_BLOCK_HEIGHT, EXPECTED_TX_INDEX, EXPECTED_OUTPUT_INDEX);
+        var shortChannelId = new ShortChannelId(ExpectedBlockHeight, ExpectedTxIndex, ExpectedOutputIndex);
 
         // Then
-        Assert.Equal(EXPECTED_BLOCK_HEIGHT, shortChannelId.BlockHeight);
-        Assert.Equal(EXPECTED_TX_INDEX, shortChannelId.TransactionIndex);
-        Assert.Equal(EXPECTED_OUTPUT_INDEX, shortChannelId.OutputIndex);
+        Assert.Equal(ExpectedBlockHeight, shortChannelId.BlockHeight);
+        Assert.Equal(ExpectedTxIndex, shortChannelId.TransactionIndex);
+        Assert.Equal(ExpectedOutputIndex, shortChannelId.OutputIndex);
         Assert.Equal(_expectedValue, shortChannelId);
     }
 
@@ -35,9 +36,9 @@ public class ShortChannelIdTests
         var shortChannelId = new ShortChannelId(_expectedValue);
 
         // Then
-        Assert.Equal(EXPECTED_BLOCK_HEIGHT, shortChannelId.BlockHeight);
-        Assert.Equal(EXPECTED_TX_INDEX, shortChannelId.TransactionIndex);
-        Assert.Equal(EXPECTED_OUTPUT_INDEX, shortChannelId.OutputIndex);
+        Assert.Equal(ExpectedBlockHeight, shortChannelId.BlockHeight);
+        Assert.Equal(ExpectedTxIndex, shortChannelId.TransactionIndex);
+        Assert.Equal(ExpectedOutputIndex, shortChannelId.OutputIndex);
         Assert.Equal(_expectedValue, shortChannelId);
     }
 
@@ -57,28 +58,30 @@ public class ShortChannelIdTests
     {
         // Given
         // When
-        var shortChannelId = new ShortChannelId(EXPECTED_SHORT_CHANNEL_ID);
+        var shortChannelId = new ShortChannelId(ExpectedShortChannelId);
 
         // Then
-        Assert.Equal(EXPECTED_BLOCK_HEIGHT, shortChannelId.BlockHeight);
-        Assert.Equal(EXPECTED_TX_INDEX, shortChannelId.TransactionIndex);
-        Assert.Equal(EXPECTED_OUTPUT_INDEX, shortChannelId.OutputIndex);
+        Assert.Equal(ExpectedBlockHeight, shortChannelId.BlockHeight);
+        Assert.Equal(ExpectedTxIndex, shortChannelId.TransactionIndex);
+        Assert.Equal(ExpectedOutputIndex, shortChannelId.OutputIndex);
         Assert.Equal(_expectedValue, shortChannelId);
     }
+
     #endregion
 
     #region Parse Tests
+
     [Fact]
     public void Given_ValidString_When_ParseCalled_Then_PropertiesMatch()
     {
         // Given
         // When
-        var shortChannelId = ShortChannelId.Parse(EXPECTED_STRING);
+        var shortChannelId = ShortChannelId.Parse(ExpectedString);
 
         // Then
-        Assert.Equal(EXPECTED_BLOCK_HEIGHT, shortChannelId.BlockHeight);
-        Assert.Equal(EXPECTED_TX_INDEX, shortChannelId.TransactionIndex);
-        Assert.Equal(EXPECTED_OUTPUT_INDEX, shortChannelId.OutputIndex);
+        Assert.Equal(ExpectedBlockHeight, shortChannelId.BlockHeight);
+        Assert.Equal(ExpectedTxIndex, shortChannelId.TransactionIndex);
+        Assert.Equal(ExpectedOutputIndex, shortChannelId.OutputIndex);
         Assert.Equal(_expectedValue, shortChannelId);
     }
 
@@ -91,24 +94,28 @@ public class ShortChannelIdTests
         // When / Then
         Assert.Throws<FormatException>(() => ShortChannelId.Parse(invalidString));
     }
+
     #endregion
 
     #region ToString Tests
+
     [Fact]
     public void Given_ValidShortChannelId_When_ToStringCalled_Then_FormattedCorrectly()
     {
         // Given
-        var shortChannelId = new ShortChannelId(EXPECTED_BLOCK_HEIGHT, EXPECTED_TX_INDEX, EXPECTED_OUTPUT_INDEX);
+        var shortChannelId = new ShortChannelId(ExpectedBlockHeight, ExpectedTxIndex, ExpectedOutputIndex);
 
         // When
         var result = shortChannelId.ToString();
 
         // Then
-        Assert.Equal(EXPECTED_STRING, result);
+        Assert.Equal(ExpectedString, result);
     }
+
     #endregion
 
     #region Equality Tests
+
     [Fact]
     public void Given_TwoIdenticalShortChannelIds_When_ComparingEquality_Then_TheyAreEqual()
     {
@@ -139,5 +146,6 @@ public class ShortChannelIdTests
         Assert.False(areEqual);
         Assert.False(scid1.Equals(scid2));
     }
+
     #endregion
 }

@@ -1,4 +1,4 @@
-using NBitcoin;
+using NLightning.Domain.Bitcoin.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Tlv;
 
@@ -16,13 +16,13 @@ public class UpfrontShutdownScriptTlv : BaseTlv
     /// <summary>
     /// The shutdown script to be used when closing the channel
     /// </summary>
-    public Script ShutdownScriptPubkey { get; }
+    public BitcoinScript ShutdownScriptPubkey { get; }
 
-    public UpfrontShutdownScriptTlv(Script shutdownScriptPubkey) : base(TlvConstants.UpfrontShutdownScript)
+    public UpfrontShutdownScriptTlv(BitcoinScript shutdownScriptPubkey) : base(TlvConstants.UpfrontShutdownScript)
     {
         ShutdownScriptPubkey = shutdownScriptPubkey;
 
-        Value = shutdownScriptPubkey.ToBytes();
+        Value = shutdownScriptPubkey.Value;
         Length = Value.Length;
     }
 }

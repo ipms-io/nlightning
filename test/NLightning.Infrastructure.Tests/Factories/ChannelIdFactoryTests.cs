@@ -6,6 +6,13 @@ using Infrastructure.Crypto.Hashes;
 
 public class ChannelIdFactoryTests
 {
+    private readonly ChannelIdFactory _channelIdFactory;
+
+    public ChannelIdFactoryTests()
+    {
+        _channelIdFactory = new ChannelIdFactory();
+    }
+
     [Fact]
     public void Given_ValidInputs_When_CreatingV2_Then_ReturnsCorrectChannelId()
     {
@@ -16,7 +23,7 @@ public class ChannelIdFactoryTests
         new Random().NextBytes(greaterRevocationBasepoint);
 
         // Act
-        var channelId = ChannelIdFactory.CreateV2(lesserRevocationBasepoint, greaterRevocationBasepoint);
+        var channelId = _channelIdFactory.CreateV2(lesserRevocationBasepoint, greaterRevocationBasepoint);
 
         // Assert
         var combined = new byte[66];
@@ -29,29 +36,5 @@ public class ChannelIdFactoryTests
         sha256.GetHashAndReset(expectedHash);
 
         Assert.Equal(expectedHash, channelId);
-    }
-
-    [Fact]
-    public void Given_InvalidLesserRevocationBasepointLength_When_CreatingV2_Then_ThrowsArgumentException()
-    {
-        // Arrange
-        var lesserRevocationBasepoint = new byte[32]; // Invalid length
-        var greaterRevocationBasepoint = new byte[33];
-
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() => ChannelIdFactory.CreateV2(lesserRevocationBasepoint, greaterRevocationBasepoint));
-        Assert.Equal("Revocation basepoints must be 33 bytes each", ex.Message);
-    }
-
-    [Fact]
-    public void Given_InvalidGreaterRevocationBasepointLength_When_CreatingV2_Then_ThrowsArgumentException()
-    {
-        // Arrange
-        var lesserRevocationBasepoint = new byte[33];
-        var greaterRevocationBasepoint = new byte[32]; // Invalid length
-
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(() => ChannelIdFactory.CreateV2(lesserRevocationBasepoint, greaterRevocationBasepoint));
-        Assert.Equal("Revocation basepoints must be 33 bytes each", ex.Message);
     }
 }

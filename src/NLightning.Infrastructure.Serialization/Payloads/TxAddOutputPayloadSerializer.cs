@@ -1,16 +1,16 @@
 using System.Buffers;
 using System.Runtime.Serialization;
-using NBitcoin;
-using NLightning.Domain.Serialization.Payloads;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
+using Domain.Bitcoin.ValueObjects;
+using Domain.Channels.ValueObjects;
 using Converters;
 using Domain.Enums;
 using Domain.Money;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Payloads.Interfaces;
-using Domain.Serialization.Factories;
 using Domain.ValueObjects;
 using Exceptions;
 
@@ -36,8 +36,8 @@ public class TxAddOutputPayloadSerializer : IPayloadSerializer<TxAddOutputPayloa
 
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(txAddOutputPayload.SerialId));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(txAddOutputPayload.Amount.Satoshi));
-        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian((ushort)txAddOutputPayload.Script.Length));
-        await stream.WriteAsync(txAddOutputPayload.Script.ToBytes());
+        await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian((ushort)txAddOutputPayload.Script.Value.Length));
+        await stream.WriteAsync(txAddOutputPayload.Script);
     }
 
     public async Task<TxAddOutputPayload?> DeserializeAsync(Stream stream)
@@ -66,7 +66,7 @@ public class TxAddOutputPayloadSerializer : IPayloadSerializer<TxAddOutputPayloa
 
             var scriptBytes = new byte[scriptLength];
             await stream.ReadExactlyAsync(scriptBytes);
-            var script = new Script(scriptBytes);
+            var script = new BitcoinScript(scriptBytes);
 
             return new TxAddOutputPayload(sats, channelId, script, serialId);
         }

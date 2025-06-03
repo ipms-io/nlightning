@@ -1,7 +1,9 @@
+using NLightning.Domain.Protocol.ValueObjects;
+using NLightning.Domain.Utils;
+
 namespace NLightning.Bolt11.Tests.Models;
 
 using Bolt11.Models;
-using Common.Utils;
 using Domain.ValueObjects;
 using Enums;
 using Interfaces;
@@ -319,7 +321,7 @@ public class TaggedFieldListTests
         // Given
         var bitReader = new BitReader([]); // defaults to HasMoreBits = false
         // When
-        var list = TaggedFieldList.FromBitReader(bitReader, Network.MAINNET);
+        var list = TaggedFieldList.FromBitReader(bitReader, BitcoinNetwork.Mainnet);
 
         // Then
         Assert.Empty(list);

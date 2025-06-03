@@ -2,11 +2,12 @@ using System.Net;
 
 namespace NLightning.Domain.Node.Options;
 
+using Domain.Crypto.Constants;
+using Domain.Protocol.ValueObjects;
 using Enums;
 using Protocol.Constants;
 using Protocol.Models;
 using Protocol.Tlv;
-using ValueObjects;
 
 public class FeatureOptions
 {
@@ -244,7 +245,7 @@ public class FeatureOptions
         // If there are no ChainHashes, use Mainnet as default
         if (!ChainHashes.Any())
         {
-            ChainHashes = [ChainConstants.MAIN];
+            ChainHashes = [ChainConstants.Main];
         }
 
         return new NetworksTlv(ChainHashes);
@@ -366,7 +367,7 @@ public class FeatureOptions
 
         if (extension?.TryGetTlv(new BigSize(1), out var chainHashes) ?? false)
         {
-            options.ChainHashes = Enumerable.Range(0, chainHashes!.Value.Length / ChainHash.LENGTH)
+            options.ChainHashes = Enumerable.Range(0, chainHashes!.Value.Length / CryptoConstants.Sha256HashLen)
                                             .Select(i => new ChainHash(chainHashes.Value.Skip(i * 32).Take(32).ToArray()));
         }
 

@@ -12,7 +12,7 @@ public sealed class RoutingInfoCollection : List<RoutingInfo>
     /// The maximum length of a tagged field is 1023 * 5 bits. The routing information is 408 bits long.
     /// 1023 * 5 bits = 5115 bits / 408 bits = 12.5 => round down to 12
     /// </remarks>
-    private const int MAX_CAPACITY = 12;
+    private const int MaxCapacity = 12;
 
     public event EventHandler? Changed;
 
@@ -26,9 +26,9 @@ public sealed class RoutingInfoCollection : List<RoutingInfo>
     /// </remarks>
     public new void Add(RoutingInfo routingInfo)
     {
-        if (Count >= MAX_CAPACITY)
+        if (Count >= MaxCapacity)
         {
-            throw new InvalidOperationException($"The maximum capacity of {MAX_CAPACITY} has been reached");
+            throw new InvalidOperationException($"The maximum capacity of {MaxCapacity} has been reached");
         }
 
         base.Add(routingInfo);
@@ -39,9 +39,9 @@ public sealed class RoutingInfoCollection : List<RoutingInfo>
     public new void AddRange(IEnumerable<RoutingInfo> routingInfos)
     {
         var iEnumerable = routingInfos.ToList();
-        if (Count + iEnumerable.Count > MAX_CAPACITY)
+        if (Count + iEnumerable.Count > MaxCapacity)
         {
-            throw new InvalidOperationException($"The maximum capacity of {MAX_CAPACITY} has been reached");
+            throw new InvalidOperationException($"The maximum capacity of {MaxCapacity} has been reached");
         }
 
         base.AddRange(iEnumerable);

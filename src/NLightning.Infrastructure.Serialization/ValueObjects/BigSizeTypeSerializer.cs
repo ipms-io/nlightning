@@ -1,11 +1,12 @@
 using System.Buffers;
+using NLightning.Domain.Interfaces;
+using NLightning.Domain.Protocol.ValueObjects;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.ValueObjects;
 
 using Converters;
-using Domain.Serialization.ValueObjects;
 using Domain.ValueObjects;
-using Domain.ValueObjects.Interfaces;
 
 public class BigSizeTypeSerializer : IValueObjectTypeSerializer<BigSize>
 {

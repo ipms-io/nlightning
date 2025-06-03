@@ -1,17 +1,16 @@
 using System.Buffers;
 using System.Runtime.Serialization;
-using NBitcoin;
-using NBitcoin.Crypto;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
+using Domain.Bitcoin.ValueObjects;
+using Domain.Channels.ValueObjects;
+using Domain.Crypto.ValueObjects;
 using Converters;
 using Domain.Crypto.Constants;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Payloads.Interfaces;
-using Domain.Serialization.Factories;
-using Domain.Serialization.Payloads;
-using Domain.ValueObjects;
 using Exceptions;
 
 public class FundingCreatedPayloadSerializer : IPayloadSerializer<FundingCreatedPayload>
@@ -34,14 +33,14 @@ public class FundingCreatedPayloadSerializer : IPayloadSerializer<FundingCreated
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(fundingCreatedPayload.ChannelId, stream);
 
-        await stream.WriteAsync(fundingCreatedPayload.FundingTxId.ToBytes());
+        await stream.WriteAsync(fundingCreatedPayload.FundingTxId);
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(fundingCreatedPayload.FundingOutputIndex));
-        await stream.WriteAsync(fundingCreatedPayload.Signature.ToCompact());
+        await stream.WriteAsync(fundingCreatedPayload.Signature);
     }
 
     public async Task<FundingCreatedPayload?> DeserializeAsync(Stream stream)
     {
-        var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.MAX_SIGNATURE_SIZE);
+        var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.MaxSignatureSize);
 
         try
         {
@@ -51,17 +50,14 @@ public class FundingCreatedPayloadSerializer : IPayloadSerializer<FundingCreated
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..HashConstants.SHA256_HASH_LEN]);
-            var fundingTxId = new uint256(buffer[..HashConstants.SHA256_HASH_LEN]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.Sha256HashLen]);
+            var fundingTxId = new TxId(buffer[..CryptoConstants.Sha256HashLen]);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ushort)]);
             var fundingOutputIndex = EndianBitConverter.ToUInt16BigEndian(buffer.AsSpan()[..sizeof(ushort)]);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.MAX_SIGNATURE_SIZE]);
-            if (!ECDSASignature.TryParseFromCompact(buffer[..CryptoConstants.MAX_SIGNATURE_SIZE], out var signature))
-            {
-                throw new Exception("Unable to parse signature");
-            }
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.MaxSignatureSize]);
+            var signature = new DerSignature(buffer[..CryptoConstants.MaxSignatureSize]);
 
             return new FundingCreatedPayload(channelId, fundingTxId, fundingOutputIndex, signature);
         }

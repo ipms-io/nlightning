@@ -1,4 +1,5 @@
 using NBitcoin;
+using NLightning.Domain.Bitcoin.ValueObjects;
 
 namespace NLightning.Infrastructure.Tests.Protocol.Tlv.Converters;
 
@@ -11,8 +12,8 @@ public class UpfrontShutdownScriptTlvConverterTests
     public void Given_UpfrontShutdownScriptTlvConverter_When_ConvertingToBaseTlvAndBack_ResultIsCorrect()
     {
         // Arrange
-        var script = new Script([0x01, 0x02, 0x03]);
-        var expectedBaseTlv = new BaseTlv(0, script.ToBytes());
+        var script = new BitcoinScript([0x01, 0x02, 0x03]);
+        var expectedBaseTlv = new BaseTlv(0, script);
         var expectedUpfrontShutdownScriptTlv = new UpfrontShutdownScriptTlv(script);
         var converter = new UpfrontShutdownScriptTlvConverter();
 

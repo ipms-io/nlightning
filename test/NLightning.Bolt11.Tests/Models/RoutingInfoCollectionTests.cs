@@ -1,4 +1,5 @@
 using NBitcoin;
+using NLightning.Domain.Channels.ValueObjects;
 using NLightning.Tests.Utils.Vectors;
 
 namespace NLightning.Bolt11.Tests.Models;

@@ -2,32 +2,30 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using NLightning.Application.Node.Factories;
-using NLightning.Application.Protocol.Factories;
+using Microsoft.Extensions.Options;
+using NLightning.Application;
+using NLightning.Domain.Bitcoin.Interfaces;
+using NLightning.Domain.Channels.Factories;
+using NLightning.Domain.Channels.Interfaces;
+using NLightning.Domain.Crypto.Hashes;
+using NLightning.Domain.Protocol.Interfaces;
+using NLightning.Domain.Protocol.ValueObjects;
+using NLightning.Domain.Transactions.Factories;
+using NLightning.Domain.Transactions.Interfaces;
+using NLightning.Infrastructure;
+using NLightning.Infrastructure.Bitcoin;
+using NLightning.Infrastructure.Bitcoin.Managers;
 using NLightning.Infrastructure.Bitcoin.Options;
+using NLightning.Infrastructure.Bitcoin.Services;
+using NLightning.Infrastructure.Bitcoin.Signers;
+using NLightning.Infrastructure.Persistence;
+using NLightning.Infrastructure.Repositories;
+using NLightning.Infrastructure.Serialization;
 
 namespace NLightning.Node.Extensions;
 
-using Application.Managers;
-using Application.Node.Services.Interfaces;
-using Domain.Bitcoin.Factories;
-using Domain.Bitcoin.Services;
 using Domain.Node.Options;
-using Domain.Protocol.Factories;
-using Domain.Protocol.Managers;
-using Domain.Protocol.Services;
-using Domain.Protocol.Signers;
-using Domain.ValueObjects;
-using Infrastructure.Bitcoin.Factories;
-using Infrastructure.Node.Interfaces;
-using Infrastructure.Node.Managers;
-using Infrastructure.Protocol.Factories;
-using Infrastructure.Protocol.Services;
-using Infrastructure.Transport.Factories;
-using Interfaces;
-using Managers;
 using Services;
-using Signers;
 
 public static class NodeServiceExtensions
 {
@@ -54,22 +52,19 @@ public static class NodeServiceExtensions
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
             });
 
-            // Register application services
             // Singleton services (one instance throughout the application)
-            services.AddSingleton<IChannelFactory, ChannelFactory>();
-            services.AddSingleton<IChannelManager, ChannelManager>();
-            services.AddSingleton<ICommitmentTransactionFactory, CommitmentTransactionFactory>();
-            services.AddSingleton<IFeeService, FeeService>();
-            services.AddSingleton<IFundingTransactionFactory, FundingTransactionFactory>();
-            services.AddSingleton<IKeyDerivationService, KeyDerivationService>();
-            services.AddSingleton<IMessageFactory, MessageFactory>();
-            services.AddSingleton<IMessageServiceFactory, MessageServiceFactory>();
-            services.AddSingleton<IPeerServiceFactory, PeerServiceFactory>();
-            services.AddSingleton<IPeerManager, PeerManager>();
-            services.AddSingleton<IPingPongServiceFactory, PingPongServiceFactory>();
             services.AddSingleton<ISecureKeyManager>(secureKeyManager);
-            services.AddSingleton<ITcpListenerService, TcpListenerService>();
-            services.AddSingleton<ITransportServiceFactory, TransportServiceFactory>();
+            services.AddSingleton<IChannelFactory>(sp =>
+            {
+                var nodeOptions = sp.GetRequiredService<IOptions<NodeOptions>>().Value;
+                var commitmentTransactionModelFactory = sp.GetRequiredService<ICommitmentTransactionModelFactory>();
+                var feeService = sp.GetRequiredService<IFeeService>();
+                var sha256 = sp.GetRequiredService<ISha256>();
+                var channelKeySetFactory = sp.GetRequiredService<IChannelKeySetFactory>();
+                return new ChannelFactory(commitmentTransactionModelFactory, feeService,  nodeOptions, sha256, 
+                                          channelKeySetFactory);
+            });
+            services.AddSingleton<ICommitmentTransactionModelFactory, CommitmentTrasanctionModelModelFactory>();
 
             // Add the Signer
             services.AddSingleton<ILightningSigner>(serviceProvider =>
@@ -80,6 +75,16 @@ public static class NodeServiceExtensions
                 // Create the signer with the correct network
                 return new LocalLightningSigner(keyDerivationService, logger, secureKeyManager);
             });
+            
+            // Add the Application services
+            services.AddApplicationServices();
+            services.AddInfrastructureServices();
+            services.AddPersistenceInfrastructureServices(configuration);
+            services.AddRepositoriesInfrastructureServices();
+            services.AddSerializationInfrastructureServices();
+            
+            // Add the Infrastructure services
+            services.AddBitcoinInfrastructure();
 
             // Scoped services (one instance per scope)
 
@@ -100,8 +105,10 @@ public static class NodeServiceExtensions
                     var networkString = configuration.GetValue<string>("Node:Network");
                     if (!string.IsNullOrWhiteSpace(networkString))
                     {
-                        options.Network = new Network(networkString);
+                        options.BitcoinNetwork = new BitcoinNetwork(networkString);
                     }
+                    
+                    options.Features.ChainHashes = [options.BitcoinNetwork.ChainHash];
                 })
                 .ValidateOnStart();
         });

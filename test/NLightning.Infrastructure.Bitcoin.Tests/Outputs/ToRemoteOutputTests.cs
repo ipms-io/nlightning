@@ -15,7 +15,7 @@ public class ToRemoteOutputTests
     {
         // Given
         // When
-        var toRemoteOutput = new ToRemoteOutput(false, _remotePubKey, _amount);
+        var toRemoteOutput = new ToRemoteOutput(_amount, false, _remotePubKey);
 
         // Then
         Assert.Equal(_remotePubKey, toRemoteOutput.RemotePubKey);
@@ -29,7 +29,7 @@ public class ToRemoteOutputTests
     {
         // Given
         // When
-        var toRemoteOutput = new ToRemoteOutput(false, _remotePubKey, _amount);
+        var toRemoteOutput = new ToRemoteOutput(_amount, false, _remotePubKey);
 
         // Then
         Assert.Equal(ScriptType.P2WPKH, toRemoteOutput.ScriptType);
@@ -41,7 +41,7 @@ public class ToRemoteOutputTests
     {
         // Given
         // When
-        var toRemoteOutput = new ToRemoteOutput(true, _remotePubKey, _amount);
+        var toRemoteOutput = new ToRemoteOutput(_amount, true, _remotePubKey);
 
         // Then
         Assert.Equal(ScriptType.P2WSH, toRemoteOutput.ScriptType);
@@ -57,7 +57,7 @@ public class ToRemoteOutputTests
     public void Given_ToRemoteOutput_When_ToCoinCalled_Then_ReturnsCorrectScriptCoin()
     {
         // Given
-        var toRemoteOutput = new ToRemoteOutput(true, _remotePubKey, _amount)
+        var toRemoteOutput = new ToRemoteOutput(_amount, true, _remotePubKey)
         {
             TxId = uint256.Parse("8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be"),
             Index = 1
@@ -81,7 +81,7 @@ public class ToRemoteOutputTests
         var zeroAmount = new LightningMoney(0);
 
         // When
-        var toRemoteOutput = new ToRemoteOutput(true, _remotePubKey, zeroAmount);
+        var toRemoteOutput = new ToRemoteOutput(zeroAmount, true, _remotePubKey);
 
         // Then
         Assert.Equal(zeroAmount, toRemoteOutput.Amount);
@@ -92,8 +92,8 @@ public class ToRemoteOutputTests
     public void Given_ToRemoteOutputs_When_ComparingThem_Then_UsesTransactionOutputComparer()
     {
         // Given
-        var output1 = new ToRemoteOutput(true, _remotePubKey, new LightningMoney(1000000));
-        var output2 = new ToRemoteOutput(true, _remotePubKey, new LightningMoney(2000000));
+        var output1 = new ToRemoteOutput(new LightningMoney(1000000), true, _remotePubKey);
+        var output2 = new ToRemoteOutput(new LightningMoney(2000000), true, _remotePubKey);
 
         // When
         var comparison = output1.CompareTo(output2);
@@ -109,11 +109,11 @@ public class ToRemoteOutputTests
         var remotePubKey2 = new PubKey("034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa");
 
         // When
-        var output1 = new ToRemoteOutput(true, _remotePubKey, _amount);
-        var output2 = new ToRemoteOutput(true, remotePubKey2, _amount);
+        var output1 = new ToRemoteOutput(_amount, true, _remotePubKey);
+        var output2 = new ToRemoteOutput(_amount, true, remotePubKey2);
 
         // Then
-        Assert.NotEqual(output1.RedeemScript, output2.RedeemScript);
+        Assert.NotEqual(output1.RedeemBitcoinScript, output2.RedeemBitcoinScript);
         Assert.NotEqual(output1.ScriptPubKey, output2.ScriptPubKey);
     }
 }

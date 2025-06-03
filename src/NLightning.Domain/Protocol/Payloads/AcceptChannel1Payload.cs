@@ -1,10 +1,11 @@
-using NBitcoin;
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Crypto;
+using NLightning.Domain.Crypto.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Payloads;
 
 using Interfaces;
 using Money;
-using ValueObjects;
 
 /// <summary>
 /// Represents the payload for the accept_channel message.
@@ -63,39 +64,39 @@ public class AcceptChannel1Payload : IChannelMessagePayload
     /// <summary>
     /// funding_pubkey is the public key in the 2-of-2 multisig script of the funding transaction output.
     /// </summary>
-    public PubKey FundingPubKey { get; set; }
+    public CompactPubKey FundingPubKey { get; set; }
 
     /// <summary>
     /// revocation_basepoint is used to regenerate the scripts required for the penalty transaction
     /// </summary>
-    public PubKey RevocationBasepoint { get; set; }
+    public CompactPubKey RevocationBasepoint { get; set; }
 
     /// <summary>
     /// payment_basepoint is used to produce payment signatures for the protocol
     /// </summary>
-    public PubKey PaymentBasepoint { get; set; }
+    public CompactPubKey PaymentBasepoint { get; set; }
 
     /// <summary>
     /// delayed_payment_basepoint is used to regenerate the scripts required for the penalty transaction
     /// </summary>
-    public PubKey DelayedPaymentBasepoint { get; set; }
+    public CompactPubKey DelayedPaymentBasepoint { get; set; }
 
     /// <summary>
     /// htlc_basepoint is used to produce HTLC signatures for the protocol
     /// </summary>
-    public PubKey HtlcBasepoint { get; set; }
+    public CompactPubKey HtlcBasepoint { get; set; }
 
     /// <summary>
     /// first_per_commitment_point is the per-commitment point used for the first commitment transaction
     /// </summary>
-    public PubKey FirstPerCommitmentPoint { get; set; }
+    public CompactPubKey FirstPerCommitmentPoint { get; set; }
 
     public AcceptChannel1Payload(ChannelId channelId, LightningMoney dustLimitAmount,
                                  LightningMoney maxHtlcValueInFlight, LightningMoney channelReserveAmount,
                                  LightningMoney htlcMinimumAmount, uint minimumDepth, ushort toSelfDelay,
-                                 ushort maxAcceptedHtlcs, PubKey fundingPubKey, PubKey revocationBasepoint,
-                                 PubKey paymentBasepoint, PubKey delayedPaymentBasepoint, PubKey htlcBasepoint,
-                                 PubKey firstPerCommitmentPoint)
+                                 ushort maxAcceptedHtlcs, CompactPubKey fundingPubKey, CompactPubKey revocationBasepoint,
+                                 CompactPubKey paymentBasepoint, CompactPubKey delayedPaymentBasepoint, CompactPubKey htlcBasepoint,
+                                 CompactPubKey firstPerCommitmentPoint)
     {
         ChannelId = channelId;
         DustLimitAmount = dustLimitAmount;

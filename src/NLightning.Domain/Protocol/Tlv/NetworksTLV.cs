@@ -1,5 +1,6 @@
 namespace NLightning.Domain.Protocol.Tlv;
 
+using Domain.Crypto.Constants;
 using Constants;
 using ValueObjects;
 
@@ -23,12 +24,12 @@ public class NetworksTlv : BaseTlv
     {
         ChainHashes = chainHashes.ToList();
 
-        Value = new byte[ChainHash.LENGTH * ChainHashes.Count()];
+        Value = new byte[CryptoConstants.Sha256HashLen * ChainHashes.Count()];
 
         for (var i = 0; i < ChainHashes.Count(); i++)
         {
             byte[] chainHash = ChainHashes.ElementAt(i);
-            chainHash.CopyTo(Value, i * ChainHash.LENGTH);
+            chainHash.CopyTo(Value, i * CryptoConstants.Sha256HashLen);
         }
 
         Length = Value.Length;

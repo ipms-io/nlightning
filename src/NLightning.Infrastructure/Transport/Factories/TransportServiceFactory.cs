@@ -1,12 +1,13 @@
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NLightning.Domain.Serialization.Interfaces;
+using NLightning.Infrastructure.Crypto.Interfaces;
 
 namespace NLightning.Infrastructure.Transport.Factories;
 
 using Domain.Node.Options;
 using Domain.Protocol.Factories;
-using Domain.Serialization.Messages;
 using Domain.Transport;
 using Services;
 
@@ -18,13 +19,15 @@ using Services;
 /// </remarks>
 public sealed class TransportServiceFactory : ITransportServiceFactory
 {
+    private readonly IEcdh _ecdh;
     private readonly ILoggerFactory _loggerFactory;
     private readonly IMessageSerializer _messageSerializer;
     private readonly NodeOptions _nodeOptions;
 
-    public TransportServiceFactory(ILoggerFactory loggerFactory, IMessageSerializer messageSerializer,
+    public TransportServiceFactory(IEcdh ecdh, ILoggerFactory loggerFactory, IMessageSerializer messageSerializer,
                                    IOptions<NodeOptions> nodeOptions)
     {
+        _ecdh = ecdh;
         _loggerFactory = loggerFactory;
         _messageSerializer = messageSerializer;
         _nodeOptions = nodeOptions.Value;
@@ -37,7 +40,7 @@ public sealed class TransportServiceFactory : ITransportServiceFactory
         // Create a specific logger for the TransportService class
         var logger = _loggerFactory.CreateLogger<TransportService>();
 
-        return new TransportService(logger, _messageSerializer, _nodeOptions.NetworkTimeout, isInitiator, s, rs,
+        return new TransportService(_ecdh, logger, _messageSerializer, _nodeOptions.NetworkTimeout, isInitiator, s, rs,
                                     tcpClient);
     }
 }

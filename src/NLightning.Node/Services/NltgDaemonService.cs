@@ -2,12 +2,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NLightning.Domain.Bitcoin.Interfaces;
+using NLightning.Domain.Channels.Interfaces;
+using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Node.Services;
 
-using Domain.Bitcoin.Services;
 using Domain.Node.Options;
-using Domain.Protocol.Managers;
 using Interfaces;
 
 public class NltgDaemonService : BackgroundService
@@ -33,7 +34,7 @@ public class NltgDaemonService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var network = _configuration["network"] ?? _configuration["n"] ?? _nodeOptions.Network;
+        var network = _configuration["network"] ?? _configuration["n"] ?? _nodeOptions.BitcoinNetwork;
         var isDaemon = _configuration.GetValue<bool?>("daemon")
                        ?? _configuration.GetValue<bool?>("daemon-child")
                        ?? _nodeOptions.Daemon;

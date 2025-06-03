@@ -10,7 +10,7 @@ using NLightning.Infrastructure.Persistence.Contexts;
 
 namespace NLightning.Infrastructure.Persistence.Sqlite.Migrations
 {
-    [DbContext(typeof(NLightningContext))]
+    [DbContext(typeof(NLightningDbContext))]
     [Migration("20240322171303_Init")]
     partial class Init
     {

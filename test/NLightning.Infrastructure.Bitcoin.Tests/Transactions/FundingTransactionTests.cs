@@ -1,9 +1,10 @@
 using NBitcoin;
+using NLightning.Domain.Bitcoin.Interfaces;
+using NLightning.Domain.Channels.Interfaces;
 
 namespace NLightning.Infrastructure.Bitcoin.Tests.Transactions;
 
 using Bitcoin.Transactions;
-using Domain.Bitcoin.Services;
 using Domain.Enums;
 using Domain.Money;
 

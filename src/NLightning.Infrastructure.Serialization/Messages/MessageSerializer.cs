@@ -1,10 +1,10 @@
+using NLightning.Domain.Serialization.Interfaces;
+
 namespace NLightning.Infrastructure.Serialization.Messages;
 
 using Converters;
 using Domain.Protocol.Constants;
 using Domain.Protocol.Messages.Interfaces;
-using Domain.Serialization.Factories;
-using Domain.Serialization.Messages;
 using Exceptions;
 
 public class MessageSerializer : IMessageSerializer

@@ -1,8 +1,10 @@
 using NBitcoin;
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Crypto.ValueObjects;
+using NLightning.Domain.Utils;
 
 namespace NLightning.Bolt11.Models.TaggedFields;
 
-using Common.Utils;
 using Constants;
 using Domain.Models;
 using Domain.ValueObjects;
@@ -30,7 +32,7 @@ internal sealed class RoutingInfoTaggedField : ITaggedField
     internal RoutingInfoTaggedField(RoutingInfoCollection value)
     {
         Value = value;
-        Length = (short)((value.Count * TaggedFieldConstants.ROUTING_INFO_LENGTH + value.Count * 2) / 5);
+        Length = (short)((value.Count * TaggedFieldConstants.RoutingInfoLength + value.Count * 2) / 5);
 
         Value.Changed += OnRoutingInfoCollectionChanged;
     }
@@ -41,7 +43,7 @@ internal sealed class RoutingInfoTaggedField : ITaggedField
         // Write data
         foreach (var routingInfo in Value)
         {
-            bitWriter.WriteBits(routingInfo.PubKey.ToBytes(), 264);
+            bitWriter.WriteBits(routingInfo.CompactPubKey, 264);
             bitWriter.WriteBits(routingInfo.ShortChannelId, 64);
             bitWriter.WriteInt32AsBits(routingInfo.FeeBaseMsat, 32);
             bitWriter.WriteInt32AsBits(routingInfo.FeeProportionalMillionths, 32);
@@ -90,7 +92,7 @@ internal sealed class RoutingInfoTaggedField : ITaggedField
         var bitsReadAcc = 0;
         var routingInfos = new RoutingInfoCollection();
 
-        for (var i = 0; i < l && l - bitsReadAcc >= TaggedFieldConstants.ROUTING_INFO_LENGTH; i += TaggedFieldConstants.ROUTING_INFO_LENGTH)
+        for (var i = 0; i < l && l - bitsReadAcc >= TaggedFieldConstants.RoutingInfoLength; i += TaggedFieldConstants.RoutingInfoLength)
         {
             var pubkeyBytes = new byte[34];
             bitsReadAcc += bitReader.ReadBits(pubkeyBytes, 264);
@@ -107,7 +109,7 @@ internal sealed class RoutingInfoTaggedField : ITaggedField
             var minFinalCltvExpiry = bitReader.ReadInt16FromBits(16);
             bitsReadAcc += 16;
 
-            routingInfos.Add(new RoutingInfo(new PubKey(pubkeyBytes[..^1]),
+            routingInfos.Add(new RoutingInfo(new CompactPubKey(pubkeyBytes[..^1]),
                 new ShortChannelId(shortChannelBytes[..^1]),
                 feeBaseMsat,
                 feeProportionalMillionths,
@@ -126,6 +128,6 @@ internal sealed class RoutingInfoTaggedField : ITaggedField
 
     private void OnRoutingInfoCollectionChanged(object? sender, EventArgs e)
     {
-        Length = (short)((Value.Count * TaggedFieldConstants.ROUTING_INFO_LENGTH + Value.Count * 2) / 5);
+        Length = (short)((Value.Count * TaggedFieldConstants.RoutingInfoLength + Value.Count * 2) / 5);
     }
 }

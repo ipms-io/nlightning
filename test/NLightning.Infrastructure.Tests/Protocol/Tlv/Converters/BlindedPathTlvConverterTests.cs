@@ -11,8 +11,8 @@ public class BlindedPathTlvConverterTests
     public void Given_BlindedPathTlvConverter_When_ConvertingToBaseTlvAndBack_ResultIsCorrect()
     {
         // Arrange
-        var pubkey = new Key().PubKey;
-        var expectedBaseTlv = new BaseTlv(0, pubkey.ToBytes());
+        var pubkey = new Key().PubKey.ToBytes();
+        var expectedBaseTlv = new BaseTlv(0, pubkey);
         var expectedBlindedPathTlv = new BlindedPathTlv(pubkey);
         var converter = new BlindedPathTlvConverter();
 

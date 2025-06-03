@@ -1,18 +1,17 @@
 using System.Buffers;
 using System.Runtime.Serialization;
-using NBitcoin;
-using NLightning.Domain.Serialization.Payloads;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
+using Domain.Channels.ValueObjects;
+using Domain.Crypto.ValueObjects;
 using Converters;
 using Domain.Crypto.Constants;
 using Domain.Enums;
 using Domain.Money;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Payloads.Interfaces;
-using Domain.Serialization.Factories;
-using Domain.ValueObjects;
 using Exceptions;
 
 public class AcceptChannel2PayloadSerializer : IPayloadSerializer<AcceptChannel2Payload>
@@ -48,17 +47,17 @@ public class AcceptChannel2PayloadSerializer : IPayloadSerializer<AcceptChannel2
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(acceptChannel2Payload.MinimumDepth));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(acceptChannel2Payload.ToSelfDelay));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(acceptChannel2Payload.MaxAcceptedHtlcs));
-        await stream.WriteAsync(acceptChannel2Payload.FundingPubKey.ToBytes());
-        await stream.WriteAsync(acceptChannel2Payload.RevocationBasepoint.ToBytes());
-        await stream.WriteAsync(acceptChannel2Payload.PaymentBasepoint.ToBytes());
-        await stream.WriteAsync(acceptChannel2Payload.DelayedPaymentBasepoint.ToBytes());
-        await stream.WriteAsync(acceptChannel2Payload.HtlcBasepoint.ToBytes());
-        await stream.WriteAsync(acceptChannel2Payload.FirstPerCommitmentPoint.ToBytes());
+        await stream.WriteAsync(acceptChannel2Payload.FundingPubKey);
+        await stream.WriteAsync(acceptChannel2Payload.RevocationBasepoint);
+        await stream.WriteAsync(acceptChannel2Payload.PaymentBasepoint);
+        await stream.WriteAsync(acceptChannel2Payload.DelayedPaymentBasepoint);
+        await stream.WriteAsync(acceptChannel2Payload.HtlcBasepoint);
+        await stream.WriteAsync(acceptChannel2Payload.FirstPerCommitmentPoint);
     }
 
     public async Task<AcceptChannel2Payload?> DeserializeAsync(Stream stream)
     {
-        var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.PUBKEY_LEN);
+        var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.CompactPubkeyLen);
 
         try
         {
@@ -92,23 +91,23 @@ public class AcceptChannel2PayloadSerializer : IPayloadSerializer<AcceptChannel2
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ushort)]);
             var maxAcceptedHtlcs = EndianBitConverter.ToUInt16BigEndian(buffer[..sizeof(ushort)]);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.PUBKEY_LEN]);
-            var fundingPubKey = new PubKey(buffer[..CryptoConstants.PUBKEY_LEN]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.CompactPubkeyLen]);
+            var fundingPubKey = new CompactPubKey(buffer[..CryptoConstants.CompactPubkeyLen]);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.PUBKEY_LEN]);
-            var revocationBasepoint = new PubKey(buffer[..CryptoConstants.PUBKEY_LEN]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.CompactPubkeyLen]);
+            var revocationBasepoint = new CompactPubKey(buffer[..CryptoConstants.CompactPubkeyLen]);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.PUBKEY_LEN]);
-            var paymentBasepoint = new PubKey(buffer[..CryptoConstants.PUBKEY_LEN]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.CompactPubkeyLen]);
+            var paymentBasepoint = new CompactPubKey(buffer[..CryptoConstants.CompactPubkeyLen]);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.PUBKEY_LEN]);
-            var delayedPaymentBasepoint = new PubKey(buffer[..CryptoConstants.PUBKEY_LEN]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.CompactPubkeyLen]);
+            var delayedPaymentBasepoint = new CompactPubKey(buffer[..CryptoConstants.CompactPubkeyLen]);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.PUBKEY_LEN]);
-            var htlcBasepoint = new PubKey(buffer[..CryptoConstants.PUBKEY_LEN]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.CompactPubkeyLen]);
+            var htlcBasepoint = new CompactPubKey(buffer[..CryptoConstants.CompactPubkeyLen]);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.PUBKEY_LEN]);
-            var firstPerCommitmentPoint = new PubKey(buffer[..CryptoConstants.PUBKEY_LEN]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.CompactPubkeyLen]);
+            var firstPerCommitmentPoint = new CompactPubKey(buffer[..CryptoConstants.CompactPubkeyLen]);
 
             return new AcceptChannel2Payload(delayedPaymentBasepoint, dustLimitSatoshis, firstPerCommitmentPoint,
                                              fundingSatoshis, fundingPubKey, htlcBasepoint, htlcMinimumMsat,

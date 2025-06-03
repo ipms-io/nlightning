@@ -4,7 +4,7 @@ namespace NLightning.Node.Helpers;
 
 public static class AesGcmHelper
 {
-    private const int AES_GCM_TAG_SIZE = 16;
+    private const int AesGcmTagSize = 16;
 
     private static byte[] DeriveKey(string password, byte[] salt)
     {
@@ -14,13 +14,13 @@ public static class AesGcmHelper
 
     public static byte[] Encrypt(byte[] plaintext, string password)
     {
-        var salt = RandomNumberGenerator.GetBytes(AES_GCM_TAG_SIZE);
+        var salt = RandomNumberGenerator.GetBytes(AesGcmTagSize);
         var key = DeriveKey(password, salt);
         var nonce = RandomNumberGenerator.GetBytes(12);
-        var tag = new byte[AES_GCM_TAG_SIZE];
+        var tag = new byte[AesGcmTagSize];
         var ciphertext = new byte[plaintext.Length];
 
-        using (var aes = new AesGcm(key, AES_GCM_TAG_SIZE))
+        using (var aes = new AesGcm(key, AesGcmTagSize))
         {
             aes.Encrypt(nonce, plaintext, ciphertext, tag);
         }
@@ -30,14 +30,14 @@ public static class AesGcmHelper
 
     public static byte[] Decrypt(byte[] encrypted, string password)
     {
-        var salt = encrypted.AsSpan(0, AES_GCM_TAG_SIZE).ToArray();
-        var nonce = encrypted.AsSpan(AES_GCM_TAG_SIZE, 12).ToArray();
-        var tag = encrypted.AsSpan(28, AES_GCM_TAG_SIZE).ToArray();
+        var salt = encrypted.AsSpan(0, AesGcmTagSize).ToArray();
+        var nonce = encrypted.AsSpan(AesGcmTagSize, 12).ToArray();
+        var tag = encrypted.AsSpan(28, AesGcmTagSize).ToArray();
         var ciphertext = encrypted.AsSpan(44).ToArray();
         var key = DeriveKey(password, salt);
         var plaintext = new byte[ciphertext.Length];
 
-        using var aes = new AesGcm(key, AES_GCM_TAG_SIZE);
+        using var aes = new AesGcm(key, AesGcmTagSize);
         aes.Decrypt(nonce, ciphertext, tag, plaintext);
 
         return plaintext;

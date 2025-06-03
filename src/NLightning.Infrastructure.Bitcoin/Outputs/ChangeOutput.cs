@@ -8,9 +8,9 @@ public class ChangeOutput : BaseOutput
 {
     public override ScriptType ScriptType => ScriptType.P2WPKH;
 
-    public ChangeOutput(Script scriptPubKey, LightningMoney? amountSats = null) : base(scriptPubKey, amountSats ?? 0UL)
+    public ChangeOutput(Script scriptPubKey, LightningMoney? amountSats = null) : base(amountSats ?? 0UL, scriptPubKey)
     { }
     public ChangeOutput(Script redeemScript, Script scriptPubKey, LightningMoney? amountSats = null)
-        : base(redeemScript, scriptPubKey, amountSats ?? 0UL)
+        : base(amountSats ?? 0UL, redeemScript, scriptPubKey)
     { }
 }

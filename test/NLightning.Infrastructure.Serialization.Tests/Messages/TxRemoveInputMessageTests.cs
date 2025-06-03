@@ -1,3 +1,5 @@
+using NLightning.Domain.Channels.ValueObjects;
+
 namespace NLightning.Infrastructure.Serialization.Tests.Messages;
 
 using Domain.Protocol.Messages;

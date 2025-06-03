@@ -1,6 +1,8 @@
 using System.Buffers;
 using System.Runtime.Serialization;
-using NLightning.Domain.Serialization.Payloads;
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Serialization.Interfaces;
+using NLightning.Domain.Transactions.Constants;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
@@ -8,7 +10,6 @@ using Converters;
 using Domain.Protocol.Constants;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Payloads.Interfaces;
-using Domain.Serialization.Factories;
 using Domain.ValueObjects;
 using Exceptions;
 
@@ -58,7 +59,7 @@ public class TxSignaturesPayloadSerializer : IPayloadSerializer<TxSignaturesPayl
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
 
-            var txId = new byte[TransactionConstants.TX_ID_LENGTH];
+            var txId = new byte[TransactionConstants.TxIdLength];
             await stream.ReadExactlyAsync(txId);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ushort)]);

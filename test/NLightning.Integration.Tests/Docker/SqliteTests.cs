@@ -24,7 +24,7 @@ public class SqliteTests
         var connection = new SqliteConnection("Data Source=:memory:");
         connection.Open();
 
-        var contextOptions = new DbContextOptionsBuilder<NLightningContext>()
+        var contextOptions = new DbContextOptionsBuilder<NLightningDbContext>()
             .UseSqlite(connection, x =>
             {
                 x.MigrationsAssembly("NLightning.Infrastructure.Persistence.Sqlite");
@@ -32,7 +32,7 @@ public class SqliteTests
             .Options;
 
         // Create the schema and seed some data
-        using var context = new NLightningContext(contextOptions);
+        using var context = new NLightningDbContext(contextOptions);
         context.Database.Migrate();
         // context.Database.EnsureDeleted();
         // context.Database.EnsureCreated();
@@ -40,13 +40,13 @@ public class SqliteTests
         context.Nodes.Count().PrintDump();
 
         context.AddRange(
-            new NLightningContext.Node(),
-            new NLightningContext.Node());
+            new NLightningDbContext.Node(),
+            new NLightningDbContext.Node());
         context.SaveChanges();
         context.Nodes.Count().PrintDump();
         context.AddRange(
-            new NLightningContext.Node(),
-            new NLightningContext.Node());
+            new NLightningDbContext.Node(),
+            new NLightningDbContext.Node());
         context.Nodes.Count().PrintDump();
         context.SaveChanges();
         context.Nodes.Count().PrintDump();

@@ -41,18 +41,18 @@ internal sealed class MessagePattern
                     overhead += dhLen;
                     break;
                 case Token.S:
-                    overhead += hasKey ? dhLen + CryptoConstants.CHACHA20_POLY1305_TAG_LEN : dhLen;
+                    overhead += hasKey ? dhLen + CryptoConstants.Chacha20Poly1305TagLen : dhLen;
                     break;
-                case Token.EE:
-                case Token.SE:
-                case Token.ES:
-                case Token.SS:
+                case Token.Ee:
+                case Token.Se:
+                case Token.Es:
+                case Token.Ss:
                 default:
                     hasKey = true;
                     break;
             }
         }
 
-        return hasKey ? overhead + CryptoConstants.CHACHA20_POLY1305_TAG_LEN : overhead;
+        return hasKey ? overhead + CryptoConstants.Chacha20Poly1305TagLen : overhead;
     }
 }

@@ -1,9 +1,9 @@
 using NBitcoin;
+using NLightning.Domain.Utils;
 
 namespace NLightning.Bolt11.Tests.Models.TaggedFields;
 
 using Bolt11.Models.TaggedFields;
-using Common.Utils;
 using Constants;
 using Enums;
 
@@ -36,7 +36,7 @@ public class DescriptionHashTaggedFieldTests
         // Assert
         Assert.Equal(TaggedFieldTypes.DescriptionHash, taggedField.Type);
         Assert.Equal(expectedValue, taggedField.Value);
-        Assert.Equal(TaggedFieldConstants.HASH_LENGTH, taggedField.Length);
+        Assert.Equal(TaggedFieldConstants.HashLength, taggedField.Length);
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public class DescriptionHashTaggedFieldTests
         var bitReader = new BitReader(_expectedBytes);
 
         // Act
-        var taggedField = DescriptionHashTaggedField.FromBitReader(bitReader, TaggedFieldConstants.HASH_LENGTH);
+        var taggedField = DescriptionHashTaggedField.FromBitReader(bitReader, TaggedFieldConstants.HashLength);
 
         // Assert
         Assert.Equal(expectedValue, taggedField.Value);

@@ -1,4 +1,7 @@
-using NBitcoin;
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Crypto;
+using NLightning.Domain.Crypto.ValueObjects;
+using NLightning.Domain.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Payloads;
 
@@ -12,7 +15,7 @@ using ValueObjects;
 /// Initializes a new instance of the ChannelReestablishPayload class.
 /// </remarks>
 /// <param name="channelId">The channel ID.</param>
-public class ChannelReestablishPayload(ChannelId channelId, PubKey myCurrentPerCommitmentPoint,
+public class ChannelReestablishPayload(ChannelId channelId, CompactPubKey myCurrentPerCommitmentPoint,
                                        ulong nextCommitmentNumber, ulong nextRevocationNumber,
                                        ReadOnlyMemory<byte> yourLastPerCommitmentSecret) : IChannelMessagePayload
 {
@@ -39,5 +42,5 @@ public class ChannelReestablishPayload(ChannelId channelId, PubKey myCurrentPerC
     /// <summary>
     /// The current per commitment point
     /// </summary>
-    public PubKey MyCurrentPerCommitmentPoint { get; } = myCurrentPerCommitmentPoint;
+    public CompactPubKey MyCurrentPerCommitmentPoint { get; } = myCurrentPerCommitmentPoint;
 }

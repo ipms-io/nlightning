@@ -1,8 +1,9 @@
+using NLightning.Domain.Serialization.Interfaces;
+
 namespace NLightning.Infrastructure.Protocol.Factories;
 
 using Domain.Protocol.Factories;
 using Domain.Protocol.Services;
-using Domain.Serialization.Messages;
 using Domain.Transport;
 using Services;
 

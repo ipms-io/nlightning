@@ -1,5 +1,7 @@
-using NBitcoin;
-using NBitcoin.Crypto;
+using NLightning.Domain.Bitcoin.ValueObjects;
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Crypto.ValueObjects;
+using NLightning.Domain.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Payloads;
 
@@ -23,7 +25,7 @@ public class FundingCreatedPayload : IChannelMessagePayload
     /// <summary>
     /// The funding transaction id.
     /// </summary>
-    public uint256 FundingTxId { get; }
+    public TxId FundingTxId { get; }
 
     /// <summary>
     /// The funding transaction output index.
@@ -33,10 +35,10 @@ public class FundingCreatedPayload : IChannelMessagePayload
     /// <summary>
     /// The signature of the funding transaction.
     /// </summary>
-    public ECDSASignature Signature { get; }
+    public DerSignature Signature { get; }
 
-    public FundingCreatedPayload(ChannelId channelId, uint256 fundingTxId, ushort fundingOutputIndex,
-                                 ECDSASignature signature)
+    public FundingCreatedPayload(ChannelId channelId, TxId fundingTxId, ushort fundingOutputIndex,
+                                 DerSignature signature)
     {
         ChannelId = channelId;
         FundingTxId = fundingTxId;

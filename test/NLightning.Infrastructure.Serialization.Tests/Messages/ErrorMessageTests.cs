@@ -1,4 +1,5 @@
 using System.Text;
+using NLightning.Domain.Channels.ValueObjects;
 
 namespace NLightning.Infrastructure.Serialization.Tests.Messages;
 

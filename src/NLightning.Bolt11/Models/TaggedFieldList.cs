@@ -1,8 +1,9 @@
 using System.Diagnostics;
+using NLightning.Domain.Protocol.ValueObjects;
+using NLightning.Domain.Utils;
 
 namespace NLightning.Bolt11.Models;
 
-using Common.Utils;
 using Domain.ValueObjects;
 using Enums;
 using Factories;
@@ -140,9 +141,9 @@ internal class TaggedFieldList : List<ITaggedField>
     /// Get a new TaggedFieldList from a BitReader
     /// </summary>
     /// <param name="bitReader">The BitReader to read from</param>
-    /// <param name="network">The network type</param>
+    /// <param name="bitcoinNetwork">The network type</param>
     /// <returns>A new TaggedFieldList</returns>
-    internal static TaggedFieldList FromBitReader(BitReader bitReader, Network network)
+    internal static TaggedFieldList FromBitReader(BitReader bitReader, BitcoinNetwork bitcoinNetwork)
     {
         var taggedFields = new TaggedFieldList();
         while (bitReader.HasMoreBits(15))
@@ -162,7 +163,7 @@ internal class TaggedFieldList : List<ITaggedField>
             {
                 try
                 {
-                    var taggedField = TaggedFieldFactory.CreateTaggedFieldFromBitReader(type, bitReader, length, network);
+                    var taggedField = TaggedFieldFactory.CreateTaggedFieldFromBitReader(type, bitReader, length, bitcoinNetwork);
                     if (taggedField.IsValid())
                     {
                         try

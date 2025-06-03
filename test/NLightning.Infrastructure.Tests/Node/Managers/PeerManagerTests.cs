@@ -4,12 +4,13 @@ using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
+using NLightning.Application.Node.Interfaces;
+using NLightning.Domain.Crypto.ValueObjects;
 
 namespace NLightning.Infrastructure.Tests.Node.Managers;
 
 using Domain.Exceptions;
 using Domain.Node.Options;
-using Domain.Protocol.Services;
 using Infrastructure.Node.Managers;
 using Infrastructure.Protocol.Models;
 using NLightning.Tests.Utils;
@@ -17,24 +18,28 @@ using NLightning.Tests.Utils;
 // ReSharper disable AccessToDisposedClosure
 public class PeerManagerTests
 {
-    private readonly PubKey _pubKey = new("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7");
-    private readonly Mock<IMessageService> _mockMessageService = new();
-    private readonly Mock<IPingPongService> _mockPingPongService = new();
+    private readonly CompactPubKey _compactPubKey =
+        new PubKey("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7").ToBytes();
+
     private readonly Mock<ILogger<PeerManager>> _mockLogger = new();
-    private readonly Mock<ILogger<Peer>> _mockPeerLogger = new();
-    private readonly Mock<IPeerFactory> _mockPeerFactory = new();
-    private readonly Mock<IMessageFactory> _mockMessageFactory = new();
+    private readonly Mock<IPeerServiceFactory> _mockPeerServiceFactory = new();
+    private readonly Mock<IPeerService> _mockPeerService = new();
     private static readonly NodeOptions s_nodeOptions = new();
     private readonly IOptions<NodeOptions> _nodeOptionsWrapper = new OptionsWrapper<NodeOptions>(s_nodeOptions);
 
     public PeerManagerTests()
     {
-        _mockMessageService.SetupGet(m => m.IsConnected).Returns(true);
-        _mockPeerFactory.Setup(f => f.CreateConnectedPeerAsync(It.IsAny<PeerAddress>(), It.IsAny<TcpClient>()))
-            .ReturnsAsync((PeerAddress peerAddress, TcpClient _) =>
-                new Peer(s_nodeOptions.Features, _mockPeerLogger.Object, _mockMessageFactory.Object,
-                         _mockMessageService.Object, s_nodeOptions.NetworkTimeout, peerAddress,
-                         _mockPingPongService.Object));
+        // Set up the mock peer service
+        _mockPeerService.SetupGet(p => p.PeerPubKey).Returns(_compactPubKey);
+
+        // Set up the peer service factory to return our mock peer service
+        _mockPeerServiceFactory
+           .Setup(f => f.CreateConnectedPeerAsync(It.IsAny<CompactPubKey>(), It.IsAny<TcpClient>()))
+           .ReturnsAsync(_mockPeerService.Object);
+
+        _mockPeerServiceFactory
+           .Setup(f => f.CreateConnectingPeerAsync(It.IsAny<TcpClient>()))
+           .ReturnsAsync(_mockPeerService.Object);
     }
 
     [Fact]
@@ -47,23 +52,26 @@ public class PeerManagerTests
 
         try
         {
-            var peerService = new PeerManager(_mockLogger.Object, _nodeOptionsWrapper, _mockPeerFactory.Object);
-            var peerAddress = new PeerAddress(_pubKey, tcpListener.LocalEndpoint.ToEndpointString());
+            var peerManager = new PeerManager(_mockLogger.Object, _nodeOptionsWrapper, _mockPeerServiceFactory.Object);
+            var peerAddress = new PeerAddress(_compactPubKey, tcpListener.LocalEndpoint.ToEndpointString());
             var acceptTask = Task.Run(async () =>
             {
                 _ = await tcpListener.AcceptTcpClientAsync();
             });
 
             // When
-            await peerService.ConnectToPeerAsync(peerAddress);
+            await peerManager.ConnectToPeerAsync(peerAddress);
             await acceptTask;
 
             // Then
-            var field = peerService.GetType().GetField("_peers", BindingFlags.NonPublic | BindingFlags.Instance);
-            var peers = field?.GetValue(peerService);
+            var field = peerManager.GetType().GetField("_peers", BindingFlags.NonPublic | BindingFlags.Instance);
+            var peers = field?.GetValue(peerManager);
             Assert.NotNull(peers);
-            Assert.True(peers is Dictionary<PubKey, Peer>);
-            Assert.True(((Dictionary<PubKey, Peer>)peers).ContainsKey(peerAddress.PubKey));
+            Assert.True(peers is Dictionary<CompactPubKey, IPeerService>);
+            Assert.True(((Dictionary<CompactPubKey, IPeerService>)peers).ContainsKey(peerAddress.PubKey));
+
+            // Verify disconnect event was set up
+            // _mockPeerService.Verify(p => p.DisconnectEvent, Times.Once);
         }
         finally
         {
@@ -80,12 +88,12 @@ public class PeerManagerTests
         try
         {
             // Given
-            var peerManager = new PeerManager(_mockLogger.Object, _nodeOptionsWrapper, _mockPeerFactory.Object);
-            var peerAddress = new PeerAddress(_pubKey, IPAddress.Loopback.ToString(), availablePort);
+            var peerManager = new PeerManager(_mockLogger.Object, _nodeOptionsWrapper, _mockPeerServiceFactory.Object);
+            var peerAddress = new PeerAddress(_compactPubKey, IPAddress.Loopback.ToString(), availablePort);
 
             // When & Then
             var exception = await Assert
-                .ThrowsAnyAsync<ConnectionException>(() => peerManager.ConnectToPeerAsync(peerAddress));
+                               .ThrowsAnyAsync<ConnectionException>(() => peerManager.ConnectToPeerAsync(peerAddress));
             Assert.Equal($"Failed to connect to peer {peerAddress.Host}:{peerAddress.Port}", exception.Message);
         }
         finally
@@ -98,28 +106,57 @@ public class PeerManagerTests
     public async Task Given_ValidTcpClient_When_AcceptPeerAsync_IsCalled_Then_PeerIsAdded()
     {
         // Given
-        var pubkey = new Key().PubKey;
-
-        _mockPeerFactory.Setup(f => f.CreateConnectingPeerAsync(It.IsAny<TcpClient>()))
-                       .ReturnsAsync((TcpClient _) => new Peer(s_nodeOptions.Features, _mockPeerLogger.Object,
-                                                               _mockMessageFactory.Object, _mockMessageService.Object,
-                                                               s_nodeOptions.NetworkTimeout,
-                                                               new PeerAddress(pubkey, "127.0.0.1:9735"),
-                                                               _mockPingPongService.Object));
-
-        var peerService = new PeerManager(_mockLogger.Object, _nodeOptionsWrapper, _mockPeerFactory.Object);
+        var peerManager = new PeerManager(_mockLogger.Object, _nodeOptionsWrapper, _mockPeerServiceFactory.Object);
         var tcpClient = new TcpClient();
 
         // When
-        await peerService.AcceptPeerAsync(tcpClient);
+        await peerManager.AcceptPeerAsync(tcpClient);
 
         // Then
-        var field = peerService.GetType().GetField("_peers", BindingFlags.NonPublic | BindingFlags.Instance);
-        var peers = field?.GetValue(peerService);
+        var field = peerManager.GetType().GetField("_peers", BindingFlags.NonPublic | BindingFlags.Instance);
+        var peers = field?.GetValue(peerManager);
         Assert.NotNull(peers);
-        Assert.True(peers is Dictionary<PubKey, Peer>);
-        Assert.True(((Dictionary<PubKey, Peer>)peers).ContainsKey(pubkey));
+        Assert.True(peers is Dictionary<CompactPubKey, IPeerService>);
+        Assert.True(((Dictionary<CompactPubKey, IPeerService>)peers).ContainsKey(_compactPubKey));
 
+        // Verify disconnect event was set up
+        // _mockPeerService.Verify(p => p.DisconnectEvent += It.IsAny<EventHandler>(), Times.Once);
+    }
+
+    [Fact]
+    public void Given_ExistingPeer_When_DisconnectPeer_IsCalled_Then_PeerIsDisconnected()
+    {
+        // Given
+        var peerManager = new PeerManager(_mockLogger.Object, _nodeOptionsWrapper, _mockPeerServiceFactory.Object);
+        var field = peerManager.GetType().GetField("_peers", BindingFlags.NonPublic | BindingFlags.Instance);
+        var peers = (Dictionary<CompactPubKey, IPeerService>)field!.GetValue(peerManager)!;
+        peers.Add(_compactPubKey, _mockPeerService.Object);
+
+        // When
+        peerManager.DisconnectPeer(_compactPubKey);
+
+        // Then
+        _mockPeerService.Verify(p => p.Disconnect(), Times.Once);
+    }
+
+    [Fact]
+    public void Given_NonExistingPeer_When_DisconnectPeer_IsCalled_Then_LogWarning()
+    {
+        // Given
+        var peerManager = new PeerManager(_mockLogger.Object, _nodeOptionsWrapper, _mockPeerServiceFactory.Object);
+
+        // When
+        peerManager.DisconnectPeer(_compactPubKey);
+
+        // Then
+        _mockLogger.Verify(
+            l => l.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((o, t) => o.ToString()!.Contains("Peer") && o.ToString()!.Contains("not found")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 }
 // ReSharper restore AccessToDisposedClosure

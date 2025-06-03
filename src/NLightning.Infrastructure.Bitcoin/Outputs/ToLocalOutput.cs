@@ -16,8 +16,8 @@ public class ToLocalOutput : BaseOutput
     public PubKey RevocationPubKey { get; }
     public uint ToSelfDelay { get; }
 
-    public ToLocalOutput(PubKey localDelayedPubKey, PubKey revocationPubKey, uint toSelfDelay, LightningMoney amount)
-        : base(GenerateToLocalScript(localDelayedPubKey, revocationPubKey, toSelfDelay), amount)
+    public ToLocalOutput(LightningMoney amount, PubKey localDelayedPubKey, PubKey revocationPubKey, uint toSelfDelay)
+        : base(amount, GenerateToLocalScript(localDelayedPubKey, revocationPubKey, toSelfDelay))
     {
         ArgumentNullException.ThrowIfNull(localDelayedPubKey);
         ArgumentNullException.ThrowIfNull(revocationPubKey);

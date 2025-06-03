@@ -1,8 +1,7 @@
 using NBitcoin;
+using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Integration.Tests.Docker.Mock;
-
-using Domain.Protocol.Managers;
 
 public class FakeSecureKeyManager : ISecureKeyManager
 {

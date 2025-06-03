@@ -1,10 +1,11 @@
 using System.Buffers;
+using NLightning.Domain.Interfaces;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.ValueObjects;
 
-using Domain.Serialization.ValueObjects;
-using Domain.ValueObjects;
-using Domain.ValueObjects.Interfaces;
+using Domain.Channels.Constants;
+using Domain.Channels.ValueObjects;
 
 public class ChannelIdTypeSerializer : IValueObjectTypeSerializer<ChannelId>
 {
@@ -33,11 +34,11 @@ public class ChannelIdTypeSerializer : IValueObjectTypeSerializer<ChannelId>
     /// <exception cref="IOException">Thrown when an I/O error occurs during the read operation.</exception>
     public async Task<ChannelId> DeserializeAsync(Stream stream)
     {
-        var buffer = ArrayPool<byte>.Shared.Rent(ChannelId.LENGTH);
+        var buffer = ArrayPool<byte>.Shared.Rent(ChannelConstants.ChannelIdLength);
 
         try
         {
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..ChannelId.LENGTH]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..ChannelConstants.ChannelIdLength]);
 
             return new ChannelId(buffer);
         }

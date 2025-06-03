@@ -1,12 +1,12 @@
 using System.Buffers;
 using System.Runtime.Serialization;
-using NLightning.Domain.Serialization.Payloads;
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Payloads.Interfaces;
-using Domain.Serialization.Factories;
 using Domain.ValueObjects;
 using Exceptions;
 

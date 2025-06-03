@@ -1,3 +1,8 @@
+using NLightning.Domain.Bitcoin.ValueObjects;
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Crypto.ValueObjects;
+using NLightning.Domain.Protocol.Interfaces;
+
 namespace NLightning.Infrastructure.Protocol.Factories;
 
 using Crypto.Hashes;
@@ -6,15 +11,10 @@ using Domain.ValueObjects;
 
 public class ChannelIdFactory : IChannelIdFactory
 {
-    public ChannelId CreateV1(ReadOnlySpan<byte> fundingTxId, ushort fundingOutputIndex)
+    public ChannelId CreateV1(TxId fundingTxId, ushort fundingOutputIndex)
     {
-        if (fundingTxId.Length != 32)
-        {
-            throw new ArgumentException("Funding transaction id must be 32 bytes", nameof(fundingTxId));
-        }
-
-        var channelId = new byte[32];
-        fundingTxId.CopyTo(channelId);
+        Span<byte> channelId = stackalloc byte[32];
+        fundingTxId.Hash.CopyTo(channelId);
 
         // XOR the last 2 bytes with the funding_output_index
         channelId[30] ^= (byte)(fundingOutputIndex >> 8);
@@ -23,17 +23,11 @@ public class ChannelIdFactory : IChannelIdFactory
         return new ChannelId(channelId);
     }
 
-    public ChannelId CreateV2(ReadOnlySpan<byte> lesserRevocationBasepoint,
-                                     ReadOnlySpan<byte> greaterRevocationBasepoint)
+    public ChannelId CreateV2(CompactPubKey lesserRevocationBasepoint, CompactPubKey greaterRevocationBasepoint)
     {
-        if (lesserRevocationBasepoint.Length != 33 || greaterRevocationBasepoint.Length != 33)
-        {
-            throw new ArgumentException("Revocation basepoints must be 33 bytes each");
-        }
-
         Span<byte> combined = stackalloc byte[66];
-        lesserRevocationBasepoint.CopyTo(combined);
-        greaterRevocationBasepoint.CopyTo(combined[33..]);
+        lesserRevocationBasepoint.CompactBytes.CopyTo(combined);
+        greaterRevocationBasepoint.CompactBytes.CopyTo(combined[33..]);
 
         using var hasher = new Sha256();
         hasher.AppendData(combined);

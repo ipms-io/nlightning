@@ -1,11 +1,11 @@
+using NLightning.Domain.Serialization.Interfaces;
+
 namespace NLightning.Infrastructure.Serialization.Factories;
 
 using Domain.Protocol.Constants;
 using Domain.Protocol.Factories;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Messages.Interfaces;
-using Domain.Serialization.Factories;
-using Domain.Serialization.Messages.Types;
 using Interfaces;
 using Messages.Types;
 
@@ -45,6 +45,9 @@ public class MessageTypeSerializerFactory : IMessageTypeSerializerFactory
 
     private void RegisterSerializers()
     {
+        _serializers.Add(typeof(AcceptChannel1Message),
+                         new AcceptChannel1MessageTypeSerializer(_payloadSerializerFactory, _tlvConverterFactory,
+                                                                 _tlvStreamSerializer));
         _serializers.Add(typeof(AcceptChannel2Message),
                          new AcceptChannel2MessageTypeSerializer(_payloadSerializerFactory, _tlvConverterFactory,
                                                                  _tlvStreamSerializer));
@@ -60,9 +63,16 @@ public class MessageTypeSerializerFactory : IMessageTypeSerializerFactory
         _serializers.Add(typeof(CommitmentSignedMessage),
                          new CommitmentSignedMessageTypeSerializer(_payloadSerializerFactory));
         _serializers.Add(typeof(ErrorMessage), new ErrorMessageTypeSerializer(_payloadSerializerFactory));
+        _serializers.Add(typeof(FundingCreatedMessage),
+                         new FundingCreatedMessageTypeSerializer(_payloadSerializerFactory));
+        _serializers.Add(typeof(FundingSignedMessage),
+                         new FundingSignedMessageTypeSerializer(_payloadSerializerFactory));
         _serializers.Add(typeof(InitMessage),
                          new InitMessageTypeSerializer(_payloadSerializerFactory, _tlvConverterFactory,
                                                        _tlvStreamSerializer));
+        _serializers.Add(typeof(OpenChannel1Message),
+                         new OpenChannel1MessageTypeSerializer(_payloadSerializerFactory, _tlvConverterFactory,
+                                                               _tlvStreamSerializer));
         _serializers.Add(typeof(OpenChannel2Message),
                          new OpenChannel2MessageTypeSerializer(_payloadSerializerFactory, _tlvConverterFactory,
                                                                _tlvStreamSerializer));
@@ -91,7 +101,7 @@ public class MessageTypeSerializerFactory : IMessageTypeSerializerFactory
                          new TxSignaturesMessageTypeSerializer(_payloadSerializerFactory));
         _serializers.Add(typeof(UpdateAddHtlcMessage),
                          new UpdateAddHtlcMessageTypeSerializer(_payloadSerializerFactory,
-                                                                           _tlvConverterFactory, _tlvStreamSerializer));
+                                                                _tlvConverterFactory, _tlvStreamSerializer));
         _serializers.Add(typeof(UpdateFailHtlcMessage),
                          new UpdateFailHtlcMessageTypeSerializer(_payloadSerializerFactory));
         _serializers.Add(typeof(UpdateFailMalformedHtlcMessage),
@@ -104,13 +114,17 @@ public class MessageTypeSerializerFactory : IMessageTypeSerializerFactory
 
     private void RegisterTypeDictionary()
     {
+        _messageTypeDictionary.Add(MessageTypes.AcceptChannel, typeof(AcceptChannel1Message));
         _messageTypeDictionary.Add(MessageTypes.AcceptChannel2, typeof(AcceptChannel2Message));
         _messageTypeDictionary.Add(MessageTypes.ChannelReady, typeof(ChannelReadyMessage));
         _messageTypeDictionary.Add(MessageTypes.ChannelReestablish, typeof(ChannelReestablishMessage));
         _messageTypeDictionary.Add(MessageTypes.ClosingSigned, typeof(ClosingSignedMessage));
         _messageTypeDictionary.Add(MessageTypes.CommitmentSigned, typeof(CommitmentSignedMessage));
         _messageTypeDictionary.Add(MessageTypes.Error, typeof(ErrorMessage));
+        _messageTypeDictionary.Add(MessageTypes.FundingCreated, typeof(FundingCreatedMessage));
+        _messageTypeDictionary.Add(MessageTypes.FundingSigned, typeof(FundingSignedMessage));
         _messageTypeDictionary.Add(MessageTypes.Init, typeof(InitMessage));
+        _messageTypeDictionary.Add(MessageTypes.OpenChannel, typeof(OpenChannel1Message));
         _messageTypeDictionary.Add(MessageTypes.OpenChannel2, typeof(OpenChannel2Message));
         _messageTypeDictionary.Add(MessageTypes.Ping, typeof(PingMessage));
         _messageTypeDictionary.Add(MessageTypes.Pong, typeof(PingMessage));

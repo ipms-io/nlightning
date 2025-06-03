@@ -1,0 +1,40 @@
+namespace NLightning.Domain.Channels.Interfaces;
+
+using ValueObjects;
+
+/// <summary>
+/// Repository interface for managing channel key sets
+/// </summary>
+public interface IChannelKeySetDbRepository
+{
+    /// <summary>
+    /// Adds a new channel key set
+    /// </summary>
+    /// <param name="channelId">Channel ID</param>
+    /// <param name="isLocal">True if this is the local key set, false for remote</param>
+    /// <param name="keySet">The key set to add</param>
+    void Add(ChannelId channelId, bool isLocal, ChannelKeySet keySet);
+    
+    /// <summary>
+    /// Updates an existing channel key set
+    /// </summary>
+    /// <param name="channelId">Channel ID</param>
+    /// <param name="isLocal">True if this is the local key set, false for remote</param>
+    /// <param name="keySet">The updated key set</param>
+    void Update(ChannelId channelId, bool isLocal, ChannelKeySet keySet);
+    
+    /// <summary>
+    /// Deletes a channel key set
+    /// </summary>
+    /// <param name="channelId">Channel ID</param>
+    /// <param name="isLocal">True if this is the local key set, false for remote</param>
+    Task DeleteAsync(ChannelId channelId, bool isLocal);
+    
+    /// <summary>
+    /// Gets a channel key set
+    /// </summary>
+    /// <param name="channelId">Channel ID</param>
+    /// <param name="isLocal">True if this is the local key set, false for remote</param>
+    /// <returns>Channel key set or null if not found</returns>
+    Task<ChannelKeySet?> GetByIdAsync(ChannelId channelId, bool isLocal);
+}

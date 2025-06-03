@@ -1,3 +1,5 @@
+using NLightning.Domain.Channels.ValueObjects;
+
 namespace NLightning.Domain.Tests.Protocol.Payloads;
 
 using Domain.Protocol.Payloads;

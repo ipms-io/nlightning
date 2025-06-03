@@ -10,7 +10,7 @@ using NLightning.Infrastructure.Persistence.Contexts;
 
 namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
 {
-    [DbContext(typeof(NLightningContext))]
+    [DbContext(typeof(NLightningDbContext))]
     partial class NLightningContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

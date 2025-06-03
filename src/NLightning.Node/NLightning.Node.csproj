@@ -37,17 +37,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\NLightning.Infrastructure.Repositories\NLightning.Infrastructure.Repositories.csproj" />
     <ProjectReference Include="..\NLightning.Infrastructure.Bitcoin\NLightning.Infrastructure.Bitcoin.csproj" />
+    <ProjectReference Include="..\NLightning.Infrastructure.Serialization\NLightning.Infrastructure.Serialization.csproj" />
     <ProjectReference Include="..\NLightning.Infrastructure\NLightning.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="fee_estimation_cache.json" />
   </ItemGroup>
 
 </Project>

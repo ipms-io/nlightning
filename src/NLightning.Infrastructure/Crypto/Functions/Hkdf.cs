@@ -30,16 +30,16 @@ internal sealed class Hkdf : IDisposable
     {
         // ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Hkdf));
 
-        Debug.Assert(chainingKey.Length == CryptoConstants.SHA256_HASH_LEN);
-        Debug.Assert(output.Length == 2 * CryptoConstants.SHA256_HASH_LEN);
+        Debug.Assert(chainingKey.Length == CryptoConstants.Sha256HashLen);
+        Debug.Assert(output.Length == 2 * CryptoConstants.Sha256HashLen);
 
-        Span<byte> tempKey = stackalloc byte[CryptoConstants.SHA256_HASH_LEN];
+        Span<byte> tempKey = stackalloc byte[CryptoConstants.Sha256HashLen];
         HmacHash(chainingKey, tempKey, inputKeyMaterial);
 
-        var output1 = output[..CryptoConstants.SHA256_HASH_LEN];
+        var output1 = output[..CryptoConstants.Sha256HashLen];
         HmacHash(tempKey, output1, s_one);
 
-        var output2 = output.Slice(CryptoConstants.SHA256_HASH_LEN, CryptoConstants.SHA256_HASH_LEN);
+        var output2 = output.Slice(CryptoConstants.Sha256HashLen, CryptoConstants.Sha256HashLen);
         HmacHash(tempKey, output2, output1, s_two);
     }
 
@@ -53,19 +53,19 @@ internal sealed class Hkdf : IDisposable
     {
         // ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Hkdf));
 
-        Debug.Assert(chainingKey.Length == CryptoConstants.SHA256_HASH_LEN);
-        Debug.Assert(output.Length == 3 * CryptoConstants.SHA256_HASH_LEN);
+        Debug.Assert(chainingKey.Length == CryptoConstants.Sha256HashLen);
+        Debug.Assert(output.Length == 3 * CryptoConstants.Sha256HashLen);
 
-        Span<byte> tempKey = stackalloc byte[CryptoConstants.SHA256_HASH_LEN];
+        Span<byte> tempKey = stackalloc byte[CryptoConstants.Sha256HashLen];
         HmacHash(chainingKey, tempKey, inputKeyMaterial);
 
-        var output1 = output[..CryptoConstants.SHA256_HASH_LEN];
+        var output1 = output[..CryptoConstants.Sha256HashLen];
         HmacHash(tempKey, output1, s_one);
 
-        var output2 = output.Slice(CryptoConstants.SHA256_HASH_LEN, CryptoConstants.SHA256_HASH_LEN);
+        var output2 = output.Slice(CryptoConstants.Sha256HashLen, CryptoConstants.Sha256HashLen);
         HmacHash(tempKey, output2, output1, s_two);
 
-        var output3 = output.Slice(2 * CryptoConstants.SHA256_HASH_LEN, CryptoConstants.SHA256_HASH_LEN);
+        var output3 = output.Slice(2 * CryptoConstants.Sha256HashLen, CryptoConstants.Sha256HashLen);
         HmacHash(tempKey, output3, output2, s_three);
     }
 
@@ -73,16 +73,16 @@ internal sealed class Hkdf : IDisposable
     {
         // ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Hkdf));
 
-        Debug.Assert(key.Length == CryptoConstants.SHA256_HASH_LEN);
-        Debug.Assert(hmac.Length == CryptoConstants.SHA256_HASH_LEN);
+        Debug.Assert(key.Length == CryptoConstants.Sha256HashLen);
+        Debug.Assert(hmac.Length == CryptoConstants.Sha256HashLen);
 
-        Span<byte> ipad = stackalloc byte[CryptoConstants.SHA256_BLOCK_LEN];
-        Span<byte> opad = stackalloc byte[CryptoConstants.SHA256_BLOCK_LEN];
+        Span<byte> ipad = stackalloc byte[CryptoConstants.Sha256BlockLen];
+        Span<byte> opad = stackalloc byte[CryptoConstants.Sha256BlockLen];
 
         key.CopyTo(ipad);
         key.CopyTo(opad);
 
-        for (var i = 0; i < CryptoConstants.SHA256_BLOCK_LEN; ++i)
+        for (var i = 0; i < CryptoConstants.Sha256BlockLen; ++i)
         {
             ipad[i] ^= 0x36;
             opad[i] ^= 0x5C;

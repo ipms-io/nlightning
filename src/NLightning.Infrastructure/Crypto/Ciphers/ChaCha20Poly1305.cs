@@ -32,10 +32,10 @@ public sealed class ChaCha20Poly1305 : IDisposable
     public int Encrypt(ReadOnlySpan<byte> key, ulong publicNonce, ReadOnlySpan<byte> authenticationData,
                        ReadOnlySpan<byte> plaintext, Span<byte> ciphertext)
     {
-        Debug.Assert(key.Length == CryptoConstants.PRIVKEY_LEN);
-        Debug.Assert(ciphertext.Length >= plaintext.Length + CryptoConstants.CHACHA20_POLY1305_TAG_LEN);
+        Debug.Assert(key.Length == CryptoConstants.PrivkeyLen);
+        Debug.Assert(ciphertext.Length >= plaintext.Length + CryptoConstants.Chacha20Poly1305TagLen);
 
-        Span<byte> nonce = stackalloc byte[CryptoConstants.CHACHA20_POLY1305_NONCE_LEN];
+        Span<byte> nonce = stackalloc byte[CryptoConstants.Chacha20Poly1305NonceLen];
         BinaryPrimitives.WriteUInt64LittleEndian(nonce[4..], publicNonce);
 
         var result = _cryptoProvider.AeadChaCha20Poly1305IetfEncrypt(key, nonce, null, authenticationData, plaintext,
@@ -46,7 +46,7 @@ public sealed class ChaCha20Poly1305 : IDisposable
             throw new CryptographicException("Encryption failed.");
         }
 
-        Debug.Assert(length == plaintext.Length + CryptoConstants.CHACHA20_POLY1305_TAG_LEN);
+        Debug.Assert(length == plaintext.Length + CryptoConstants.Chacha20Poly1305TagLen);
         return (int)length;
     }
 
@@ -58,11 +58,11 @@ public sealed class ChaCha20Poly1305 : IDisposable
     public int Decrypt(ReadOnlySpan<byte> key, ulong publicNonce, ReadOnlySpan<byte> authenticationData,
                        ReadOnlySpan<byte> ciphertext, Span<byte> plaintext)
     {
-        Debug.Assert(key.Length == CryptoConstants.PRIVKEY_LEN);
-        Debug.Assert(ciphertext.Length >= CryptoConstants.CHACHA20_POLY1305_TAG_LEN);
-        Debug.Assert(plaintext.Length >= ciphertext.Length - CryptoConstants.CHACHA20_POLY1305_TAG_LEN);
+        Debug.Assert(key.Length == CryptoConstants.PrivkeyLen);
+        Debug.Assert(ciphertext.Length >= CryptoConstants.Chacha20Poly1305TagLen);
+        Debug.Assert(plaintext.Length >= ciphertext.Length - CryptoConstants.Chacha20Poly1305TagLen);
 
-        Span<byte> nonce = stackalloc byte[CryptoConstants.CHACHA20_POLY1305_NONCE_LEN];
+        Span<byte> nonce = stackalloc byte[CryptoConstants.Chacha20Poly1305NonceLen];
         BinaryPrimitives.WriteUInt64LittleEndian(nonce[4..], publicNonce);
 
         var result = _cryptoProvider.AeadChaCha20Poly1305IetfDecrypt(key, nonce, null, authenticationData,
@@ -73,7 +73,7 @@ public sealed class ChaCha20Poly1305 : IDisposable
             throw new CryptographicException("Decryption failed.");
         }
 
-        Debug.Assert(length == ciphertext.Length - CryptoConstants.CHACHA20_POLY1305_TAG_LEN);
+        Debug.Assert(length == ciphertext.Length - CryptoConstants.Chacha20Poly1305TagLen);
         return (int)length;
     }
 

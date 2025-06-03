@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 using NLightning.Domain.Node;
-using NLightning.Domain.Serialization.Payloads;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 

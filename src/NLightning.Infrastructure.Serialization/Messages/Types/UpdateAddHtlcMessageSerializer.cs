@@ -1,5 +1,6 @@
 using System.Runtime.Serialization;
 using NLightning.Domain.Protocol.Factories;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Messages.Types;
 
@@ -8,8 +9,6 @@ using Domain.Protocol.Messages;
 using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Tlv;
-using Domain.Serialization.Factories;
-using Domain.Serialization.Messages.Types;
 using Exceptions;
 using Interfaces;
 

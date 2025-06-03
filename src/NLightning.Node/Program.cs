@@ -1,11 +1,12 @@
 using Microsoft.Extensions.Hosting;
 using NBitcoin;
+using NLightning.Domain.Protocol.ValueObjects;
+using NLightning.Infrastructure.Bitcoin.Managers;
+using NLightning.Infrastructure.Node.Managers;
 using NLightning.Node.Extensions;
 using NLightning.Node.Helpers;
-using NLightning.Node.Managers;
 using NLightning.Node.Utilities;
 using Serilog;
-using Network = NLightning.Domain.ValueObjects.Network;
 
 try
 {
@@ -67,14 +68,14 @@ try
     {
         // Creates new key
         var key = new Key();
-        keyManager = new SecureKeyManager(key.ToBytes(), new Network(network), keyFilePath);
+        keyManager = new SecureKeyManager(key.ToBytes(), new BitcoinNetwork(network), keyFilePath);
         keyManager.SaveToFile(password);
         Console.WriteLine($"New key created and saved to {keyFilePath}");
     }
     else
     {
         // Load the existing key
-        keyManager = SecureKeyManager.FromFilePath(keyFilePath, new Network(network), password);
+        keyManager = SecureKeyManager.FromFilePath(keyFilePath, new BitcoinNetwork(network), password);
         Console.WriteLine($"Loaded key from {keyFilePath}");
     }
 

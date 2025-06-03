@@ -1,3 +1,6 @@
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.ValueObjects;
+
 namespace NLightning.Domain.Protocol.Payloads;
 
 using Interfaces;

@@ -83,7 +83,6 @@
 
   <ItemGroup>
     <PackageReference Include="DnsClient" Version="1.8.0" />
-    <PackageReference Include="NBitcoin.Secp256k1" Version="3.1.6" />
   </ItemGroup>
 
   <ItemGroup>
@@ -103,13 +102,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NLightning.Application\NLightning.Application.csproj" />
-    <ProjectReference Include="..\NLightning.Common\NLightning.Common.csproj" />
     <ProjectReference Include="..\NLightning.Domain\NLightning.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Node\Factories\" />
-    <Folder Include="Node\Models\" />
   </ItemGroup>
 
   <!--  Import regular sdk if the configuration calls for it  -->

@@ -18,7 +18,7 @@ public sealed class Sha256 : ISha256
     public Sha256()
     {
         _cryptoProvider = CryptoFactory.GetCryptoProvider();
-        _state = _cryptoProvider.MemoryAlloc(CryptoConstants.LIBSODIUM_SHA256_STATE_LEN);
+        _state = _cryptoProvider.MemoryAlloc(CryptoConstants.LibsodiumSha256StateLen);
         Reset();
     }
 
@@ -39,7 +39,7 @@ public sealed class Sha256 : ISha256
     /// </summary>
     public void GetHashAndReset(Span<byte> hash)
     {
-        Debug.Assert(hash.Length == CryptoConstants.SHA256_HASH_LEN);
+        Debug.Assert(hash.Length == CryptoConstants.Sha256HashLen);
 
         _cryptoProvider.Sha256Final(_state, hash);
 
@@ -54,7 +54,7 @@ public sealed class Sha256 : ISha256
     #region Dispose Pattern
     private void ReleaseUnmanagedResources()
     {
-        _cryptoProvider.MemoryZero(_state, CryptoConstants.SHA256_HASH_LEN);
+        _cryptoProvider.MemoryZero(_state, CryptoConstants.Sha256HashLen);
         _cryptoProvider.MemoryFree(_state);
     }
 

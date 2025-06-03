@@ -1,3 +1,6 @@
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.ValueObjects;
+
 namespace NLightning.Domain.Protocol.Payloads;
 
 using Interfaces;
@@ -12,7 +15,7 @@ using ValueObjects;
 /// </remarks>
 /// <param name="channelId">The channel id.</param>
 /// <seealso cref="TxCompleteMessage"/>
-/// <seealso cref="ValueObjects.ChannelId"/>
+/// <seealso cref="Channels.ValueObjects.ChannelId"/>
 public class TxCompletePayload(ChannelId channelId) : IChannelMessagePayload
 {
     /// <summary>

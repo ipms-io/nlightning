@@ -1,13 +1,13 @@
 using NBitcoin;
-using NBitcoin.Crypto;
+using NLightning.Domain.Transactions.Constants;
 
 namespace NLightning.Infrastructure.Bitcoin.Transactions;
 
+using Domain.Bitcoin.ValueObjects;
 using Comparers;
 using Domain.Bitcoin.Transactions;
 using Domain.Money;
 using Domain.Protocol.Constants;
-using Domain.Protocol.Signers;
 using Outputs;
 
 public abstract class BaseTransaction : ITransaction
@@ -30,7 +30,7 @@ public abstract class BaseTransaction : ITransaction
     #endregion
 
     #region Public Properties
-    public uint256 TxId { get; private set; } = uint256.Zero;
+    public TxId TxId { get; private set; } = uint256.Zero.ToBytes();
     public bool IsValid => Finalized
         ? _builder.Verify(_transaction)
         : throw new Exception("Transaction not finalized.");
@@ -66,7 +66,7 @@ public abstract class BaseTransaction : ITransaction
 
         _coins.AddRange(coins);
 
-        _transaction = NBitcoin.Transaction.Create(network);
+        _transaction = Transaction.Create(network);
         _transaction.Version = version;
         foreach (var (coin, sequence) in _coins)
         {
@@ -86,7 +86,7 @@ public abstract class BaseTransaction : ITransaction
         _transaction.LockTime = lockTime;
     }
 
-    protected LightningMoney TotalInputAmount => _coins.Sum(c => (LightningMoney)c.Item1.Amount);
+    protected LightningMoney TotalInputAmount => _coins.Sum(c => LightningMoney.Satoshis(c.Item1.Amount));
 
     protected LightningMoney TotalOutputAmount => Outputs.Sum(o => o.Amount);
 
@@ -101,7 +101,7 @@ public abstract class BaseTransaction : ITransaction
         // Calculate transaction fee
         CalculateTransactionFee(currentFeePerKw);
 
-        // Check if output amount + fees is greater than input amount
+        // Check if the output amount plus fees is greater than the input amount
         if (!CheckTransactionAmounts(CalculatedFee))
             throw new InvalidOperationException("Output amount cannot exceed input amount.");
     }
@@ -114,49 +114,10 @@ public abstract class BaseTransaction : ITransaction
         CalculatedFee.Satoshi = (outputWeight + inputWeight) * currentFeePerKw.Satoshi / 1000L;
     }
 
-    #region Signature Management
-    protected List<ECDSASignature> SignTransaction(ILightningSigner signer, params BitcoinSecret[] secrets)
-    {
-        ArgumentNullException.ThrowIfNull(signer);
-        ArgumentNullException.ThrowIfNull(secrets);
-
-        // Check if output amount is greater than input amount
-        if (!CheckTransactionAmounts())
-            throw new InvalidOperationException("Output amount cannot exceed input amount.");
-
-        var coins = _coins.Select(c => c.Item1);
-        var signatures = signer.SignTransaction(_transaction, coins, SigHash.All, secrets);
-
-        TxId = _transaction.GetHash();
-        Finalized = true;
-
-        return signatures;
-    }
-
-    protected void AppendRemoteSignatureToTransaction(ILightningSigner signer, ITransactionSignature remoteSignature,
-                                                      PubKey remotePubKey)
-    {
-        ArgumentNullException.ThrowIfNull(signer);
-        signer.AddKnownSignature(_transaction, remotePubKey, remoteSignature, _transaction.Inputs[0].PrevOut);
-    }
-
-    protected List<ECDSASignature> SignTransactionWithExistingKeys(ILightningSigner signer)
-    {
-        ArgumentNullException.ThrowIfNull(signer);
-
-        var signatures = signer.ExtractSignatures(_transaction);
-
-        TxId = _transaction.GetHash();
-        Finalized = true;
-
-        return signatures;
-    }
-    #endregion
-
     #region Weight Calculation
     protected int CalculateOutputWeight()
     {
-        var outputWeight = WeightConstants.TRANSACTION_BASE_WEIGHT;
+        var outputWeight = WeightConstants.TransactionBaseWeight;
         if (_hasAnchorOutput)
         {
             outputWeight += 8; // Add 8 more bytes for (count_tx_out * 4)
@@ -167,36 +128,36 @@ public abstract class BaseTransaction : ITransaction
             switch (output)
             {
                 case FundingOutput:
-                    outputWeight += WeightConstants.P2WSH_OUTPUT_WEIGHT;
+                    outputWeight += WeightConstants.P2WshOutputWeight;
                     break;
                 case ChangeOutput changeOutput when changeOutput.ScriptPubKey.IsScriptType(ScriptType.P2PKH):
-                    outputWeight += WeightConstants.P2PKH_OUTPUT_WEIGHT;
+                    outputWeight += WeightConstants.P2PkhOutputWeight;
                     break;
                 case ChangeOutput changeOutput when changeOutput.ScriptPubKey.IsScriptType(ScriptType.P2SH):
-                    outputWeight += WeightConstants.P2SH_OUTPUT_WEIGHT;
+                    outputWeight += WeightConstants.P2ShOutputWeight;
                     break;
                 case ChangeOutput changeOutput when changeOutput.ScriptPubKey.IsScriptType(ScriptType.P2WPKH):
-                    outputWeight += WeightConstants.P2WPKH_OUTPUT_WEIGHT;
+                    outputWeight += WeightConstants.P2WpkhOutputWeight;
                     break;
                 case ChangeOutput changeOutput when changeOutput.ScriptPubKey.IsScriptType(ScriptType.P2WSH):
-                    outputWeight += WeightConstants.P2WSH_OUTPUT_WEIGHT;
+                    outputWeight += WeightConstants.P2WshOutputWeight;
                     break;
                 case ChangeOutput changeOutput:
                     outputWeight += changeOutput.ScriptPubKey.Length;
                     break;
                 case ToLocalOutput:
                 case ToRemoteOutput when _hasAnchorOutput:
-                    outputWeight += WeightConstants.P2WSH_OUTPUT_WEIGHT;
+                    outputWeight += WeightConstants.P2WshOutputWeight;
                     break;
                 case ToRemoteOutput:
-                    outputWeight += WeightConstants.P2WPKH_OUTPUT_WEIGHT;
+                    outputWeight += WeightConstants.P2WpkhOutputWeight;
                     break;
                 case ToAnchorOutput:
-                    outputWeight += WeightConstants.ANCHOR_OUTPUT_WEIGHT;
+                    outputWeight += WeightConstants.AnchorOutputWeight;
                     break;
                 case OfferedHtlcOutput:
                 case ReceivedHtlcOutput:
-                    outputWeight += WeightConstants.HTLC_OUTPUT_WEIGHT;
+                    outputWeight += WeightConstants.HtlcOutputWeight;
                     break;
             }
         }
@@ -221,33 +182,33 @@ public abstract class BaseTransaction : ITransaction
 
             if (coin.ScriptPubKey.IsScriptType(ScriptType.P2PKH))
             {
-                inputWeight += 4 * Math.Max(WeightConstants.P2PKH_INPUT_WEIGHT, input.ToBytes().Length);
+                inputWeight += 4 * Math.Max(WeightConstants.P2PkhInputWeight, input.ToBytes().Length);
             }
             else if (coin.ScriptPubKey.IsScriptType(ScriptType.P2SH))
             {
-                inputWeight += 4 * Math.Max(WeightConstants.P2SH_INPUT_WEIGHT, input.ToBytes().Length);
+                inputWeight += 4 * Math.Max(WeightConstants.P2ShInputWeight, input.ToBytes().Length);
                 inputWeight += input.WitScript.ToBytes().Length;
             }
             else if (coin.ScriptPubKey.IsScriptType(ScriptType.P2WPKH))
             {
-                inputWeight += 4 * Math.Max(WeightConstants.P2WPKH_INPUT_WEIGHT, input.ToBytes().Length);
+                inputWeight += 4 * Math.Max(WeightConstants.P2WpkhInputWeight, input.ToBytes().Length);
                 inputWeight += input.WitScript.ToBytes().Length;
             }
             else if (coin.ScriptPubKey.IsScriptType(ScriptType.P2WSH))
             {
-                inputWeight += 4 * Math.Max(WeightConstants.P2WSH_INPUT_WEIGHT, input.ToBytes().Length);
-                inputWeight += Math.Max(WeightConstants.MULTISIG_WITNESS_WEIGHT, input.WitScript.ToBytes().Length);
+                inputWeight += 4 * Math.Max(WeightConstants.P2WshInputWeight, input.ToBytes().Length);
+                inputWeight += Math.Max(WeightConstants.MultisigWitnessWeight, input.WitScript.ToBytes().Length);
             }
             else
             {
-                inputWeight += 4 * Math.Max(WeightConstants.P2UNKNOWN_S_INPUT_WEIGHT, input.ToBytes().Length);
+                inputWeight += 4 * Math.Max(WeightConstants.P2UnknownSInputWeight, input.ToBytes().Length);
                 inputWeight += input.WitScript.ToBytes().Length;
             }
         }
 
         if (mustAddWitnessHeader)
         {
-            inputWeight += WeightConstants.WITNESS_HEADER;
+            inputWeight += WeightConstants.WitnessHeader;
         }
 
         return inputWeight;

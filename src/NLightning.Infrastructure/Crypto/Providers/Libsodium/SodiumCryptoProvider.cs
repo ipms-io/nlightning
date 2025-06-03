@@ -88,10 +88,10 @@ internal sealed class SodiumCryptoProvider : ICryptoProvider
 
     public int DeriveKeyFromPasswordUsingArgon2I(Span<byte> key, string password, ReadOnlySpan<byte> salt, ulong opsLimit, ulong memLimit)
     {
-        const int ALG = 2; // crypto_pwhash_ALG_ARGON2ID13
+        const int alg = 2; // crypto_pwhash_ALG_ARGON2ID13
         return LibsodiumWrapper.crypto_pwhash(ref MemoryMarshal.GetReference(key), (ulong)key.Length, password,
                                               (ulong)password.Length, ref MemoryMarshal.GetReference(salt), opsLimit,
-                                              memLimit, ALG);
+                                              memLimit, alg);
     }
 
     public void RandomBytes(Span<byte> buffer)

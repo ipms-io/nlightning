@@ -1,4 +1,6 @@
 using NBitcoin;
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Protocol.ValueObjects;
 using NLightning.Tests.Utils.Vectors;
 
 namespace NLightning.Bolt11.Tests;
@@ -10,7 +12,6 @@ using Domain.Money;
 using Domain.Protocol.Constants;
 using Domain.ValueObjects;
 using Exceptions;
-using Network = Domain.ValueObjects.Network;
 
 public class InvoiceTests
 {
@@ -23,10 +24,10 @@ public class InvoiceTests
 
     #region HumanReadablePart
     [Theory]
-    [InlineData(NetworkConstants.MAINNET, 100_000_000_000, "lnbc1")]
-    [InlineData(NetworkConstants.TESTNET, 100_000_000_000, "lntb1")]
-    [InlineData(NetworkConstants.REGTEST, 100_000_000_000, "lnbcrt1")]
-    [InlineData(NetworkConstants.SIGNET, 100_000_000_000, "lntbs1")]
+    [InlineData(NetworkConstants.Mainnet, 100_000_000_000, "lnbc1")]
+    [InlineData(NetworkConstants.Testnet, 100_000_000_000, "lntb1")]
+    [InlineData(NetworkConstants.Regtest, 100_000_000_000, "lnbcrt1")]
+    [InlineData(NetworkConstants.Signet, 100_000_000_000, "lntbs1")]
     public void Given_NetworkType_When_InvoiceIsCreated_Then_PrefixIsCorrect(string network, ulong amountMsats, string expectedPrefix)
     {
         // Act
@@ -37,20 +38,20 @@ public class InvoiceTests
     }
 
     [Theory]
-    [InlineData(NetworkConstants.MAINNET, 1, "lnbc10p")]
-    [InlineData(NetworkConstants.MAINNET, 10, "lnbc100p")]
-    [InlineData(NetworkConstants.MAINNET, 100, "lnbc1n")]
-    [InlineData(NetworkConstants.MAINNET, 1_000, "lnbc10n")]
-    [InlineData(NetworkConstants.MAINNET, 10_000, "lnbc100n")]
-    [InlineData(NetworkConstants.MAINNET, 100_000, "lnbc1u")]
-    [InlineData(NetworkConstants.MAINNET, 1_000_000, "lnbc10u")]
-    [InlineData(NetworkConstants.MAINNET, 10_000_000, "lnbc100u")]
-    [InlineData(NetworkConstants.MAINNET, 100_000_000, "lnbc1m")]
-    [InlineData(NetworkConstants.MAINNET, 1_000_000_000, "lnbc10m")]
-    [InlineData(NetworkConstants.MAINNET, 10_000_000_000, "lnbc100m")]
-    [InlineData(NetworkConstants.MAINNET, 100_000_000_000, "lnbc1")]
-    [InlineData(NetworkConstants.MAINNET, 1_000_000_000_000, "lnbc10")]
-    [InlineData(NetworkConstants.MAINNET, 10_000_000_000_000, "lnbc100")]
+    [InlineData(NetworkConstants.Mainnet, 1, "lnbc10p")]
+    [InlineData(NetworkConstants.Mainnet, 10, "lnbc100p")]
+    [InlineData(NetworkConstants.Mainnet, 100, "lnbc1n")]
+    [InlineData(NetworkConstants.Mainnet, 1_000, "lnbc10n")]
+    [InlineData(NetworkConstants.Mainnet, 10_000, "lnbc100n")]
+    [InlineData(NetworkConstants.Mainnet, 100_000, "lnbc1u")]
+    [InlineData(NetworkConstants.Mainnet, 1_000_000, "lnbc10u")]
+    [InlineData(NetworkConstants.Mainnet, 10_000_000, "lnbc100u")]
+    [InlineData(NetworkConstants.Mainnet, 100_000_000, "lnbc1m")]
+    [InlineData(NetworkConstants.Mainnet, 1_000_000_000, "lnbc10m")]
+    [InlineData(NetworkConstants.Mainnet, 10_000_000_000, "lnbc100m")]
+    [InlineData(NetworkConstants.Mainnet, 100_000_000_000, "lnbc1")]
+    [InlineData(NetworkConstants.Mainnet, 1_000_000_000_000, "lnbc10")]
+    [InlineData(NetworkConstants.Mainnet, 10_000_000_000_000, "lnbc100")]
     public void Given_Amount_When_InvoiceIsCreated_Then_AmountIsCorrect(string network, ulong amountMsats, string expectedHumanReadablePart)
     {
         // Act
@@ -64,7 +65,7 @@ public class InvoiceTests
     public void Given_ZeroAmount_When_InvoiceIsCreated_Then_HumanReadablePartJustContainPrefix()
     {
         // Arrange
-        var network = Network.MAINNET;
+        var network = BitcoinNetwork.Mainnet;
 
         // Act
         var invoice = new Invoice(network);
@@ -77,24 +78,24 @@ public class InvoiceTests
     public void Given_InvalidNetwork_When_InvoiceIsCreated_Then_ExceptionIsThrown()
     {
         // Arrange
-        var invalidNetwork = (Network)"invalid";
+        var invalidNetwork = (BitcoinNetwork)"invalid";
 
         // Act & Assert
         Assert.Throws<ArgumentException>(() => new Invoice(invalidNetwork, LightningMoney.Satoshis(1_000)));
     }
 
     [Theory]
-    [InlineData(NetworkConstants.MAINNET, 1, "lnbc10n")]
-    [InlineData(NetworkConstants.MAINNET, 10, "lnbc100n")]
-    [InlineData(NetworkConstants.MAINNET, 100, "lnbc1u")]
-    [InlineData(NetworkConstants.MAINNET, 1_000, "lnbc10u")]
-    [InlineData(NetworkConstants.MAINNET, 10_000, "lnbc100u")]
-    [InlineData(NetworkConstants.MAINNET, 100_000, "lnbc1m")]
-    [InlineData(NetworkConstants.MAINNET, 1_000_000, "lnbc10m")]
-    [InlineData(NetworkConstants.MAINNET, 10_000_000, "lnbc100m")]
-    [InlineData(NetworkConstants.MAINNET, 100_000_000, "lnbc1")]
-    [InlineData(NetworkConstants.MAINNET, 1_000_000_000, "lnbc10")]
-    [InlineData(NetworkConstants.MAINNET, 10_000_000_000, "lnbc100")]
+    [InlineData(NetworkConstants.Mainnet, 1, "lnbc10n")]
+    [InlineData(NetworkConstants.Mainnet, 10, "lnbc100n")]
+    [InlineData(NetworkConstants.Mainnet, 100, "lnbc1u")]
+    [InlineData(NetworkConstants.Mainnet, 1_000, "lnbc10u")]
+    [InlineData(NetworkConstants.Mainnet, 10_000, "lnbc100u")]
+    [InlineData(NetworkConstants.Mainnet, 100_000, "lnbc1m")]
+    [InlineData(NetworkConstants.Mainnet, 1_000_000, "lnbc10m")]
+    [InlineData(NetworkConstants.Mainnet, 10_000_000, "lnbc100m")]
+    [InlineData(NetworkConstants.Mainnet, 100_000_000, "lnbc1")]
+    [InlineData(NetworkConstants.Mainnet, 1_000_000_000, "lnbc10")]
+    [InlineData(NetworkConstants.Mainnet, 10_000_000_000, "lnbc100")]
     public void Given_Amount_When_InvoiceIsCreatedWithInSatoshis_Then_AmountIsCorrect(string network, ulong amountSats, string expectedHumanReadablePart)
     {
         // Arrange
@@ -112,7 +113,7 @@ public class InvoiceTests
     {
         // Given
         var key = new Key();
-        var invoice = new Invoice(Network.MAINNET);
+        var invoice = new Invoice(BitcoinNetwork.Mainnet);
 
         // "Touch" the invoice string once, so it's cached
         var initialStr = invoice.ToString(key);
@@ -128,18 +129,18 @@ public class InvoiceTests
         Assert.NotEqual(initialStr, reencodedStr);
         Assert.NotNull(invoice.RoutingInfos);
         Assert.Single(invoice.RoutingInfos!);
-        Assert.Equal(s_defaultRoutingInfo.PubKey, invoice.RoutingInfos![0].PubKey);
+        Assert.Equal(s_defaultRoutingInfo.CompactPubKey, invoice.RoutingInfos![0].CompactPubKey);
     }
 
     [Fact]
     public void Given_Invoice_When_SetFallbackAddresses_Then_TheyAreStoredAndRetrieved()
     {
         // Given
-        var invoice = new Invoice(Network.MAINNET);
+        var invoice = new Invoice(BitcoinNetwork.Mainnet);
         var addresses = new List<BitcoinAddress>
         {
-            BitcoinAddress.Create("3EktnHQD7RiAE6uzMj2ZifT9YgRrkSgzQX", Network.MAINNET),
-            BitcoinAddress.Create("1RustyRX2oai4EYYDpQGWvEL62BBGqN9T", Network.MAINNET)
+            BitcoinAddress.Create("3EktnHQD7RiAE6uzMj2ZifT9YgRrkSgzQX", BitcoinNetwork.Mainnet),
+            BitcoinAddress.Create("1RustyRX2oai4EYYDpQGWvEL62BBGqN9T", BitcoinNetwork.Mainnet)
         };
 
         // When
@@ -157,7 +158,7 @@ public class InvoiceTests
     {
         // Given
         var key = new Key();
-        var invoice = new Invoice(Network.MAINNET)
+        var invoice = new Invoice(BitcoinNetwork.Mainnet)
         {
             RoutingInfos = new RoutingInfoCollection { s_defaultRoutingInfo }
         };
@@ -183,10 +184,10 @@ public class InvoiceTests
     {
         // Given
         var now = DateTimeOffset.UtcNow;
-        var invoice = new Invoice(Network.MAINNET, LightningMoney.Zero, now.ToUnixTimeSeconds());
+        var invoice = new Invoice(BitcoinNetwork.Mainnet, LightningMoney.Zero, now.ToUnixTimeSeconds());
 
         // By default, if no expiry tag is set, ExpiryDate = timestamp + DEFAULT_EXPIRATION_SECONDS
-        var defaultExpiry = now.AddSeconds(InvoiceConstants.DEFAULT_EXPIRATION_SECONDS);
+        var defaultExpiry = now.AddSeconds(InvoiceConstants.DefaultExpirationSeconds);
         Assert.Equal(defaultExpiry.ToUnixTimeSeconds(), invoice.ExpiryDate.ToUnixTimeSeconds());
 
         // When
@@ -206,7 +207,7 @@ public class InvoiceTests
     {
         // Given
         var invoice = new Invoice(LightningMoney.Satoshis(1_000), "TestDesc", uint256.One, uint256.Zero,
-                                  Network.MAINNET)
+                                  BitcoinNetwork.Mainnet)
         {
             PayeePubKey = new PubKey("020202020202020202020202020202020202020202020202020202020202020202")
         };
@@ -246,7 +247,7 @@ public class InvoiceTests
         const string INVOICE_STRING = "lnbc20m1pvjluezsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygshp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppj3a24vwu6r8ejrss3axul8rxldph2q7z99qrsgqz6qsgww34xlatfj6e3sngrwfy3ytkt29d2qttr8qz2mnedfqysuqypgqex4haa2h8fx3wnypranf3pdwyluftwe680jjcfp438u82xqphf75ym";
 
         // When
-        var invoice = Invoice.Decode(INVOICE_STRING, Network.MAINNET);
+        var invoice = Invoice.Decode(INVOICE_STRING, BitcoinNetwork.Mainnet);
 
         // Then
         Assert.Equal(2000000000U, invoice.Amount.MilliSatoshi);

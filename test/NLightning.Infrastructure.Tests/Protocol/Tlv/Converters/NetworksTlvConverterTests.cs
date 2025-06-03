@@ -1,3 +1,5 @@
+using NLightning.Domain.Protocol.ValueObjects;
+
 namespace NLightning.Infrastructure.Tests.Protocol.Tlv.Converters;
 
 using Domain.Protocol.Tlv;
@@ -10,7 +12,7 @@ public class NetworksTlvConverterTests
     public void Given_NetworksTlvConverter_When_ConvertingToBaseTlvAndBack_ResultIsCorrect()
     {
         // Arrange
-        var chainHash = Network.MAINNET.ChainHash;
+        var chainHash = BitcoinNetwork.Mainnet.ChainHash;
         var expectedBaseTlv = new BaseTlv(1, chainHash);
         var expectedNetworksTlv = new NetworksTlv([chainHash]);
         var converter = new NetworksTlvConverter();

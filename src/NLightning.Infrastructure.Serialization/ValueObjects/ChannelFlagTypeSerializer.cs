@@ -1,10 +1,11 @@
 using System.Buffers;
+using NLightning.Domain.Interfaces;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.ValueObjects;
 
-using Domain.Serialization.ValueObjects;
 using Domain.ValueObjects;
-using Domain.ValueObjects.Interfaces;
+
 public class ChannelFlagTypeSerializer : IValueObjectTypeSerializer<ChannelFlags>
 {
     public async Task SerializeAsync(IValueObject valueObject, Stream stream)

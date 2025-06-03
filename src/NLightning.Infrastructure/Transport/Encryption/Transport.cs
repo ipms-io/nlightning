@@ -1,6 +1,6 @@
 namespace NLightning.Infrastructure.Transport.Encryption;
 
-using Common.Utils;
+using Domain.Utils;
 using Domain.Crypto.Constants;
 using Domain.Exceptions;
 using Domain.Transport;
@@ -72,7 +72,7 @@ internal sealed class Transport : ITransport
         {
             Array.Reverse(l);
         }
-        return BitConverter.ToUInt16(l, 0) + CryptoConstants.CHACHA20_POLY1305_TAG_LEN;
+        return BitConverter.ToUInt16(l, 0) + CryptoConstants.Chacha20Poly1305TagLen;
     }
 
     /// <inheritdoc/>
@@ -102,21 +102,16 @@ internal sealed class Transport : ITransport
     /// </exception>
     private int WriteMessagePart(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
-        if (payload.Length + CryptoConstants.CHACHA20_POLY1305_TAG_LEN > ProtocolConstants.MaxMessageLength)
-        {
-            throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MaxMessageLength} bytes in length.");
-        }
+        if (payload.Length + CryptoConstants.Chacha20Poly1305TagLen > ProtocolConstants.MaxMessageLength)
+            throw new ArgumentException(
+                $"Noise message must be less than or equal to {ProtocolConstants.MaxMessageLength} bytes in length.");
 
-        if (payload.Length + CryptoConstants.CHACHA20_POLY1305_TAG_LEN > messageBuffer.Length)
-        {
+        if (payload.Length + CryptoConstants.Chacha20Poly1305TagLen > messageBuffer.Length)
             throw new ArgumentException("Message buffer does not have enough space to hold the ciphertext.");
-        }
 
         var cipher = _initiator ? _sendingKey : _receivingKey;
         if (!cipher.HasKeys())
-        {
             throw new InvalidOperationException("Cipher is missing keys.");
-        }
 
         return cipher.Encrypt(payload, messageBuffer);
     }
@@ -146,20 +141,16 @@ internal sealed class Transport : ITransport
         {
             case > ProtocolConstants.MaxMessageLength:
                 throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MaxMessageLength} bytes in length.");
-            case < CryptoConstants.CHACHA20_POLY1305_TAG_LEN:
-                throw new ArgumentException($"Noise message must be greater than or equal to {CryptoConstants.CHACHA20_POLY1305_TAG_LEN} bytes in length.");
+            case < CryptoConstants.Chacha20Poly1305TagLen:
+                throw new ArgumentException($"Noise message must be greater than or equal to {CryptoConstants.Chacha20Poly1305TagLen} bytes in length.");
         }
 
-        if (message.Length - CryptoConstants.CHACHA20_POLY1305_TAG_LEN > payloadBuffer.Length)
-        {
+        if (message.Length - CryptoConstants.Chacha20Poly1305TagLen > payloadBuffer.Length)
             throw new ArgumentException("Payload buffer does not have enough space to hold the plaintext.");
-        }
 
         var cipher = _initiator ? _receivingKey : _sendingKey;
         if (!cipher.HasKeys())
-        {
             throw new InvalidOperationException("Cipher is missing keys.");
-        }
 
         return cipher.Decrypt(message, payloadBuffer);
     }
@@ -167,9 +158,7 @@ internal sealed class Transport : ITransport
     public void Dispose()
     {
         if (_disposed)
-        {
             return;
-        }
 
         _sendingKey.Dispose();
         _receivingKey.Dispose();

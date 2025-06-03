@@ -1,7 +1,6 @@
-using NLightning.Domain.Node;
-
 namespace NLightning.Domain.Protocol.Tlv;
 
+using Node;
 using Constants;
 
 /// <summary>

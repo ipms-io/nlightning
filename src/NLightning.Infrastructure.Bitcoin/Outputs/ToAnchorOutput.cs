@@ -13,8 +13,8 @@ public class ToAnchorOutput : BaseOutput
 
     public PubKey RemoteFundingPubKey { get; set; }
 
-    public ToAnchorOutput(PubKey remoteFundingPubKey, LightningMoney amount)
-        : base(GenerateAnchorScript(remoteFundingPubKey), amount)
+    public ToAnchorOutput(LightningMoney amount, PubKey remoteFundingPubKey)
+        : base(amount, GenerateAnchorScript(remoteFundingPubKey))
     {
         RemoteFundingPubKey = remoteFundingPubKey;
     }
@@ -25,9 +25,9 @@ public class ToAnchorOutput : BaseOutput
     /// <param name="txOut">The TxOut object.</param>
     /// <param name="remoteFundingPubKey">The remote funding public key.</param>
     /// <returns>A ToAnchorOutput object.</returns>
-    public static ToAnchorOutput FromTxOut(TxOut txOut, PubKey remoteFundingPubKey)
+    public static ToAnchorOutput FromTxOut(PubKey remoteFundingPubKey, TxOut txOut)
     {
-        return new ToAnchorOutput(remoteFundingPubKey, (ulong)txOut.Value.Satoshi);
+        return new ToAnchorOutput((ulong)txOut.Value.Satoshi, remoteFundingPubKey);
     }
 
     private static Script GenerateAnchorScript(PubKey pubKey)

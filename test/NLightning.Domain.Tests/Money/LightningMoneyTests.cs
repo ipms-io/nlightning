@@ -1,5 +1,3 @@
-using NBitcoin;
-
 namespace NLightning.Domain.Tests.Money;
 
 using Domain.Money;
@@ -8,17 +6,18 @@ using Enums;
 public class LightningMoneyTests
 {
     #region Constructors
+
     [Fact]
     public void Given_ValidMilliSatoshi_When_Constructed_Then_PropertiesAreSetCorrectly()
     {
         // Given
-        const ulong MILLI_SATOSHI = 1000;
+        const ulong milliSatoshi = 1000;
 
         // When
-        var lightningMoney = new LightningMoney(MILLI_SATOSHI);
+        var lightningMoney = new LightningMoney(milliSatoshi);
 
         // Then
-        Assert.Equal(MILLI_SATOSHI, lightningMoney.MilliSatoshi);
+        Assert.Equal(milliSatoshi, lightningMoney.MilliSatoshi);
         Assert.Equal(1, lightningMoney.Satoshi);
     }
 
@@ -26,11 +25,11 @@ public class LightningMoneyTests
     public void Given_ValidDecimalAmountAndUnit_When_Constructed_Then_PropertiesAreSetCorrectly()
     {
         // Given
-        const decimal AMOUNT = 1.5m;
-        const LightningMoneyUnit UNIT = LightningMoneyUnit.Btc;
+        const decimal amount = 1.5m;
+        const LightningMoneyUnit unit = LightningMoneyUnit.Btc;
 
         // When
-        var lightningMoney = new LightningMoney(AMOUNT, UNIT);
+        var lightningMoney = new LightningMoney(amount, unit);
 
         // Then
         Assert.Equal(150000000000UL, lightningMoney.MilliSatoshi);
@@ -40,11 +39,11 @@ public class LightningMoneyTests
     public void Given_ValidLongAmountAndUnit_When_Constructed_Then_PropertiesAreSetCorrectly()
     {
         // Given
-        const long AMOUNT = 1;
-        const LightningMoneyUnit UNIT = LightningMoneyUnit.Btc;
+        const long amount = 1;
+        const LightningMoneyUnit unit = LightningMoneyUnit.Btc;
 
         // When
-        var lightningMoney = new LightningMoney(AMOUNT, UNIT);
+        var lightningMoney = new LightningMoney(amount, unit);
 
         // Then
         Assert.Equal(100000000000UL, lightningMoney.MilliSatoshi);
@@ -54,11 +53,11 @@ public class LightningMoneyTests
     public void Given_ValidULongAmountAndUnit_When_Constructed_Then_PropertiesAreSetCorrectly()
     {
         // Given
-        const ulong AMOUNT = 1;
-        const LightningMoneyUnit UNIT = LightningMoneyUnit.Btc;
+        const ulong amount = 1;
+        const LightningMoneyUnit unit = LightningMoneyUnit.Btc;
 
         // When
-        var lightningMoney = new LightningMoney(AMOUNT, UNIT);
+        var lightningMoney = new LightningMoney(amount, unit);
 
         // Then
         Assert.Equal(100000000000UL, lightningMoney.MilliSatoshi);
@@ -68,11 +67,11 @@ public class LightningMoneyTests
     public void Given_NegativeSatoshi_When_Constructed_Then_ThrowsArgumentOutOfRangeException()
     {
         // Given
-        const decimal AMOUNT = -1m;
-        const LightningMoneyUnit UNIT = LightningMoneyUnit.Btc;
+        const decimal amount = -1m;
+        const LightningMoneyUnit unit = LightningMoneyUnit.Btc;
 
         // When & Then
-        Assert.Throws<OverflowException>(() => new LightningMoney(AMOUNT, UNIT));
+        Assert.Throws<OverflowException>(() => new LightningMoney(amount, unit));
     }
 
     [Fact]
@@ -84,6 +83,7 @@ public class LightningMoneyTests
         // When & Then
         Assert.Throws<ArgumentOutOfRangeException>(() => lightningMoney.Satoshi = -1);
     }
+
     #endregion
 
     #region Public Properties
@@ -93,25 +93,27 @@ public class LightningMoneyTests
     {
         // Given
         var lightningMoney = new LightningMoney(1000);
-        const long SATOSHI = 1;
+        const long satoshi = 1;
 
         // When
-        lightningMoney.Satoshi = SATOSHI;
+        lightningMoney.Satoshi = satoshi;
 
         // Then
-        Assert.Equal(SATOSHI, lightningMoney.Satoshi);
+        Assert.Equal(satoshi, lightningMoney.Satoshi);
     }
+
     #endregion
 
     #region Parse
+
     [Fact]
     public void Given_ValidString_When_Parsed_Then_ReturnsLightningMoney()
     {
         // Given
-        const string BITCOIN_AMOUNT = "0.001";
+        const string bitcoinAmount = "0.001";
 
         // When
-        var lightningMoney = LightningMoney.Parse(BITCOIN_AMOUNT);
+        var lightningMoney = LightningMoney.Parse(bitcoinAmount);
 
         // Then
         Assert.NotNull(lightningMoney);
@@ -122,20 +124,20 @@ public class LightningMoneyTests
     public void Given_InvalidString_When_Parsed_Then_ThrowsFormatException()
     {
         // Given
-        const string INVALID_BITCOIN_AMOUNT = "invalid";
+        const string invalidBitcoinAmount = "invalid";
 
         // When & Then
-        Assert.Throws<FormatException>(() => LightningMoney.Parse(INVALID_BITCOIN_AMOUNT));
+        Assert.Throws<FormatException>(() => LightningMoney.Parse(invalidBitcoinAmount));
     }
 
     [Fact]
     public void Given_ValidString_When_TryParse_Then_ReturnsLightningMoney()
     {
         // Given
-        const string BITCOIN_AMOUNT = "0.001";
+        const string bitcoinAmount = "0.001";
 
         // When
-        var isParsed = LightningMoney.TryParse(BITCOIN_AMOUNT, out var result);
+        var isParsed = LightningMoney.TryParse(bitcoinAmount, out var result);
 
         // Then
         Assert.True(isParsed);
@@ -147,17 +149,19 @@ public class LightningMoneyTests
     public void Given_InvalidString_When_TryParse_Then_ThrowsFormatException()
     {
         // Given
-        const string INVALID_BITCOIN_AMOUNT = "invalid";
+        const string invalidBitcoinAmount = "invalid";
 
         // When & Then
-        var isParsed = LightningMoney.TryParse(INVALID_BITCOIN_AMOUNT, out var result);
+        var isParsed = LightningMoney.TryParse(invalidBitcoinAmount, out var result);
 
         Assert.False(isParsed);
         Assert.Null(result);
     }
+
     #endregion
 
     #region Split, Add, Subtract
+
     [Fact]
     public void Given_LightningMoney_When_Split_Then_ReturnsCorrectParts()
     {
@@ -202,9 +206,11 @@ public class LightningMoneyTests
         // Then
         Assert.Equal(2000UL, result.MilliSatoshi);
     }
+
     #endregion
 
     #region ToString
+
     [Fact]
     public void Given_LightningMoney_When_ToStringCalled_Then_ReturnsCorrectString()
     {
@@ -243,9 +249,11 @@ public class LightningMoneyTests
         // Then
         Assert.Equal("0.00001000000", result);
     }
+
     #endregion
 
     #region Static Fields
+
     [Fact]
     public void Given_ZeroMilliSatoshi_When_IsZeroCalled_Then_ReturnsTrue()
     {
@@ -258,6 +266,7 @@ public class LightningMoneyTests
         // Then
         Assert.True(isZero);
     }
+
     #endregion
 
     [Fact]
@@ -293,20 +302,22 @@ public class LightningMoneyTests
     }
 
     #region Conversion
+
     [Fact]
     public void Given_LightningMoney_When_ImplicitConversionCalled_Then_ReturnsCorrectValues()
     {
         // Given
-        const ulong MILLI_SATOSHI = 1000;
+        const ulong milliSatoshi = 1000;
 
         // When
-        LightningMoney lightningMoney = MILLI_SATOSHI;
+        LightningMoney lightningMoney = milliSatoshi;
         ulong backToMilliSatoshi = lightningMoney;
 
         // Then
-        Assert.Equal(MILLI_SATOSHI, lightningMoney.MilliSatoshi);
-        Assert.Equal(MILLI_SATOSHI, backToMilliSatoshi);
+        Assert.Equal(milliSatoshi, lightningMoney.MilliSatoshi);
+        Assert.Equal(milliSatoshi, backToMilliSatoshi);
     }
+
     #endregion
 
     [Fact]
@@ -330,10 +341,10 @@ public class LightningMoneyTests
         // Given
         var money1 = new LightningMoney(1000);
         var money2 = new LightningMoney(1005);
-        const decimal MARGIN = 0.01m;
+        const decimal margin = 0.01m;
 
         // When
-        var isAlmost = money1.Almost(money2, MARGIN);
+        var isAlmost = money1.Almost(money2, margin);
 
         // Then
         Assert.True(isAlmost);
@@ -343,10 +354,10 @@ public class LightningMoneyTests
     public void Given_InvalidLightningMoneyUnit_When_Checked_Then_ThrowsArgumentException()
     {
         // Given
-        const LightningMoneyUnit INVALID_UNIT = (LightningMoneyUnit)999;
+        const LightningMoneyUnit invalidUnit = (LightningMoneyUnit)999;
 
         // When & Then
-        Assert.Throws<ArgumentException>(() => LightningMoney.FromUnit(1, INVALID_UNIT));
+        Assert.Throws<ArgumentException>(() => LightningMoney.FromUnit(1, invalidUnit));
     }
 
     [Fact]
@@ -360,6 +371,7 @@ public class LightningMoneyTests
     }
 
     #region Static Converters
+
     [Fact]
     public void Given_LightningMoney_When_ConvertedToOtherUnits_Then_ReturnsCorrectValues()
     {
@@ -394,10 +406,10 @@ public class LightningMoneyTests
     public void Given_LightningMoney_When_CoinsCalled_Then_ReturnsCorrectValue()
     {
         // Given
-        const decimal COINS = 1.5m;
+        const decimal coins = 1.5m;
 
         // When
-        var result = LightningMoney.Coins(COINS);
+        var result = LightningMoney.Coins(coins);
 
         // Then
         Assert.Equal(150_000_000_000UL, result.MilliSatoshi);
@@ -407,10 +419,10 @@ public class LightningMoneyTests
     public void Given_LightningMoney_When_BitsCalled_Then_ReturnsCorrectValue()
     {
         // Given
-        const decimal BITS = 1.5m;
+        const decimal bits = 1.5m;
 
         // When
-        var result = LightningMoney.Bits(BITS);
+        var result = LightningMoney.Bits(bits);
 
         // Then
         Assert.Equal(1_500_000_000UL, result.MilliSatoshi);
@@ -420,10 +432,10 @@ public class LightningMoneyTests
     public void Given_LightningMoney_When_CentsCalled_Then_ReturnsCorrectValue()
     {
         // Given
-        const decimal CENTS = 1.5m;
+        const decimal cents = 1.5m;
 
         // When
-        var result = LightningMoney.Cents(CENTS);
+        var result = LightningMoney.Cents(cents);
 
         // Then
         Assert.Equal(1_500_000_000UL, result.MilliSatoshi);
@@ -433,10 +445,10 @@ public class LightningMoneyTests
     public void Given_LightningMoney_When_SatoshisCalledWithDecimal_Then_ReturnsCorrectValue()
     {
         // Given
-        const decimal SATOSHIS = 1.5m;
+        const decimal satoshis = 1.5m;
 
         // When
-        var result = LightningMoney.Satoshis(SATOSHIS);
+        var result = LightningMoney.Satoshis(satoshis);
 
         // Then
         Assert.Equal(1_500UL, result.MilliSatoshi);
@@ -446,10 +458,10 @@ public class LightningMoneyTests
     public void Given_LightningMoney_When_SatoshisCalledWithLong_Then_ReturnsCorrectValue()
     {
         // Given
-        const long SATOSHIS = 1_000;
+        const long satoshis = 1_000;
 
         // When
-        var result = LightningMoney.Satoshis(SATOSHIS);
+        var result = LightningMoney.Satoshis(satoshis);
 
         // Then
         Assert.Equal(1_000_000UL, result.MilliSatoshi);
@@ -459,10 +471,10 @@ public class LightningMoneyTests
     public void Given_LightningMoney_When_SatoshisCalledWithULong_Then_ReturnsCorrectValue()
     {
         // Given
-        const ulong SATOSHIS = 1_000;
+        const ulong satoshis = 1_000;
 
         // When
-        var result = LightningMoney.Satoshis(SATOSHIS);
+        var result = LightningMoney.Satoshis(satoshis);
 
         // Then
         Assert.Equal(1_000_000UL, result.MilliSatoshi);
@@ -472,10 +484,10 @@ public class LightningMoneyTests
     public void Given_LightningMoney_When_MilliSatoshisCalledWithLong_Then_ReturnsCorrectValue()
     {
         // Given
-        const long MILLI_SATOSHIS = 1_000;
+        const long milliSatoshis = 1_000;
 
         // When
-        var result = LightningMoney.MilliSatoshis(MILLI_SATOSHIS);
+        var result = LightningMoney.MilliSatoshis(milliSatoshis);
 
         // Then
         Assert.Equal(1_000UL, result.MilliSatoshi);
@@ -485,17 +497,19 @@ public class LightningMoneyTests
     public void Given_LightningMoney_When_MilliSatoshisCalledWithULong_Then_ReturnsCorrectValue()
     {
         // Given
-        const ulong MILLI_SATOSHIS = 1_000;
+        const ulong milliSatoshis = 1_000;
 
         // When
-        var result = LightningMoney.MilliSatoshis(MILLI_SATOSHIS);
+        var result = LightningMoney.MilliSatoshis(milliSatoshis);
 
         // Then
         Assert.Equal(1_000UL, result.MilliSatoshi);
     }
+
     #endregion
 
     #region Equality
+
     [Fact]
     public void Given_TwoEqualLightningMoneyInstances_When_EqualsCalled_Then_ReturnsTrue()
     {
@@ -537,32 +551,5 @@ public class LightningMoneyTests
         Assert.False(areEqual);
     }
 
-    [Fact]
-    public void Given_LightningMoneyAndMoney_When_IsCompatibleCalled_Then_ReturnsTrue()
-    {
-        // Given
-        IMoney money1 = new LightningMoney(1000);
-        IMoney money2 = new LightningMoney(2000);
-
-        // When
-        var isCompatible = money1.IsCompatible(money2);
-
-        // Then
-        Assert.True(isCompatible);
-    }
-
-    [Fact]
-    public void Given_LightningMoneyAndMoney_When_IsCompatibleCalled_Then_ThrowsArgumentNullException()
-    {
-        // Given
-        IMoney money1 = new LightningMoney(1000);
-        IMoney money2 = new NBitcoin.Money(2000L);
-
-        // When
-        var result = money1.IsCompatible(money2);
-
-        // Then
-        Assert.False(result);
-    }
     #endregion
 }

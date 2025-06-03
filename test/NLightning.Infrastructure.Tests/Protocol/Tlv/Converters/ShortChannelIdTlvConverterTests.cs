@@ -1,3 +1,5 @@
+using NLightning.Domain.Channels.ValueObjects;
+
 namespace NLightning.Infrastructure.Tests.Protocol.Tlv.Converters;
 
 using Domain.Protocol.Tlv;

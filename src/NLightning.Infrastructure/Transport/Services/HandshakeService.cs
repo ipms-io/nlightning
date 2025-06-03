@@ -1,7 +1,8 @@
 namespace NLightning.Infrastructure.Transport.Services;
 
-using Common.Utils;
-using Crypto.Functions;
+using Domain.Crypto.ValueObjects;
+using Domain.Utils;
+using Infrastructure.Crypto.Interfaces;
 using Domain.Transport;
 using Handshake.States;
 using Interfaces;
@@ -10,27 +11,40 @@ using Protocol.Constants;
 /// <summary>
 /// Initializes a new instance of the <see cref="HandshakeService"/> class.
 /// </summary>
-/// <param name="isInitiator">If we are initiating the connection</param>
-/// <param name="localStaticPrivateKey">Our local Private Key</param>
-/// <param name="staticPublicKey">If we are initiating, the remote Public Key, else our local Public Key</param>
-internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> localStaticPrivateKey,
-                                       ReadOnlySpan<byte> staticPublicKey, IHandshakeState? handshakeState = null)
-    : IHandshakeService
+internal sealed class HandshakeService : IHandshakeService
 {
-    private readonly IHandshakeState _handshakeState = handshakeState
-                                                       ?? new HandshakeState(isInitiator, localStaticPrivateKey,
-                                                                             staticPublicKey, new Ecdh());
+    private readonly IHandshakeState _handshakeState;
 
     private byte _steps = 2;
     private bool _disposed;
 
     /// <inheritdoc/>
-    public bool IsInitiator => isInitiator;
+    public bool IsInitiator { get; }
 
-    public NBitcoin.PubKey? RemoteStaticPublicKey => _handshakeState.RemoteStaticPublicKey;
+    public CompactPubKey? RemoteStaticPublicKey => _handshakeState.RemoteStaticPublicKey;
+
+    public HandshakeService(bool isInitiator, ReadOnlySpan<byte> localStaticPrivateKey,
+                            ReadOnlySpan<byte> staticPublicKey, IHandshakeState? handshakeState = null,
+                            IEcdh? dh = null)
+    {
+        if (handshakeState is null)
+        {
+            if (dh is null)
+                throw new ArgumentNullException(nameof(dh),
+                                                "Either a HandshakeState or Ecdh must be provided");
+
+            _handshakeState = new HandshakeState(isInitiator, localStaticPrivateKey, staticPublicKey, dh);
+        }
+        else
+        {
+            _handshakeState = handshakeState;
+        }
+        
+        IsInitiator = isInitiator;
+    }
 
     /// <inheritdoc/>
-    /// <exception cref="InvalidOperationException">Thrown when there's no more steps to complete</exception>
+    /// <exception cref="InvalidOperationException">Thrown when there are no more steps to complete</exception>
     public int PerformStep(ReadOnlySpan<byte> inMessage, Span<byte> outMessage, out ITransport? transport)
     {
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(HandshakeService));

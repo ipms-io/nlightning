@@ -10,21 +10,28 @@ public class BaseOutputTests
     // Concrete implementation for testing the abstract class
     private class FakeOutput : BaseOutput
     {
+        public new Script RedeemScript => base.RedeemScript;
+        public new uint256 TxIdHash => base.TxIdHash;
+
         public FakeOutput(Script redeemScript, Script scriptPubKey, LightningMoney amount)
-            : base(redeemScript, scriptPubKey, amount)
+            : base(amount, redeemScript, scriptPubKey)
         {
         }
 
         public FakeOutput(Script redeemScript, LightningMoney amount)
-            : base(redeemScript, amount)
+            : base(amount, redeemScript)
         {
         }
 
         public override ScriptType ScriptType => ScriptType.P2WPKH;
     }
 
-    private readonly Script _redeemScript = Script.FromHex("21034F355BDCB7CC0AF728EF3CCEB9615D90684BB5B2CA5F859AB0F0B704075871AAAD51B2");
-    private readonly Script _scriptPubKey = Script.FromHex("002032E8DA66B7054D40832C6A7A66DF79D8D7BCCCD5FFA53F5DD1772CB9CB9F3283");
+    private readonly Script _redeemScript =
+        Script.FromHex("21034F355BDCB7CC0AF728EF3CCEB9615D90684BB5B2CA5F859AB0F0B704075871AAAD51B2");
+
+    private readonly Script _scriptPubKey =
+        Script.FromHex("002032E8DA66B7054D40832C6A7A66DF79D8D7BCCCD5FFA53F5DD1772CB9CB9F3283");
+
     private readonly LightningMoney _amount = new(1000000);
 
     [Fact]
@@ -40,8 +47,8 @@ public class BaseOutputTests
         Assert.Equal(_scriptPubKey, output.ScriptPubKey);
         Assert.Equal(_amount, output.Amount);
         Assert.Equal(ScriptType.P2WPKH, output.ScriptType);
-        Assert.Equal(uint256.Zero, output.TxId);
-        Assert.Equal(-1, output.Index);
+        Assert.Equal(uint256.Zero, output.TxIdHash);
+        Assert.Equal(0U, output.Index);
     }
 
     [Fact]
@@ -68,7 +75,7 @@ public class BaseOutputTests
         var txOut = output.ToTxOut();
 
         // Then
-        Assert.Equal((Money)_amount, txOut.Value);
+        Assert.Equal(_amount, LightningMoney.Satoshis(txOut.Value.Satoshi));
         Assert.Equal(_scriptPubKey, txOut.ScriptPubKey);
     }
 
@@ -78,7 +85,7 @@ public class BaseOutputTests
         // Given
         var output = new FakeOutput(_redeemScript, _scriptPubKey, _amount)
         {
-            TxId = uint256.Parse("8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be"),
+            TxId = Convert.FromHexString("8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be"),
             Index = 1
         };
 

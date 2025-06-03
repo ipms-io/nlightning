@@ -1,4 +1,5 @@
-using NBitcoin;
+using NLightning.Domain.Crypto;
+using NLightning.Domain.Crypto.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Tlv;
 
@@ -15,13 +16,13 @@ public class BlindedPathTlv : BaseTlv
     /// <summary>
     /// The blinded path key
     /// </summary>
-    public PubKey PathKey { get; }
+    public CompactPubKey PathKey { get; }
 
-    public BlindedPathTlv(PubKey pathKey) : base(TlvConstants.BlindedPath)
+    public BlindedPathTlv(CompactPubKey pathKey) : base(TlvConstants.BlindedPath)
     {
         PathKey = pathKey;
 
-        Value = PathKey.ToBytes();
+        Value = PathKey.CompactBytes;
         Length = Value.Length;
     }
 }

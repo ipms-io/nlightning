@@ -1,8 +1,8 @@
 using System.Net.Sockets;
-using NBitcoin;
 
 namespace NLightning.Infrastructure.Node.Interfaces;
 
+using Domain.Crypto.ValueObjects;
 using Protocol.Models;
 
 /// <summary>
@@ -28,6 +28,6 @@ public interface IPeerManager
     /// <summary>
     /// Disconnects a peer.
     /// </summary>
-    /// <param name="pubKey">Pubkey of the peer</param>
-    void DisconnectPeer(PubKey pubKey);
+    /// <param name="compactPubKey" cref="CompactPubKey">CompactPubKey of the peer</param>
+    void DisconnectPeer(CompactPubKey compactPubKey);
 }

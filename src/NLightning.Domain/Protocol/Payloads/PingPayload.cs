@@ -16,7 +16,7 @@ public class PingPayload : IMessagePayload
     /// <summary>
     /// The maximum length of the ignored bytes.
     /// </summary>
-    private const ushort MAX_LENGTH = 65531;
+    private const ushort MaxLength = 1000;
 
     /// <summary>
     /// The number of bytes to send in the pong message.
@@ -37,8 +37,8 @@ public class PingPayload : IMessagePayload
     {
         var randomGenerator = new Random();
         // Get number of bytes at random between HashConstants.SHA256_HASH_LEN and ushort.MaxValue
-        NumPongBytes = (ushort)randomGenerator.Next(byte.MaxValue, MAX_LENGTH);
-        BytesLength = (ushort)randomGenerator.Next(HashConstants.SHA256_HASH_LEN, 4 * HashConstants.SHA256_HASH_LEN);
+        NumPongBytes = (ushort)randomGenerator.Next(byte.MaxValue, MaxLength);
+        BytesLength = (ushort)randomGenerator.Next(CryptoConstants.Sha256HashLen, 4 * CryptoConstants.Sha256HashLen);
 
         Ignored = new byte[BytesLength];
         randomGenerator.NextBytes(Ignored);

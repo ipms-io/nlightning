@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using NLightning.Domain.Channels.ValueObjects;
 
 namespace NLightning.Domain.Exceptions;
 

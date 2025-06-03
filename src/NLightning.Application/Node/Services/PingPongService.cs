@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
-using NLightning.Application.Protocol.Factories;
 using NLightning.Domain.Exceptions;
 using NLightning.Domain.Node.Options;
+using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Domain.Protocol.Messages;
 using NLightning.Domain.Protocol.Messages.Interfaces;
 using NLightning.Domain.Protocol.Services;
@@ -33,7 +33,7 @@ internal class PingPongService : IPingPongService
     {
         _messageFactory = messageFactory;
         _nodeOptions = nodeOptions.Value;
-        _pingMessage = (PingMessage)messageFactory.CreatePingMessage();
+        _pingMessage = messageFactory.CreatePingMessage();
     }
 
     /// <inheritdoc />
@@ -68,7 +68,7 @@ internal class PingPongService : IPingPongService
             await Task.Delay(_random.Next(30_000, 300_000), cancellationToken);
 
             _pongReceivedTaskSource = new TaskCompletionSource<bool>();
-            _pingMessage = (PingMessage)_messageFactory.CreatePingMessage();
+            _pingMessage = _messageFactory.CreatePingMessage();
         }
     }
 

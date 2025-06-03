@@ -17,19 +17,19 @@ public static class TxCompleteValidator
             throw new InvalidOperationException("The peer's paid feerate does not meet or exceed the agreed feerate.");
         }
 
-        if (currentInputCount > InteractiveTransactionConstants.MAX_INPUTS_ALLOWED)
+        if (currentInputCount > InteractiveTransactionConstants.MaxInputsAllowed)
         {
-            throw new InvalidOperationException($"There are more than {InteractiveTransactionConstants.MAX_INPUTS_ALLOWED} inputs.");
+            throw new InvalidOperationException($"There are more than {InteractiveTransactionConstants.MaxInputsAllowed} inputs.");
         }
 
-        if (currentOutputCount > InteractiveTransactionConstants.MAX_OUTPUTS_ALLOWED)
+        if (currentOutputCount > InteractiveTransactionConstants.MaxOutputsAllowed)
         {
-            throw new InvalidOperationException($"There are more than {InteractiveTransactionConstants.MAX_OUTPUTS_ALLOWED} outputs.");
+            throw new InvalidOperationException($"There are more than {InteractiveTransactionConstants.MaxOutputsAllowed} outputs.");
         }
 
-        if (estimatedTxWeight > InteractiveTransactionConstants.MAX_STANDARD_TX_WEIGHT)
+        if (estimatedTxWeight > InteractiveTransactionConstants.MaxStandardTxWeight)
         {
-            throw new InvalidOperationException($"The estimated weight of the transaction is greater than {InteractiveTransactionConstants.MAX_STANDARD_TX_WEIGHT}.");
+            throw new InvalidOperationException($"The estimated weight of the transaction is greater than {InteractiveTransactionConstants.MaxStandardTxWeight}.");
         }
     }
 }

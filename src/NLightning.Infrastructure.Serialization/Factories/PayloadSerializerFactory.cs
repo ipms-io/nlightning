@@ -1,10 +1,10 @@
+using NLightning.Domain.Serialization.Interfaces;
+
 namespace NLightning.Infrastructure.Serialization.Factories;
 
 using Domain.Protocol.Constants;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Payloads.Interfaces;
-using Domain.Serialization.Factories;
-using Domain.Serialization.Payloads;
 using Interfaces;
 using Payloads;
 
@@ -38,6 +38,8 @@ public class PayloadSerializerFactory : IPayloadSerializerFactory
 
     private void RegisterSerializers()
     {
+        _serializers.Add(typeof(AcceptChannel1Payload),
+                         new AcceptChannel1PayloadSerializer(_valueObjectSerializerFactory));
         _serializers.Add(typeof(AcceptChannel2Payload),
                          new AcceptChannel2PayloadSerializer(_valueObjectSerializerFactory));
         _serializers.Add(typeof(ChannelReadyPayload), new ChannelReadyPayloadSerializer(_valueObjectSerializerFactory));
@@ -48,7 +50,12 @@ public class PayloadSerializerFactory : IPayloadSerializerFactory
         _serializers.Add(typeof(CommitmentSignedPayload),
                          new CommitmentSignedPayloadSerializer(_valueObjectSerializerFactory));
         _serializers.Add(typeof(ErrorPayload), new ErrorPayloadSerializer(_valueObjectSerializerFactory));
+        _serializers.Add(typeof(FundingCreatedPayload),
+                         new FundingCreatedPayloadSerializer(_valueObjectSerializerFactory));
+        _serializers.Add(typeof(FundingSignedPayload),
+                         new FundingSignedPayloadSerializer(_valueObjectSerializerFactory));
         _serializers.Add(typeof(InitPayload), new InitPayloadSerializer(_featureSetSerializer));
+        _serializers.Add(typeof(OpenChannel1Payload), new OpenChannel1PayloadSerializer(_valueObjectSerializerFactory));
         _serializers.Add(typeof(OpenChannel2Payload), new OpenChannel2PayloadSerializer(_valueObjectSerializerFactory));
         _serializers.Add(typeof(PingPayload), new PingPayloadSerializer());
         _serializers.Add(typeof(PongPayload), new PongPayloadSerializer());
@@ -79,13 +86,17 @@ public class PayloadSerializerFactory : IPayloadSerializerFactory
 
     private void RegisterTypeDictionary()
     {
+        _messageTypeDictionary.Add(MessageTypes.AcceptChannel, typeof(AcceptChannel1Payload));
         _messageTypeDictionary.Add(MessageTypes.AcceptChannel2, typeof(AcceptChannel2Payload));
         _messageTypeDictionary.Add(MessageTypes.ChannelReady, typeof(ChannelReadyPayload));
         _messageTypeDictionary.Add(MessageTypes.ChannelReestablish, typeof(ChannelReestablishPayload));
         _messageTypeDictionary.Add(MessageTypes.ClosingSigned, typeof(ClosingSignedPayload));
         _messageTypeDictionary.Add(MessageTypes.CommitmentSigned, typeof(CommitmentSignedPayload));
         _messageTypeDictionary.Add(MessageTypes.Error, typeof(ErrorPayload));
+        _messageTypeDictionary.Add(MessageTypes.FundingCreated, typeof(FundingCreatedPayload));
+        _messageTypeDictionary.Add(MessageTypes.FundingSigned, typeof(FundingSignedPayload));
         _messageTypeDictionary.Add(MessageTypes.Init, typeof(InitPayload));
+        _messageTypeDictionary.Add(MessageTypes.OpenChannel, typeof(OpenChannel1Payload));
         _messageTypeDictionary.Add(MessageTypes.OpenChannel2, typeof(OpenChannel2Payload));
         _messageTypeDictionary.Add(MessageTypes.Ping, typeof(PingPayload));
         _messageTypeDictionary.Add(MessageTypes.Pong, typeof(PongPayload));

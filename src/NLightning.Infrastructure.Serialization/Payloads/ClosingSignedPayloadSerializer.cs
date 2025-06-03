@@ -1,18 +1,17 @@
 using System.Buffers;
 using System.Runtime.Serialization;
-using NBitcoin.Crypto;
-using NLightning.Domain.Serialization.Payloads;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
+using Domain.Channels.ValueObjects;
+using Domain.Crypto.ValueObjects;
 using Converters;
 using Domain.Crypto.Constants;
 using Domain.Enums;
 using Domain.Money;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Payloads.Interfaces;
-using Domain.Serialization.Factories;
-using Domain.ValueObjects;
 using Exceptions;
 
 public class ClosingSignedPayloadSerializer : IPayloadSerializer<ClosingSignedPayload>
@@ -37,12 +36,12 @@ public class ClosingSignedPayloadSerializer : IPayloadSerializer<ClosingSignedPa
 
         // Serialize other types
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(closingSignedPayload.FeeAmount.Satoshi));
-        await stream.WriteAsync(closingSignedPayload.Signature.ToCompact());
+        await stream.WriteAsync(closingSignedPayload.Signature);
     }
 
     public async Task<ClosingSignedPayload?> DeserializeAsync(Stream stream)
     {
-        var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.MAX_SIGNATURE_SIZE);
+        var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.MaxSignatureSize);
 
         try
         {
@@ -56,11 +55,8 @@ public class ClosingSignedPayloadSerializer : IPayloadSerializer<ClosingSignedPa
             var feeSatoshis = LightningMoney.FromUnit(EndianBitConverter.ToUInt64BigEndian(buffer[..sizeof(ulong)]),
                                                       LightningMoneyUnit.Satoshi);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.MAX_SIGNATURE_SIZE]);
-            if (!ECDSASignature.TryParseFromCompact(buffer[..CryptoConstants.MAX_SIGNATURE_SIZE], out var signature))
-            {
-                throw new Exception("Unable to parse signature");
-            }
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.MaxSignatureSize]);
+            var signature = new DerSignature(buffer[..CryptoConstants.MaxSignatureSize]);
 
             return new ClosingSignedPayload(channelId, feeSatoshis, signature);
         }

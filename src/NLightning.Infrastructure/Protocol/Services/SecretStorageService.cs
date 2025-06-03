@@ -1,12 +1,14 @@
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using NLightning.Domain.Crypto.Constants;
+using NLightning.Domain.Crypto.ValueObjects;
+using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Infrastructure.Protocol.Services;
 
 using Crypto.Factories;
 using Crypto.Hashes;
 using Crypto.Interfaces;
-using Domain.Protocol.Services;
 using Models;
 
 /// <summary>
@@ -14,23 +16,21 @@ using Models;
 /// </summary>
 public class SecretStorageService : ISecretStorageService
 {
-    public const int SECRET_SIZE = 32;
-
     private readonly StoredSecret?[] _knownSecrets = new StoredSecret?[49];
     private readonly ICryptoProvider _cryptoProvider = CryptoFactory.GetCryptoProvider();
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentException">Thrown when the secret is not the correct size</exception>
-    public bool InsertSecret(ReadOnlySpan<byte> secret, ulong index)
+    public bool InsertSecret(Secret secret, ulong index)
     {
-        if (secret is not { Length: SECRET_SIZE })
-            throw new ArgumentException($"Secret must be {SECRET_SIZE} bytes", nameof(secret));
+        if (secret.Value.Length != CryptoConstants.SecretLen)
+            throw new ArgumentException($"Secret must be {CryptoConstants.SecretLen} bytes", nameof(secret));
 
-        // Find bucket for this secret
+        // Find the bucket for this secret
         var bucket = GetBucketIndex(index);
 
-        var storedSecret = new byte[SECRET_SIZE];
-        var derivedSecret = new byte[SECRET_SIZE];
+        var storedSecret = new byte[CryptoConstants.SecretLen];
+        var derivedSecret = new byte[CryptoConstants.SecretLen];
         // Verify this secret can derive all previously known secrets
         for (var b = 0; b < bucket; b++)
         {
@@ -40,19 +40,19 @@ public class SecretStorageService : ISecretStorageService
             DeriveSecret(secret, bucket, _knownSecrets[b]!.Index, derivedSecret);
 
             // Compare with stored secret (copied from secure memory)
-            Marshal.Copy(_knownSecrets[b]!.SecretPtr, storedSecret, 0, SECRET_SIZE);
+            Marshal.Copy(_knownSecrets[b]!.SecretPtr, storedSecret, 0, CryptoConstants.SecretLen);
 
             if (!CryptographicOperations.FixedTimeEquals(derivedSecret, storedSecret))
             {
                 // Securely wipe the temporary copy
-                _cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(storedSecret, 0), SECRET_SIZE);
-                _cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(derivedSecret, 0), SECRET_SIZE);
+                _cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(storedSecret, 0), CryptoConstants.SecretLen);
+                _cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(derivedSecret, 0), CryptoConstants.SecretLen);
                 return false; // Secret verification failed
             }
 
             // Securely wipe the temporary copies
-            _cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(storedSecret, 0), SECRET_SIZE);
-            _cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(derivedSecret, 0), SECRET_SIZE);
+            _cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(storedSecret, 0), CryptoConstants.SecretLen);
+            _cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(derivedSecret, 0), CryptoConstants.SecretLen);
         }
 
         if (_knownSecrets[bucket] != null)
@@ -62,13 +62,13 @@ public class SecretStorageService : ISecretStorageService
         }
 
         // Allocate secure memory for the new secret
-        var securePtr = _cryptoProvider.MemoryAlloc(SECRET_SIZE);
+        var securePtr = _cryptoProvider.MemoryAlloc(CryptoConstants.SecretLen);
 
         // Lock memory to prevent swapping
-        _cryptoProvider.MemoryLock(securePtr, SECRET_SIZE);
+        _cryptoProvider.MemoryLock(securePtr, CryptoConstants.SecretLen);
 
         // Copy secret to secure memory
-        Marshal.Copy(secret.ToArray(), 0, securePtr, SECRET_SIZE);
+        Marshal.Copy(secret, 0, securePtr, CryptoConstants.SecretLen);
 
         // Store in the appropriate bucket
         _knownSecrets[bucket] = new StoredSecret(index, securePtr);
@@ -78,8 +78,9 @@ public class SecretStorageService : ISecretStorageService
 
     /// <inheritdoc/>
     /// <exception cref="InvalidOperationException">Thrown when the secret cannot be derived</exception>
-    public void DeriveOldSecret(ulong index, Span<byte> derivedSecret)
+    public Secret DeriveOldSecret(ulong index)
     {
+        Span<byte> derivedSecret = stackalloc byte[CryptoConstants.SecretLen];
         // Try to find a base secret that can derive this one
         for (var b = 0; b < _knownSecrets.Length; b++)
         {
@@ -94,15 +95,16 @@ public class SecretStorageService : ISecretStorageService
             }
 
             // Found a base secret that can derive the requested one
-            var baseSecret = new byte[SECRET_SIZE];
-            Marshal.Copy(_knownSecrets[b]!.SecretPtr, baseSecret, 0, SECRET_SIZE);
+            var baseSecret = new byte[CryptoConstants.Sha256HashLen];
+            Marshal.Copy(_knownSecrets[b]!.SecretPtr, baseSecret, 0, CryptoConstants.Sha256HashLen);
 
             DeriveSecret(baseSecret, b, index, derivedSecret);
 
             // Securely wipe the temporary base secret
-            _cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(baseSecret, 0), SECRET_SIZE);
+            _cryptoProvider
+                .MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(baseSecret, 0), CryptoConstants.Sha256HashLen);
 
-            return; // Success
+            return new Secret(derivedSecret.ToArray()); // Success
         }
 
         throw new InvalidOperationException($"Cannot derive secret for index {index}");
@@ -149,10 +151,10 @@ public class SecretStorageService : ISecretStorageService
             return;
 
         // Wipe memory before freeing
-        _cryptoProvider.MemoryZero(secretPtr, SECRET_SIZE);
+        _cryptoProvider.MemoryZero(secretPtr, CryptoConstants.Sha256HashLen);
 
         // Unlock memory
-        _cryptoProvider.MemoryUnlock(secretPtr, SECRET_SIZE);
+        _cryptoProvider.MemoryUnlock(secretPtr, CryptoConstants.Sha256HashLen);
 
         // Free memory
         _cryptoProvider.MemoryFree(secretPtr);

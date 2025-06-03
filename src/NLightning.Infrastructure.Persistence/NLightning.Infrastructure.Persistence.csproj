@@ -29,5 +29,9 @@
 
     <PackageReference Include="EFCore.NamingConventions" Version="8.0.3"/>
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NLightning.Domain\NLightning.Domain.csproj" />
+  </ItemGroup>
   
 </Project>

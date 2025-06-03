@@ -9,7 +9,7 @@ public class RequireConfirmedInputsTlvConverterTests
     public void Given_RequireConfirmedInputsTlvConverter_When_ConvertingToBaseTlvAndBack_ResultIsCorrect()
     {
         // Arrange
-        var expectedBaseTlv = new BaseTlv(2);
+        var expectedBaseTlv = new BaseTlv(2, []);
         var expectedRequireConfirmedInputsTlv = new RequireConfirmedInputsTlv();
         var converter = new RequireConfirmedInputsTlvConverter();
 

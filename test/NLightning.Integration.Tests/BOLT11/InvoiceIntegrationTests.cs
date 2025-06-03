@@ -1,5 +1,7 @@
 using System.Text;
 using NBitcoin;
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Protocol.ValueObjects;
 
 namespace NLightning.Integration.Tests.BOLT11;
 
@@ -10,7 +12,6 @@ using Domain.Models;
 using Domain.Node;
 using Domain.ValueObjects;
 using Infrastructure.Crypto.Hashes;
-using Network = Domain.ValueObjects.Network;
 
 public class InvoiceIntegrationTests
 {
@@ -29,7 +30,7 @@ public class InvoiceIntegrationTests
             var invoice = Invoice.Decode(testInvoice.InvoiceString, testInvoice.ExpectedNetwork);
 
             // Assert
-            Assert.Equal(testInvoice.ExpectedNetwork, invoice.Network);
+            Assert.Equal(testInvoice.ExpectedNetwork, invoice.BitcoinNetwork);
             Assert.Equal(testInvoice.ExpectedAmountMilliSats, invoice.Amount.MilliSatoshi);
             Assert.Equal(testInvoice.ExpectedTimestamp, invoice.Timestamp);
 
@@ -62,7 +63,7 @@ public class InvoiceIntegrationTests
 
                         for (var i = 0; i < expectedRoutingInfo.Count; i++)
                         {
-                            Assert.Equal(expectedRoutingInfo[i].PubKey, invoice.RoutingInfos[i].PubKey);
+                            Assert.Equal(expectedRoutingInfo[i].CompactPubKey, invoice.RoutingInfos[i].CompactPubKey);
                             Assert.Equal(expectedRoutingInfo[i].ShortChannelId, invoice.RoutingInfos[i].ShortChannelId);
                             Assert.Equal(expectedRoutingInfo[i].FeeBaseMsat, invoice.RoutingInfos[i].FeeBaseMsat);
                             Assert.Equal(expectedRoutingInfo[i].FeeProportionalMillionths, invoice.RoutingInfos[i].FeeProportionalMillionths);
@@ -175,7 +176,7 @@ public class InvoiceIntegrationTests
     private class TestInvoice(string? invoiceString)
     {
         public readonly string? InvoiceString = invoiceString;
-        public Network? ExpectedNetwork;
+        public BitcoinNetwork? ExpectedNetwork;
         public ulong? ExpectedAmountMilliSats;
         public long? ExpectedTimestamp;
         public readonly Dictionary<TaggedFieldTypes, object> ExpectedTaggedFields = [];
@@ -201,7 +202,7 @@ public class InvoiceIntegrationTests
                     throw new InvalidOperationException("network line without invoice line");
                 }
 
-                currentInvoice.ExpectedNetwork = new Network(line[8..]);
+                currentInvoice.ExpectedNetwork = new BitcoinNetwork(line[8..]);
             }
             else if (line.StartsWith("amount="))
             {
@@ -295,16 +296,16 @@ public class InvoiceIntegrationTests
                 }
 
                 var network = NBitcoin.Network.Main;
-                if (currentInvoice.ExpectedNetwork == null || currentInvoice.ExpectedNetwork == Network.SIGNET)
+                if (currentInvoice.ExpectedNetwork == null || currentInvoice.ExpectedNetwork == BitcoinNetwork.Signet)
                 {
                     throw new Exception("Invalid network");
                 }
 
-                if (currentInvoice.ExpectedNetwork == Network.TESTNET)
+                if (currentInvoice.ExpectedNetwork == BitcoinNetwork.Testnet)
                 {
                     network = NBitcoin.Network.TestNet;
                 }
-                else if (currentInvoice.ExpectedNetwork == Network.REGTEST)
+                else if (currentInvoice.ExpectedNetwork == BitcoinNetwork.Regtest)
                 {
                     network = NBitcoin.Network.RegTest;
                 }

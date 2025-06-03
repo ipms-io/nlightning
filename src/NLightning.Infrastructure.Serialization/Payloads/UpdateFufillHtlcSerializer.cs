@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Runtime.Serialization;
-using NLightning.Domain.Serialization.Payloads;
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
@@ -8,7 +9,6 @@ using Converters;
 using Domain.Crypto.Constants;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Payloads.Interfaces;
-using Domain.Serialization.Factories;
 using Domain.ValueObjects;
 using Exceptions;
 
@@ -51,7 +51,7 @@ public class UpdateFulfillHtlcPayloadSerializer : IPayloadSerializer<UpdateFulfi
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
             var id = EndianBitConverter.ToUInt64BigEndian(buffer[..sizeof(ulong)]);
 
-            var paymentPreimage = new byte[CryptoConstants.SHA256_HASH_LEN];
+            var paymentPreimage = new byte[CryptoConstants.Sha256HashLen];
             await stream.ReadExactlyAsync(paymentPreimage);
 
             return new UpdateFulfillHtlcPayload(channelId, id, paymentPreimage);

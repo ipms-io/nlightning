@@ -67,6 +67,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NLightning.Infrastructure.Bitcoin\NLightning.Infrastructure.Bitcoin.csproj" />
     <ProjectReference Include="..\NLightning.Infrastructure\NLightning.Infrastructure.csproj" />
   </ItemGroup>
 

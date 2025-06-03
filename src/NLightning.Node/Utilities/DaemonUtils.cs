@@ -274,9 +274,9 @@ public partial class DaemonUtils
     public static string GetPidFilePath(string network)
     {
         var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        var networkDir = Path.Combine(homeDir, DaemonConstants.DAEMON_FOLDER, network);
+        var networkDir = Path.Combine(homeDir, DaemonConstants.DaemonFolder, network);
         Directory.CreateDirectory(networkDir); // Ensure directory exists
-        return Path.Combine(networkDir, DaemonConstants.PID_FILE);
+        return Path.Combine(networkDir, DaemonConstants.PidFile);
     }
 
     /// <summary>

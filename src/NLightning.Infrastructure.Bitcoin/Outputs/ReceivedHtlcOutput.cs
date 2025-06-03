@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using NBitcoin;
+using NLightning.Infrastructure.Crypto.Hashes;
 
 namespace NLightning.Infrastructure.Bitcoin.Outputs;
 
@@ -16,12 +17,11 @@ public class ReceivedHtlcOutput : BaseHtlcOutput
     public override ScriptType ScriptType => ScriptType.P2WSH;
 
     [SetsRequiredMembers]
-    public ReceivedHtlcOutput(LightningMoney anchorAmount, PubKey revocationPubKey, PubKey remoteHtlcPubKey,
-                              PubKey localHtlcPubKey, ReadOnlyMemory<byte> paymentHash, LightningMoney amount,
-                              ulong cltvExpiry)
-        : base(GenerateToLocalHtlcScript(anchorAmount, revocationPubKey, remoteHtlcPubKey, localHtlcPubKey, paymentHash,
-                                         cltvExpiry),
-               amount)
+    public ReceivedHtlcOutput(LightningMoney amount, ulong cltvExpiry, bool hasAnchor, PubKey localHtlcPubKey, 
+                              ReadOnlyMemory<byte> paymentHash, PubKey remoteHtlcPubKey, PubKey revocationPubKey)
+        : base(amount,
+               GenerateToLocalHtlcScript(hasAnchor, cltvExpiry, localHtlcPubKey, paymentHash, remoteHtlcPubKey,
+                                         revocationPubKey))
     {
         RevocationPubKey = revocationPubKey;
         RemoteHtlcPubKey = remoteHtlcPubKey;
@@ -30,13 +30,13 @@ public class ReceivedHtlcOutput : BaseHtlcOutput
         CltvExpiry = cltvExpiry;
     }
 
-    private static Script GenerateToLocalHtlcScript(LightningMoney anchorAmount, PubKey revocationPubKey,
-                                                    PubKey remoteHtlcPubKey, PubKey localHtlcPubKey,
-                                                    ReadOnlyMemory<byte> paymentHash, ulong cltvExpiry)
+    private static Script GenerateToLocalHtlcScript(bool hasAnchor, ulong cltvExpiry, PubKey localHtlcPubKey, 
+                                                    ReadOnlyMemory<byte> paymentHash, PubKey remoteHtlcPubKey,
+                                                    PubKey revocationPubKey)
     {
         // Hash the revocationPubKey
         using var sha256 = new Sha256();
-        Span<byte> revocationPubKeySha256Hash = stackalloc byte[CryptoConstants.SHA256_HASH_LEN];
+        Span<byte> revocationPubKeySha256Hash = stackalloc byte[CryptoConstants.Sha256HashLen];
         sha256.AppendData(revocationPubKey.ToBytes());
         sha256.GetHashAndReset(revocationPubKeySha256Hash);
         var revocationPubKeyHashRipemd160 = Ripemd160.Hash(revocationPubKeySha256Hash);
@@ -75,7 +75,7 @@ public class ReceivedHtlcOutput : BaseHtlcOutput
             OpcodeType.OP_ENDIF
         ];
 
-        if (!anchorAmount.IsZero)
+        if (hasAnchor)
         {
             ops.AddRange([
                 OpcodeType.OP_1,

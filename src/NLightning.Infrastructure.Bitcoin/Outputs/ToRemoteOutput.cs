@@ -17,8 +17,8 @@ public class ToRemoteOutput : BaseOutput
 
     public PubKey RemotePubKey { get; }
 
-    public ToRemoteOutput(bool hasAnchorOutputs, PubKey remotePubKey, LightningMoney amount)
-        : base(GenerateToRemoteScript(hasAnchorOutputs, remotePubKey), amount)
+    public ToRemoteOutput(LightningMoney amount, bool hasAnchorOutputs, PubKey remotePubKey)
+        : base(amount, GenerateToRemoteScript(hasAnchorOutputs, remotePubKey))
     {
         ArgumentNullException.ThrowIfNull(remotePubKey);
 

@@ -1,4 +1,5 @@
 using NBitcoin.Crypto;
+using NLightning.Domain.Channels.ValueObjects;
 
 namespace NLightning.Infrastructure.Serialization.Tests.Messages;
 

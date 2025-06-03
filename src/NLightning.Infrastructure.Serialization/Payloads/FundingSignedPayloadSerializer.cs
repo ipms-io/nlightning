@@ -1,15 +1,14 @@
 using System.Buffers;
 using System.Runtime.Serialization;
-using NBitcoin.Crypto;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
+using Domain.Channels.ValueObjects;
+using Domain.Crypto.ValueObjects;
 using Domain.Crypto.Constants;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Payloads.Interfaces;
-using Domain.Serialization.Factories;
-using Domain.Serialization.Payloads;
-using Domain.ValueObjects;
 using Exceptions;
 
 public class FundingSignedPayloadSerializer : IPayloadSerializer<FundingSignedPayload>
@@ -32,12 +31,12 @@ public class FundingSignedPayloadSerializer : IPayloadSerializer<FundingSignedPa
             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(fundingSignedPayload.ChannelId, stream);
 
-        await stream.WriteAsync(fundingSignedPayload.Signature.ToCompact());
+        await stream.WriteAsync(fundingSignedPayload.Signature);
     }
 
     public async Task<FundingSignedPayload?> DeserializeAsync(Stream stream)
     {
-        var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.MAX_SIGNATURE_SIZE);
+        var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.MaxSignatureSize);
 
         try
         {
@@ -47,11 +46,8 @@ public class FundingSignedPayloadSerializer : IPayloadSerializer<FundingSignedPa
                 ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.MAX_SIGNATURE_SIZE]);
-            if (!ECDSASignature.TryParseFromCompact(buffer[..CryptoConstants.MAX_SIGNATURE_SIZE], out var signature))
-            {
-                throw new Exception("Unable to parse signature");
-            }
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.MaxSignatureSize]);
+            var signature = new DerSignature(buffer[..CryptoConstants.MaxSignatureSize]);
 
             return new FundingSignedPayload(channelId, signature);
         }

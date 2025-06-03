@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using NBitcoin;
 using NLightning.Application.Node.Factories;
 using NLightning.Application.Protocol.Factories;
+using NLightning.Infrastructure.Node.Factories;
 using NLightning.Tests.Utils;
 using ServiceStack;
 using ServiceStack.Text;
@@ -56,7 +57,7 @@ public class AbcNetworkTests
         {
             Features = new FeatureOptions
             {
-                ChainHashes = [ChainConstants.REGTEST],
+                ChainHashes = [ChainConstants.Regtest],
                 DataLossProtect = FeatureSupport.Optional,
                 StaticRemoteKey = FeatureSupport.Optional,
                 PaymentSecret = FeatureSupport.Optional
@@ -121,7 +122,7 @@ public class AbcNetworkTests
             {
                 Features = new FeatureOptions
                 {
-                    ChainHashes = [ChainConstants.REGTEST],
+                    ChainHashes = [ChainConstants.Regtest],
                     DataLossProtect = FeatureSupport.Optional,
                     StaticRemoteKey = FeatureSupport.Optional,
                     PaymentSecret = FeatureSupport.Optional

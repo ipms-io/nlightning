@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
 {
-    [DbContext(typeof(NLightningContext))]
+    [DbContext(typeof(NLightningDbContext))]
     partial class NLightningContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

@@ -1,9 +1,9 @@
-using NBitcoin;
+using NLightning.Domain.Bitcoin.ValueObjects;
 
 namespace NLightning.Domain.Bitcoin.Transactions;
 
 public interface ITransaction
 {
-    uint256 TxId { get; }
+    TxId TxId { get; }
     bool IsValid { get; }
 }

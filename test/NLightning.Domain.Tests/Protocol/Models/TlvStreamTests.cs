@@ -1,3 +1,5 @@
+using NLightning.Domain.Protocol.ValueObjects;
+
 namespace NLightning.Domain.Tests.Protocol.Models;
 
 using Domain.Protocol.Models;

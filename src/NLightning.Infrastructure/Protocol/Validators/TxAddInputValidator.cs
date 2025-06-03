@@ -37,9 +37,9 @@ public static class TxAddInputValidator
             throw new InvalidOperationException("The PrevTx and PrevTxVout are identical to a previously added input.");
         }
 
-        if (currentInputCount >= InteractiveTransactionConstants.MAX_INPUTS_ALLOWED)
+        if (currentInputCount >= InteractiveTransactionConstants.MaxInputsAllowed)
         {
-            throw new InvalidOperationException($"Cannot receive more than {InteractiveTransactionConstants.MAX_INPUTS_ALLOWED} tx_add_input messages during this negotiation.");
+            throw new InvalidOperationException($"Cannot receive more than {InteractiveTransactionConstants.MaxInputsAllowed} tx_add_input messages during this negotiation.");
         }
     }
 

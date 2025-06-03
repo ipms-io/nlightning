@@ -1,7 +1,7 @@
 namespace NLightning.Infrastructure.Tests.Protocol.Services;
 
+using Domain.Serialization.Interfaces;
 using Domain.Protocol.Messages.Interfaces;
-using Domain.Serialization.Messages;
 using Domain.Transport;
 using Infrastructure.Protocol.Services;
 
@@ -27,7 +27,7 @@ public class MessageServiceTests
 
         // Then
         transportServiceMock.Verify(t => t.WriteMessageAsync(messageMock.Object, It.IsAny<CancellationToken>()),
-                                   Times.Once());
+                                    Times.Once());
     }
 
     [Fact]

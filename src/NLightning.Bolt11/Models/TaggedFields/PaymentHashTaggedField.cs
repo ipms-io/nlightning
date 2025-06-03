@@ -1,8 +1,8 @@
 using NBitcoin;
+using NLightning.Domain.Utils;
 
 namespace NLightning.Bolt11.Models.TaggedFields;
 
-using Common.Utils;
 using Constants;
 using Enums;
 using Interfaces;
@@ -18,7 +18,7 @@ internal sealed class PaymentHashTaggedField : ITaggedField
 {
     public TaggedFieldTypes Type => TaggedFieldTypes.PaymentHash;
     internal uint256 Value { get; }
-    public short Length => TaggedFieldConstants.HASH_LENGTH;
+    public short Length => TaggedFieldConstants.HashLength;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PaymentHashTaggedField"/> class.
@@ -57,13 +57,13 @@ internal sealed class PaymentHashTaggedField : ITaggedField
     /// <exception cref="ArgumentException">Thrown when the length is invalid</exception>
     internal static PaymentHashTaggedField FromBitReader(BitReader bitReader, short length)
     {
-        if (length != TaggedFieldConstants.HASH_LENGTH)
+        if (length != TaggedFieldConstants.HashLength)
         {
-            throw new ArgumentException($"Invalid length for PaymentHashTaggedField. Expected {TaggedFieldConstants.HASH_LENGTH}, but got {length}");
+            throw new ArgumentException($"Invalid length for PaymentHashTaggedField. Expected {TaggedFieldConstants.HashLength}, but got {length}");
         }
 
         // Read the data from the BitReader
-        var data = new byte[(TaggedFieldConstants.HASH_LENGTH * 5 + 7) / 8];
+        var data = new byte[(TaggedFieldConstants.HashLength * 5 + 7) / 8];
         bitReader.ReadBits(data, length * 5);
         data = data[..^1];
 

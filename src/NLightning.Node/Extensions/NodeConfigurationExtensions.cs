@@ -162,6 +162,10 @@ public static class NodeConfigurationExtensions
                    "CacheExpiration": "5m",
                    "RateMultiplier": 1000,
                    "CacheFile": "fee_estimation_cache.bin"
+                 },
+                 "Database": {
+                   "Provider": "Sqlite",
+                   "ConnectionString": "Data Source=nltg.db;Cache=Shared",
                  }
                }
                """;

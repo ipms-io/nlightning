@@ -11,7 +11,7 @@ using NLightning.Infrastructure.Persistence.Contexts;
 
 namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
 {
-    [DbContext(typeof(NLightningContext))]
+    [DbContext(typeof(NLightningDbContext))]
     [Migration("20240322171304_Init")]
     partial class Init
     {

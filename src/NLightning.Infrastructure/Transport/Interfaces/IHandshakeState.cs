@@ -1,5 +1,6 @@
 namespace NLightning.Infrastructure.Transport.Interfaces;
 
+using Domain.Crypto.ValueObjects;
 using Domain.Transport;
 
 /// <summary>
@@ -7,7 +8,7 @@ using Domain.Transport;
 /// </summary>
 internal interface IHandshakeState : IDisposable
 {
-    NBitcoin.PubKey? RemoteStaticPublicKey { get; }
+    CompactPubKey? RemoteStaticPublicKey { get; }
 
     /// <summary>
     /// Performs the next step of the handshake, encrypts the <paramref name="payload"/>, and writes the result into <paramref name="messageBuffer"/>.

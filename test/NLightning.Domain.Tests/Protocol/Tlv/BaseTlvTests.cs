@@ -1,3 +1,5 @@
+using NLightning.Domain.Protocol.ValueObjects;
+
 namespace NLightning.Domain.Tests.Protocol.Tlv;
 
 using Domain.Protocol.Tlv;

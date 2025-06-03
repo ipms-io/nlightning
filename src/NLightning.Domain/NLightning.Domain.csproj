@@ -36,10 +36,6 @@
   <PropertyGroup Condition="$(Configuration.Contains('Release'))">
     <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NBitcoin" Version="8.0.13" />
-  </ItemGroup>
   
   <ItemGroup>
     <None Include="..\..\images\logo.png">
@@ -57,7 +53,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="Node\Models\" />
+    <Folder Include="Channels\Managers\" />
+    <Folder Include="Transactions\ValueObjects\" />
   </ItemGroup>
 
 </Project>

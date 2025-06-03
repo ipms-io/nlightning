@@ -13,7 +13,7 @@ public static class HChaCha20
 
     public static void CreateInitialState(ReadOnlySpan<byte> key, ReadOnlySpan<byte> nonce, Span<uint> state)
     {
-        if (state.Length != XChaCha20Constants.STATE_SIZE)
+        if (state.Length != XChaCha20Constants.StateSize)
             throw new ArgumentException("State must be 16 bytes long", nameof(state));
 
         // set HChaCha20 constant
@@ -47,7 +47,7 @@ public static class HChaCha20
 
     public static void CreateSubkey(ReadOnlySpan<byte> key, ReadOnlySpan<byte> nonce, Span<byte> subkey)
     {
-        Span<uint> state = stackalloc uint[XChaCha20Constants.STATE_SIZE];
+        Span<uint> state = stackalloc uint[XChaCha20Constants.StateSize];
         CreateInitialState(key, nonce, state);
         PerformRounds(state);
 

@@ -17,14 +17,13 @@ public class FundingOutputTests
         // Given
 
         // When
-        var fundingOutput = new FundingOutput(_localPubKey, _remotePubKey, _amount);
+        var fundingOutput = new FundingOutput(_amount, _localPubKey, _remotePubKey);
 
         // Then
         Assert.Equal(_localPubKey, fundingOutput.LocalPubKey);
         Assert.Equal(_remotePubKey, fundingOutput.RemotePubKey);
         Assert.Equal(_amount, fundingOutput.Amount);
         Assert.Equal(ScriptType.P2WSH, fundingOutput.ScriptType);
-        Assert.NotNull(fundingOutput.RedeemScript);
         Assert.NotNull(fundingOutput.ScriptPubKey);
     }
 
@@ -35,7 +34,7 @@ public class FundingOutputTests
         var remotePubKey = _localPubKey; // Same as localPubKey
 
         // When/Then
-        var exception = Assert.Throws<ArgumentException>(() => new FundingOutput(_localPubKey, remotePubKey, _amount));
+        var exception = Assert.Throws<ArgumentException>(() => new FundingOutput(_amount, _localPubKey, remotePubKey));
         Assert.Contains("Public keys must be different", exception.Message);
     }
 
@@ -46,7 +45,8 @@ public class FundingOutputTests
         var amount = new LightningMoney(0);
 
         // When/Then
-        var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new FundingOutput(_localPubKey, _remotePubKey, amount));
+        var exception =
+            Assert.Throws<ArgumentOutOfRangeException>(() => new FundingOutput(amount, _localPubKey, _remotePubKey));
         Assert.Contains("Funding amount must be greater than zero", exception.Message);
     }
 
@@ -56,15 +56,15 @@ public class FundingOutputTests
         // Given
 
         // When
-        var fundingOutput = new FundingOutput(_localPubKey, _remotePubKey, _amount);
-        var redeemScript = fundingOutput.RedeemScript;
+        var fundingOutput = new FundingOutput(_amount, _localPubKey, _remotePubKey);
+        var redeemScriptString = new Script(fundingOutput.BitcoinScriptPubKey).ToString();
 
         // Then
         // Check that it's a 2-of-2 multisig script
-        Assert.StartsWith("2", redeemScript.ToString());
-        Assert.Contains(_localPubKey.ToHex(), redeemScript.ToString());
-        Assert.Contains(_remotePubKey.ToHex(), redeemScript.ToString());
-        Assert.EndsWith("2 OP_CHECKMULTISIG", redeemScript.ToString());
+        Assert.StartsWith("2", redeemScriptString);
+        Assert.Contains(_localPubKey.ToHex(), redeemScriptString);
+        Assert.Contains(_remotePubKey.ToHex(), redeemScriptString);
+        Assert.EndsWith("2 OP_CHECKMULTISIG", redeemScriptString);
 
         // Check if the script is a P2WSH
         Assert.True(fundingOutput.ScriptPubKey.IsScriptType(ScriptType.P2WSH));
@@ -74,9 +74,9 @@ public class FundingOutputTests
     public void Given_FundingOutput_When_ToCoinCalled_Then_ReturnsCorrectScriptCoin()
     {
         // Given
-        var fundingOutput = new FundingOutput(_localPubKey, _remotePubKey, _amount)
+        var fundingOutput = new FundingOutput(_amount, _localPubKey, _remotePubKey)
         {
-            TxId = uint256.Parse("8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be"),
+            TxId = Convert.FromHexString("8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be"),
             Index = 1
         };
 
@@ -95,8 +95,8 @@ public class FundingOutputTests
     public void Given_TwoFundingOutputs_When_ComparingThem_Then_UsesTransactionOutputComparer()
     {
         // Given
-        var output1 = new FundingOutput(_localPubKey, _remotePubKey, new LightningMoney(1000000));
-        var output2 = new FundingOutput(_localPubKey, _remotePubKey, new LightningMoney(2000000));
+        var output1 = new FundingOutput(new LightningMoney(1000000), _localPubKey, _remotePubKey);
+        var output2 = new FundingOutput(new LightningMoney(2000000), _localPubKey, _remotePubKey);
 
         // When
         var comparison = output1.CompareTo(output2);
@@ -109,12 +109,12 @@ public class FundingOutputTests
     public void Given_DifferentPubKeyOrder_When_ConstructingFundingOutputs_Then_CreatesIdenticalRedeemScripts()
     {
         // Given
-        var fundingOutput1 = new FundingOutput(_localPubKey, _remotePubKey, _amount);
-        var fundingOutput2 = new FundingOutput(_remotePubKey, _localPubKey, _amount);
+        var fundingOutput1 = new FundingOutput(_amount, _localPubKey, _remotePubKey);
+        var fundingOutput2 = new FundingOutput(_amount, _remotePubKey, _localPubKey);
 
         // When/Then
         // The multisig script should order the keys lexicographically, so the scripts should be identical
-        Assert.Equal(fundingOutput1.RedeemScript, fundingOutput2.RedeemScript);
+        Assert.Equal(fundingOutput1.BitcoinScriptPubKey, fundingOutput2.BitcoinScriptPubKey);
         Assert.Equal(fundingOutput1.ScriptPubKey, fundingOutput2.ScriptPubKey);
     }
 }

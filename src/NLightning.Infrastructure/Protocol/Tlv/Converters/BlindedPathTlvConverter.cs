@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using NBitcoin;
 
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
+using Domain.Crypto.ValueObjects;
 using Domain.Protocol.Constants;
 using Domain.Protocol.Tlv;
 using Domain.Protocol.Tlv.Converters;
@@ -11,7 +11,7 @@ public class BlindedPathTlvConverter : ITlvConverter<BlindedPathTlv>
 {
     public BaseTlv ConvertToBase(BlindedPathTlv tlv)
     {
-        tlv.Value = tlv.PathKey.ToBytes();
+        tlv.Value = tlv.PathKey.CompactBytes;
 
         return tlv;
     }
@@ -28,7 +28,7 @@ public class BlindedPathTlvConverter : ITlvConverter<BlindedPathTlv>
             throw new InvalidCastException("Invalid length");
         }
 
-        return new BlindedPathTlv(new PubKey(baseTlv.Value));
+        return new BlindedPathTlv(new CompactPubKey(baseTlv.Value));
     }
 
     [ExcludeFromCodeCoverage]

@@ -1,14 +1,14 @@
 using System.Buffers;
 using System.Runtime.Serialization;
-using NBitcoin;
-using NLightning.Domain.Serialization.Payloads;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
+using Domain.Channels.ValueObjects;
+using Domain.Crypto.ValueObjects;
 using Domain.Crypto.Constants;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Payloads.Interfaces;
-using Domain.Serialization.Factories;
 using Domain.ValueObjects;
 using Exceptions;
 
@@ -33,12 +33,12 @@ public class RevokeAndAckPayloadSerializer : IPayloadSerializer<RevokeAndAckPayl
         await channelIdSerializer.SerializeAsync(revokeAndAckPayload.ChannelId, stream);
 
         await stream.WriteAsync(revokeAndAckPayload.PerCommitmentSecret);
-        await stream.WriteAsync(revokeAndAckPayload.NextPerCommitmentPoint.ToBytes());
+        await stream.WriteAsync(revokeAndAckPayload.NextPerCommitmentPoint);
     }
 
     public async Task<RevokeAndAckPayload?> DeserializeAsync(Stream stream)
     {
-        var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.PUBKEY_LEN);
+        var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.CompactPubkeyLen);
 
         try
         {
@@ -51,8 +51,8 @@ public class RevokeAndAckPayloadSerializer : IPayloadSerializer<RevokeAndAckPayl
             var perCommitmentSecret = new byte[32];
             await stream.ReadExactlyAsync(perCommitmentSecret);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.PUBKEY_LEN]);
-            var nextPerCommitmentPoint = new PubKey(buffer[..CryptoConstants.PUBKEY_LEN]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.CompactPubkeyLen]);
+            var nextPerCommitmentPoint = new CompactPubKey(buffer[..CryptoConstants.CompactPubkeyLen]);
 
             return new RevokeAndAckPayload(channelId, nextPerCommitmentPoint, perCommitmentSecret);
         }

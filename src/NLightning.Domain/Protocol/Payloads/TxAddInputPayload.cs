@@ -1,3 +1,6 @@
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.ValueObjects;
+
 namespace NLightning.Domain.Protocol.Payloads;
 
 using Constants;
@@ -12,7 +15,7 @@ using ValueObjects;
 /// The tx_add_input payload is used to add an input to the transaction.
 /// </remarks>
 /// <seealso cref="TxAddInputMessage"/>
-/// <seealso cref="ValueObjects.ChannelId"/>
+/// <seealso cref="Channels.ValueObjects.ChannelId"/>
 public class TxAddInputPayload : IChannelMessagePayload
 {
     /// <summary>
@@ -51,9 +54,9 @@ public class TxAddInputPayload : IChannelMessagePayload
     /// <exception cref="ArgumentException">Sequence is out of bounds.</exception>
     public TxAddInputPayload(ChannelId channelId, ulong serialId, byte[] prevTx, uint prevTxVout, uint sequence)
     {
-        if (sequence > InteractiveTransactionConstants.MAX_SEQUENCE)
+        if (sequence > InteractiveTransactionConstants.MaxSequence)
         {
-            throw new ArgumentException($"Sequence must be less than or equal to {InteractiveTransactionConstants.MAX_SEQUENCE}", nameof(sequence));
+            throw new ArgumentException($"Sequence must be less than or equal to {InteractiveTransactionConstants.MaxSequence}", nameof(sequence));
         }
 
         ChannelId = channelId;

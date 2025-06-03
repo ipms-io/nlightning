@@ -1,5 +1,7 @@
 using NBitcoin;
 using NBitcoin.Crypto;
+using NLightning.Domain.Protocol.ValueObjects;
+using NLightning.Infrastructure.Crypto.Hashes;
 
 namespace NLightning.Infrastructure.Bitcoin.Tests.Transactions;
 
@@ -11,34 +13,54 @@ using Protocol.Models;
 
 public class CommitmentTransactionTests
 {
-    private const uint TO_SELF_DELAY = 144;
-    private readonly PubKey _localFundingPubKey = new("023da092f6980e58d2c037173180e9a465476026ee50f96695963e8efe436f54eb");
-    private readonly PubKey _remoteFundingPubKey = new("030e9f7b623d2ccc7c9bd44d66d5ce21ce504c0acf6385a132cec6d3c39fa711c1");
-    private readonly PubKey _localPaymentBasepoint = new("034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa");
-    private readonly PubKey _remotePaymentBasepoint = new("032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e668680991");
-    private readonly PubKey _localDelayedPubKey = new("03fd5960528dc152014952efdb702a88f71e3c1653b2314431701ec77e57fde83c");
-    private readonly PubKey _revocationPubKey = new("0212a140cd0c6539d07cd08dfe09984dec3251ea808b892efeac3ede9402bf2b19");
+    private const uint ToSelfDelay = 144;
+
+    private readonly PubKey _localFundingPubKey =
+        new("023da092f6980e58d2c037173180e9a465476026ee50f96695963e8efe436f54eb");
+
+    private readonly PubKey _remoteFundingPubKey =
+        new("030e9f7b623d2ccc7c9bd44d66d5ce21ce504c0acf6385a132cec6d3c39fa711c1");
+
+    private readonly PubKey _localPaymentBasepoint =
+        new("034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa");
+
+    private readonly PubKey _remotePaymentBasepoint =
+        new("032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e668680991");
+
+    private readonly PubKey _localDelayedPubKey =
+        new("03fd5960528dc152014952efdb702a88f71e3c1653b2314431701ec77e57fde83c");
+
+    private readonly PubKey _revocationPubKey =
+        new("0212a140cd0c6539d07cd08dfe09984dec3251ea808b892efeac3ede9402bf2b19");
+
     private readonly FundingOutput _fundingOutput;
     private readonly LightningMoney _toLocalAmount = new(8_000, LightningMoneyUnit.Satoshi);
     private readonly LightningMoney _toRemoteAmount = new(2_000, LightningMoneyUnit.Satoshi);
     private readonly CommitmentNumber _commitmentNumber;
-    private readonly BitcoinSecret _privateKey = new(new Key(Convert.FromHexString("6bd078650fcee8444e4e09825227b801a1ca928debb750eb36e6d56124bb20e8")), NBitcoin.Network.TestNet);
+
+    private readonly BitcoinSecret _privateKey =
+        new(new Key(Convert.FromHexString("6bd078650fcee8444e4e09825227b801a1ca928debb750eb36e6d56124bb20e8")),
+            NBitcoin.Network.TestNet);
+
     private readonly LightningMoney _defaultDustLimitAmount = LightningMoney.Satoshis(540);
+    private readonly Sha256 _sha256 = new();
 
     public CommitmentTransactionTests()
     {
-        _fundingOutput = new FundingOutput(_localFundingPubKey, _remoteFundingPubKey,
-                                           new LightningMoney(1_000_000, LightningMoneyUnit.Satoshi))
-        {
-            TxId = uint256.Parse("8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be"),
-            Index = 0
-        };
+        _fundingOutput =
+            new FundingOutput(LightningMoney.Satoshis(1_000_000), _localFundingPubKey, _remoteFundingPubKey)
+            {
+                TxId = Convert.FromHexString("8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be"),
+                Index = 0
+            };
 
-        _commitmentNumber = new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint, 42);
+        _commitmentNumber =
+            new CommitmentNumber(_localPaymentBasepoint.ToBytes(), _remotePaymentBasepoint.ToBytes(), _sha256, 42);
     }
 
     [Fact]
-    public void Given_ValidParametersAsChannelFunder_When_ConstructingCommitmentTransaction_Then_PropertiesAreSetCorrectly()
+    public void
+        Given_ValidParametersAsChannelFunder_When_ConstructingCommitmentTransaction_Then_PropertiesAreSetCorrectly()
     {
         // Given
         // When
@@ -102,7 +124,7 @@ public class CommitmentTransactionTests
             return new CommitmentTransaction(LightningMoney.Zero, LightningMoney.Satoshis(800), false, Network.Main,
                                              _fundingOutput, _localPaymentBasepoint, _remotePaymentBasepoint,
                                              _localDelayedPubKey, _revocationPubKey, LightningMoney.Zero,
-                                             LightningMoney.Zero, TO_SELF_DELAY, _commitmentNumber, true);
+                                             LightningMoney.Zero, ToSelfDelay, _commitmentNumber, true);
         });
 
         Assert.Contains("Both toLocalAmount and toRemoteAmount cannot be zero", exception.Message);
@@ -116,7 +138,7 @@ public class CommitmentTransactionTests
         var commitmentTx = new CommitmentTransaction(LightningMoney.Zero, LightningMoney.Satoshis(800), false,
                                                      Network.Main, _fundingOutput, _localPaymentBasepoint,
                                                      _remotePaymentBasepoint, _localDelayedPubKey, _revocationPubKey,
-                                                     _toRemoteAmount, _toLocalAmount, TO_SELF_DELAY, _commitmentNumber,
+                                                     _toRemoteAmount, _toLocalAmount, ToSelfDelay, _commitmentNumber,
                                                      true);
 
         commitmentTx.ConstructTransaction(new LightningMoney(2_000, LightningMoneyUnit.Satoshi));
@@ -209,7 +231,8 @@ public class CommitmentTransactionTests
     {
         // Given
         var commitmentTx = CreateCommitmentTransaction(true, LightningMoney.Satoshis(330), _defaultDustLimitAmount);
-        var remoteSignature = new ECDSASignature(Convert.FromHexString("3045022100c3127b33dcc741dd6b05b1e63cbd1a9a7d816f37af9b6756fa2376b056f032370220408b96279808fe57eb7e463710804cdf4f108388bc5cf722d8c848d2c7f9f3b0"));
+        var remoteSignature = new ECDSASignature(Convert.FromHexString(
+                                                     "3045022100c3127b33dcc741dd6b05b1e63cbd1a9a7d816f37af9b6756fa2376b056f032370220408b96279808fe57eb7e463710804cdf4f108388bc5cf722d8c848d2c7f9f3b0"));
 
         // When
         commitmentTx.AppendRemoteSignatureAndSign(remoteSignature, _remotePaymentBasepoint);
@@ -224,7 +247,7 @@ public class CommitmentTransactionTests
     {
         return new CommitmentTransaction(anchorAmount, dustLimitAmount, false, Network.Main, _fundingOutput,
                                          _localPaymentBasepoint, _remotePaymentBasepoint, _localDelayedPubKey,
-                                         _revocationPubKey, _toLocalAmount, _toRemoteAmount, TO_SELF_DELAY,
+                                         _revocationPubKey, _toLocalAmount, _toRemoteAmount, ToSelfDelay,
                                          _commitmentNumber, isChannelFunder);
     }
 }

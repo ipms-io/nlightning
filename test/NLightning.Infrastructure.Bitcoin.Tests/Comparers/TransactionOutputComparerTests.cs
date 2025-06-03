@@ -12,8 +12,9 @@ public class TransactionOutputComparerTests
     private readonly Script _script2 = Script.FromHex("0014a1b2c4");
     private readonly Script _script3 = Script.FromHex("0014a1b2c3d4");
     private readonly PubKey _pubKey = new("034f355bdcb7cc0af728ef3cceb9615d90684bb5b2ca5f859ab0f0b704075871aa");
-    private readonly PubKey _revocationPubKey = new("032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e668680991");
-    private readonly LightningMoney _anchorAmount = LightningMoney.Satoshis(330);
+
+    private readonly PubKey _revocationPubKey =
+        new("032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e668680991");
 
     [Fact]
     public void Given_NullOutputs_When_Comparing_Then_HandlesNullsCorrectly()
@@ -50,7 +51,8 @@ public class TransactionOutputComparerTests
     }
 
     [Fact]
-    public void Given_OutputsWithSameAmountButDifferentScripts_When_Comparing_Then_SortsByScriptPubKeyLexicographically()
+    public void
+        Given_OutputsWithSameAmountButDifferentScripts_When_Comparing_Then_SortsByScriptPubKeyLexicographically()
     {
         // Given
         var output1 = new ChangeOutput(_script1, new LightningMoney(1000));
@@ -64,7 +66,7 @@ public class TransactionOutputComparerTests
 
         // Then
         Assert.Equal(output1, outputs[0]); // 0014a1b2c3
-        Assert.Equal(output3, outputs[1]); // 0014a1b2c3d4 (starts with same bytes as output1)
+        Assert.Equal(output3, outputs[1]); // 0014a1b2c3d4 (starts with the same bytes as output1)
         Assert.Equal(output2, outputs[2]); // 0014a1b2c4
     }
 
@@ -94,12 +96,12 @@ public class TransactionOutputComparerTests
     public void Given_HtlcOutputsWithSameAmountAndScript_When_Comparing_Then_SortsByCltvExpiry()
     {
         // Given
-        var htlc1 = new OfferedHtlcOutput(_anchorAmount, _revocationPubKey, _pubKey, _pubKey,
-                                          new ReadOnlyMemory<byte>([0]), new LightningMoney(1000), 1);
-        var htlc2 = new OfferedHtlcOutput(_anchorAmount, _revocationPubKey, _pubKey, _pubKey,
-                                          new ReadOnlyMemory<byte>([0]), new LightningMoney(1000), 2);
-        var htlc3 = new OfferedHtlcOutput(_anchorAmount, _revocationPubKey, _pubKey, _pubKey,
-                                          new ReadOnlyMemory<byte>([0]), new LightningMoney(1000), 3);
+        var htlc1 = new OfferedHtlcOutput(new LightningMoney(1000), 1, true, _pubKey, new ReadOnlyMemory<byte>([0]),
+                                          _pubKey, _revocationPubKey);
+        var htlc2 = new OfferedHtlcOutput(new LightningMoney(1000), 2, true, _pubKey, new ReadOnlyMemory<byte>([0]),
+                                          _pubKey, _revocationPubKey);
+        var htlc3 = new OfferedHtlcOutput(new LightningMoney(1000), 3, true, _pubKey, new ReadOnlyMemory<byte>([0]),
+                                          _pubKey, _revocationPubKey);
         var outputs = new List<BaseOutput> { htlc3, htlc2, htlc1 };
         var comparer = TransactionOutputComparer.Instance;
 
@@ -117,10 +119,10 @@ public class TransactionOutputComparerTests
     {
         // Given
         var change1 = new ChangeOutput(_script1, new LightningMoney(1000));
-        var htlc1 = new OfferedHtlcOutput(_anchorAmount, _revocationPubKey, _pubKey, _pubKey,
-                                          new ReadOnlyMemory<byte>([0]), new LightningMoney(1000), 500);
-        var toRemote = new ToRemoteOutput(true, _pubKey, new LightningMoney(2000));
-        var toLocal = new ToLocalOutput(_pubKey, _revocationPubKey, 144, new LightningMoney(3000));
+        var htlc1 = new OfferedHtlcOutput(new LightningMoney(1000), 500, true, _pubKey, new ReadOnlyMemory<byte>([0]),
+                                          _pubKey, _revocationPubKey);
+        var toRemote = new ToRemoteOutput(new LightningMoney(2000), true, _pubKey);
+        var toLocal = new ToLocalOutput(new LightningMoney(3000), _pubKey, _revocationPubKey, 144);
         var outputs = new List<BaseOutput> { toLocal, toRemote, htlc1, change1 };
         var comparer = TransactionOutputComparer.Instance;
 
@@ -133,7 +135,7 @@ public class TransactionOutputComparerTests
         Assert.True(outputs.IndexOf(change1) < outputs.IndexOf(toRemote));
         Assert.True(outputs.IndexOf(toRemote) < outputs.IndexOf(toLocal));
 
-        // change1 and htlc1 have same amount, so sort by script
+        // change1 and htlc1 have the same amount, so sort by script
         var compareScripts = string.Compare(
             change1.ScriptPubKey.ToHex(),
             htlc1.ScriptPubKey.ToHex(),

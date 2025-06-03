@@ -1,9 +1,11 @@
+using NLightning.Domain.Interfaces;
+using NLightning.Domain.Serialization.Interfaces;
+
 namespace NLightning.Infrastructure.Serialization.Factories;
 
-using Domain.Serialization.Factories;
-using Domain.Serialization.ValueObjects;
+using Domain.Channels.ValueObjects;
+using Domain.Protocol.ValueObjects;
 using Domain.ValueObjects;
-using Domain.ValueObjects.Interfaces;
 using ValueObjects;
 
 public class ValueObjectSerializerFactory : IValueObjectSerializerFactory

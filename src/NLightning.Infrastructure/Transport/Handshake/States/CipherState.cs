@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace NLightning.Infrastructure.Transport.Handshake.States;
 
-using Common.Utils;
+using Domain.Utils;
 using Crypto.Ciphers;
 using Crypto.Functions;
 using Crypto.Primitives;
@@ -14,7 +14,7 @@ using Domain.Crypto.Constants;
 /// </summary>
 internal sealed class CipherState : IDisposable
 {
-    private const ulong MAX_NONCE = 1000;
+    private const ulong MaxNonce = 1000;
 
     private readonly ChaCha20Poly1305 _cipher = new();
     private readonly Hkdf _hkdf = new();
@@ -31,13 +31,13 @@ internal sealed class CipherState : IDisposable
     {
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(CipherState));
 
-        Debug.Assert(key.Length == CryptoConstants.PRIVKEY_LEN);
-        Debug.Assert(chainingKey.Length == CryptoConstants.PRIVKEY_LEN);
+        Debug.Assert(key.Length == CryptoConstants.PrivkeyLen);
+        Debug.Assert(chainingKey.Length == CryptoConstants.PrivkeyLen);
 
-        _k ??= new SecureMemory(CryptoConstants.PRIVKEY_LEN);
+        _k ??= new SecureMemory(CryptoConstants.PrivkeyLen);
         key.CopyTo(_k);
 
-        _ck ??= new SecureMemory(CryptoConstants.PRIVKEY_LEN);
+        _ck ??= new SecureMemory(CryptoConstants.PrivkeyLen);
         chainingKey.CopyTo(_ck);
 
         _n = 0;
@@ -72,7 +72,7 @@ internal sealed class CipherState : IDisposable
     {
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(CipherState));
 
-        if (_n == MAX_NONCE)
+        if (_n == MaxNonce)
         {
             throw new OverflowException("Nonce has reached its maximum value.");
         }
@@ -97,7 +97,7 @@ internal sealed class CipherState : IDisposable
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(CipherState));
 
         // If nonce reaches its maximum value, rekey
-        if (_n == MAX_NONCE)
+        if (_n == MaxNonce)
         {
             throw new OverflowException("Nonce has reached its maximum value.");
         }
@@ -124,7 +124,7 @@ internal sealed class CipherState : IDisposable
     {
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(CipherState));
 
-        if (_n == MAX_NONCE)
+        if (_n == MaxNonce)
         {
             Rekey();
         }
@@ -142,7 +142,7 @@ internal sealed class CipherState : IDisposable
     {
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(CipherState));
 
-        if (_n == MAX_NONCE)
+        if (_n == MaxNonce)
         {
             Rekey();
         }
@@ -163,14 +163,14 @@ internal sealed class CipherState : IDisposable
 
         _n = 0;
 
-        Span<byte> key = stackalloc byte[CryptoConstants.PRIVKEY_LEN * 2];
+        Span<byte> key = stackalloc byte[CryptoConstants.PrivkeyLen * 2];
         _hkdf.ExtractAndExpand2(_ck!, _k!, key);
 
-        _ck ??= new SecureMemory(CryptoConstants.PRIVKEY_LEN);
-        key[..CryptoConstants.PRIVKEY_LEN].CopyTo(_ck);
+        _ck ??= new SecureMemory(CryptoConstants.PrivkeyLen);
+        key[..CryptoConstants.PrivkeyLen].CopyTo(_ck);
 
-        _k ??= new SecureMemory(CryptoConstants.PRIVKEY_LEN);
-        key[CryptoConstants.PRIVKEY_LEN..].CopyTo(_k);
+        _k ??= new SecureMemory(CryptoConstants.PrivkeyLen);
+        key[CryptoConstants.PrivkeyLen..].CopyTo(_k);
     }
 
     public void Dispose()

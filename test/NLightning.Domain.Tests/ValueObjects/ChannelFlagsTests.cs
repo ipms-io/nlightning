@@ -9,24 +9,24 @@ public class ChannelFlagsTests
     public void Given_ByteValue_When_ChannelFlagsCreated_Then_PropertiesAreCorrect()
     {
         // Given
-        const byte VALUE = 1;
+        const byte value = 1;
 
         // When
-        var channelFlags = new ChannelFlags(VALUE);
+        var channelFlags = new ChannelFlags(value);
 
         // Then
         Assert.True(channelFlags.AnnounceChannel);
-        Assert.Equal(VALUE, (byte)channelFlags);
+        Assert.Equal(value, (byte)channelFlags);
     }
 
     [Fact]
     public void Given_BoolValue_When_ChannelFlagsCreated_Then_PropertiesAreCorrect()
     {
         // Given
-        const ChannelFlag ANNOUNCE_CHANNEL = ChannelFlag.AnnounceChannel;
+        const ChannelFlag announceChannel = ChannelFlag.AnnounceChannel;
 
         // When
-        var channelFlags = new ChannelFlags(ANNOUNCE_CHANNEL);
+        var channelFlags = new ChannelFlags(announceChannel);
 
         // Then
         Assert.True(channelFlags.AnnounceChannel);
@@ -50,10 +50,10 @@ public class ChannelFlagsTests
     public void Given_Byte_When_ImplicitlyConvertedToChannelFlags_Then_ReturnsCorrectChannelFlags()
     {
         // Given
-        const byte VALUE = 1;
+        const byte value = 1;
 
         // When
-        ChannelFlags channelFlags = VALUE;
+        ChannelFlags channelFlags = value;
 
         // Then
         Assert.True(channelFlags.AnnounceChannel);

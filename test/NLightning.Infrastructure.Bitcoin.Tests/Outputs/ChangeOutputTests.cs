@@ -7,8 +7,12 @@ using Domain.Money;
 
 public class ChangeOutputTests
 {
-    private readonly Script _redeemScript = Script.FromHex("21034F355BDCB7CC0AF728EF3CCEB9615D90684BB5B2CA5F859AB0F0B704075871AAAD51B2");
-    private readonly Script _scriptPubKey = Script.FromHex("002032E8DA66B7054D40832C6A7A66DF79D8D7BCCCD5FFA53F5DD1772CB9CB9F3283");
+    private readonly Script _redeemScript =
+        Script.FromHex("21034F355BDCB7CC0AF728EF3CCEB9615D90684BB5B2CA5F859AB0F0B704075871AAAD51B2");
+
+    private readonly Script _scriptPubKey =
+        Script.FromHex("002032E8DA66B7054D40832C6A7A66DF79D8D7BCCCD5FFA53F5DD1772CB9CB9F3283");
+
     private readonly LightningMoney _amount = new(1000000);
 
     [Fact]
@@ -21,7 +25,7 @@ public class ChangeOutputTests
 
         // Then
         Assert.Equal(_scriptPubKey, changeOutput.ScriptPubKey);
-        Assert.Equal(_scriptPubKey, changeOutput.RedeemScript);
+        Assert.Equal(_scriptPubKey, new Script(changeOutput.RedeemBitcoinScript));
         Assert.Equal(_amount, changeOutput.Amount);
         Assert.Equal(ScriptType.P2WPKH, changeOutput.ScriptType);
     }
@@ -35,7 +39,7 @@ public class ChangeOutputTests
         var changeOutput = new ChangeOutput(_redeemScript, _scriptPubKey, _amount);
 
         // Then
-        Assert.Equal(_redeemScript, changeOutput.RedeemScript);
+        Assert.Equal(_redeemScript, new Script(changeOutput.RedeemBitcoinScript));
         Assert.Equal(_scriptPubKey, changeOutput.ScriptPubKey);
         Assert.Equal(_amount, changeOutput.Amount);
         Assert.Equal(ScriptType.P2WPKH, changeOutput.ScriptType);
@@ -66,7 +70,7 @@ public class ChangeOutputTests
         var changeOutput = new ChangeOutput(_redeemScript, _scriptPubKey, amount);
 
         // Then
-        Assert.Equal(_redeemScript, changeOutput.RedeemScript);
+        Assert.Equal(_redeemScript, new Script(changeOutput.RedeemBitcoinScript));
         Assert.Equal(_scriptPubKey, changeOutput.ScriptPubKey);
         Assert.Equal(new LightningMoney(0), changeOutput.Amount);
         Assert.Equal(ScriptType.P2WPKH, changeOutput.ScriptType);
@@ -78,7 +82,7 @@ public class ChangeOutputTests
         // Given
         var changeOutput = new ChangeOutput(_scriptPubKey)
         {
-            TxId = uint256.Parse("8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be"),
+            TxId = Convert.FromHexString("8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be"),
             Index = 1
         };
 
@@ -92,7 +96,7 @@ public class ChangeOutputTests
         // Given
         var changeOutput = new ChangeOutput(_redeemScript, _amount)
         {
-            TxId = uint256.Parse("8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be"),
+            TxId = Convert.FromHexString("8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be"),
             Index = 1
         };
 
@@ -101,8 +105,8 @@ public class ChangeOutputTests
 
         // Then
         Assert.Equal(changeOutput.TxId, coin.Outpoint.Hash);
-        Assert.Equal(changeOutput.Index, (int)coin.Outpoint.N);
-        Assert.Equal((Money)changeOutput.Amount, coin.Amount);
+        Assert.Equal(changeOutput.Index, (uint)coin.Outpoint.N);
+        Assert.Equal(changeOutput.Amount, LightningMoney.Satoshis(coin.Amount));
         Assert.Equal(changeOutput.ScriptPubKey, coin.ScriptPubKey);
     }
 

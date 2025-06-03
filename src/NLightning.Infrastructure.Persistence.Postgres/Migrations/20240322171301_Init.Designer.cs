@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
 {
-    [DbContext(typeof(NLightningContext))]
+    [DbContext(typeof(NLightningDbContext))]
     [Migration("20240322171301_Init")]
     partial class Init
     {

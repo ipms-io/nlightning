@@ -4,15 +4,16 @@ using Microsoft.EntityFrameworkCore.Design;
 namespace NLightning.Infrastructure.Persistence.Factories;
 
 using Contexts;
+using Enums;
 
 /// <summary>
 /// This is used for dotnet ef CLI to set up connection for migration stuff
 /// </summary>
-public class NLightningContextFactory : IDesignTimeDbContextFactory<NLightningContext>
+public class NLightningContextFactory : IDesignTimeDbContextFactory<NLightningDbContext>
 {
-    public NLightningContext CreateDbContext(string[] args)
+    public NLightningDbContext CreateDbContext(string[] args)
     {
-        var optionsBuilder = new DbContextOptionsBuilder<NLightningContext>();
+        var optionsBuilder = new DbContextOptionsBuilder<NLightningDbContext>();
 
         var postgresString = Environment.GetEnvironmentVariable("NLIGHTNING_POSTGRES");
         if (postgresString != null)
@@ -23,7 +24,7 @@ public class NLightningContextFactory : IDesignTimeDbContextFactory<NLightningCo
                 })
                 .EnableSensitiveDataLogging()
                 .UseSnakeCaseNamingConvention();
-            return new NLightningContext(optionsBuilder.Options);
+            return new NLightningDbContext(optionsBuilder.Options, DatabaseType.PostgreSql);
         }
 
         var sqlite = Environment.GetEnvironmentVariable("NLIGHTNING_SQLITE");
@@ -33,7 +34,7 @@ public class NLightningContextFactory : IDesignTimeDbContextFactory<NLightningCo
             {
                 x.MigrationsAssembly("NLightning.Infrastructure.Persistence.Sqlite");
             });
-            return new NLightningContext(optionsBuilder.Options);
+            return new NLightningDbContext(optionsBuilder.Options, DatabaseType.Sqlite);
         }
 
         var sqlServer = Environment.GetEnvironmentVariable("NLIGHTNING_SQLSERVER");
@@ -43,7 +44,7 @@ public class NLightningContextFactory : IDesignTimeDbContextFactory<NLightningCo
             {
                 x.MigrationsAssembly("NLightning.Infrastructure.Persistence.SqlServer");
             });
-            return new NLightningContext(optionsBuilder.Options);
+            return new NLightningDbContext(optionsBuilder.Options, DatabaseType.MicrosoftSql);
         }
 
         throw new Exception("Must set NLIGHTNING_POSTGRES or NLIGHTNING_SQLITE or NLIGHTNING_SQLSERVER env for generation.");

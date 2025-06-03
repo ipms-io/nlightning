@@ -1,4 +1,7 @@
-using NBitcoin.Crypto;
+using NLightning.Domain.Bitcoin.ValueObjects;
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Crypto.ValueObjects;
+using NLightning.Domain.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Payloads;
 
@@ -22,9 +25,9 @@ public class FundingSignedPayload : IChannelMessagePayload
     /// <summary>
     /// The signature of the funding transaction.
     /// </summary>
-    public ECDSASignature Signature { get; }
+    public DerSignature Signature { get; }
 
-    public FundingSignedPayload(ChannelId channelId, ECDSASignature signature)
+    public FundingSignedPayload(ChannelId channelId, DerSignature signature)
     {
         ChannelId = channelId;
         Signature = signature;
