@@ -1,19 +1,19 @@
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Money;
-using NLightning.Domain.Transactions.Enums;
-using NLightning.Domain.Transactions.Interfaces;
-
 namespace NLightning.Domain.Transactions.Outputs;
+
+using Bitcoin.ValueObjects;
+using Crypto.ValueObjects;
+using Money;
+using Enums;
+using Interfaces;
 
 public class FundingOutputInfo : IOutputInfo
 {
     public LightningMoney Amount { get; }
     public CompactPubKey LocalFundingPubKey { get; set; }
     public CompactPubKey RemoteFundingPubKey { get; set; }
-    
-    public OutputType OutputType => OutputType.LocalAnchor;
-    public TxId? TxId { get; set; }
+
+    public OutputType OutputType => OutputType.Funding;
+    public TxId? TransactionId { get; set; }
     public uint? Index { get; set; }
 
     public FundingOutputInfo(LightningMoney amount, CompactPubKey localFundingPubKey, CompactPubKey remoteFundingPubKey)
@@ -21,5 +21,13 @@ public class FundingOutputInfo : IOutputInfo
         Amount = amount;
         LocalFundingPubKey = localFundingPubKey;
         RemoteFundingPubKey = remoteFundingPubKey;
+    }
+
+    public FundingOutputInfo(LightningMoney amount, CompactPubKey localFundingPubKey, CompactPubKey remoteFundingPubKey,
+                             TxId transactionId, uint index)
+        : this(amount, localFundingPubKey, remoteFundingPubKey)
+    {
+        TransactionId = transactionId;
+        Index = index;
     }
 }

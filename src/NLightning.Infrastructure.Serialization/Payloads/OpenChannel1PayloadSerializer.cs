@@ -148,12 +148,11 @@ public class OpenChannel1PayloadSerializer : IPayloadSerializer<OpenChannel1Payl
 
             var channelFlags = await channelFlagsSerializer.DeserializeAsync(stream);
 
-            return new OpenChannel1Payload(chainHash, temporaryChannelId, fundingSatoshis, pushAmount,
-                                           dustLimitSatoshis, maxHtlcValueInFlightMsat, channelReserveAmount,
-                                           htlcMinimumAmount, feeRatePerKw, toSelfDelay, maxAcceptedHtlcs,
-                                           fundingPubKey, revocationBasepoint, paymentBasepoint,
-                                           delayedPaymentBasepoint, htlcBasepoint, firstPerCommitmentPoint,
-                                           channelFlags);
+            return new OpenChannel1Payload(chainHash, channelFlags, temporaryChannelId, channelReserveAmount,
+                                           delayedPaymentBasepoint, dustLimitSatoshis, feeRatePerKw,
+                                           firstPerCommitmentPoint, fundingSatoshis, fundingPubKey, htlcBasepoint,
+                                           htlcMinimumAmount, maxAcceptedHtlcs, maxHtlcValueInFlightMsat,
+                                           paymentBasepoint, pushAmount, revocationBasepoint, toSelfDelay);
         }
         catch (Exception e)
         {

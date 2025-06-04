@@ -397,10 +397,10 @@ public class MessageFactory : IMessageFactory
     /// <returns>The ClosingSigned message.</returns>
     /// <seealso cref="ClosingSignedMessage"/>
     /// <seealso cref="ChannelId"/>
-    /// <seealso cref="DerSignature"/>
+    /// <seealso cref="CompactSignature"/>
     /// <seealso cref="ClosingSignedPayload"/>
     public ClosingSignedMessage CreateClosingSignedMessage(ChannelId channelId, ulong feeSatoshis,
-                                                           DerSignature signature,
+                                                           CompactSignature signature,
                                                            ulong minFeeSatoshis, ulong maxFeeSatoshis)
     {
         var payload = new ClosingSignedPayload(channelId, feeSatoshis, signature);
@@ -449,12 +449,13 @@ public class MessageFactory : IMessageFactory
         var maxHtlcValueInFlight =
             LightningMoney.Satoshis(_nodeOptions.AllowUpToPercentageOfChannelFundsInFlight * fundingAmount.Satoshi /
                                     100M);
-        var payload = new OpenChannel1Payload(_nodeOptions.BitcoinNetwork.ChainHash, temporaryChannelId, fundingAmount,
-                                              pushAmount, _nodeOptions.DustLimitAmount, maxHtlcValueInFlight,
-                                              channelReserveAmount, _nodeOptions.HtlcMinimumAmount, feeRatePerKw,
-                                              _nodeOptions.ToSelfDelay, maxAcceptedHtlcs, fundingPubKey,
-                                              revocationBasepoint, paymentBasepoint, delayedPaymentBasepoint,
-                                              htlcBasepoint, firstPerCommitmentPoint, channelFlags);
+        var payload = new OpenChannel1Payload(_nodeOptions.BitcoinNetwork.ChainHash, channelFlags, temporaryChannelId,
+                                              channelReserveAmount, delayedPaymentBasepoint,
+                                              _nodeOptions.DustLimitAmount, feeRatePerKw, firstPerCommitmentPoint,
+                                              fundingAmount, fundingPubKey, htlcBasepoint,
+                                              _nodeOptions.HtlcMinimumAmount, maxAcceptedHtlcs, maxHtlcValueInFlight,
+                                              paymentBasepoint, pushAmount, revocationBasepoint,
+                                              _nodeOptions.ToSelfDelay);
 
         return new OpenChannel1Message(payload, upfrontShutdownScriptTlv, channelTypeTlv);
     }
@@ -520,46 +521,47 @@ public class MessageFactory : IMessageFactory
     }
 
     /// <summary>
-    /// Create an AcceptChannel1 message.
+    /// Creates an AcceptChannel1 message.
     /// </summary>
-    /// <param name="temporaryChannelId">The temporary channel id.</param>
-    /// <param name="channelReserveAmount">The channel reserve amount.</param>
-    /// <param name="minimumDepth">The minimum depth.</param>
-    /// <param name="maxAcceptedHtlcs">The max accepted htlcs.</param>
-    /// <param name="revocationBasepoint">The revocation pubkey.</param>
-    /// <param name="paymentBasepoint">The payment pubkey.</param>
-    /// <param name="delayedPaymentBasepoint">The delayed payment pubkey.</param>
-    /// <param name="htlcBasepoint">The htlc pubkey.</param>
-    /// <param name="firstPerCommitmentPoint">The first per-commitment pubkey.</param>
-    /// <param name="fundingPubKey">The funding pubkey of the channel.</param>
-    /// <param name="maxHtlcValueInFlight">Maximum value in flight for HTLCs.</param>
-    /// <param name="upfrontShutdownScriptTlv">The upfront shutdown script tlv.</param>
-    /// <param name="channelTypeTlv">The channel type tlv.</param>
-    /// <returns>The AcceptChannel1 message.</returns>
+    /// <param name="channelReserveAmount">The reserve amount for the channel.</param>
+    /// <param name="channelTypeTlv">Optional parameter specifying the channel type.</param>
+    /// <param name="delayedPaymentBasepoint">The basepoint for the delayed payment key.</param>
+    /// <param name="firstPerCommitmentPoint">The first per-commitment point for the channel.</param>
+    /// <param name="fundingPubKey">Public key associated with the channel funding.</param>
+    /// <param name="htlcBasepoint">The basepoint for the HTLC key.</param>
+    /// <param name="maxAcceptedHtlcs">The maximum number of HTLCs to be accepted for this channel.</param>
+    /// <param name="maxHtlcValueInFlight">The maximum HTLC value that can be in flight.</param>
+    /// <param name="minimumDepth">The minimum confirmation depth required for the channel opening transaction.</param>
+    /// <param name="paymentBasepoint">The basepoint for the payment key.</param>
+    /// <param name="revocationBasepoint">The basepoint for the revocation key.</param>
+    /// <param name="temporaryChannelId">The temporary identifier for the channel negotiation.</param>
+    /// <param name="toSelfDelay">The delay in blocks before self outputs can be claimed.</param>
+    /// <param name="upfrontShutdownScriptTlv">Optional parameter specifying the upfront shutdown script TLV.</param>
+    /// <returns>The created AcceptChannel1 message.</returns>
     /// <seealso cref="AcceptChannel1Message"/>
+    /// <seealso cref="AcceptChannel1Payload"/>
     /// <seealso cref="ChannelId"/>
     /// <seealso cref="LightningMoney"/>
     /// <seealso cref="CompactPubKey"/>
     /// <seealso cref="UpfrontShutdownScriptTlv"/>
     /// <seealso cref="ChannelTypeTlv"/>
-    public AcceptChannel1Message CreateAcceptChannel1Message(ChannelId temporaryChannelId,
-                                                             LightningMoney channelReserveAmount, uint minimumDepth,
-                                                             ushort maxAcceptedHtlcs, CompactPubKey revocationBasepoint,
-                                                             CompactPubKey paymentBasepoint,
+    public AcceptChannel1Message CreateAcceptChannel1Message(LightningMoney channelReserveAmount,
+                                                             ChannelTypeTlv? channelTypeTlv,
                                                              CompactPubKey delayedPaymentBasepoint,
-                                                             CompactPubKey htlcBasepoint,
                                                              CompactPubKey firstPerCommitmentPoint,
-                                                             CompactPubKey fundingPubKey,
-                                                             LightningMoney maxHtlcValueInFlight,
-                                                             UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv,
-                                                             ChannelTypeTlv? channelTypeTlv)
+                                                             CompactPubKey fundingPubKey, CompactPubKey htlcBasepoint,
+                                                             ushort maxAcceptedHtlcs,
+                                                             LightningMoney maxHtlcValueInFlight, uint minimumDepth,
+                                                             CompactPubKey paymentBasepoint,
+                                                             CompactPubKey revocationBasepoint,
+                                                             ChannelId temporaryChannelId, ushort toSelfDelay,
+                                                             UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv)
     {
-        var payload = new AcceptChannel1Payload(temporaryChannelId, _nodeOptions.DustLimitAmount,
-                                                maxHtlcValueInFlight, channelReserveAmount,
-                                                _nodeOptions.HtlcMinimumAmount, minimumDepth, _nodeOptions.ToSelfDelay,
-                                                maxAcceptedHtlcs, fundingPubKey, revocationBasepoint,
-                                                paymentBasepoint, delayedPaymentBasepoint, htlcBasepoint,
-                                                firstPerCommitmentPoint);
+        var payload = new AcceptChannel1Payload(temporaryChannelId, channelReserveAmount, delayedPaymentBasepoint,
+                                                _nodeOptions.DustLimitAmount, firstPerCommitmentPoint, fundingPubKey,
+                                                htlcBasepoint, _nodeOptions.HtlcMinimumAmount, maxAcceptedHtlcs,
+                                                maxHtlcValueInFlight, minimumDepth, paymentBasepoint,
+                                                revocationBasepoint, toSelfDelay);
 
         return new AcceptChannel1Message(payload, upfrontShutdownScriptTlv, channelTypeTlv);
     }
@@ -624,10 +626,10 @@ public class MessageFactory : IMessageFactory
     /// <returns>The FundingCreated message.</returns>
     /// <seealso cref="FundingCreatedMessage"/>
     /// <seealso cref="ChannelId"/>
-    /// <seealso cref="DerSignature"/>
+    /// <seealso cref="CompactSignature"/>
     /// <seealso cref="FundingCreatedPayload"/>
     public FundingCreatedMessage CreatedFundingCreatedMessage(ChannelId temporaryChannelId, TxId fundingTxId,
-                                                              ushort fundingOutputIndex, DerSignature signature)
+                                                              ushort fundingOutputIndex, CompactSignature signature)
     {
         var payload = new FundingCreatedPayload(temporaryChannelId, fundingTxId, fundingOutputIndex, signature);
 
@@ -642,9 +644,9 @@ public class MessageFactory : IMessageFactory
     /// <returns>The FundingSigned message.</returns>
     /// <seealso cref="FundingCreatedMessage"/>
     /// <seealso cref="ChannelId"/>
-    /// <seealso cref="DerSignature"/>
+    /// <seealso cref="CompactSignature"/>
     /// <seealso cref="FundingCreatedPayload"/>
-    public FundingSignedMessage CreatedFundingSignedMessage(ChannelId channelId, DerSignature signature)
+    public FundingSignedMessage CreatedFundingSignedMessage(ChannelId channelId, CompactSignature signature)
     {
         var payload = new FundingSignedPayload(channelId, signature);
 
@@ -721,10 +723,10 @@ public class MessageFactory : IMessageFactory
     /// <returns>The CommitmentSigned message.</returns>
     /// <seealso cref="CommitmentSignedMessage"/>
     /// <seealso cref="ChannelId"/>
-    /// <seealso cref="DerSignature"/>
+    /// <seealso cref="CompactSignature"/>
     /// <seealso cref="CommitmentSignedPayload"/>
-    public CommitmentSignedMessage CreateCommitmentSignedMessage(ChannelId channelId, DerSignature signature,
-                                                                 IEnumerable<DerSignature> htlcSignatures)
+    public CommitmentSignedMessage CreateCommitmentSignedMessage(ChannelId channelId, CompactSignature signature,
+                                                                 IEnumerable<CompactSignature> htlcSignatures)
     {
         var payload = new CommitmentSignedPayload(channelId, htlcSignatures, signature);
 
@@ -740,7 +742,7 @@ public class MessageFactory : IMessageFactory
     /// <returns>The RevokeAndAck message.</returns>
     /// <seealso cref="RevokeAndAckMessage"/>
     /// <seealso cref="ChannelId"/>
-    /// <seealso cref="DerSignature"/>
+    /// <seealso cref="CompactSignature"/>
     /// <seealso cref="RevokeAndAckPayload"/>
     public RevokeAndAckMessage CreateRevokeAndAckMessage(ChannelId channelId, ReadOnlyMemory<byte> perCommitmentSecret,
                                                          CompactPubKey nextPerCommitmentPoint)

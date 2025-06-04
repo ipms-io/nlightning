@@ -26,7 +26,7 @@ public class CommitmentTransactionModel
     /// <summary>
     /// Gets or sets the transaction ID after the transaction is constructed.
     /// </summary>
-    public TxId? TxId { get; set; }
+    public TxId? TransactionId { get; set; }
 
     /// <summary>
     /// Gets the to_local output, if present.
@@ -74,6 +74,9 @@ public class CommitmentTransactionModel
                                       IEnumerable<OfferedHtlcOutputInfo>? offeredHtlcOutputs = null,
                                       IEnumerable<ReceivedHtlcOutputInfo>? receivedHtlcOutputs = null)
     {
+        if (fundingOutput.TransactionId is null || fundingOutput.TransactionId.Value == TxId.Zero)
+            throw new ArgumentException("Funding output must have a valid transaction ID.", nameof(fundingOutput));
+
         FundingOutput = fundingOutput;
         CommitmentNumber = commitmentNumber;
         Fee = fee;
@@ -84,17 +87,17 @@ public class CommitmentTransactionModel
         OfferedHtlcOutputs = (offeredHtlcOutputs ?? []).ToList();
         ReceivedHtlcOutputs = (receivedHtlcOutputs ?? []).ToList();
     }
-    
+
     /// <summary>
     /// Gets the Bitcoin locktime for this commitment transaction, derived from the commitment number.
     /// </summary>
     public BitcoinLockTime GetLockTime() => CommitmentNumber.CalculateLockTime();
-    
+
     /// <summary>
     /// Gets the Bitcoin sequence for this commitment transaction, derived from the commitment number.
     /// </summary>
     public BitcoinSequence GetSequence() => CommitmentNumber.CalculateSequence();
-    
+
     /// <summary>
     /// Gets all outputs of this commitment transaction.
     /// </summary>
@@ -104,7 +107,7 @@ public class CommitmentTransactionModel
         if (ToRemoteOutput != null) yield return ToRemoteOutput;
         if (LocalAnchorOutput != null) yield return LocalAnchorOutput;
         if (RemoteAnchorOutput != null) yield return RemoteAnchorOutput;
-        
+
         foreach (var output in OfferedHtlcOutputs) yield return output;
         foreach (var output in ReceivedHtlcOutputs) yield return output;
     }

@@ -142,7 +142,7 @@ public sealed class PeerApplicationService : IPeerService
             _logger.LogTrace("Received channel message ({messageType}) from peer {peer}",
                              Enum.GetName(message.Type), PeerPubKey);
 
-            var replyMessage = _channelManager.HandleChannelMessage(message, _features, PeerPubKey);
+            var replyMessage = await _channelManager.HandleChannelMessageAsync(message, _features, PeerPubKey);
             await _communicationService.SendMessageAsync(replyMessage);
         }
         catch (Exception e)

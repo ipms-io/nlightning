@@ -18,11 +18,11 @@ public readonly record struct Htlc
     public HtlcDirection Direction { get; }
     public UpdateAddHtlcMessage AddMessage { get; }
     public ulong ObscuredCommitmentNumber { get; }
-    public DerSignature? Signature { get; }
+    public CompactSignature? Signature { get; }
 
     public Htlc(LightningMoney amount, UpdateAddHtlcMessage addMessage, HtlcDirection direction, uint cltvExpiry,
                 ulong id, ulong obscuredCommitmentNumber, Hash paymentHash, HtlcState state,
-                Hash? paymentPreimage = null, DerSignature? signature = null)
+                Hash? paymentPreimage = null, CompactSignature? signature = null)
     {
         Id = id;
         Amount = amount;

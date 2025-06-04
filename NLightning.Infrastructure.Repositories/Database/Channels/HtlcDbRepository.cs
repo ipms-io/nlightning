@@ -44,31 +44,31 @@ public class HtlcDbRepository : BaseDbRepository<HtlcEntity>, IHtlcDbRepository
     public async Task<Htlc?> GetByIdAsync(ChannelId channelId, ulong htlcId, HtlcDirection direction)
     {
         var htlcEntity = await base.GetByIdAsync((channelId, htlcId, (byte)direction));
-                
+
         if (htlcEntity == null)
             return null;
-        
+
         return await MapEntityToDomainAsync(htlcEntity, _messageSerializer);
     }
 
     public async Task<IEnumerable<Htlc>> GetAllForChannelAsync(ChannelId channelId)
     {
         var htlcEntities = Get(h => h.ChannelId.Equals(channelId)).ToList();
-        
+
         return await Task.WhenAll(htlcEntities.Select(h => MapEntityToDomainAsync(h, _messageSerializer)));
     }
-    
+
     public async Task<IEnumerable<Htlc>> GetByChannelIdAndStateAsync(ChannelId channelId, HtlcState state)
     {
         var htlcEntities = Get(h => h.ChannelId.Equals(channelId) && h.State.Equals(state)).ToList();
-        
+
         return await Task.WhenAll(htlcEntities.Select(h => MapEntityToDomainAsync(h, _messageSerializer)));
     }
-    
+
     public async Task<IEnumerable<Htlc>> GetByChannelIdAndDirectionAsync(ChannelId channelId, HtlcDirection direction)
     {
         var htlcEntities = Get(h => h.ChannelId.Equals(channelId) && h.Direction.Equals(direction)).ToList();
-        
+
         return await Task.WhenAll(htlcEntities.Select(h => MapEntityToDomainAsync(h, _messageSerializer)));
     }
 
@@ -77,7 +77,7 @@ public class HtlcDbRepository : BaseDbRepository<HtlcEntity>, IHtlcDbRepository
     {
         using var stream = new MemoryStream();
         await messageSerializer.SerializeAsync(htlc.AddMessage, stream);
-        
+
         return new HtlcEntity
         {
             ChannelId = channelId,
@@ -98,8 +98,8 @@ public class HtlcDbRepository : BaseDbRepository<HtlcEntity>, IHtlcDbRepository
         Hash? paymentPreimage = null;
         if (htlcEntity.PaymentPreimage is not null)
             paymentPreimage = htlcEntity.PaymentPreimage;
-        
-        DerSignature? signature = null;
+
+        CompactSignature? signature = null;
         if (htlcEntity.Signature is not null)
             signature = htlcEntity.Signature;
 

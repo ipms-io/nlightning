@@ -30,9 +30,9 @@ public class ClosingSignedPayload : IChannelMessagePayload
     /// <summary>
     /// The signature for the closing transaction
     /// </summary>
-    public DerSignature Signature { get; }
+    public CompactSignature Signature { get; }
 
-    public ClosingSignedPayload(ChannelId channelId, LightningMoney feeAmount, DerSignature signature)
+    public ClosingSignedPayload(ChannelId channelId, LightningMoney feeAmount, CompactSignature signature)
     {
         ChannelId = channelId;
         FeeAmount = feeAmount;

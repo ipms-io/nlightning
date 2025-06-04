@@ -1,9 +1,7 @@
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto;
-using NLightning.Domain.Crypto.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Domain.Channels.ValueObjects;
+using Domain.Crypto.ValueObjects;
 using Interfaces;
 using Money;
 
@@ -91,12 +89,12 @@ public class AcceptChannel1Payload : IChannelMessagePayload
     /// </summary>
     public CompactPubKey FirstPerCommitmentPoint { get; set; }
 
-    public AcceptChannel1Payload(ChannelId channelId, LightningMoney dustLimitAmount,
-                                 LightningMoney maxHtlcValueInFlight, LightningMoney channelReserveAmount,
-                                 LightningMoney htlcMinimumAmount, uint minimumDepth, ushort toSelfDelay,
-                                 ushort maxAcceptedHtlcs, CompactPubKey fundingPubKey, CompactPubKey revocationBasepoint,
-                                 CompactPubKey paymentBasepoint, CompactPubKey delayedPaymentBasepoint, CompactPubKey htlcBasepoint,
-                                 CompactPubKey firstPerCommitmentPoint)
+    public AcceptChannel1Payload(ChannelId channelId, LightningMoney channelReserveAmount,
+                                 CompactPubKey delayedPaymentBasepoint, LightningMoney dustLimitAmount,
+                                 CompactPubKey firstPerCommitmentPoint, CompactPubKey fundingPubKey,
+                                 CompactPubKey htlcBasepoint, LightningMoney htlcMinimumAmount, ushort maxAcceptedHtlcs,
+                                 LightningMoney maxHtlcValueInFlight, uint minimumDepth, CompactPubKey paymentBasepoint,
+                                 CompactPubKey revocationBasepoint, ushort toSelfDelay)
     {
         ChannelId = channelId;
         DustLimitAmount = dustLimitAmount;

@@ -1,8 +1,10 @@
-using NLightning.Domain.Serialization.Interfaces;
-using NLightning.Domain.Utils;
-
 namespace NLightning.Infrastructure.Protocol.Services;
 
+using Domain.Protocol.Messages;
+using Domain.Protocol.Payloads;
+using Domain.Serialization.Interfaces;
+using Domain.Utils;
+using Exceptions;
 using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Services;
 using Domain.Transport;
@@ -23,6 +25,7 @@ internal sealed class MessageService : IMessageService
 
     /// <inheritdoc />
     public event EventHandler<IMessage?>? MessageReceived;
+
     public event EventHandler<Exception>? ExceptionRaised;
 
     /// <inheritdoc />
@@ -67,6 +70,24 @@ internal sealed class MessageService : IMessageService
                 MessageReceived?.Invoke(this, message);
             }
         }
+        catch (MessageSerializationException mse)
+        {
+            var message = mse.Message;
+            if (mse.InnerException is PayloadSerializationException pse)
+            {
+                if (pse.InnerException is not null)
+                    message = pse.InnerException.Message;
+                else
+                    message = pse.Message;
+            }
+            else if (mse.InnerException is not null)
+            {
+                message = mse.InnerException.Message;
+            }
+
+            SendMessageAsync(new ErrorMessage(new ErrorPayload(message))).Wait();
+            RaiseException(this, mse);
+        }
         catch (Exception e)
         {
             RaiseException(this, e);
@@ -79,6 +100,7 @@ internal sealed class MessageService : IMessageService
     }
 
     #region Dispose Pattern
+
     /// <inheritdoc />
     /// <remarks>
     /// Disposes the TransportService.
@@ -106,5 +128,6 @@ internal sealed class MessageService : IMessageService
     {
         Dispose(false);
     }
+
     #endregion
 }

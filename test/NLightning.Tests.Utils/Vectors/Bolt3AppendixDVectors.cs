@@ -1,6 +1,6 @@
-namespace NLightning.Integration.Tests.BOLT3.Vectors;
+namespace NLightning.Tests.Utils.Vectors;
 
-public static class AppendixDVectors
+public static class Bolt3AppendixDVectors
 {
     public static readonly byte[] Seed0FinalNode =
         Convert.FromHexString("0000000000000000000000000000000000000000000000000000000000000000");

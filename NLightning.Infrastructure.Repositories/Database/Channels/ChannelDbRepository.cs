@@ -1,45 +1,43 @@
 using System.Collections.Immutable;
 using Microsoft.EntityFrameworkCore;
-using NLightning.Domain.Channels.Enums;
-using NLightning.Domain.Channels.Interfaces;
-using NLightning.Domain.Channels.Models;
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.Constants;
-using NLightning.Domain.Crypto.Hashes;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Money;
-using NLightning.Domain.Protocol.Interfaces;
-using NLightning.Domain.Protocol.ValueObjects;
-using NLightning.Domain.Serialization.Interfaces;
-using NLightning.Domain.Transactions.Outputs;
-using NLightning.Infrastructure.Persistence.Contexts;
-using NLightning.Infrastructure.Persistence.Entities;
 
 namespace NLightning.Infrastructure.Repositories.Database.Channels;
 
+using Domain.Channels.Enums;
+using Domain.Channels.Interfaces;
+using Domain.Channels.Models;
+using Domain.Channels.ValueObjects;
+using Domain.Crypto.Constants;
+using Domain.Crypto.Hashes;
+using Domain.Crypto.ValueObjects;
+using Domain.Money;
+using Domain.Protocol.ValueObjects;
+using Domain.Serialization.Interfaces;
+using Domain.Transactions.Outputs;
+using Persistence.Contexts;
+using Persistence.Entities;
+
 public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRepository
 {
-    IMessageSerializer _messageSerializer;
-    private readonly ISecretStorageServiceFactory _secretStorageServiceFactory;
-    ISha256 _sha256;
-    
-    public ChannelDbRepository(NLightningDbContext context, IMessageSerializer messageSerializer,
-                               ISecretStorageServiceFactory secretStorageServiceFactory, ISha256 sha256) : base(context)
+    private readonly IMessageSerializer _messageSerializer;
+    private readonly ISha256 _sha256;
+
+    public ChannelDbRepository(NLightningDbContext context, IMessageSerializer messageSerializer, ISha256 sha256)
+        : base(context)
     {
         _messageSerializer = messageSerializer ?? throw new ArgumentNullException(nameof(messageSerializer));
-        _secretStorageServiceFactory = secretStorageServiceFactory;
         _sha256 = sha256 ?? throw new ArgumentNullException(nameof(sha256));
     }
-    
-    public async Task AddAsync(Channel channel)
+
+    public async Task AddAsync(ChannelModel channelModel)
     {
-        var channelEntity = await MapDomainToEntity(channel, _messageSerializer);
+        var channelEntity = await MapDomainToEntity(channelModel, _messageSerializer);
         Insert(channelEntity);
     }
 
-    public async Task UpdateAsync(Channel channel)
+    public async Task UpdateAsync(ChannelModel channelModel)
     {
-        var channelEntity = await MapDomainToEntity(channel, _messageSerializer);
+        var channelEntity = await MapDomainToEntity(channelModel, _messageSerializer);
         Update(channelEntity);
     }
 
@@ -48,36 +46,36 @@ public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRe
         return DeleteByIdAsync(channelId);
     }
 
-    public async Task<Channel?> GetByIdAsync(ChannelId channelId)
+    public async Task<ChannelModel?> GetByIdAsync(ChannelId channelId)
     {
         var channelEntity = await DbSet
-            .AsNoTracking()
-            .Include(c => c.Config)
-            .Include(c => c.KeySets)
-            .Include(c => c.Htlcs)
-            .FirstOrDefaultAsync(c => c.ChannelId == channelId);
-        
+                                 .AsNoTracking()
+                                 .Include(c => c.Config)
+                                 .Include(c => c.KeySets)
+                                 .Include(c => c.Htlcs)
+                                 .FirstOrDefaultAsync(c => c.ChannelId == channelId);
+
         if (channelEntity is null)
             return null;
 
-        return await MapEntityToDomain(channelEntity, _messageSerializer, _secretStorageServiceFactory, _sha256);
+        return await MapEntityToDomain(channelEntity, _messageSerializer, _sha256);
     }
 
-    public async Task<IEnumerable<Channel>> GetAllAsync()
+    public async Task<IEnumerable<ChannelModel>> GetAllAsync()
     {
         var channelEntities = await DbSet
-            .AsNoTracking()
-            .Include(c => c.Config)
-            .Include(c => c.KeySets)
-            .Include(c => c.Htlcs)
-            .ToListAsync();
-        
-        return await Task.WhenAll(channelEntities.Select(
-            async entity => await MapEntityToDomain(entity, _messageSerializer, _secretStorageServiceFactory,
-                                                    _sha256)));
+                                   .AsNoTracking()
+                                   .Include(c => c.Config)
+                                   .Include(c => c.KeySets)
+                                   .Include(c => c.Htlcs)
+                                   .ToListAsync();
+
+        return await Task.WhenAll(
+                   channelEntities.Select(async entity =>
+                                              await MapEntityToDomain(entity, _messageSerializer, _sha256)));
     }
 
-    public async Task<IEnumerable<Channel>> GetReadyChannelsAsync()
+    public async Task<IEnumerable<ChannelModel>> GetReadyChannelsAsync()
     {
         byte[] readyStateList =
         [
@@ -86,103 +84,101 @@ public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRe
             (byte)ChannelState.Open,
             (byte)ChannelState.Closing
         ];
-        
+
         var channelEntities = await DbSet
-            .AsNoTracking()
-            .Include(c => c.Config)
-            .Include(c => c.KeySets)
-            .Include(c => c.Htlcs)
-            .Where(c => readyStateList.Contains(c.State))
-            .ToListAsync();
-        
-        return await Task.WhenAll(channelEntities.Select(
-            async entity => await MapEntityToDomain(entity, _messageSerializer, _secretStorageServiceFactory,
-                                                    _sha256)));
+                                   .AsNoTracking()
+                                   .Include(c => c.Config)
+                                   .Include(c => c.KeySets)
+                                   .Include(c => c.Htlcs)
+                                   .Where(c => readyStateList.Contains(c.State))
+                                   .ToListAsync();
+
+        return await Task.WhenAll(
+                   channelEntities.Select(async entity =>
+                                              await MapEntityToDomain(entity, _messageSerializer, _sha256)));
     }
 
-    internal static async Task<ChannelEntity> MapDomainToEntity(Channel channel, IMessageSerializer messageSerializer)
+    internal static async Task<ChannelEntity> MapDomainToEntity(ChannelModel channelModel,
+                                                                IMessageSerializer messageSerializer)
     {
-        var config = ChannelConfigDbRepository.MapDomainToEntity(channel.ChannelId, channel.ChannelConfig);
+        var config = ChannelConfigDbRepository.MapDomainToEntity(channelModel.ChannelId, channelModel.ChannelConfig);
         ImmutableArray<ChannelKeySetEntity> keySets =
         [
-            ChannelKeySetDbRepository.MapDomainToEntity(channel.ChannelId, true, channel.LocalKeySet),
-            ChannelKeySetDbRepository.MapDomainToEntity(channel.ChannelId, false, channel.RemoteKeySet)
+            ChannelKeySetDbRepository.MapDomainToEntity(channelModel.ChannelId, true, channelModel.LocalKeySet),
+            ChannelKeySetDbRepository.MapDomainToEntity(channelModel.ChannelId, false, channelModel.RemoteKeySet)
         ];
-        
+
         var htlcs = new List<Htlc>();
-        htlcs.AddRange(GetHtlcsOrNull(channel.LocalOfferedHtlcs));
-        htlcs.AddRange(GetHtlcsOrNull(channel.LocalFulffiledHtlcs));
-        htlcs.AddRange(GetHtlcsOrNull(channel.LocalOldHtlcs));
-        htlcs.AddRange(GetHtlcsOrNull(channel.RemoteOfferedHtlcs));
-        htlcs.AddRange(GetHtlcsOrNull(channel.RemoteFulffiledHtlcs));
-        htlcs.AddRange(GetHtlcsOrNull(channel.RemoteOldHtlcs));
-        
+        htlcs.AddRange(GetHtlcsOrNull(channelModel.LocalOfferedHtlcs));
+        htlcs.AddRange(GetHtlcsOrNull(channelModel.LocalFullfiledHtlcs));
+        htlcs.AddRange(GetHtlcsOrNull(channelModel.LocalOldHtlcs));
+        htlcs.AddRange(GetHtlcsOrNull(channelModel.RemoteOfferedHtlcs));
+        htlcs.AddRange(GetHtlcsOrNull(channelModel.RemoteFulffiledHtlcs));
+        htlcs.AddRange(GetHtlcsOrNull(channelModel.RemoteOldHtlcs));
+
         List<HtlcEntity>? htlcEntities = null;
         if (htlcs.Count > 0)
         {
             htlcEntities = [];
-            
+
             foreach (var htlc in htlcs)
-                htlcEntities.Add(await HtlcDbRepository.MapDomainToEntityAsync(channel.ChannelId, htlc, messageSerializer));
+                htlcEntities.Add(
+                    await HtlcDbRepository.MapDomainToEntityAsync(channelModel.ChannelId, htlc, messageSerializer));
         }
-        
+
         return new ChannelEntity
         {
-            ChannelId = channel.ChannelId,
-            
-            FundingTxId = channel.FundingOutput.TxId ?? new byte[CryptoConstants.Sha256HashLen],
-            FundingOutputIndex = channel.FundingOutput.Index ?? 0,
-            FundingAmountSatoshis = channel.FundingOutput.Amount.Satoshi,
-            
-            IsInitiator = channel.IsInitiator,
-            RemoteNodeId = channel.RemoteNodeId,
-            State = (byte)channel.State,
-            Version = (byte)channel.Version,
-            
-            LocalBalanceSatoshis = channel.LocalBalance.Satoshi,
-            RemoteBalanceSatoshis = channel.RemoteBalance.Satoshi,
-            
-            LocalCommitmentNumber = channel.LocalCommitmentNumber.Value,
-            RemoteCommitmentNumber = channel.RemoteCommitmentNumber.Value,
-            LocalNextHtlcId = channel.LocalNextHtlcId,
-            RemoteNextHtlcId = channel.RemoteNextHtlcId,
-            LocalRevocationNumber = channel.LocalRevocationNumber,
-            RemoteRevocationNumber = channel.RemoteRevocationNumber,
-            LastSentSignature = channel.LastSentSignature?.Value ?? null,
-            LastReceivedSignature = channel.LastReceivedSignature?.Value ?? null,
-            
+            ChannelId = channelModel.ChannelId,
+
+            FundingTxId = channelModel.FundingOutput.TransactionId ?? new byte[CryptoConstants.Sha256HashLen],
+            FundingOutputIndex = channelModel.FundingOutput.Index ?? 0,
+            FundingAmountSatoshis = channelModel.FundingOutput.Amount.Satoshi,
+
+            IsInitiator = channelModel.IsInitiator,
+            RemoteNodeId = channelModel.RemoteNodeId,
+            State = (byte)channelModel.State,
+            Version = (byte)channelModel.Version,
+
+            LocalBalanceSatoshis = channelModel.LocalBalance.Satoshi,
+            RemoteBalanceSatoshis = channelModel.RemoteBalance.Satoshi,
+
+            LocalNextHtlcId = channelModel.LocalNextHtlcId,
+            RemoteNextHtlcId = channelModel.RemoteNextHtlcId,
+            LocalRevocationNumber = channelModel.LocalRevocationNumber,
+            RemoteRevocationNumber = channelModel.RemoteRevocationNumber,
+            LastSentSignature = channelModel.LastSentSignature?.Value ?? null,
+            LastReceivedSignature = channelModel.LastReceivedSignature?.Value ?? null,
+
             Config = config,
             KeySets = keySets,
             Htlcs = htlcEntities
         };
     }
-    
-    internal static async Task<Channel> MapEntityToDomain(ChannelEntity channelEntity,
-                                                          IMessageSerializer messageSerializer,
-                                                          ISecretStorageServiceFactory secretStorageServiceFactory,
-                                                          ISha256 sha256)
+
+    internal static async Task<ChannelModel> MapEntityToDomain(ChannelEntity channelEntity,
+                                                               IMessageSerializer messageSerializer, ISha256 sha256)
     {
         if (channelEntity.Config is null)
             throw new InvalidOperationException(
                 "Channel config cannot be null when mapping channel entity to domain model.");
-        
+
         if (channelEntity.KeySets is not { Count: 2 })
             throw new InvalidOperationException(
                 "Channel key sets must contain exactly two entries when mapping channel entity to domain model.");
-        
+
         var localKeySetEntity = channelEntity.KeySets.FirstOrDefault(k => k.IsLocal);
         if (localKeySetEntity is null)
             throw new InvalidOperationException(
                 "Local key set cannot be null when mapping channel entity to domain model.");
-        
+
         var remoteKeySetEntity = channelEntity.KeySets.FirstOrDefault(k => !k.IsLocal);
         if (remoteKeySetEntity is null)
             throw new InvalidOperationException(
                 "Remote key set cannot be null when mapping channel entity to domain model.");
-        
+
         var config = ChannelConfigDbRepository.MapEntityToDomain(channelEntity.Config);
-        var localKeySet = ChannelKeySetDbRepository.MapEntityToDomain(localKeySetEntity, secretStorageServiceFactory);
-        var remoteKeySet = ChannelKeySetDbRepository.MapEntityToDomain(remoteKeySetEntity, secretStorageServiceFactory);
+        var localKeySet = ChannelKeySetDbRepository.MapEntityToDomain(localKeySetEntity);
+        var remoteKeySet = ChannelKeySetDbRepository.MapEntityToDomain(remoteKeySetEntity);
 
         var localOfferedHtlcs = new List<Htlc>();
         var localFulfilledHtlcs = new List<Htlc>();
@@ -220,45 +216,41 @@ public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRe
                     remoteOldHtlcs.Add(domainHtlc);
             }
         }
-        
-        var fundingOutput = new FundingOutputInfo(LightningMoney.Satoshis(channelEntity.FundingAmountSatoshis), 
+
+        var fundingOutput = new FundingOutputInfo(LightningMoney.Satoshis(channelEntity.FundingAmountSatoshis),
                                                   localKeySet.FundingCompactPubKey, localKeySet.FundingCompactPubKey)
         {
             Index = channelEntity.FundingOutputIndex,
-            TxId = channelEntity.FundingTxId
+            TransactionId = channelEntity.FundingTxId
         };
-        
-        var localCommitmentNumber =
+
+        var commitmentNumber =
             new CommitmentNumber(localKeySet.PaymentCompactBasepoint, remoteKeySet.PaymentCompactBasepoint, sha256,
-                                 channelEntity.LocalCommitmentNumber);
-        var remoteCommitmentNumber =
-            new CommitmentNumber(remoteKeySet.PaymentCompactBasepoint, localKeySet.PaymentCompactBasepoint, sha256,
-                                 channelEntity.RemoteCommitmentNumber);
-                                 
+                                 channelEntity.LocalRevocationNumber + 1);
+
         CompactPubKey remoteNodeId = channelEntity.RemoteNodeId;
 
-        DerSignature? lastSentSig = null;
+        CompactSignature? lastSentSig = null;
         if (channelEntity.LastSentSignature != null)
-            lastSentSig = new DerSignature(channelEntity.LastSentSignature);
-            
-        DerSignature? lastReceivedSig = null;
+            lastSentSig = new CompactSignature(channelEntity.LastSentSignature);
+
+        CompactSignature? lastReceivedSig = null;
         if (channelEntity.LastReceivedSignature != null)
-            lastReceivedSig = new DerSignature(channelEntity.LastReceivedSignature);
-            
-        return new Channel(
+            lastReceivedSig = new CompactSignature(channelEntity.LastReceivedSignature);
+
+        return new ChannelModel(
             channelId: new ChannelId(channelEntity.ChannelId),
             fundingOutput: fundingOutput,
             isInitiator: channelEntity.IsInitiator,
             remoteNodeId: remoteNodeId,
             channelConfig: config,
+            commitmentNumber: commitmentNumber,
             state: (ChannelState)channelEntity.State,
             version: (ChannelVersion)channelEntity.Version,
             localBalance: LightningMoney.Satoshis(channelEntity.LocalBalanceSatoshis),
             remoteBalance: LightningMoney.Satoshis(channelEntity.RemoteBalanceSatoshis),
             localKeySet: localKeySet,
             remoteKeySet: remoteKeySet,
-            localCommitmentNumber: localCommitmentNumber,
-            remoteCommitmentNumber: remoteCommitmentNumber,
             localNextHtlcId: channelEntity.LocalNextHtlcId,
             remoteNextHtlcId: channelEntity.RemoteNextHtlcId,
             localRevocationNumber: channelEntity.LocalRevocationNumber,
@@ -269,14 +261,13 @@ public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRe
             localFulffiledHtlcs: localFulfilledHtlcs,
             localOldHtlcs: localOldHtlcs,
             remoteOfferedHtlcs: remoteOfferedHtlcs,
-            remoteFulffiledHtlcs: remoteFulfilledHtlcs,
+            remoteFullfiledHtlcs: remoteFulfilledHtlcs,
             remoteOldHtlcs: remoteOldHtlcs
         );
     }
-    
+
     private static ICollection<Htlc> GetHtlcsOrNull(ICollection<Htlc>? htlcs)
     {
         return htlcs is { Count: > 0 } ? htlcs : [];
     }
 }
-

@@ -10,7 +10,8 @@ namespace NLightning.Application.Bitcoin.Interfaces;
 
 public interface ICommitmentTransactionService
 {
-    Task<ITransaction> CreateAndSignCommitmentTransactionAsync(Channel channel, IEnumerable<Htlc> htlcOutputsToInclude,
+    Task<ITransaction> CreateAndSignCommitmentTransactionAsync(ChannelModel channelModel,
+                                                               IEnumerable<Htlc> htlcOutputsToInclude,
                                                                ulong localCommitmentNumber, bool isFunder,
                                                                NodeOptions nodeOptions,
                                                                CompactPubKey remoteCommitmentPoint);

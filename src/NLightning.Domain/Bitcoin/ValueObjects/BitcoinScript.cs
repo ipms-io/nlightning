@@ -14,10 +14,7 @@ public readonly record struct BitcoinScript : IValueObject
 
     public BitcoinScript(byte[] value)
     {
-        if (value == null)
-            throw new ArgumentNullException(nameof(value), "BitcoinScript cannot be null.");
-
-        Value = value;
+        Value = value ?? throw new ArgumentNullException(nameof(value), "BitcoinScript cannot be null.");
     }
 
     public static implicit operator BitcoinScript(byte[] bytes) => new(bytes);

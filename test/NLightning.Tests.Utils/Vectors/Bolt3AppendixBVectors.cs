@@ -1,10 +1,9 @@
 using NBitcoin;
+using NLightning.Domain.Money;
 
-namespace NLightning.Integration.Tests.BOLT3.Vectors;
+namespace NLightning.Tests.Utils.Vectors;
 
-using Domain.Money;
-
-public static class AppendixBVectors
+public static class Bolt3AppendixBVectors
 {
     public static readonly uint256 InputTxId = new("fd2105607605d2302994ffea703b09f66b6351816ee737a93e42a841ea20bbad");
 

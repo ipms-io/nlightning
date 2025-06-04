@@ -70,7 +70,7 @@ public class ToLocalOutput : BaseOutput
             OpcodeType.OP_CHECKSIG
         );
 
-        // Check if script is correct
+        // Check if the script is correct
         if (script.IsUnspendable || !script.IsValid)
         {
             throw new InvalidScriptException("ScriptPubKey is either 'invalid' or 'unspendable'.");

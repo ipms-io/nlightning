@@ -115,13 +115,14 @@ public class OpenChannel1Payload : IChannelMessagePayload
     /// </summary>
     public ChannelFlags ChannelFlags { get; }
 
-    public OpenChannel1Payload(ChainHash chainHash, ChannelId channelId, LightningMoney fundingAmount,
-                               LightningMoney pushAmount, LightningMoney dustLimitAmount,
-                               LightningMoney maxHtlcValueInFlight, LightningMoney channelReserveAmount,
-                               LightningMoney htlcMinimumAmount, LightningMoney feeRatePerKw, ushort toSelfDelay,
-                               ushort maxAcceptedHtlcs, CompactPubKey fundingPubKey, CompactPubKey revocationBasepoint,
-                               CompactPubKey paymentBasepoint, CompactPubKey delayedPaymentBasepoint, CompactPubKey htlcBasepoint,
-                               CompactPubKey firstPerCommitmentPoint, ChannelFlags channelFlags)
+    public OpenChannel1Payload(ChainHash chainHash, ChannelFlags channelFlags, ChannelId channelId,
+                               LightningMoney channelReserveAmount, CompactPubKey delayedPaymentBasepoint,
+                               LightningMoney dustLimitAmount, LightningMoney feeRatePerKw,
+                               CompactPubKey firstPerCommitmentPoint, LightningMoney fundingAmount,
+                               CompactPubKey fundingPubKey, CompactPubKey htlcBasepoint,
+                               LightningMoney htlcMinimumAmount, ushort maxAcceptedHtlcs,
+                               LightningMoney maxHtlcValueInFlight, CompactPubKey paymentBasepoint,
+                               LightningMoney pushAmount, CompactPubKey revocationBasepoint, ushort toSelfDelay)
     {
         ChainHash = chainHash;
         ChannelId = channelId;

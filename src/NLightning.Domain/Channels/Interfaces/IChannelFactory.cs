@@ -7,6 +7,7 @@ namespace NLightning.Domain.Channels.Interfaces;
 
 public interface IChannelFactory
 {
-    Channel CreateChannelV1AsNonInitiator(OpenChannel1Message message, FeatureOptions negotiatedFeatures,
-                                          CompactPubKey remoteNodeId);
+    Task<ChannelModel> CreateChannelV1AsNonInitiatorAsync(OpenChannel1Message message,
+                                                          FeatureOptions negotiatedFeatures,
+                                                          CompactPubKey remoteNodeId);
 }

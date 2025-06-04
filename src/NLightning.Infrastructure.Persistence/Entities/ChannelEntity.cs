@@ -1,4 +1,5 @@
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
+
 namespace NLightning.Infrastructure.Persistence.Entities;
 
 /// <summary>
@@ -10,17 +11,17 @@ public class ChannelEntity
     /// The unique channel identifier used to reference this channel on the Lightning Network.
     /// </summary>
     public required byte[] ChannelId { get; set; }
-    
+
     /// <summary>
     /// The transaction ID of the funding transaction that established this channel.
     /// </summary>
     public required byte[] FundingTxId { get; set; }
-    
+
     /// <summary>
     /// The output index in the funding transaction that contains the channel funding.
     /// </summary>
     public required uint FundingOutputIndex { get; set; }
-    
+
     /// <summary>
     /// The amount of satoshis locked in the funding output for this channel.
     /// </summary>
@@ -30,52 +31,42 @@ public class ChannelEntity
     /// Indicates whether the local node initiated the channel opening.
     /// </summary>
     public required bool IsInitiator { get; set; }
-    
+
     /// <summary>
     /// The public key of the channel counterparty.
     /// </summary>
     public required byte[] RemoteNodeId { get; set; }
 
     /// <summary>
-    /// The current local commitment transaction number.
-    /// </summary>
-    public required ulong LocalCommitmentNumber { get; set; }
-    
-    /// <summary>
-    /// The current remote commitment transaction number.
-    /// </summary>
-    public required ulong RemoteCommitmentNumber { get; set; }
-    
-    /// <summary>
     /// The next HTLC ID to be used by the local node.
     /// </summary>
     public required ulong LocalNextHtlcId { get; set; }
-    
+
     /// <summary>
     /// The next HTLC ID to be used by the remote node.
     /// </summary>
     public required ulong RemoteNextHtlcId { get; set; }
-    
+
     /// <summary>
     /// The current local revocation number.
     /// </summary>
     public required ulong LocalRevocationNumber { get; set; }
-    
+
     /// <summary>
     /// The current remote revocation number.
     /// </summary>
     public required ulong RemoteRevocationNumber { get; set; }
-    
+
     /// <summary>
     /// The last signature sent to the remote node, stored as a byte array.
     /// </summary>
     public byte[]? LastSentSignature { get; set; }
-    
+
     /// <summary>
     /// The last signature received from the remote node, stored as a byte array.
     /// </summary>
     public byte[]? LastReceivedSignature { get; set; }
-    
+
     /// <summary>
     /// The current state of the channel.
     /// </summary>
@@ -86,12 +77,12 @@ public class ChannelEntity
     /// used to handle version-specific behaviors within the persistence layer.
     /// </summary>
     public required byte Version { get; set; }
-    
+
     /// <summary>
     /// The current balance of the local node in satoshis.
     /// </summary>
     public required decimal LocalBalanceSatoshis { get; set; }
-    
+
     /// <summary>
     /// The current balance of the remote node in satoshis.
     /// </summary>
@@ -114,10 +105,11 @@ public class ChannelEntity
     /// Each HTLC represents a conditional payment in the channel.
     /// </summary>
     public virtual ICollection<HtlcEntity>? Htlcs { get; set; }
-    
+
     /// <summary>
     /// Default constructor for EF Core.
     /// </summary>
-    internal ChannelEntity() 
-    { }
+    internal ChannelEntity()
+    {
+    }
 }

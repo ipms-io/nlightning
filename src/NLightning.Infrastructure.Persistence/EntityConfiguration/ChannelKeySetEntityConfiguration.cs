@@ -16,12 +16,12 @@ public static class ChannelKeySetEntityConfiguration
         {
             // Composite key
             entity.HasKey(e => new { e.ChannelId, e.IsLocal });
-            
+
             // Set required props
             entity.Property(e => e.IsLocal).IsRequired();
             entity.Property(e => e.CurrentPerCommitmentIndex).IsRequired();
             entity.Property(e => e.KeyIndex).IsRequired();
-            
+
             // Required byte[] properties
             entity.Property(e => e.ChannelId).IsRequired();
             entity.Property(e => e.FundingPubKey).IsRequired();
@@ -30,16 +30,15 @@ public static class ChannelKeySetEntityConfiguration
             entity.Property(e => e.DelayedPaymentBasepoint).IsRequired();
             entity.Property(e => e.HtlcBasepoint).IsRequired();
             entity.Property(e => e.CurrentPerCommitmentPoint).IsRequired();
-            
+
             // Nullable byte[] properties
-            entity.Property(e => e.GossipPubKey).IsRequired(false);
-            entity.Property(e => e.LastPerCommitmentSecret).IsRequired(false);
-            
+            entity.Property(e => e.LastRevealedPerCommitmentSecret).IsRequired(false);
+
             // Configure the relationship with Channel
             entity.HasOne<ChannelEntity>()
-                .WithMany()
-                .HasForeignKey(k => k.ChannelId)
-                .OnDelete(DeleteBehavior.Cascade);
+                  .WithMany()
+                  .HasForeignKey(k => k.ChannelId)
+                  .OnDelete(DeleteBehavior.Cascade);
 
             if (databaseType == DatabaseType.MicrosoftSql)
             {
@@ -47,7 +46,7 @@ public static class ChannelKeySetEntityConfiguration
             }
         });
     }
-    
+
     private static void OptimizeConfigurationForSqlServer(EntityTypeBuilder<ChannelKeySetEntity> entity)
     {
         entity.Property(e => e.ChannelId).HasColumnType($"varbinary({ChannelConstants.ChannelIdLength})");
@@ -56,7 +55,7 @@ public static class ChannelKeySetEntityConfiguration
         entity.Property(e => e.PaymentBasepoint).HasColumnType($"varbinary({CryptoConstants.CompactPubkeyLen})");
         entity.Property(e => e.DelayedPaymentBasepoint).HasColumnType($"varbinary({CryptoConstants.CompactPubkeyLen})");
         entity.Property(e => e.HtlcBasepoint).HasColumnType($"varbinary({CryptoConstants.CompactPubkeyLen})");
-        entity.Property(e => e.GossipPubKey).HasColumnType($"varbinary({CryptoConstants.CompactPubkeyLen})");
-        entity.Property(e => e.CurrentPerCommitmentPoint).HasColumnType($"varbinary({CryptoConstants.CompactPubkeyLen})");
+        entity.Property(e => e.CurrentPerCommitmentPoint)
+              .HasColumnType($"varbinary({CryptoConstants.CompactPubkeyLen})");
     }
 }

@@ -1,19 +1,20 @@
 using Microsoft.EntityFrameworkCore;
-using NLightning.Infrastructure.Persistence.EntityConfiguration;
-using NLightning.Infrastructure.Persistence.Enums;
 
 namespace NLightning.Infrastructure.Persistence.Contexts;
 
+using EntityConfiguration;
+using Enums;
+using Providers;
 using Entities;
 
 public class NLightningDbContext : DbContext
 {
     private readonly DatabaseType _databaseType;
 
-    public NLightningDbContext(DbContextOptions<NLightningDbContext> options, DatabaseType databaseType)
+    public NLightningDbContext(DbContextOptions<NLightningDbContext> options, DatabaseTypeProvider databaseTypeProvider)
         : base(options)
     {
-        _databaseType = databaseType;
+        _databaseType = databaseTypeProvider.DatabaseType;
     }
 
     public DbSet<ChannelEntity> Channels { get; set; }
@@ -24,7 +25,7 @@ public class NLightningDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        
+
         // Apply entity configurations
         modelBuilder.ConfigureChannelEntity(_databaseType);
         modelBuilder.ConfigureChannelConfigEntity(_databaseType);

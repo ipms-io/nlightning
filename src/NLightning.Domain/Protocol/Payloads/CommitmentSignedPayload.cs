@@ -14,8 +14,10 @@ using ValueObjects;
 /// <remarks>
 /// Initializes a new instance of the CommitmentSignedPayload class.
 /// </remarks>
-public class CommitmentSignedPayload(ChannelId channelId, IEnumerable<DerSignature> htlcSignatures,
-                                     DerSignature signature) : IChannelMessagePayload
+public class CommitmentSignedPayload(
+    ChannelId channelId,
+    IEnumerable<CompactSignature> htlcSignatures,
+    CompactSignature signature) : IChannelMessagePayload
 {
     /// <summary>
     /// The channel_id this message refers to
@@ -25,7 +27,7 @@ public class CommitmentSignedPayload(ChannelId channelId, IEnumerable<DerSignatu
     /// <summary>
     /// The signature for the commitment transaction
     /// </summary>
-    public DerSignature Signature { get; } = signature;
+    public CompactSignature Signature { get; } = signature;
 
     /// <summary>
     /// Number of HTLCs outputs
@@ -41,5 +43,5 @@ public class CommitmentSignedPayload(ChannelId channelId, IEnumerable<DerSignatu
     /// <summary>
     /// List containing HTLCs signatures
     /// </summary>
-    public IEnumerable<DerSignature> HtlcSignatures { get; set; } = htlcSignatures;
+    public IEnumerable<CompactSignature> HtlcSignatures { get; set; } = htlcSignatures;
 }

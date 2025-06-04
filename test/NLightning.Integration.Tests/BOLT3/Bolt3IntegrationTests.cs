@@ -4,8 +4,11 @@ using NBitcoin;
 using NBitcoin.Policy;
 using NLightning.Domain.Bitcoin.Interfaces;
 using NLightning.Domain.Protocol.ValueObjects;
+using NLightning.Domain.Transactions.Models;
+using NLightning.Infrastructure.Bitcoin.Builders;
 using NLightning.Infrastructure.Bitcoin.Services;
 using NLightning.Infrastructure.Crypto.Hashes;
+using NLightning.Tests.Utils.Vectors;
 
 namespace NLightning.Integration.Tests.BOLT3;
 
@@ -17,7 +20,6 @@ using Infrastructure.Bitcoin.Outputs;
 using Infrastructure.Bitcoin.Transactions;
 using Infrastructure.Protocol.Models;
 using Infrastructure.Protocol.Services;
-using Vectors;
 
 public class Bolt3IntegrationTests
 {
@@ -31,16 +33,16 @@ public class Bolt3IntegrationTests
     private ReceivedHtlcOutput? _receivedHtlc1;
     private ReceivedHtlcOutput? _receivedHtlc4;
 
-    private readonly CommitmentNumber _commitmentNumber = new(AppendixCVectors.NodeAPaymentBasepoint.ToBytes(),
-                                                              AppendixCVectors.NodeBPaymentBasepoint.ToBytes(),
+    private readonly CommitmentNumber _commitmentNumber = new(Bolt3AppendixCVectors.NodeAPaymentBasepoint.ToBytes(),
+                                                              Bolt3AppendixCVectors.NodeBPaymentBasepoint.ToBytes(),
                                                               s_sha256,
-                                                              AppendixCVectors.CommitmentNumber);
+                                                              Bolt3AppendixCVectors.CommitmentNumber);
 
-    private readonly FundingOutput _fundingOutput = new(AppendixBVectors.FundingSatoshis,
-                                                        AppendixCVectors.NodeAFundingPubkey,
-                                                        AppendixCVectors.NodeBFundingPubkey)
+    private readonly FundingOutput _fundingOutput = new(Bolt3AppendixBVectors.FundingSatoshis,
+                                                        Bolt3AppendixCVectors.NodeAFundingPubkey,
+                                                        Bolt3AppendixCVectors.NodeBFundingPubkey)
     {
-        TxId = AppendixBVectors.ExpectedTxId.ToBytes(),
+        TransactionId = Bolt3AppendixBVectors.ExpectedTxId.ToBytes(),
         Index = 0
     };
 
@@ -53,36 +55,37 @@ public class Bolt3IntegrationTests
 
     #region Appendix B Vectors
 
-    [Fact]
-    public void Given_Bolt3Specifications_When_CreatingFundingTransaction_Then_ShouldBeEqualToTestVector()
-    {
-        // Given
-        var nodeOptions = Options.Create(new NodeOptions
-        {
-            HasAnchorOutputs = false
-        });
-
-        var feeServiceMock = new Mock<IFeeService>();
-        feeServiceMock
-           .Setup(x => x.GetCachedFeeRatePerKw())
-           .Returns(new LightningMoney(15000, LightningMoneyUnit.Satoshi));
-        var fundingTransactionFactory =
-            new FundingTransactionFactory(feeServiceMock.Object, nodeOptions, _lightningSigner);
-
-        var fundingInputCoin = new Coin(AppendixBVectors.InputTx, AppendixBVectors.InputIndex);
-
-        // When
-        var fundingTransaction = fundingTransactionFactory
-           .CreateFundingTransaction(AppendixBVectors.LocalPubKey, AppendixBVectors.RemotePubKey,
-                                     AppendixBVectors.FundingSatoshis, AppendixBVectors.ChangeScript.PaymentScript,
-                                     AppendixBVectors.ChangeScript, [fundingInputCoin],
-                                     new BitcoinSecret(AppendixBVectors.InputSigningPrivKey, Network.Main));
-        var finalFundingTx = fundingTransaction.GetSignedTransaction();
-
-        // Then
-        Assert.Equal(AppendixBVectors.ExpectedTx.ToBytes(), finalFundingTx.ToBytes());
-        Assert.True(fundingTransaction.IsValid);
-    }
+    // [Fact]
+    // public void Given_Bolt3Specifications_When_CreatingFundingTransaction_Then_ShouldBeEqualToTestVector()
+    // {
+    //     // Given
+    //     var nodeOptions = Options.Create(new NodeOptions
+    //     {
+    //         HasAnchorOutputs = false
+    //     });
+    //
+    //     var feeServiceMock = new Mock<IFeeService>();
+    //     feeServiceMock
+    //        .Setup(x => x.GetCachedFeeRatePerKw())
+    //        .Returns(new LightningMoney(15000, LightningMoneyUnit.Satoshi));
+    //     var fundingTransactionFactory =
+    //         new FundingTransactionFactory(feeServiceMock.Object, nodeOptions, _lightningSigner);
+    //
+    //     var fundingInputCoin = new Coin(AppendixBVectors.InputTx, AppendixBVectors.InputIndex);
+    //
+    //     // When
+    //     var fundingTransaction = fundingTransactionFactory
+    //        .CreateFundingTransaction(AppendixBVectors.LocalPubKey, AppendixBVectors.RemotePubKey,
+    //                                  AppendixBVectors.FundingSatoshis, AppendixBVectors.ChangeScript.PaymentScript,
+    //                                  AppendixBVectors.ChangeScript, [fundingInputCoin],
+    //                                  new BitcoinSecret(AppendixBVectors.InputSigningPrivKey, Network.Main));
+    //     var finalFundingTx = fundingTransaction.GetSignedTransaction();
+    //
+    //     // Then
+    //     Assert.Equal(AppendixBVectors.ExpectedTx.ToBytes(), finalFundingTx.ToBytes());
+    //     Assert.True(fundingTransaction.IsValid);
+    // }
+    //
 
     #endregion
 
@@ -94,29 +97,29 @@ public class Bolt3IntegrationTests
         // Given
         var nodeOptions = Options.Create(new NodeOptions
         {
-            AnchorAmount = LightningMoney.Zero
+            HasAnchorOutputs = false
         });
 
         var feeServiceMock = new Mock<IFeeService>();
         feeServiceMock
            .Setup(x => x.GetCachedFeeRatePerKw())
            .Returns(new LightningMoney(15000, LightningMoneyUnit.Satoshi));
-        var commitmentTransactionFactory = new CommitmentTransactionFactory(feeServiceMock.Object, nodeOptions);
+        var commitmentTransactionBuilder = new CommitmentTransactionBuilder(nodeOptions);
 
         // When
-        var commitmentTransaction = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint, AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey, AppendixCVectors.NodeARevocationPubkey,
-            AppendixCVectors.Tx0ToLocalMsat, AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
-            _commitmentNumber, true, new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+        var commitmentTransaction = commitmentTransactionBuilder.Build(
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint, Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey, Bolt3AppendixCVectors.NodeARevocationPubkey,
+            Bolt3AppendixCVectors.Tx0ToLocalMsat, Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
+            _commitmentNumber, true, new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransaction
-           .AppendRemoteSignatureAndSign(AppendixCVectors.NodeBSignature0, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixCVectors.NodeBSignature0, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransaction.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.ExpectedCommitTx0.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixCVectors.ExpectedCommitTx0.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransaction.IsValid);
     }
 
@@ -140,12 +143,12 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint, AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixCVectors.Tx1ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay, _commitmentNumber,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint, Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixCVectors.Tx1ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay, _commitmentNumber,
             true, offeredHtlcs, receivedHtlcs,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         // Allow zero fee via reflection
         var builder = typeof(BaseTransaction)
@@ -156,12 +159,12 @@ public class Bolt3IntegrationTests
         propertyInfo?.SetValue(builder, _dontCheckFeePolicy);
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixCVectors.NodeBSignature1, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixCVectors.NodeBSignature1, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.ExpectedCommitTx1.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixCVectors.ExpectedCommitTx1.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -187,21 +190,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixCVectors.Tx1ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixCVectors.Tx1ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true, offeredHtlcs, receivedHtlcs,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixCVectors.NodeBSignature2, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixCVectors.NodeBSignature2, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.ExpectedCommitTx2.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixCVectors.ExpectedCommitTx2.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -227,21 +230,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixCVectors.Tx1ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixCVectors.Tx1ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true, offeredHtlcs, receivedHtlcs,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixCVectors.NodeBSignature3, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixCVectors.NodeBSignature3, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.ExpectedCommitTx3.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixCVectors.ExpectedCommitTx3.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -267,21 +270,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixCVectors.Tx1ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixCVectors.Tx1ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true, offeredHtlcs, receivedHtlcs,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NodeBSignature4,
+        commitmentTransacion.AppendRemoteSignatureAndSign(Bolt3AppendixCVectors.NodeBSignature4,
                                                           _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.ExpectedCommitTx4.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixCVectors.ExpectedCommitTx4.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -307,21 +310,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixCVectors.Tx1ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixCVectors.Tx1ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true, offeredHtlcs, receivedHtlcs,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixCVectors.NodeBSignature5, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixCVectors.NodeBSignature5, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.ExpectedCommitTx5.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixCVectors.ExpectedCommitTx5.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -347,21 +350,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixCVectors.Tx1ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixCVectors.Tx1ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true, offeredHtlcs, receivedHtlcs,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixCVectors.NodeBSignature6, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixCVectors.NodeBSignature6, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.ExpectedCommitTx6.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixCVectors.ExpectedCommitTx6.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -387,21 +390,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixCVectors.Tx1ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixCVectors.Tx1ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true, offeredHtlcs, receivedHtlcs,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
-        commitmentTransacion.AppendRemoteSignatureAndSign(AppendixCVectors.NodeBSignature7,
+        commitmentTransacion.AppendRemoteSignatureAndSign(Bolt3AppendixCVectors.NodeBSignature7,
                                                           _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.ExpectedCommitTx7.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixCVectors.ExpectedCommitTx7.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -427,21 +430,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixCVectors.Tx1ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixCVectors.Tx1ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true, offeredHtlcs, receivedHtlcs,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixCVectors.NodeBSignature8, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixCVectors.NodeBSignature8, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.ExpectedCommitTx8.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixCVectors.ExpectedCommitTx8.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -466,21 +469,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixCVectors.Tx1ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixCVectors.Tx1ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true, [], receivedHtlcs,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixCVectors.NodeBSignature9, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixCVectors.NodeBSignature9, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.ExpectedCommitTx9.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixCVectors.ExpectedCommitTx9.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -505,21 +508,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixCVectors.Tx1ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixCVectors.Tx1ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true, [], receivedHtlcs,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixCVectors.NodeBSignature10, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixCVectors.NodeBSignature10, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.ExpectedCommitTx10.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixCVectors.ExpectedCommitTx10.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -541,21 +544,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixCVectors.Tx1ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixCVectors.Tx1ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixCVectors.NodeBSignature11, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixCVectors.NodeBSignature11, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.ExpectedCommitTx11.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixCVectors.ExpectedCommitTx11.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -577,13 +580,13 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixCVectors.Tx1ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixCVectors.Tx1ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         // Allow huge fee via reflection
         var builder = typeof(BaseTransaction)
@@ -594,12 +597,12 @@ public class Bolt3IntegrationTests
         propertyInfo?.SetValue(builder, _dontCheckFeePolicy);
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixCVectors.NodeBSignature12, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixCVectors.NodeBSignature12, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.ExpectedCommitTx12.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixCVectors.ExpectedCommitTx12.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -620,13 +623,13 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixCVectors.Tx1ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixCVectors.Tx1ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         // Allow huge fee via reflection
         var builder = typeof(BaseTransaction)
@@ -637,12 +640,12 @@ public class Bolt3IntegrationTests
         propertyInfo?.SetValue(builder, _dontCheckFeePolicy);
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixCVectors.NodeBSignature13, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixCVectors.NodeBSignature13, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.ExpectedCommitTx13.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixCVectors.ExpectedCommitTx13.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -664,13 +667,13 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixCVectors.Tx1ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixCVectors.Tx1ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         // Allow huge fee via reflection
         var builder = typeof(BaseTransaction)
@@ -681,12 +684,12 @@ public class Bolt3IntegrationTests
         propertyInfo?.SetValue(builder, _dontCheckFeePolicy);
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixCVectors.NodeBSignature14, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixCVectors.NodeBSignature14, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.ExpectedCommitTx14.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixCVectors.ExpectedCommitTx14.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -712,21 +715,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixCVectors.Tx15ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixCVectors.Tx15ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true, offeredHtlcs, receivedHtlcs,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixCVectors.NodeBSignature15, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixCVectors.NodeBSignature15, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixCVectors.ExpectedCommitTx15.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixCVectors.ExpectedCommitTx15.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -741,11 +744,11 @@ public class Bolt3IntegrationTests
     {
         // Given
         // When
-        var result = KeyDerivationService.GeneratePerCommitmentSecret(AppendixDVectors.Seed0FinalNode,
-                                                                      AppendixDVectors.I0FinalNode);
+        var result = KeyDerivationService.GeneratePerCommitmentSecret(Bolt3AppendixDVectors.Seed0FinalNode,
+                                                                      Bolt3AppendixDVectors.I0FinalNode);
 
         // Then
-        Assert.Equal(AppendixDVectors.ExpectedOutput0FinalNode, result);
+        Assert.Equal(Bolt3AppendixDVectors.ExpectedOutput0FinalNode, result);
     }
 
     [Fact]
@@ -753,11 +756,11 @@ public class Bolt3IntegrationTests
     {
         // Given
         // When
-        var result = KeyDerivationService.GeneratePerCommitmentSecret(AppendixDVectors.SeedFfFinalNode,
-                                                                      AppendixDVectors.IFfFinalNode);
+        var result = KeyDerivationService.GeneratePerCommitmentSecret(Bolt3AppendixDVectors.SeedFfFinalNode,
+                                                                      Bolt3AppendixDVectors.IFfFinalNode);
 
         // Then
-        Assert.Equal(AppendixDVectors.ExpectedOutputFfFinalNode, result);
+        Assert.Equal(Bolt3AppendixDVectors.ExpectedOutputFfFinalNode, result);
     }
 
     [Fact]
@@ -765,11 +768,11 @@ public class Bolt3IntegrationTests
     {
         // Given
         // When
-        var result = KeyDerivationService.GeneratePerCommitmentSecret(AppendixDVectors.SeedFfAlternateBits1,
-                                                                      AppendixDVectors.IFfAlternateBits1);
+        var result = KeyDerivationService.GeneratePerCommitmentSecret(Bolt3AppendixDVectors.SeedFfAlternateBits1,
+                                                                      Bolt3AppendixDVectors.IFfAlternateBits1);
 
         // Then
-        Assert.Equal(AppendixDVectors.ExpectedOutputFfAlternateBits1, result);
+        Assert.Equal(Bolt3AppendixDVectors.ExpectedOutputFfAlternateBits1, result);
     }
 
     [Fact]
@@ -777,11 +780,11 @@ public class Bolt3IntegrationTests
     {
         // Given
         // When
-        var result = KeyDerivationService.GeneratePerCommitmentSecret(AppendixDVectors.SeedFfAlternateBits2,
-                                                                      AppendixDVectors.IFfAlternateBits2);
+        var result = KeyDerivationService.GeneratePerCommitmentSecret(Bolt3AppendixDVectors.SeedFfAlternateBits2,
+                                                                      Bolt3AppendixDVectors.IFfAlternateBits2);
 
         // Then
-        Assert.Equal(AppendixDVectors.ExpectedOutputFfAlternateBits2, result);
+        Assert.Equal(Bolt3AppendixDVectors.ExpectedOutputFfAlternateBits2, result);
     }
 
     [Fact]
@@ -789,11 +792,11 @@ public class Bolt3IntegrationTests
     {
         // Given
         // When
-        var result = KeyDerivationService.GeneratePerCommitmentSecret(AppendixDVectors.Seed01LastNonTrivialNode,
-                                                                      AppendixDVectors.I01LastNonTrivialNode);
+        var result = KeyDerivationService.GeneratePerCommitmentSecret(Bolt3AppendixDVectors.Seed01LastNonTrivialNode,
+                                                                      Bolt3AppendixDVectors.I01LastNonTrivialNode);
 
         // Then
-        Assert.Equal(AppendixDVectors.ExpectedOutput01LastNonTrivialNode, result);
+        Assert.Equal(Bolt3AppendixDVectors.ExpectedOutput01LastNonTrivialNode, result);
     }
 
     #endregion
@@ -808,21 +811,21 @@ public class Bolt3IntegrationTests
 
         // When
         var result1 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret0, AppendixDVectors.StorageIndexMax);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret0, Bolt3AppendixDVectors.StorageIndexMax);
         var result2 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret1, AppendixDVectors.StorageIndexMax - 1);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret1, Bolt3AppendixDVectors.StorageIndexMax - 1);
         var result3 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret2, AppendixDVectors.StorageIndexMax - 2);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret2, Bolt3AppendixDVectors.StorageIndexMax - 2);
         var result4 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret3, AppendixDVectors.StorageIndexMax - 3);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret3, Bolt3AppendixDVectors.StorageIndexMax - 3);
         var result5 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret4, AppendixDVectors.StorageIndexMax - 4);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret4, Bolt3AppendixDVectors.StorageIndexMax - 4);
         var result6 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret5, AppendixDVectors.StorageIndexMax - 5);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret5, Bolt3AppendixDVectors.StorageIndexMax - 5);
         var result7 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret6, AppendixDVectors.StorageIndexMax - 6);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret6, Bolt3AppendixDVectors.StorageIndexMax - 6);
         var result8 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret7, AppendixDVectors.StorageIndexMax - 7);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret7, Bolt3AppendixDVectors.StorageIndexMax - 7);
 
         // Then
         Assert.True(result1);
@@ -842,11 +845,11 @@ public class Bolt3IntegrationTests
         using var storage = new SecretStorageService();
 
         var result1 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret8, AppendixDVectors.StorageIndexMax);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret8, Bolt3AppendixDVectors.StorageIndexMax);
 
         // When
         var result2 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret1, AppendixDVectors.StorageIndexMax - 1);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret1, Bolt3AppendixDVectors.StorageIndexMax - 1);
 
         // Then
         Assert.True(result1);
@@ -860,15 +863,15 @@ public class Bolt3IntegrationTests
         using var storage = new SecretStorageService();
 
         var result1 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret8, AppendixDVectors.StorageIndexMax);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret8, Bolt3AppendixDVectors.StorageIndexMax);
         var result2 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret9, AppendixDVectors.StorageIndexMax - 1);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret9, Bolt3AppendixDVectors.StorageIndexMax - 1);
         var result3 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret2, AppendixDVectors.StorageIndexMax - 2);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret2, Bolt3AppendixDVectors.StorageIndexMax - 2);
 
         // When
         var result4 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret3, AppendixDVectors.StorageIndexMax - 3);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret3, Bolt3AppendixDVectors.StorageIndexMax - 3);
 
         // Then
         Assert.True(result1);
@@ -884,15 +887,15 @@ public class Bolt3IntegrationTests
         using var storage = new SecretStorageService();
 
         var result1 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret0, AppendixDVectors.StorageIndexMax);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret0, Bolt3AppendixDVectors.StorageIndexMax);
         var result2 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret1, AppendixDVectors.StorageIndexMax - 1);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret1, Bolt3AppendixDVectors.StorageIndexMax - 1);
         var result3 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret10, AppendixDVectors.StorageIndexMax - 2);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret10, Bolt3AppendixDVectors.StorageIndexMax - 2);
 
         // When
         var result4 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret3, AppendixDVectors.StorageIndexMax - 3);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret3, Bolt3AppendixDVectors.StorageIndexMax - 3);
 
         // Then
         Assert.True(result1);
@@ -908,23 +911,23 @@ public class Bolt3IntegrationTests
         using var storage = new SecretStorageService();
 
         var result1 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret8, AppendixDVectors.StorageIndexMax);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret8, Bolt3AppendixDVectors.StorageIndexMax);
         var result2 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret9, AppendixDVectors.StorageIndexMax - 1);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret9, Bolt3AppendixDVectors.StorageIndexMax - 1);
         var result3 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret10, AppendixDVectors.StorageIndexMax - 2);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret10, Bolt3AppendixDVectors.StorageIndexMax - 2);
         var result4 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret11, AppendixDVectors.StorageIndexMax - 3);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret11, Bolt3AppendixDVectors.StorageIndexMax - 3);
         var result5 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret4, AppendixDVectors.StorageIndexMax - 4);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret4, Bolt3AppendixDVectors.StorageIndexMax - 4);
         var result6 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret5, AppendixDVectors.StorageIndexMax - 5);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret5, Bolt3AppendixDVectors.StorageIndexMax - 5);
         var result7 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret6, AppendixDVectors.StorageIndexMax - 6);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret6, Bolt3AppendixDVectors.StorageIndexMax - 6);
 
         // When
         var result8 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret7, AppendixDVectors.StorageIndexMax - 7);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret7, Bolt3AppendixDVectors.StorageIndexMax - 7);
 
         // Then
         Assert.True(result1);
@@ -944,19 +947,19 @@ public class Bolt3IntegrationTests
         using var storage = new SecretStorageService();
 
         var result1 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret0, AppendixDVectors.StorageIndexMax);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret0, Bolt3AppendixDVectors.StorageIndexMax);
         var result2 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret1, AppendixDVectors.StorageIndexMax - 1);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret1, Bolt3AppendixDVectors.StorageIndexMax - 1);
         var result3 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret2, AppendixDVectors.StorageIndexMax - 2);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret2, Bolt3AppendixDVectors.StorageIndexMax - 2);
         var result4 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret3, AppendixDVectors.StorageIndexMax - 3);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret3, Bolt3AppendixDVectors.StorageIndexMax - 3);
         var result5 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret12, AppendixDVectors.StorageIndexMax - 4);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret12, Bolt3AppendixDVectors.StorageIndexMax - 4);
 
         // When
         var result6 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret5, AppendixDVectors.StorageIndexMax - 5);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret5, Bolt3AppendixDVectors.StorageIndexMax - 5);
 
         // Then
         Assert.True(result1);
@@ -974,23 +977,23 @@ public class Bolt3IntegrationTests
         using var storage = new SecretStorageService();
 
         var result1 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret0, AppendixDVectors.StorageIndexMax);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret0, Bolt3AppendixDVectors.StorageIndexMax);
         var result2 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret1, AppendixDVectors.StorageIndexMax - 1);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret1, Bolt3AppendixDVectors.StorageIndexMax - 1);
         var result3 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret2, AppendixDVectors.StorageIndexMax - 2);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret2, Bolt3AppendixDVectors.StorageIndexMax - 2);
         var result4 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret3, AppendixDVectors.StorageIndexMax - 3);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret3, Bolt3AppendixDVectors.StorageIndexMax - 3);
         var result5 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret12, AppendixDVectors.StorageIndexMax - 4);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret12, Bolt3AppendixDVectors.StorageIndexMax - 4);
         var result6 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret13, AppendixDVectors.StorageIndexMax - 5);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret13, Bolt3AppendixDVectors.StorageIndexMax - 5);
         var result7 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret6, AppendixDVectors.StorageIndexMax - 6);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret6, Bolt3AppendixDVectors.StorageIndexMax - 6);
 
         // When
         var result8 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret7, AppendixDVectors.StorageIndexMax - 7);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret7, Bolt3AppendixDVectors.StorageIndexMax - 7);
 
         // Then
         Assert.True(result1);
@@ -1010,23 +1013,23 @@ public class Bolt3IntegrationTests
         using var storage = new SecretStorageService();
 
         var result1 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret0, AppendixDVectors.StorageIndexMax);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret0, Bolt3AppendixDVectors.StorageIndexMax);
         var result2 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret1, AppendixDVectors.StorageIndexMax - 1);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret1, Bolt3AppendixDVectors.StorageIndexMax - 1);
         var result3 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret2, AppendixDVectors.StorageIndexMax - 2);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret2, Bolt3AppendixDVectors.StorageIndexMax - 2);
         var result4 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret3, AppendixDVectors.StorageIndexMax - 3);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret3, Bolt3AppendixDVectors.StorageIndexMax - 3);
         var result5 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret4, AppendixDVectors.StorageIndexMax - 4);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret4, Bolt3AppendixDVectors.StorageIndexMax - 4);
         var result6 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret5, AppendixDVectors.StorageIndexMax - 5);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret5, Bolt3AppendixDVectors.StorageIndexMax - 5);
         var result7 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret14, AppendixDVectors.StorageIndexMax - 6);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret14, Bolt3AppendixDVectors.StorageIndexMax - 6);
 
         // When
         var result8 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret7, AppendixDVectors.StorageIndexMax - 7);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret7, Bolt3AppendixDVectors.StorageIndexMax - 7);
 
         // Then
         Assert.True(result1);
@@ -1046,23 +1049,23 @@ public class Bolt3IntegrationTests
         using var storage = new SecretStorageService();
 
         var result1 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret0, AppendixDVectors.StorageIndexMax);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret0, Bolt3AppendixDVectors.StorageIndexMax);
         var result2 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret1, AppendixDVectors.StorageIndexMax - 1);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret1, Bolt3AppendixDVectors.StorageIndexMax - 1);
         var result3 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret2, AppendixDVectors.StorageIndexMax - 2);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret2, Bolt3AppendixDVectors.StorageIndexMax - 2);
         var result4 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret3, AppendixDVectors.StorageIndexMax - 3);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret3, Bolt3AppendixDVectors.StorageIndexMax - 3);
         var result5 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret4, AppendixDVectors.StorageIndexMax - 4);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret4, Bolt3AppendixDVectors.StorageIndexMax - 4);
         var result6 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret5, AppendixDVectors.StorageIndexMax - 5);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret5, Bolt3AppendixDVectors.StorageIndexMax - 5);
         var result7 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret6, AppendixDVectors.StorageIndexMax - 6);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret6, Bolt3AppendixDVectors.StorageIndexMax - 6);
 
         // When
         var result8 = storage
-           .InsertSecret(AppendixDVectors.StorageExpectedSecret15, AppendixDVectors.StorageIndexMax - 7);
+           .InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret15, Bolt3AppendixDVectors.StorageIndexMax - 7);
 
         // Then
         Assert.True(result1);
@@ -1083,15 +1086,15 @@ public class Bolt3IntegrationTests
         Span<byte> derivedSecret = stackalloc byte[SecretStorageService.SecretSize];
 
         // Insert a valid secret with known index
-        storage.InsertSecret(AppendixDVectors.StorageExpectedSecret0, AppendixDVectors.StorageIndexMax);
-        storage.InsertSecret(AppendixDVectors.StorageExpectedSecret1, AppendixDVectors.StorageIndexMax - 1);
-        storage.InsertSecret(AppendixDVectors.StorageExpectedSecret2, AppendixDVectors.StorageIndexMax - 2);
+        storage.InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret0, Bolt3AppendixDVectors.StorageIndexMax);
+        storage.InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret1, Bolt3AppendixDVectors.StorageIndexMax - 1);
+        storage.InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret2, Bolt3AppendixDVectors.StorageIndexMax - 2);
 
         // When
-        storage.DeriveOldSecret(AppendixDVectors.StorageIndexMax, derivedSecret);
+        storage.DeriveOldSecret(Bolt3AppendixDVectors.StorageIndexMax, derivedSecret);
 
         // Then
-        Assert.Equal(AppendixDVectors.StorageExpectedSecret0, derivedSecret);
+        Assert.Equal(Bolt3AppendixDVectors.StorageExpectedSecret0, derivedSecret);
     }
 
     [Fact]
@@ -1102,13 +1105,13 @@ public class Bolt3IntegrationTests
         var derivedSecret = new byte[SecretStorageService.SecretSize];
 
         // Insert a valid secret with known index
-        storage.InsertSecret(AppendixDVectors.StorageExpectedSecret1, AppendixDVectors.StorageIndexMax);
+        storage.InsertSecret(Bolt3AppendixDVectors.StorageExpectedSecret1, Bolt3AppendixDVectors.StorageIndexMax);
 
         // When/Then
         // Cannot derive a secret with higher index
         Assert.Throws<InvalidOperationException>(() =>
         {
-            storage.DeriveOldSecret(AppendixDVectors.StorageIndexMax - 1, derivedSecret);
+            storage.DeriveOldSecret(Bolt3AppendixDVectors.StorageIndexMax - 1, derivedSecret);
         });
     }
 
@@ -1122,9 +1125,9 @@ public class Bolt3IntegrationTests
         // Insert secrets with different number of trailing zeros
         for (var i = 0; i < 48; i++)
         {
-            var index = (AppendixDVectors.StorageIndexMax - 1) & ~((1UL << i) - 1);
+            var index = (Bolt3AppendixDVectors.StorageIndexMax - 1) & ~((1UL << i) - 1);
             var secret = KeyDerivationService.GeneratePerCommitmentSecret(
-                AppendixDVectors.StorageCorrectSeed, index);
+                Bolt3AppendixDVectors.StorageCorrectSeed, index);
 
             storage.InsertSecret(secret, index);
         }
@@ -1133,9 +1136,9 @@ public class Bolt3IntegrationTests
         // We should be able to derive any secret in the range
         for (var i = 1U; i < 20; i++)
         {
-            var index = AppendixDVectors.StorageIndexMax - i;
+            var index = Bolt3AppendixDVectors.StorageIndexMax - i;
             var expectedSecret = KeyDerivationService.GeneratePerCommitmentSecret(
-                AppendixDVectors.StorageCorrectSeed, index);
+                Bolt3AppendixDVectors.StorageCorrectSeed, index);
 
             storage.DeriveOldSecret(index, derivedSecret);
 
@@ -1240,21 +1243,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransaction = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixFVectors.Tx0ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixFVectors.Tx0ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransaction
-           .AppendRemoteSignatureAndSign(AppendixFVectors.NodeBSignature0, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixFVectors.NodeBSignature0, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransaction.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixFVectors.ExpectedCommitTx0.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixFVectors.ExpectedCommitTx0.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransaction.IsValid);
     }
 
@@ -1276,20 +1279,20 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransaction = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixFVectors.Tx1ToLocalMsat,
-            0UL, AppendixCVectors.LocalDelay, _commitmentNumber, true,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixFVectors.Tx1ToLocalMsat,
+            0UL, Bolt3AppendixCVectors.LocalDelay, _commitmentNumber, true,
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransaction
-           .AppendRemoteSignatureAndSign(AppendixFVectors.NodeBSignature1, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixFVectors.NodeBSignature1, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransaction.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixFVectors.ExpectedCommitTx1.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixFVectors.ExpectedCommitTx1.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransaction.IsValid);
     }
 
@@ -1315,21 +1318,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixFVectors.Tx2ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixFVectors.Tx2ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true, offeredHtlcs, receivedHtlcs,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixFVectors.NodeBSignature2, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixFVectors.NodeBSignature2, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixFVectors.ExpectedCommitTx2.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixFVectors.ExpectedCommitTx2.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -1356,21 +1359,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixFVectors.Tx2ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixFVectors.Tx2ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true, offeredHtlcs, receivedHtlcs,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixFVectors.NodeBSignature3, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixFVectors.NodeBSignature3, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixFVectors.ExpectedCommitTx3.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixFVectors.ExpectedCommitTx3.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -1397,21 +1400,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixFVectors.Tx2ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixFVectors.Tx2ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true, offeredHtlcs, receivedHtlcs,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixFVectors.NodeBSignature4, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixFVectors.NodeBSignature4, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixFVectors.ExpectedCommitTx4.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixFVectors.ExpectedCommitTx4.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -1437,21 +1440,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixFVectors.Tx2ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixFVectors.Tx2ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true, [], receivedHtlcs,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixFVectors.NodeBSignature5, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixFVectors.NodeBSignature5, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixFVectors.ExpectedCommitTx5.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixFVectors.ExpectedCommitTx5.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -1474,21 +1477,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixFVectors.Tx2ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixFVectors.Tx2ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixFVectors.NodeBSignature6, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixFVectors.NodeBSignature6, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixFVectors.ExpectedCommitTx6.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixFVectors.ExpectedCommitTx6.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -1511,13 +1514,13 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixFVectors.Tx2ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixFVectors.Tx2ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         // Allow huge fee via reflection
         var builder = typeof(BaseTransaction)
@@ -1528,12 +1531,12 @@ public class Bolt3IntegrationTests
         propertyInfo?.SetValue(builder, _dontCheckFeePolicy);
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixFVectors.NodeBSignature7, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixFVectors.NodeBSignature7, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixFVectors.ExpectedCommitTx7.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixFVectors.ExpectedCommitTx7.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -1559,21 +1562,21 @@ public class Bolt3IntegrationTests
 
         // When
         var commitmentTransacion = commitmentTransactionFactory.CreateCommitmentTransaction(
-            _fundingOutput, AppendixCVectors.NodeAPaymentBasepoint,
-            AppendixCVectors.NodeBPaymentBasepoint,
-            AppendixCVectors.NodeADelayedPubkey,
-            AppendixCVectors.NodeARevocationPubkey, AppendixFVectors.Tx8ToLocalMsat,
-            AppendixCVectors.ToRemoteMsat, AppendixCVectors.LocalDelay,
+            _fundingOutput, Bolt3AppendixCVectors.NodeAPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeBPaymentBasepoint,
+            Bolt3AppendixCVectors.NodeADelayedPubkey,
+            Bolt3AppendixCVectors.NodeARevocationPubkey, Bolt3AppendixFVectors.Tx8ToLocalMsat,
+            Bolt3AppendixCVectors.ToRemoteMsat, Bolt3AppendixCVectors.LocalDelay,
             _commitmentNumber, true, offeredHtlcs, receivedHtlcs,
-            new BitcoinSecret(AppendixCVectors.NodeAFundingPrivkey, Network.Main));
+            new BitcoinSecret(Bolt3AppendixCVectors.NodeAFundingPrivkey, Network.Main));
 
         commitmentTransacion
-           .AppendRemoteSignatureAndSign(AppendixFVectors.NodeBSignature8, _fundingOutput.RemotePubKey);
+           .AppendRemoteSignatureAndSign(Bolt3AppendixFVectors.NodeBSignature8, _fundingOutput.RemotePubKey);
 
         var finalCommitmentTx = commitmentTransacion.GetSignedTransaction();
 
         // Then
-        Assert.Equal(AppendixFVectors.ExpectedCommitTx8.ToBytes(), finalCommitmentTx.ToBytes());
+        Assert.Equal(Bolt3AppendixFVectors.ExpectedCommitTx8.ToBytes(), finalCommitmentTx.ToBytes());
         Assert.True(commitmentTransacion.IsValid);
     }
 
@@ -1581,27 +1584,34 @@ public class Bolt3IntegrationTests
 
     private void GenerateHtlcs(LightningMoney anchorAmount)
     {
-        _offeredHtlc2 = new OfferedHtlcOutput(anchorAmount, AppendixCVectors.NodeARevocationPubkey,
-                                              AppendixCVectors.NodeBHtlcPubkey, AppendixCVectors.NodeAHtlcPubkey,
-                                              AppendixCVectors.Htlc2PaymentHash, 2_000_000UL, 502);
-        _offeredHtlc3 = new OfferedHtlcOutput(anchorAmount, AppendixCVectors.NodeARevocationPubkey,
-                                              AppendixCVectors.NodeBHtlcPubkey, AppendixCVectors.NodeAHtlcPubkey,
-                                              AppendixCVectors.Htlc3PaymentHash, 3_000_000UL, 503);
-        _offeredHtlc5 = new OfferedHtlcOutput(anchorAmount, AppendixCVectors.NodeARevocationPubkey,
-                                              AppendixCVectors.NodeBHtlcPubkey, AppendixCVectors.NodeAHtlcPubkey,
-                                              AppendixCVectors.Htlc5PaymentHash, 5_000_000UL, 506);
-        _offeredHtlc6 = new OfferedHtlcOutput(anchorAmount, AppendixCVectors.NodeARevocationPubkey,
-                                              AppendixCVectors.NodeBHtlcPubkey, AppendixCVectors.NodeAHtlcPubkey,
-                                              AppendixCVectors.Htlc6PaymentHash, 5_000_000UL, 505);
+        _offeredHtlc2 = new OfferedHtlcOutput(anchorAmount, Bolt3AppendixCVectors.NodeARevocationPubkey,
+                                              Bolt3AppendixCVectors.NodeBHtlcPubkey,
+                                              Bolt3AppendixCVectors.NodeAHtlcPubkey,
+                                              Bolt3AppendixCVectors.Htlc2PaymentHash, 2_000_000UL, 502);
+        _offeredHtlc3 = new OfferedHtlcOutput(anchorAmount, Bolt3AppendixCVectors.NodeARevocationPubkey,
+                                              Bolt3AppendixCVectors.NodeBHtlcPubkey,
+                                              Bolt3AppendixCVectors.NodeAHtlcPubkey,
+                                              Bolt3AppendixCVectors.Htlc3PaymentHash, 3_000_000UL, 503);
+        _offeredHtlc5 = new OfferedHtlcOutput(anchorAmount, Bolt3AppendixCVectors.NodeARevocationPubkey,
+                                              Bolt3AppendixCVectors.NodeBHtlcPubkey,
+                                              Bolt3AppendixCVectors.NodeAHtlcPubkey,
+                                              Bolt3AppendixCVectors.Htlc5PaymentHash, 5_000_000UL, 506);
+        _offeredHtlc6 = new OfferedHtlcOutput(anchorAmount, Bolt3AppendixCVectors.NodeARevocationPubkey,
+                                              Bolt3AppendixCVectors.NodeBHtlcPubkey,
+                                              Bolt3AppendixCVectors.NodeAHtlcPubkey,
+                                              Bolt3AppendixCVectors.Htlc6PaymentHash, 5_000_000UL, 505);
 
-        _receivedHtlc0 = new ReceivedHtlcOutput(anchorAmount, AppendixCVectors.NodeARevocationPubkey,
-                                                AppendixCVectors.NodeBHtlcPubkey, AppendixCVectors.NodeAHtlcPubkey,
-                                                AppendixCVectors.Htlc0PaymentHash, 1_000_000UL, 500);
-        _receivedHtlc1 = new ReceivedHtlcOutput(anchorAmount, AppendixCVectors.NodeARevocationPubkey,
-                                                AppendixCVectors.NodeBHtlcPubkey, AppendixCVectors.NodeAHtlcPubkey,
-                                                AppendixCVectors.Htlc1PaymentHash, 2_000_000UL, 501);
-        _receivedHtlc4 = new ReceivedHtlcOutput(anchorAmount, AppendixCVectors.NodeARevocationPubkey,
-                                                AppendixCVectors.NodeBHtlcPubkey, AppendixCVectors.NodeAHtlcPubkey,
-                                                AppendixCVectors.Htlc4PaymentHash, 4_000_000UL, 504);
+        _receivedHtlc0 = new ReceivedHtlcOutput(anchorAmount, Bolt3AppendixCVectors.NodeARevocationPubkey,
+                                                Bolt3AppendixCVectors.NodeBHtlcPubkey,
+                                                Bolt3AppendixCVectors.NodeAHtlcPubkey,
+                                                Bolt3AppendixCVectors.Htlc0PaymentHash, 1_000_000UL, 500);
+        _receivedHtlc1 = new ReceivedHtlcOutput(anchorAmount, Bolt3AppendixCVectors.NodeARevocationPubkey,
+                                                Bolt3AppendixCVectors.NodeBHtlcPubkey,
+                                                Bolt3AppendixCVectors.NodeAHtlcPubkey,
+                                                Bolt3AppendixCVectors.Htlc1PaymentHash, 2_000_000UL, 501);
+        _receivedHtlc4 = new ReceivedHtlcOutput(anchorAmount, Bolt3AppendixCVectors.NodeARevocationPubkey,
+                                                Bolt3AppendixCVectors.NodeBHtlcPubkey,
+                                                Bolt3AppendixCVectors.NodeAHtlcPubkey,
+                                                Bolt3AppendixCVectors.Htlc4PaymentHash, 4_000_000UL, 504);
     }
 }

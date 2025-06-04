@@ -17,6 +17,7 @@ public sealed class FundingSignedMessage : BaseChannelMessage
     /// </summary>
     public new FundingSignedPayload Payload { get => (FundingSignedPayload)base.Payload; }
 
-    public FundingSignedMessage(FundingSignedPayload payload) : base(MessageTypes.AcceptChannel2, payload)
-    { }
+    public FundingSignedMessage(FundingSignedPayload payload) : base(MessageTypes.FundingSigned, payload)
+    {
+    }
 }

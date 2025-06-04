@@ -1,3 +1,4 @@
+using NLightning.Domain.Channels.Models;
 using NLightning.Domain.Channels.ValueObjects;
 using NLightning.Domain.Protocol.Payloads;
 
@@ -5,7 +6,7 @@ namespace NLightning.Domain.Protocol.Interfaces;
 
 public interface IChannelKeySetFactory
 {
-    ChannelKeySet CreateNew();
-    ChannelKeySet CreateFromIndex(uint index);
-    ChannelKeySet CreateFromRemoteInfo(OpenChannel1Payload payload);
+    ChannelKeySetModel CreateNew();
+    ChannelKeySetModel CreateFromIndex(uint index);
+    ChannelKeySetModel CreateFromRemoteInfo(OpenChannel1Payload payload);
 }

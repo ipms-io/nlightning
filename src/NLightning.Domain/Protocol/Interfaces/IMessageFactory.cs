@@ -45,7 +45,7 @@ public interface IMessageFactory
 
     ShutdownMessage CreateShutdownMessage(ChannelId channelId, BitcoinScript scriptPubkey);
 
-    ClosingSignedMessage CreateClosingSignedMessage(ChannelId channelId, ulong feeSatoshis, DerSignature signature,
+    ClosingSignedMessage CreateClosingSignedMessage(ChannelId channelId, ulong feeSatoshis, CompactSignature signature,
                                                     ulong minFeeSatoshis, ulong maxFeeSatoshis);
 
     OpenChannel1Message CreateOpenChannel1Message(ChannelId temporaryChannelId, LightningMoney fundingAmount,
@@ -68,17 +68,16 @@ public interface IMessageFactory
                                                   ChannelFlags channelFlags, BitcoinScript? shutdownScriptPubkey = null,
                                                   byte[]? channelType = null, bool requireConfirmedInputs = false);
 
-    AcceptChannel1Message CreateAcceptChannel1Message(ChannelId temporaryChannelId, LightningMoney channelReserveAmount,
-                                                      uint minimumDepth, ushort maxAcceptedHtlcs,
-                                                      CompactPubKey localFundingPubKey,
-                                                      CompactPubKey revocationBasepoint,
-                                                      CompactPubKey paymentBasepoint,
+    AcceptChannel1Message CreateAcceptChannel1Message(LightningMoney channelReserveAmount,
+                                                      ChannelTypeTlv? channelTypeTlv,
                                                       CompactPubKey delayedPaymentBasepoint,
-                                                      CompactPubKey htlcBasepoint,
                                                       CompactPubKey firstPerCommitmentPoint,
-                                                      LightningMoney maxHtlcValueInFlight,
-                                                      UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv,
-                                                      ChannelTypeTlv? channelTypeTlv);
+                                                      CompactPubKey fundingPubKey, CompactPubKey htlcBasepoint,
+                                                      ushort maxAcceptedHtlcs, LightningMoney maxHtlcValueInFlight,
+                                                      uint minimumDepth, CompactPubKey paymentBasepoint,
+                                                      CompactPubKey revocationBasepoint, ChannelId temporaryChannelId,
+                                                      ushort toSelfDelay,
+                                                      UpfrontShutdownScriptTlv? upfrontShutdownScriptTlv);
 
     AcceptChannel2Message CreateAcceptChannel2Message(ChannelId temporaryChannelId, LightningMoney fundingSatoshis,
                                                       CompactPubKey fundingPubKey, CompactPubKey revocationBasepoint,
@@ -91,9 +90,9 @@ public interface IMessageFactory
                                                       byte[]? channelType = null, bool requireConfirmedInputs = false);
 
     FundingCreatedMessage CreatedFundingCreatedMessage(ChannelId temporaryChannelId, TxId fundingTxId,
-                                                       ushort fundingOutputIndex, DerSignature signature);
+                                                       ushort fundingOutputIndex, CompactSignature signature);
 
-    FundingSignedMessage CreatedFundingSignedMessage(ChannelId channelId, DerSignature signature);
+    FundingSignedMessage CreatedFundingSignedMessage(ChannelId channelId, CompactSignature signature);
 
     UpdateAddHtlcMessage CreateUpdateAddHtlcMessage(ChannelId channelId, ulong id, ulong amountMsat,
                                                     ReadOnlyMemory<byte> paymentHash, uint cltvExpiry,
@@ -104,8 +103,8 @@ public interface IMessageFactory
 
     UpdateFailHtlcMessage CreateUpdateFailHtlcMessage(ChannelId channelId, ulong id, ReadOnlyMemory<byte> reason);
 
-    CommitmentSignedMessage CreateCommitmentSignedMessage(ChannelId channelId, DerSignature signature,
-                                                          IEnumerable<DerSignature> htlcSignatures);
+    CommitmentSignedMessage CreateCommitmentSignedMessage(ChannelId channelId, CompactSignature signature,
+                                                          IEnumerable<CompactSignature> htlcSignatures);
 
     RevokeAndAckMessage CreateRevokeAndAckMessage(ChannelId channelId, ReadOnlyMemory<byte> perCommitmentSecret,
                                                   CompactPubKey nextPerCommitmentPoint);

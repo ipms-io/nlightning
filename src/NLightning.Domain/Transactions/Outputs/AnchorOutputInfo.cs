@@ -22,22 +22,22 @@ public class AnchorOutputInfo : IOutputInfo
     /// Gets the type of the output.
     /// </summary>
     public OutputType OutputType { get; }
-    
+
     /// <summary>
     /// Gets the funding public key used for the anchor.
     /// </summary>
     public CompactPubKey FundingPubKey { get; }
-    
+
     /// <summary>
     /// Gets or sets the transaction ID of the output once it's created.
     /// </summary>
-    public TxId? TxId { get; set; }
-    
+    public TxId? TransactionId { get; set; }
+
     /// <summary>
     /// Gets or sets the index of the output in the transaction once it's created.
     /// </summary>
     public uint? Index { get; set; }
-    
+
     /// <summary>
     /// Creates a new instance of AnchorOutputInfo.
     /// </summary>

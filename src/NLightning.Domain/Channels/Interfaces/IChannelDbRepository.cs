@@ -5,11 +5,10 @@ namespace NLightning.Domain.Channels.Interfaces;
 
 public interface IChannelDbRepository
 {
-    Task AddAsync(Channel channel);
-    Task UpdateAsync(Channel channel);
+    Task AddAsync(ChannelModel channelModel);
+    Task UpdateAsync(ChannelModel channelModel);
     Task DeleteAsync(ChannelId channelId);
-    Task<Channel?> GetByIdAsync(ChannelId channelId);
-    Task<IEnumerable<Channel>> GetAllAsync();
-    Task<IEnumerable<Channel>> GetReadyChannelsAsync();
-    
+    Task<ChannelModel?> GetByIdAsync(ChannelId channelId);
+    Task<IEnumerable<ChannelModel>> GetAllAsync();
+    Task<IEnumerable<ChannelModel>> GetReadyChannelsAsync();
 }

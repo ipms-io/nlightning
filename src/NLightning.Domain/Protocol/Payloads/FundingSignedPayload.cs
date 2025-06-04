@@ -25,9 +25,9 @@ public class FundingSignedPayload : IChannelMessagePayload
     /// <summary>
     /// The signature of the funding transaction.
     /// </summary>
-    public DerSignature Signature { get; }
+    public CompactSignature Signature { get; }
 
-    public FundingSignedPayload(ChannelId channelId, DerSignature signature)
+    public FundingSignedPayload(ChannelId channelId, CompactSignature signature)
     {
         ChannelId = channelId;
         Signature = signature;

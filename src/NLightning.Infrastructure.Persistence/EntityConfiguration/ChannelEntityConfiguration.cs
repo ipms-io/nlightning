@@ -18,13 +18,11 @@ public static class ChannelEntityConfiguration
         {
             // Set PrimaryKey
             entity.HasKey(e => e.ChannelId);
-            
+
             // Set required props
             entity.Property(e => e.FundingOutputIndex).IsRequired();
             entity.Property(e => e.FundingAmountSatoshis).IsRequired();
             entity.Property(e => e.IsInitiator).IsRequired();
-            entity.Property(e => e.LocalCommitmentNumber).IsRequired();
-            entity.Property(e => e.RemoteCommitmentNumber).IsRequired();
             entity.Property(e => e.LocalNextHtlcId).IsRequired();
             entity.Property(e => e.RemoteNextHtlcId).IsRequired();
             entity.Property(e => e.LocalRevocationNumber).IsRequired();
@@ -33,27 +31,27 @@ public static class ChannelEntityConfiguration
             entity.Property(e => e.Version).IsRequired();
             entity.Property(e => e.LocalBalanceSatoshis).IsRequired();
             entity.Property(e => e.RemoteBalanceSatoshis).IsRequired();
-            
+
             // Required byte[] properties
             entity.Property(e => e.ChannelId).IsRequired();
             entity.Property(e => e.FundingTxId).IsRequired();
             entity.Property(e => e.RemoteNodeId).IsRequired();
-            
+
             // Nullable byte[] properties
             entity.Property(e => e.LastSentSignature).IsRequired(false);
             entity.Property(e => e.LastReceivedSignature).IsRequired(false);
-            
+
             // Configure the relationship with ChannelConfig (1:1)
             entity.HasOne<ChannelConfigEntity>()
-                .WithOne()
-                .HasForeignKey<ChannelConfigEntity>(c => c.ChannelId)
-                .OnDelete(DeleteBehavior.Cascade);
-            
+                  .WithOne()
+                  .HasForeignKey<ChannelConfigEntity>(c => c.ChannelId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
             // Configure relationship with HTLCs (1:many)
             entity.HasMany(e => e.Htlcs)
-                .WithOne()
-                .HasForeignKey(h => h.ChannelId)
-                .OnDelete(DeleteBehavior.Cascade);
+                  .WithOne()
+                  .HasForeignKey(h => h.ChannelId)
+                  .OnDelete(DeleteBehavior.Cascade);
 
             if (databaseType == DatabaseType.MicrosoftSql)
             {
@@ -61,7 +59,7 @@ public static class ChannelEntityConfiguration
             }
         });
     }
-    
+
     private static void OptimizeConfigurationForSqlServer(EntityTypeBuilder<ChannelEntity> entity)
     {
         entity.Property(e => e.ChannelId).HasColumnType($"varbinary({ChannelConstants.ChannelIdLength})");

@@ -35,10 +35,10 @@ public class FundingCreatedPayload : IChannelMessagePayload
     /// <summary>
     /// The signature of the funding transaction.
     /// </summary>
-    public DerSignature Signature { get; }
+    public CompactSignature Signature { get; }
 
     public FundingCreatedPayload(ChannelId channelId, TxId fundingTxId, ushort fundingOutputIndex,
-                                 DerSignature signature)
+                                 CompactSignature signature)
     {
         ChannelId = channelId;
         FundingTxId = fundingTxId;

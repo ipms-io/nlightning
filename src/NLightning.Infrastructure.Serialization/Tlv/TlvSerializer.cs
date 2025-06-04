@@ -52,9 +52,6 @@ public class TlvSerializer : ITlvSerializer
             var type = await _bigSizeSerializer.DeserializeAsync(stream);
             var length = await _bigSizeSerializer.DeserializeAsync(stream);
 
-            if (length == 0)
-                return null;
-
             value = ArrayPool<byte>.Shared.Rent(length);
             await stream.ReadExactlyAsync(value.AsMemory()[..(int)length]);
 

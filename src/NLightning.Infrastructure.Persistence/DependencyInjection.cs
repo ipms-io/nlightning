@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NLightning.Infrastructure.Persistence.Contexts;
 using NLightning.Infrastructure.Persistence.Enums;
+using NLightning.Infrastructure.Persistence.Providers;
 
 namespace NLightning.Infrastructure.Persistence;
 
@@ -18,7 +19,7 @@ public static class DependencyInjection
     /// <param name="configuration">The IConfiguration instance to read configuration settings from.</param>
     /// <returns>The same service collection so that multiple calls can be chained.</returns>
     public static IServiceCollection AddPersistenceInfrastructureServices(this IServiceCollection services,
-                                                                  IConfiguration configuration)
+                                                                          IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -37,7 +38,7 @@ public static class DependencyInjection
             throw new InvalidOperationException(
                 "Database connection string ('Database:ConnectionString') is not configured.");
         }
-        
+
         DatabaseType resolvedDatabaseType;
         switch (providerName.ToLowerInvariant())
         {
@@ -55,7 +56,9 @@ public static class DependencyInjection
             default:
                 throw new InvalidOperationException($"Unsupported database provider configured: {providerName}");
         }
-        
+
+        services.AddSingleton(new DatabaseTypeProvider(resolvedDatabaseType));
+
         services.AddDbContext<NLightningDbContext>((_, optionsBuilder) =>
         {
             switch (resolvedDatabaseType)
@@ -63,11 +66,11 @@ public static class DependencyInjection
                 case DatabaseType.PostgreSql:
                     var pgMigrationsAssembly = "NLightning.Infrastructure.Persistence.Postgres";
                     optionsBuilder.UseNpgsql(connectionString, sqlOptions =>
-                        {
-                            sqlOptions.MigrationsAssembly(pgMigrationsAssembly);
-                        })
-                        .EnableSensitiveDataLogging()
-                        .UseSnakeCaseNamingConvention();
+                                   {
+                                       sqlOptions.MigrationsAssembly(pgMigrationsAssembly);
+                                   })
+                                  .EnableSensitiveDataLogging()
+                                  .UseSnakeCaseNamingConvention();
                     break;
 
                 case DatabaseType.Sqlite:
@@ -89,8 +92,7 @@ public static class DependencyInjection
                     throw new InvalidOperationException($"Unsupported database provider configured: {providerName}");
             }
         });
-        
+
         return services;
     }
 }
-

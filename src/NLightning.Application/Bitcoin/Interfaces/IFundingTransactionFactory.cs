@@ -8,10 +8,12 @@ namespace NLightning.Application.Bitcoin.Interfaces;
 
 public interface IFundingTransactionFactory
 {
-    ITransaction CreateFundingTransaction(CompactPubKey localFundingCompactPubKey, CompactPubKey remoteFundingCompactPubKey,
-                                          LightningMoney fundingSatoshis, BitcoinScript changeBitcoinScript, params IOutput[] outputs);
+    ITransaction CreateFundingTransaction(CompactPubKey localFundingCompactPubKey,
+                                          CompactPubKey remoteFundingCompactPubKey, LightningMoney fundingSatoshis,
+                                          BitcoinScript changeBitcoinScript, params IOutput[] outputs);
 
-    ITransaction CreateFundingTransaction(CompactPubKey localFundingCompactPubKey, CompactPubKey remoteFundingCompactPubKey,
-                                          LightningMoney fundingSatoshis, BitcoinScript redeemBitcoinScript, BitcoinScript changeBitcoinScript,
+    ITransaction CreateFundingTransaction(CompactPubKey localFundingCompactPubKey,
+                                          CompactPubKey remoteFundingCompactPubKey, LightningMoney fundingSatoshis,
+                                          BitcoinScript redeemBitcoinScript, BitcoinScript changeBitcoinScript,
                                           params IOutput[] outputs);
 }

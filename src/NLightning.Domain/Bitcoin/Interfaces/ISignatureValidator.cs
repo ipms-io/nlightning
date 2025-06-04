@@ -7,5 +7,5 @@ public interface ISignatureValidator
     /// <summary>
     /// Validates a signature against protocol rules.
     /// </summary>
-    bool ValidateSignature(DerSignature signature);
+    bool ValidateSignature(CompactSignature signature);
 }

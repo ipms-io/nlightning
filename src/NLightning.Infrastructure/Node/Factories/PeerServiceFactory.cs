@@ -81,7 +81,7 @@ public class PeerServiceFactory : IPeerServiceFactory
 
         // Create the application service (application layer)
         return new PeerApplicationService(_channelManager, communicationService, _nodeOptions.Features, appLogger,
-                                          _messageFactory, _nodeOptions.NetworkTimeout);
+                                          _nodeOptions.NetworkTimeout);
     }
 
     /// <summary>
@@ -132,6 +132,6 @@ public class PeerServiceFactory : IPeerServiceFactory
 
         // Create the application service (application layer)
         return new PeerApplicationService(_channelManager, communicationService, _nodeOptions.Features, appLogger,
-                                          _messageFactory, _nodeOptions.NetworkTimeout);
+                                          _nodeOptions.NetworkTimeout);
     }
 }

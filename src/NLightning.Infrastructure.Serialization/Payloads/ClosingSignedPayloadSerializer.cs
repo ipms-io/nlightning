@@ -31,7 +31,7 @@ public class ClosingSignedPayloadSerializer : IPayloadSerializer<ClosingSignedPa
         // Get the value object serializer
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(closingSignedPayload.ChannelId, stream);
 
         // Serialize other types
@@ -48,7 +48,7 @@ public class ClosingSignedPayloadSerializer : IPayloadSerializer<ClosingSignedPa
             // Get the value object serializer
             var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
@@ -56,7 +56,7 @@ public class ClosingSignedPayloadSerializer : IPayloadSerializer<ClosingSignedPa
                                                       LightningMoneyUnit.Satoshi);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.MaxSignatureSize]);
-            var signature = new DerSignature(buffer[..CryptoConstants.MaxSignatureSize]);
+            var signature = new CompactSignature(buffer[..CryptoConstants.MaxSignatureSize]);
 
             return new ClosingSignedPayload(channelId, feeSatoshis, signature);
         }

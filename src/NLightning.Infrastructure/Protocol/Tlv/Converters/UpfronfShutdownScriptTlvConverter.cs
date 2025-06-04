@@ -23,11 +23,6 @@ public class UpfrontShutdownScriptTlvConverter : ITlvConverter<UpfrontShutdownSc
             throw new InvalidCastException("Invalid TLV type");
         }
 
-        if (baseTlv.Length == 0)
-        {
-            throw new InvalidCastException("Invalid length");
-        }
-
         return new UpfrontShutdownScriptTlv(new BitcoinScript(baseTlv.Value));
     }
 
@@ -41,7 +36,7 @@ public class UpfrontShutdownScriptTlvConverter : ITlvConverter<UpfrontShutdownSc
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
         return ConvertToBase(tlv as UpfrontShutdownScriptTlv
-                             ?? throw new InvalidCastException(
+                          ?? throw new InvalidCastException(
                                  $"Error converting BaseTlv to {nameof(UpfrontShutdownScriptTlv)}"));
     }
 }

@@ -14,17 +14,17 @@ public interface IOutputInfo
     /// Gets the amount of the output.
     /// </summary>
     LightningMoney Amount { get; }
-    
+
     /// <summary>
     /// Gets the type of the output.
     /// </summary>
     OutputType OutputType { get; }
-    
+
     /// <summary>
     /// Gets or sets the transaction ID of the output once it's created.
     /// </summary>
-    TxId? TxId { get; set; }
-    
+    TxId? TransactionId { get; set; }
+
     /// <summary>
     /// Gets or sets the index of the output in the transaction once it's created.
     /// </summary>

@@ -1,11 +1,12 @@
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using NLightning.Domain.Crypto.Constants;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Infrastructure.Protocol.Services;
 
+using Domain.Crypto.Constants;
+using Domain.Crypto.ValueObjects;
+using Domain.Protocol.Enums;
+using Domain.Protocol.Interfaces;
 using Crypto.Factories;
 using Crypto.Hashes;
 using Crypto.Interfaces;
@@ -18,14 +19,12 @@ public class SecretStorageService : ISecretStorageService
 {
     private readonly StoredSecret?[] _knownSecrets = new StoredSecret?[49];
     private readonly ICryptoProvider _cryptoProvider = CryptoFactory.GetCryptoProvider();
+    private IntPtr _perCommitmentSeedPtr = IntPtr.Zero;
+    private readonly Dictionary<BasepointType, IntPtr> _basepointSecrets = new();
 
     /// <inheritdoc/>
-    /// <exception cref="ArgumentException">Thrown when the secret is not the correct size</exception>
     public bool InsertSecret(Secret secret, ulong index)
     {
-        if (secret.Value.Length != CryptoConstants.SecretLen)
-            throw new ArgumentException($"Secret must be {CryptoConstants.SecretLen} bytes", nameof(secret));
-
         // Find the bucket for this secret
         var bucket = GetBucketIndex(index);
 
@@ -45,14 +44,18 @@ public class SecretStorageService : ISecretStorageService
             if (!CryptographicOperations.FixedTimeEquals(derivedSecret, storedSecret))
             {
                 // Securely wipe the temporary copy
-                _cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(storedSecret, 0), CryptoConstants.SecretLen);
-                _cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(derivedSecret, 0), CryptoConstants.SecretLen);
+                _cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(storedSecret, 0),
+                                           CryptoConstants.SecretLen);
+                _cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(derivedSecret, 0),
+                                           CryptoConstants.SecretLen);
                 return false; // Secret verification failed
             }
 
             // Securely wipe the temporary copies
-            _cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(storedSecret, 0), CryptoConstants.SecretLen);
-            _cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(derivedSecret, 0), CryptoConstants.SecretLen);
+            _cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(storedSecret, 0),
+                                       CryptoConstants.SecretLen);
+            _cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(derivedSecret, 0),
+                                       CryptoConstants.SecretLen);
         }
 
         if (_knownSecrets[bucket] != null)
@@ -102,13 +105,67 @@ public class SecretStorageService : ISecretStorageService
 
             // Securely wipe the temporary base secret
             _cryptoProvider
-                .MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(baseSecret, 0), CryptoConstants.Sha256HashLen);
+               .MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(baseSecret, 0), CryptoConstants.Sha256HashLen);
 
             return new Secret(derivedSecret.ToArray()); // Success
         }
 
         throw new InvalidOperationException($"Cannot derive secret for index {index}");
     }
+
+    /// <inheritdoc/>
+    public void StorePerCommitmentSeed(Secret secret)
+    {
+        // Free existing seed if any
+        if (_perCommitmentSeedPtr != IntPtr.Zero)
+            FreeSecret(_perCommitmentSeedPtr);
+
+        // Allocate secure memory for the seed
+        _perCommitmentSeedPtr = _cryptoProvider.MemoryAlloc(CryptoConstants.SecretLen);
+        _cryptoProvider.MemoryLock(_perCommitmentSeedPtr, CryptoConstants.SecretLen);
+        Marshal.Copy(secret, 0, _perCommitmentSeedPtr, CryptoConstants.SecretLen);
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="InvalidOperationException">Thrown when the per-commitment seed is not stored</exception>
+    public Secret GetPerCommitmentSeed()
+    {
+        if (_perCommitmentSeedPtr == IntPtr.Zero)
+            throw new InvalidOperationException("Per-commitment seed not stored");
+
+        var seed = new byte[CryptoConstants.SecretLen];
+        Marshal.Copy(_perCommitmentSeedPtr, seed, 0, CryptoConstants.SecretLen);
+        return seed;
+    }
+
+    /// <inheritdoc/>
+    public void StoreBasepointPrivateKey(BasepointType type, PrivKey privKey)
+    {
+        // Free existing key if any
+        if (_basepointSecrets.TryGetValue(type, out var existingPtr) && existingPtr != IntPtr.Zero)
+            FreeSecret(existingPtr);
+
+        // Allocate secure memory for the private key
+        var securePtr = _cryptoProvider.MemoryAlloc(CryptoConstants.SecretLen);
+        _cryptoProvider.MemoryLock(securePtr, CryptoConstants.SecretLen);
+        Marshal.Copy(privKey, 0, securePtr, CryptoConstants.SecretLen);
+
+        _basepointSecrets[type] = securePtr;
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="InvalidOperationException">Thrown when the basepoint private key is not stored</exception>
+    public PrivKey GetBasepointPrivateKey(uint keyIndex, BasepointType type)
+    {
+        throw new NotImplementedException("Getting basepoint private keys is not implemented yet.");
+    }
+
+    /// <inheritdoc/>
+    public void LoadFromIndex(uint index)
+    {
+        throw new NotImplementedException("Loading from index is not implemented yet.");
+    }
+
 
     private static int GetBucketIndex(ulong index)
     {
@@ -119,6 +176,7 @@ public class SecretStorageService : ISecretStorageService
                 return b;
             }
         }
+
         return 48; // For index 0 (seed)
     }
 
@@ -166,22 +224,34 @@ public class SecretStorageService : ISecretStorageService
         for (var i = 0; i < _knownSecrets.Length; i++)
         {
             if (_knownSecrets[i] == null)
-            {
                 continue;
-            }
 
             FreeSecret(_knownSecrets[i]!.SecretPtr);
             _knownSecrets[i] = null;
         }
+
+        // Free per-commitment seed
+        if (_perCommitmentSeedPtr != IntPtr.Zero)
+        {
+            FreeSecret(_perCommitmentSeedPtr);
+            _perCommitmentSeedPtr = IntPtr.Zero;
+        }
+
+        // Free basepoint secrets
+        foreach (var kvp in _basepointSecrets)
+        {
+            if (kvp.Value != IntPtr.Zero)
+                FreeSecret(kvp.Value);
+        }
+
+        _basepointSecrets.Clear();
     }
 
     private void Dispose(bool disposing)
     {
         ReleaseUnmanagedResources();
         if (disposing)
-        {
             _cryptoProvider.Dispose();
-        }
     }
 
     public void Dispose()

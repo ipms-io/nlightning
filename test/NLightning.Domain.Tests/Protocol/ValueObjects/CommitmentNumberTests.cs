@@ -1,6 +1,6 @@
 using NLightning.Domain.Crypto.ValueObjects;
 using NLightning.Domain.Protocol.ValueObjects;
-using NLightning.Infrastructure.Crypto.Hashes;
+using NLightning.Tests.Utils.Mocks;
 
 namespace NLightning.Domain.Tests.Protocol.ValueObjects;
 
@@ -20,10 +20,13 @@ public class CommitmentNumberTests
     public void Given_ValidParameters_When_ConstructingCommitmentNumber_Then_PropertiesAreSetCorrectly()
     {
         // Given
+        var sha256Mock = new Mock<FakeSha256>();
+        sha256Mock.Setup(x => x.GetHashAndReset())
+                  .Returns(Convert.FromHexString("C8BFEA84214B45899482A4BAD1D85C42130743ED78BA3711F5532BB038521914"));
 
         // When
         var commitmentNumber =
-            new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint, new Sha256(),
+            new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint, sha256Mock.Object,
                                  InitialCommitmentNumber);
 
         // Then
@@ -31,75 +34,99 @@ public class CommitmentNumberTests
         Assert.NotEqual(0UL, commitmentNumber.ObscuringFactor);
     }
 
-    // [Fact]
-    // public void Given_CommitmentNumber_When_Increment_Then_ValueIsIncreased()
-    // {
-    //     // Given
-    //     const ulong expectedCommitmentNumber = InitialCommitmentNumber + 1;
-    //     var commitmentNumber =
-    //         new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint, InitialCommitmentNumber);
-    //
-    //     // When
-    //     commitmentNumber.Increment();
-    //
-    //     // Then
-    //     Assert.Equal(expectedCommitmentNumber, commitmentNumber.Value);
-    // }
-    //
-    // [Fact]
-    // public void Given_BOLT3TestVectors_When_CalculatingObscuringFactor_Then_MatchesExpectedValue()
-    // {
-    //     // Given
-    //     var commitmentNumber = new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint);
-    //
-    //     // When
-    //     var obscuringFactor = commitmentNumber.ObscuringFactor;
-    //
-    //     // Then - per BOLT3 test vectors, the obscuring factor should be 0x2bb038521914
-    //     Assert.Equal(ExpectedObscuringFactor, obscuringFactor);
-    // }
-    //
-    // [Fact]
-    // public void Given_CommitmentNumber_When_CalculatingObscuredValue_Then_ReturnsXORedValue()
-    // {
-    //     // Given
-    //     var commitmentNumber =
-    //         new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint, InitialCommitmentNumber);
-    //
-    //     // When
-    //     var obscuredValue = commitmentNumber.ObscuredValue;
-    //
-    //     // Then
-    //     Assert.Equal(ExpectedObscuredValue, obscuredValue);
-    // }
-    //
-    // [Fact]
-    // public void Given_CommitmentNumber_When_CalculateLockTime_Then_ReturnsCorrectValue()
-    // {
-    //     // Given
-    //     const uint expectedLocktime = (uint)((0x20 << 24) | (ExpectedObscuredValue & 0xFFFFFF));
-    //     var commitmentNumber =
-    //         new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint, InitialCommitmentNumber);
-    //
-    //     // When
-    //     var lockTime = commitmentNumber.CalculateLockTime();
-    //
-    //     // Then - formula is (0x20 << 24) | (obscured & 0xFFFFFF)
-    //     Assert.Equal(expectedLocktime, lockTime.Value);
-    // }
-    //
-    // [Fact]
-    // public void Given_CommitmentNumber_When_CalculateSequence_Then_ReturnsCorrectValue()
-    // {
-    //     // Given
-    //     const uint expectedSequence = (uint)((0x80U << 24) | ((ExpectedObscuredValue >> 24) & 0xFFFFFF));
-    //     var commitmentNumber =
-    //         new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint, InitialCommitmentNumber);
-    //
-    //     // When
-    //     var sequence = commitmentNumber.CalculateSequence();
-    //
-    //     // Then - formula is (0x80 << 24) | ((obscured >> 24) & 0xFFFFFF)
-    //     Assert.Equal(expectedSequence, sequence.Value);
-    // }
+    [Fact]
+    public void Given_CommitmentNumber_When_Increment_Then_ValueIsIncreased()
+    {
+        // Given
+        var sha256Mock = new Mock<FakeSha256>();
+        sha256Mock.Setup(x => x.GetHashAndReset())
+                  .Returns(Convert.FromHexString("C8BFEA84214B45899482A4BAD1D85C42130743ED78BA3711F5532BB038521914"));
+
+        const ulong expectedCommitmentNumber = InitialCommitmentNumber + 1;
+        var commitmentNumber =
+            new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint, sha256Mock.Object,
+                                 InitialCommitmentNumber);
+
+        // When
+        commitmentNumber.Increment();
+
+        // Then
+        Assert.Equal(expectedCommitmentNumber, commitmentNumber.Value);
+    }
+
+    [Fact]
+    public void Given_BOLT3TestVectors_When_CalculatingObscuringFactor_Then_MatchesExpectedValue()
+    {
+        // Given
+        var sha256Mock = new Mock<FakeSha256>();
+        sha256Mock.Setup(x => x.GetHashAndReset())
+                  .Returns(Convert.FromHexString("C8BFEA84214B45899482A4BAD1D85C42130743ED78BA3711F5532BB038521914"));
+
+        var commitmentNumber = new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint, sha256Mock.Object);
+
+        // When
+        var obscuringFactor = commitmentNumber.ObscuringFactor;
+
+        // Then - per BOLT3 test vectors, the obscuring factor should be 0x2bb038521914
+        Assert.Equal(ExpectedObscuringFactor, obscuringFactor);
+    }
+
+    [Fact]
+    public void Given_CommitmentNumber_When_CalculatingObscuredValue_Then_ReturnsXORedValue()
+    {
+        // Given
+        var sha256Mock = new Mock<FakeSha256>();
+        sha256Mock.Setup(x => x.GetHashAndReset())
+                  .Returns(Convert.FromHexString("C8BFEA84214B45899482A4BAD1D85C42130743ED78BA3711F5532BB038521914"));
+
+        var commitmentNumber =
+            new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint, sha256Mock.Object,
+                                 InitialCommitmentNumber);
+
+        // When
+        var obscuredValue = commitmentNumber.ObscuredValue;
+
+        // Then
+        Assert.Equal(ExpectedObscuredValue, obscuredValue);
+    }
+
+    [Fact]
+    public void Given_CommitmentNumber_When_CalculateLockTime_Then_ReturnsCorrectValue()
+    {
+        // Given
+        var sha256Mock = new Mock<FakeSha256>();
+        sha256Mock.Setup(x => x.GetHashAndReset())
+                  .Returns(Convert.FromHexString("C8BFEA84214B45899482A4BAD1D85C42130743ED78BA3711F5532BB038521914"));
+
+        const uint expectedLocktime = (uint)((0x20 << 24) | (ExpectedObscuredValue & 0xFFFFFF));
+        var commitmentNumber =
+            new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint, sha256Mock.Object,
+                                 InitialCommitmentNumber);
+
+        // When
+        var lockTime = commitmentNumber.CalculateLockTime();
+
+        // Then - formula is (0x20 << 24) | (obscured & 0xFFFFFF)
+        Assert.Equal(expectedLocktime, lockTime.ValueOrHeight);
+    }
+
+    [Fact]
+    public void Given_CommitmentNumber_When_CalculateSequence_Then_ReturnsCorrectValue()
+    {
+        // Given
+        var sha256Mock = new Mock<FakeSha256>();
+        sha256Mock.Setup(x => x.GetHashAndReset())
+                  .Returns(Convert.FromHexString("C8BFEA84214B45899482A4BAD1D85C42130743ED78BA3711F5532BB038521914"));
+
+        const uint expectedSequence = (uint)((0x80U << 24) | ((ExpectedObscuredValue >> 24) & 0xFFFFFF));
+        var commitmentNumber =
+            new CommitmentNumber(_localPaymentBasepoint, _remotePaymentBasepoint, sha256Mock.Object,
+                                 InitialCommitmentNumber);
+
+        // When
+        var sequence = commitmentNumber.CalculateSequence();
+
+        // Then - formula is (0x80 << 24) | ((obscured >> 24) & 0xFFFFFF)
+        Assert.Equal(expectedSequence, sequence.Value);
+    }
 }

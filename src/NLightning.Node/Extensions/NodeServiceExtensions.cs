@@ -14,6 +14,7 @@ using NLightning.Domain.Transactions.Factories;
 using NLightning.Domain.Transactions.Interfaces;
 using NLightning.Infrastructure;
 using NLightning.Infrastructure.Bitcoin;
+using NLightning.Infrastructure.Bitcoin.Builders;
 using NLightning.Infrastructure.Bitcoin.Managers;
 using NLightning.Infrastructure.Bitcoin.Options;
 using NLightning.Infrastructure.Bitcoin.Services;
@@ -56,33 +57,34 @@ public static class NodeServiceExtensions
             services.AddSingleton<ISecureKeyManager>(secureKeyManager);
             services.AddSingleton<IChannelFactory>(sp =>
             {
-                var nodeOptions = sp.GetRequiredService<IOptions<NodeOptions>>().Value;
-                var commitmentTransactionModelFactory = sp.GetRequiredService<ICommitmentTransactionModelFactory>();
                 var feeService = sp.GetRequiredService<IFeeService>();
+                var lightningSigner = sp.GetRequiredService<ILightningSigner>();
+                var nodeOptions = sp.GetRequiredService<IOptions<NodeOptions>>().Value;
                 var sha256 = sp.GetRequiredService<ISha256>();
-                var channelKeySetFactory = sp.GetRequiredService<IChannelKeySetFactory>();
-                return new ChannelFactory(commitmentTransactionModelFactory, feeService,  nodeOptions, sha256, 
-                                          channelKeySetFactory);
+                return new ChannelFactory(feeService, lightningSigner, nodeOptions, sha256);
             });
-            services.AddSingleton<ICommitmentTransactionModelFactory, CommitmentTrasanctionModelModelFactory>();
+            services.AddSingleton<ICommitmentTransactionModelFactory, CommitmentTransactionModelFactory>();
 
             // Add the Signer
             services.AddSingleton<ILightningSigner>(serviceProvider =>
             {
+                var fundingOutputBuilder = serviceProvider.GetRequiredService<IFundingOutputBuilder>();
                 var keyDerivationService = serviceProvider.GetRequiredService<IKeyDerivationService>();
                 var logger = serviceProvider.GetRequiredService<ILogger<LocalLightningSigner>>();
+                var nodeOptions = serviceProvider.GetRequiredService<IOptions<NodeOptions>>().Value;
 
                 // Create the signer with the correct network
-                return new LocalLightningSigner(keyDerivationService, logger, secureKeyManager);
+                return new LocalLightningSigner(fundingOutputBuilder, keyDerivationService, logger, nodeOptions,
+                                                secureKeyManager);
             });
-            
+
             // Add the Application services
             services.AddApplicationServices();
             services.AddInfrastructureServices();
             services.AddPersistenceInfrastructureServices(configuration);
             services.AddRepositoriesInfrastructureServices();
             services.AddSerializationInfrastructureServices();
-            
+
             // Add the Infrastructure services
             services.AddBitcoinInfrastructure();
 
@@ -93,24 +95,24 @@ public static class NodeServiceExtensions
             // Register options with values from configuration
             services.AddOptions<FeeEstimationOptions>().BindConfiguration("FeeEstimation").ValidateOnStart();
             services.AddOptions<NodeOptions>()
-                .BindConfiguration("Node")
-                .PostConfigure(options =>
-                {
-                    var configuredAddresses = configuration.GetSection("Node:ListenAddresses").Get<string[]?>();
-                    if (configuredAddresses is { Length: > 0 })
-                    {
-                        options.ListenAddresses = configuredAddresses.ToList();
-                    }
+                    .BindConfiguration("Node")
+                    .PostConfigure(options =>
+                     {
+                         var configuredAddresses = configuration.GetSection("Node:ListenAddresses").Get<string[]?>();
+                         if (configuredAddresses is { Length: > 0 })
+                         {
+                             options.ListenAddresses = configuredAddresses.ToList();
+                         }
 
-                    var networkString = configuration.GetValue<string>("Node:Network");
-                    if (!string.IsNullOrWhiteSpace(networkString))
-                    {
-                        options.BitcoinNetwork = new BitcoinNetwork(networkString);
-                    }
-                    
-                    options.Features.ChainHashes = [options.BitcoinNetwork.ChainHash];
-                })
-                .ValidateOnStart();
+                         var networkString = configuration.GetValue<string>("Node:Network");
+                         if (!string.IsNullOrWhiteSpace(networkString))
+                         {
+                             options.BitcoinNetwork = new BitcoinNetwork(networkString);
+                         }
+
+                         options.Features.ChainHashes = [options.BitcoinNetwork.ChainHash];
+                     })
+                    .ValidateOnStart();
         });
     }
 }

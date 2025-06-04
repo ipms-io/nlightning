@@ -13,11 +13,16 @@ using Domain.Money;
 public abstract class BaseOutput : IOutput
 {
     internal Script ScriptPubKey;
-    protected uint256 TxIdHash;
-    protected Script RedeemScript;
+    internal uint256 TxIdHash;
+    internal Script RedeemScript;
+    internal Money NBitcoinAmount;
 
     /// <inheritdoc />
-    public LightningMoney Amount { get; set; }
+    public LightningMoney Amount
+    {
+        get => LightningMoney.Satoshis(NBitcoinAmount.Satoshi);
+        set => Money.Satoshis(value.Satoshi);
+    }
 
     /// <inheritdoc />
     public BitcoinScript BitcoinScriptPubKey
@@ -36,7 +41,7 @@ public abstract class BaseOutput : IOutput
     /// <summary>
     /// Gets or sets the transaction ID of the output.
     /// </summary>
-    public TxId TxId
+    public TxId TransactionId
     {
         get => TxIdHash.ToBytes();
         set => TxIdHash = new uint256(value);
@@ -53,7 +58,7 @@ public abstract class BaseOutput : IOutput
         ArgumentNullException.ThrowIfNull(scriptPubKey);
         ArgumentNullException.ThrowIfNull(amount);
 
-        Amount = amount;
+        NBitcoinAmount = Money.Satoshis(amount.Satoshi);
         RedeemScript = redeemScript;
         ScriptPubKey = scriptPubKey;
         TxIdHash = uint256.Zero;
@@ -64,7 +69,7 @@ public abstract class BaseOutput : IOutput
         ArgumentNullException.ThrowIfNull(redeemScript);
         ArgumentNullException.ThrowIfNull(amount);
 
-        Amount = amount;
+        NBitcoinAmount = Money.Satoshis(amount.Satoshi);
         RedeemScript = redeemScript;
         ScriptPubKey = ScriptType switch
         {
@@ -86,6 +91,17 @@ public abstract class BaseOutput : IOutput
     public TxOut ToTxOut()
     {
         return new TxOut(Money.Satoshis(Amount.Satoshi), ScriptPubKey);
+    }
+
+    public ScriptCoin ToCoin()
+    {
+        if (TxIdHash is null || TxIdHash == uint256.Zero || TxIdHash == uint256.One)
+            throw new InvalidOperationException("Transaction ID is not set. Sign the transaction first.");
+
+        if (Amount.IsZero)
+            throw new InvalidOperationException("You can't spend a zero amount output.");
+
+        return new ScriptCoin(TxIdHash, Index, Money.Satoshis(Amount.Satoshi), ScriptPubKey, RedeemScript);
     }
 
     public int CompareTo(IOutput? other) =>

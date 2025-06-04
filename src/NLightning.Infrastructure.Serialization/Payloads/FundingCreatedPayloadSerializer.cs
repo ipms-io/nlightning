@@ -30,7 +30,7 @@ public class FundingCreatedPayloadSerializer : IPayloadSerializer<FundingCreated
         // Get the value object serializer
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(fundingCreatedPayload.ChannelId, stream);
 
         await stream.WriteAsync(fundingCreatedPayload.FundingTxId);
@@ -47,7 +47,7 @@ public class FundingCreatedPayloadSerializer : IPayloadSerializer<FundingCreated
             // Get the value object serializer
             var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.Sha256HashLen]);
@@ -57,7 +57,7 @@ public class FundingCreatedPayloadSerializer : IPayloadSerializer<FundingCreated
             var fundingOutputIndex = EndianBitConverter.ToUInt16BigEndian(buffer.AsSpan()[..sizeof(ushort)]);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.MaxSignatureSize]);
-            var signature = new DerSignature(buffer[..CryptoConstants.MaxSignatureSize]);
+            var signature = new CompactSignature(buffer[..CryptoConstants.MaxSignatureSize]);
 
             return new FundingCreatedPayload(channelId, fundingTxId, fundingOutputIndex, signature);
         }

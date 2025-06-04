@@ -1,12 +1,11 @@
 using NBitcoin;
 using NBitcoin.Crypto;
+using NLightning.Domain.Enums;
+using NLightning.Domain.Money;
 
-namespace NLightning.Integration.Tests.BOLT3.Vectors;
+namespace NLightning.Tests.Utils.Vectors;
 
-using Domain.Enums;
-using Domain.Money;
-
-public static class AppendixFVectors
+public static class Bolt3AppendixFVectors
 {
     public static readonly LightningMoney Tx0ToLocalMsat = new(7_000_000, LightningMoneyUnit.Satoshi);
     public static readonly LightningMoney Tx1ToLocalMsat = new(10_000_000, LightningMoneyUnit.Satoshi);

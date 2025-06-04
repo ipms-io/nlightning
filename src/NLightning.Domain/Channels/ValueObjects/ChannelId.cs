@@ -1,7 +1,9 @@
-using NLightning.Domain.Channels.Constants;
-using NLightning.Domain.Interfaces;
+using NLightning.Domain.Utils.Extensions;
 
 namespace NLightning.Domain.Channels.ValueObjects;
+
+using Constants;
+using Domain.Interfaces;
 
 /// <summary>
 /// Represents a channel id.
@@ -44,7 +46,7 @@ public readonly struct ChannelId : IEquatable<ChannelId>, IValueObject
 
     public override int GetHashCode()
     {
-        return _value.GetHashCode();
+        return _value.GetByteArrayHashCode();
     }
 
     #endregion

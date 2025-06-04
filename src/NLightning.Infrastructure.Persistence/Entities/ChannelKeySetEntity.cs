@@ -1,4 +1,5 @@
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
+
 using NLightning.Domain.Crypto.ValueObjects;
 
 namespace NLightning.Infrastructure.Persistence.Entities;
@@ -13,42 +14,37 @@ public class ChannelKeySetEntity
     /// </summary>
     /// <remarks>Part of the composite primary key.</remarks>
     public required byte[] ChannelId { get; set; }
-    
+
     /// <summary>
     /// Indicates whether this key set belongs to the local node or remote node.
     /// </summary>
     /// <remarks>Part of the composite primary key.</remarks>
     public bool IsLocal { get; set; }
-    
+
     /// <summary>
     /// The funding public key used to create the multisig funding output.
     /// </summary>
     public required byte[] FundingPubKey { get; set; }
-    
+
     /// <summary>
     /// The base point for generating revocation keys.
     /// </summary>
     public required byte[] RevocationBasepoint { get; set; }
-    
+
     /// <summary>
     /// The base point for generating payment keys.
     /// </summary>
     public required byte[] PaymentBasepoint { get; set; }
-    
+
     /// <summary>
     /// The base point for generating delayed payment keys.
     /// </summary>
     public required byte[] DelayedPaymentBasepoint { get; set; }
-    
+
     /// <summary>
     /// The base point for generating HTLC keys.
     /// </summary>
     public required byte[] HtlcBasepoint { get; set; }
-    
-    /// <summary>
-    /// The optional gossip public key for node announcements.
-    /// </summary>
-    public byte[]? GossipPubKey { get; set; }
 
     /// <summary>
     /// The current per-commitment index used in a channel's key set.
@@ -58,27 +54,30 @@ public class ChannelKeySetEntity
     /// in the channel. It is incremented with each new commitment point.
     /// </remarks>
     public required ulong CurrentPerCommitmentIndex { get; set; }
-    
+
     /// <summary>
     /// The current per-commitment point being used for the active commitment transaction.
     /// </summary>
     public required byte[] CurrentPerCommitmentPoint { get; set; }
 
     /// <summary>
-    /// The last per-commitment secret associated with the channel.
+    /// For remote key sets: stores their last revealed per-commitment secret
+    /// This is needed to create penalty transactions if they broadcast old commitments
+    /// For local key sets: this should be null (we don't store our own secrets)
     /// </summary>
-    /// <remarks>Updated during commitment transactions to maintain state consistency between channel participants.</remarks>
-    public byte[]? LastPerCommitmentSecret { get; set; }
+
+    public byte[]? LastRevealedPerCommitmentSecret { get; set; }
 
     /// <summary>
     /// The index representing the key derivation progress for this channel key set.
     /// </summary>
     /// <remarks>Used to track the current state of key generation in the channel.</remarks>
     public required uint KeyIndex { get; set; }
-        
-        /// <summary>
+
+    /// <summary>
     /// Default constructor for EF Core.
     /// </summary>
-    internal ChannelKeySetEntity() 
-    { }
+    internal ChannelKeySetEntity()
+    {
+    }
 }

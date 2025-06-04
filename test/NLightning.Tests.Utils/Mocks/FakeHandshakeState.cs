@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using NBitcoin;
 using NLightning.Domain.Crypto.ValueObjects;
+using NLightning.Tests.Utils.Mocks.Interfaces;
 
 namespace NLightning.Tests.Utils.Mocks;
 

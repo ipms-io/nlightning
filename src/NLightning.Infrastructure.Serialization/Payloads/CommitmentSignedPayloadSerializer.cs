@@ -29,7 +29,7 @@ public class CommitmentSignedPayloadSerializer : IPayloadSerializer<CommitmentSi
         // Get the value object serializer
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(commitmentSignedPayload.ChannelId, stream);
 
         // Serialize other types
@@ -50,20 +50,20 @@ public class CommitmentSignedPayloadSerializer : IPayloadSerializer<CommitmentSi
             // Get the value object serializer
             var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.MaxSignatureSize]);
-            var signature = new DerSignature(buffer[..CryptoConstants.MaxSignatureSize]);
+            var signature = new CompactSignature(buffer[..CryptoConstants.MaxSignatureSize]);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ushort)]);
             var numHtlcs = EndianBitConverter.ToUInt16BigEndian(buffer[..sizeof(ushort)]);
 
-            var htlcSignatures = new List<DerSignature>(numHtlcs);
+            var htlcSignatures = new List<CompactSignature>(numHtlcs);
             for (var i = 0; i < numHtlcs; i++)
             {
                 await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.MaxSignatureSize]);
-                var htlcSignature = new DerSignature(buffer[..CryptoConstants.MaxSignatureSize]);
+                var htlcSignature = new CompactSignature(buffer[..CryptoConstants.MaxSignatureSize]);
 
                 htlcSignatures.Add(htlcSignature);
             }

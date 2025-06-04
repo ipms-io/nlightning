@@ -13,7 +13,7 @@ public class ToLocalOutputTests
     private readonly PubKey _revocationPubKey =
         new("032c0b7cf95324a07d05398b240174dc0c2be444d96b159aa6c7f7b1e668680991");
 
-    private readonly uint _toSelfDelay = 144; // Typical delay value (1 day)
+    private const uint ToSelfDelay = 144; // Typical delay value (1 day)
     private readonly LightningMoney _amount = LightningMoney.Satoshis(1_000);
 
     [Fact]
@@ -22,12 +22,12 @@ public class ToLocalOutputTests
         // Given
 
         // When
-        var toLocalOutput = new ToLocalOutput(_amount, _localDelayedPubKey, _revocationPubKey, _toSelfDelay);
+        var toLocalOutput = new ToLocalOutput(_amount, _localDelayedPubKey, _revocationPubKey, ToSelfDelay);
 
         // Then
         Assert.Equal(_localDelayedPubKey, toLocalOutput.LocalDelayedPubKey);
         Assert.Equal(_revocationPubKey, toLocalOutput.RevocationPubKey);
-        Assert.Equal(_toSelfDelay, toLocalOutput.ToSelfDelay);
+        Assert.Equal(ToSelfDelay, toLocalOutput.ToSelfDelay);
         Assert.Equal(_amount, toLocalOutput.Amount);
         Assert.Equal(ScriptType.P2WSH, toLocalOutput.ScriptType);
         Assert.NotNull(toLocalOutput.ScriptPubKey);
@@ -40,7 +40,7 @@ public class ToLocalOutputTests
         const string expectedToSelfDelay = "9000";
 
         // When
-        var toLocalOutput = new ToLocalOutput(_amount, _localDelayedPubKey, _revocationPubKey, _toSelfDelay);
+        var toLocalOutput = new ToLocalOutput(_amount, _localDelayedPubKey, _revocationPubKey, ToSelfDelay);
         var redeemScriptString = new Script(toLocalOutput.RedeemBitcoinScript).ToString();
 
         // Then
@@ -66,9 +66,9 @@ public class ToLocalOutputTests
     public void Given_ToLocalOutput_When_ToCoinCalled_Then_ReturnsCorrectScriptCoin()
     {
         // Given
-        var toLocalOutput = new ToLocalOutput(_amount, _localDelayedPubKey, _revocationPubKey, _toSelfDelay)
+        var toLocalOutput = new ToLocalOutput(_amount, _localDelayedPubKey, _revocationPubKey, ToSelfDelay)
         {
-            TxId = Convert.FromHexString("8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be"),
+            TransactionId = Convert.FromHexString("8984484a580b825b9972d7adb15050b3ab624ccd731946b3eeddb92f4e7ef6be"),
             Index = 1
         };
 
@@ -76,9 +76,9 @@ public class ToLocalOutputTests
         var coin = toLocalOutput.ToCoin();
 
         // Then
-        Assert.Equal(toLocalOutput.TxId, coin.Outpoint.Hash);
-        Assert.Equal(toLocalOutput.Index, (int)coin.Outpoint.N);
-        Assert.Equal((Money)toLocalOutput.Amount, coin.Amount);
+        Assert.Equal(toLocalOutput.TransactionId, coin.Outpoint.Hash.ToBytes());
+        Assert.Equal(toLocalOutput.Index, coin.Outpoint.N);
+        Assert.Equal(toLocalOutput.Amount, LightningMoney.Satoshis(coin.Amount.Satoshi));
         Assert.Equal(toLocalOutput.ScriptPubKey, coin.ScriptPubKey);
         Assert.Equal(toLocalOutput.RedeemScript, coin.Redeem);
     }
@@ -90,11 +90,11 @@ public class ToLocalOutputTests
         var zeroAmount = new LightningMoney(0);
 
         // When
-        var toLocalOutput = new ToLocalOutput(_localDelayedPubKey, _revocationPubKey, _toSelfDelay, zeroAmount);
+        var toLocalOutput = new ToLocalOutput(zeroAmount, _localDelayedPubKey, _revocationPubKey, ToSelfDelay);
 
         // Then
         Assert.Equal(zeroAmount, toLocalOutput.Amount);
-        Assert.Equal(Money.Zero, (Money)toLocalOutput.Amount);
+        Assert.Equal(LightningMoney.Zero, toLocalOutput.Amount);
     }
 
     [Fact]
@@ -104,12 +104,12 @@ public class ToLocalOutputTests
         var alternateDelayedPubKey = new PubKey("02f5559c428d3a3e3579adc6516fdb4d3be6fb96290f1a0b4f873a16fa4c397c07");
         var alternateRevocationPubKey =
             new PubKey("0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798");
-        var alternateDelay = 432u; // 3 days
+        const uint alternateDelay = 432u; // 3 days
 
         // When
-        var toLocalOutput1 = new ToLocalOutput(_amount, _localDelayedPubKey, _revocationPubKey, _toSelfDelay);
-        var toLocalOutput2 = new ToLocalOutput(_amount, alternateDelayedPubKey, _revocationPubKey, _toSelfDelay);
-        var toLocalOutput3 = new ToLocalOutput(_amount, _localDelayedPubKey, alternateRevocationPubKey, _toSelfDelay);
+        var toLocalOutput1 = new ToLocalOutput(_amount, _localDelayedPubKey, _revocationPubKey, ToSelfDelay);
+        var toLocalOutput2 = new ToLocalOutput(_amount, alternateDelayedPubKey, _revocationPubKey, ToSelfDelay);
+        var toLocalOutput3 = new ToLocalOutput(_amount, _localDelayedPubKey, alternateRevocationPubKey, ToSelfDelay);
         var toLocalOutput4 = new ToLocalOutput(_amount, _localDelayedPubKey, _revocationPubKey, alternateDelay);
 
         // Then
@@ -126,9 +126,9 @@ public class ToLocalOutputTests
     {
         // Given
         var output1 = new ToLocalOutput(LightningMoney.Satoshis(1_000), _localDelayedPubKey, _revocationPubKey,
-                                        _toSelfDelay);
+                                        ToSelfDelay);
         var output2 = new ToLocalOutput(LightningMoney.Satoshis(2_000), _localDelayedPubKey, _revocationPubKey,
-                                        _toSelfDelay);
+                                        ToSelfDelay);
 
         // When
         var comparison = output1.CompareTo(output2);

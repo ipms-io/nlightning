@@ -1,11 +1,14 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NLightning.Application.Bitcoin.Interfaces;
 using NLightning.Application.Channels.Managers;
 using NLightning.Application.Protocol.Factories;
 using NLightning.Domain.Bitcoin.Interfaces;
 using NLightning.Domain.Channels.Interfaces;
 using NLightning.Domain.Node.Options;
 using NLightning.Domain.Protocol.Interfaces;
+using NLightning.Domain.Transactions.Interfaces;
 
 namespace NLightning.Application;
 
@@ -31,15 +34,19 @@ public static class DependencyInjection
         {
             var channelFactory = sp.GetRequiredService<IChannelFactory>();
             var channelIdFactory = sp.GetRequiredService<IChannelIdFactory>();
+            var commitmentTransactionBuilder = sp.GetRequiredService<ICommitmentTransactionBuilder>();
+            var commitmentTransactionModelFactory = sp.GetRequiredService<ICommitmentTransactionModelFactory>();
             var messageFactory = sp.GetRequiredService<IMessageFactory>();
             var nodeOptions = sp.GetRequiredService<IOptions<NodeOptions>>().Value;
             var lightningSigner = sp.GetRequiredService<ILightningSigner>();
-            return new ChannelManager(channelFactory, channelIdFactory, messageFactory, nodeOptions, 
-                lightningSigner);
+            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+            return new ChannelManager(channelFactory, channelIdFactory, commitmentTransactionBuilder,
+                                      commitmentTransactionModelFactory, lightningSigner,
+                                      loggerFactory.CreateLogger<ChannelManager>(), messageFactory, nodeOptions, sp);
         });
-        
+
         // Add other application services here
-        
+
         return services;
     }
 }

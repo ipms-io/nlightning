@@ -10,5 +10,6 @@ public enum OutputType : byte
     LocalAnchor = 3,
     RemoteAnchor = 4,
     OfferedHtlc = 5,
-    ReceivedHtlc = 6
+    ReceivedHtlc = 6,
+    Funding = 7
 }

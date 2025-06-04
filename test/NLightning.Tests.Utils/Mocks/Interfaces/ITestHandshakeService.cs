@@ -1,6 +1,6 @@
-namespace NLightning.Tests.Utils.Mocks;
+using NLightning.Domain.Transport;
 
-using Domain.Transport;
+namespace NLightning.Tests.Utils.Mocks.Interfaces;
 
 internal interface ITestHandshakeService
 {

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Factories;
@@ -11,14 +12,16 @@ using Payloads;
 public class PayloadSerializerFactory : IPayloadSerializerFactory
 {
     private readonly IFeatureSetSerializer _featureSetSerializer;
+    private readonly ILoggerFactory _loggerFactory;
     private readonly Dictionary<Type, IPayloadSerializer> _serializers = new();
     private readonly Dictionary<MessageTypes, Type> _messageTypeDictionary = new();
     private readonly IValueObjectSerializerFactory _valueObjectSerializerFactory;
 
-    public PayloadSerializerFactory(IFeatureSetSerializer featureSetSerializer,
+    public PayloadSerializerFactory(IFeatureSetSerializer featureSetSerializer, ILoggerFactory loggerFactory,
                                     IValueObjectSerializerFactory valueObjectSerializerFactory)
     {
         _featureSetSerializer = featureSetSerializer;
+        _loggerFactory = loggerFactory;
         _valueObjectSerializerFactory = valueObjectSerializerFactory;
 
         RegisterSerializers();
@@ -39,7 +42,9 @@ public class PayloadSerializerFactory : IPayloadSerializerFactory
     private void RegisterSerializers()
     {
         _serializers.Add(typeof(AcceptChannel1Payload),
-                         new AcceptChannel1PayloadSerializer(_valueObjectSerializerFactory));
+                         new AcceptChannel1PayloadSerializer(
+                             _loggerFactory.CreateLogger<AcceptChannel1PayloadSerializer>(),
+                             _valueObjectSerializerFactory));
         _serializers.Add(typeof(AcceptChannel2Payload),
                          new AcceptChannel2PayloadSerializer(_valueObjectSerializerFactory));
         _serializers.Add(typeof(ChannelReadyPayload), new ChannelReadyPayloadSerializer(_valueObjectSerializerFactory));

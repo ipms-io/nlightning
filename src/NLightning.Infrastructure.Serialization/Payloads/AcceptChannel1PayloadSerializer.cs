@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Runtime.Serialization;
+using Microsoft.Extensions.Logging;
 using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
@@ -15,35 +16,42 @@ using Exceptions;
 
 public class AcceptChannel1PayloadSerializer : IPayloadSerializer<AcceptChannel1Payload>
 {
+    private readonly ILogger<AcceptChannel1PayloadSerializer> _logger;
     private readonly IValueObjectSerializerFactory _valueObjectSerializerFactory;
 
-    public AcceptChannel1PayloadSerializer(IValueObjectSerializerFactory valueObjectSerializerFactory)
+    public AcceptChannel1PayloadSerializer(ILogger<AcceptChannel1PayloadSerializer> logger,
+                                           IValueObjectSerializerFactory valueObjectSerializerFactory)
     {
+        _logger = logger;
         _valueObjectSerializerFactory = valueObjectSerializerFactory;
     }
 
     public async Task SerializeAsync(IMessagePayload payload, Stream stream)
     {
+        _logger.LogTrace("Serializing payload {name}", nameof(AcceptChannel1Payload));
+
         if (payload is not AcceptChannel1Payload acceptChannel1Payload)
             throw new SerializationException($"Payload is not of type {nameof(AcceptChannel1Payload)}");
+
+        _logger.LogTrace("Payload has fundingPubKey: {fundingPubKey}.", acceptChannel1Payload.FundingPubKey);
 
         // Get the value object serializer
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(acceptChannel1Payload.ChannelId, stream);
 
         // Serialize other types
         await stream
-            .WriteAsync(EndianBitConverter.GetBytesBigEndian((ulong)acceptChannel1Payload.DustLimitAmount.Satoshi));
+           .WriteAsync(EndianBitConverter.GetBytesBigEndian((ulong)acceptChannel1Payload.DustLimitAmount.Satoshi));
         await stream
-            .WriteAsync(EndianBitConverter
-                .GetBytesBigEndian(acceptChannel1Payload.MaxHtlcValueInFlightAmount.MilliSatoshi));
+           .WriteAsync(EndianBitConverter
+                          .GetBytesBigEndian(acceptChannel1Payload.MaxHtlcValueInFlightAmount.MilliSatoshi));
         await stream
-            .WriteAsync(EndianBitConverter
-                .GetBytesBigEndian((ulong)acceptChannel1Payload.ChannelReserveAmount.Satoshi));
+           .WriteAsync(EndianBitConverter
+                          .GetBytesBigEndian((ulong)acceptChannel1Payload.ChannelReserveAmount.Satoshi));
         await stream
-            .WriteAsync(EndianBitConverter.GetBytesBigEndian(acceptChannel1Payload.HtlcMinimumAmount.MilliSatoshi));
+           .WriteAsync(EndianBitConverter.GetBytesBigEndian(acceptChannel1Payload.HtlcMinimumAmount.MilliSatoshi));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(acceptChannel1Payload.MinimumDepth));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(acceptChannel1Payload.ToSelfDelay));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(acceptChannel1Payload.MaxAcceptedHtlcs));
@@ -64,19 +72,19 @@ public class AcceptChannel1PayloadSerializer : IPayloadSerializer<AcceptChannel1
             // Get the value object serializer
             var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var temporaryChannelId = await channelIdSerializer.DeserializeAsync(stream);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
             var dustLimitSatoshis = LightningMoney
-                .Satoshis(EndianBitConverter.ToUInt64BigEndian(buffer.AsSpan()[..sizeof(ulong)]));
+               .Satoshis(EndianBitConverter.ToUInt64BigEndian(buffer.AsSpan()[..sizeof(ulong)]));
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
             var maxHtlcValueInFlightMsat = EndianBitConverter.ToUInt64BigEndian(buffer.AsSpan()[..sizeof(ulong)]);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
             var channelReserveAmount = LightningMoney
-                .Satoshis(EndianBitConverter.ToUInt64BigEndian(buffer.AsSpan()[..sizeof(ulong)]));
+               .Satoshis(EndianBitConverter.ToUInt64BigEndian(buffer.AsSpan()[..sizeof(ulong)]));
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
             var htlcMinimumMsat = EndianBitConverter.ToUInt64BigEndian(buffer.AsSpan()[..sizeof(ulong)]);
@@ -108,10 +116,10 @@ public class AcceptChannel1PayloadSerializer : IPayloadSerializer<AcceptChannel1
             await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.CompactPubkeyLen]);
             var firstPerCommitmentPoint = new CompactPubKey(buffer[..CryptoConstants.CompactPubkeyLen]);
 
-            return new AcceptChannel1Payload(temporaryChannelId, dustLimitSatoshis, maxHtlcValueInFlightMsat,
-                                             channelReserveAmount, htlcMinimumMsat, minimumDepth, toSelfDelay,
-                                             maxAcceptedHtlcs, fundingPubKey, htlcBasepoint, delayedPaymentBasepoint,
-                                             paymentBasepoint, revocationBasepoint, firstPerCommitmentPoint);
+            return new AcceptChannel1Payload(temporaryChannelId, channelReserveAmount, delayedPaymentBasepoint,
+                                             dustLimitSatoshis, firstPerCommitmentPoint, fundingPubKey, htlcBasepoint,
+                                             htlcMinimumMsat, maxAcceptedHtlcs, maxHtlcValueInFlightMsat, minimumDepth,
+                                             paymentBasepoint, revocationBasepoint, toSelfDelay);
         }
         catch (Exception e)
         {

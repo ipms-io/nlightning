@@ -16,32 +16,32 @@ public class ToRemoteOutputInfo : IOutputInfo
     /// Gets the amount of the output.
     /// </summary>
     public LightningMoney Amount { get; }
-    
+
     /// <summary>
     /// Gets the type of the output.
     /// </summary>
     public OutputType OutputType => OutputType.ToRemote;
-    
+
     /// <summary>
     /// Gets the remote's payment public key.
     /// </summary>
     public CompactPubKey RemotePaymentPubKey { get; }
-    
+
     /// <summary>
     /// Gets whether this to_remote output should use anchors.
     /// </summary>
     public bool UseAnchors { get; }
-    
+
     /// <summary>
     /// Gets or sets the transaction ID of the output once it's created.
     /// </summary>
-    public TxId? TxId { get; set; }
-    
+    public TxId? TransactionId { get; set; }
+
     /// <summary>
     /// Gets or sets the index of the output in the transaction once it's created.
     /// </summary>
     public uint? Index { get; set; }
-    
+
     /// <summary>
     /// Creates a new instance of ToRemoteOutputInfo.
     /// </summary>

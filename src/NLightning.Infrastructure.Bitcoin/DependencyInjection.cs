@@ -1,14 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
-using NLightning.Domain.Protocol.Factories;
-using NLightning.Domain.Protocol.Interfaces;
-using NLightning.Infrastructure.Bitcoin.Crypto.Functions;
-using NLightning.Infrastructure.Bitcoin.Factories;
-using NLightning.Infrastructure.Bitcoin.Services;
-using NLightning.Infrastructure.Crypto.Interfaces;
-using NLightning.Infrastructure.Protocol.Factories;
 
 namespace NLightning.Infrastructure.Bitcoin;
 
+using Domain.Protocol.Factories;
+using Domain.Protocol.Interfaces;
+using Crypto.Functions;
+using Services;
+using Infrastructure.Crypto.Interfaces;
+using Protocol.Factories;
 using Application.Bitcoin.Interfaces;
 using Builders;
 
@@ -25,14 +24,13 @@ public static class DependencyInjection
     public static IServiceCollection AddBitcoinInfrastructure(this IServiceCollection services)
     {
         // Register Singletons
-        services.AddSingleton<IChannelKeySetFactory, ChannelKeySetFactory>();
+        services.AddSingleton<ICommitmentKeyDerivationService, CommitmentKeyDerivationService>();
+        services.AddSingleton<ICommitmentTransactionBuilder, CommitmentTransactionBuilder>();
         services.AddSingleton<IEcdh, Ecdh>();
+        services.AddSingleton<IFundingOutputBuilder, FundingOutputBuilder>();
         services.AddSingleton<IKeyDerivationService, KeyDerivationService>();
         services.AddSingleton<ITlvConverterFactory, TlvConverterFactory>();
-        
-        // Register Scoped Services
-        services.AddScoped<ICommitmentTransactionBuilder, CommitmentTransactionBuilder>();
-        
+
         return services;
     }
 }

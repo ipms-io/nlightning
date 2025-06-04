@@ -1,61 +1,67 @@
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Crypto;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Money;
+namespace NLightning.Domain.Bitcoin.Interfaces;
 
-namespace NLightning.Domain.Bitcoin.Interfaces
+using Channels.ValueObjects;
+using ValueObjects;
+using Crypto.ValueObjects;
+
+/// <summary>
+/// Interface for transaction signing services that can be implemented either locally 
+/// or delegated to external services like VLS (Validating Lightning Signer)
+/// </summary>
+public interface ILightningSigner
 {
     /// <summary>
-    /// Interface for transaction signing services that can be implemented either locally 
-    /// or delegated to external services like VLS (Validating Lightning Signer)
+    /// Generate a new channel key set and return the channel key index
     /// </summary>
-    public interface ILightningSigner
-    {
-        /// <summary>
-        /// Signs a funding transaction
-        /// </summary>
-        /// <param name="feeRatePerKw">The fee rate per kw to use for calculating fees</param>
-        /// <returns>The signed transaction</returns>
-        SignedTransaction SignTransaction(SignedTransaction unsignedTx, LightningMoney feeRatePerKw);
-            
-        /// <summary>
-        /// Verifies a signature for a given transaction
-        /// </summary>
-        /// <param name="transaction">The transaction to verify</param>
-        /// <param name="derSignature">The signature to verify</param>
-        /// <param name="pubKey">The public key of the signer</param>
-        /// <param name="index">The index of the input being verified</param>
-        /// <param name="amount">The amount of the input being spent</param>
-        /// <param name="redeemScript">The redeem script if applicable</param>
-        /// <returns>True if the signature is valid, false otherwise</returns>
-        bool VerifySignature(
-            SignedTransaction transaction, 
-            DerSignature derSignature, 
-            CompactPubKey pubKey, 
-            int index, 
-            LightningMoney amount,
-            BitcoinScript? redeemScript = null);
-            
-        /// <summary>
-        /// Generates and returns the public key that will be used for key derivation
-        /// </summary>
-        /// <param name="keyIdentifier">Optional identifier for the key</param>
-        /// <returns>The public key</returns>
-        CompactPubKey GetPublicKey(string? keyIdentifier = null);
-        
-        /// <summary>
-        /// Generates a new random key for channel operations
-        /// </summary>
-        /// <returns>The public key of the newly generated key</returns>
-        CompactPubKey GenerateChannelKey();
-        
-        /// <summary>
-        /// Derives the per-commitment point for a given commitment number
-        /// </summary>
-        /// <param name="commitmentNumber">The commitment number</param>
-        /// <returns>The per-commitment point (public key)</returns>
-        CompactPubKey DerivePerCommitmentPoint(ulong commitmentNumber);
+    uint CreateNewChannel(out ChannelBasepoints basepoints, out CompactPubKey firstPerCommitmentPoint);
 
-        bool ValidateSignature(DerSignature payloadSignature);
-    }
+    /// <summary>
+    /// Generate or retrieve channel basepoints for a channel
+    /// </summary>
+    ChannelBasepoints GetChannelBasepoints(uint channelKeyIndex);
+
+    /// <summary>
+    /// Generate or retrieve channel basepoints for a channel
+    /// </summary>
+    ChannelBasepoints GetChannelBasepoints(ChannelId channelId);
+
+    /// <summary>
+    /// Get the node's public key
+    /// </summary>
+    CompactPubKey GetNodePublicKey();
+
+    /// <summary>
+    /// Generate a per-commitment point for a specific commitment number
+    /// </summary>
+    CompactPubKey GetPerCommitmentPoint(uint channelKeyIndex, ulong commitmentNumber);
+
+    /// <summary>
+    /// Generate a per-commitment point for a specific commitment number
+    /// </summary>
+    CompactPubKey GetPerCommitmentPoint(ChannelId channelId, ulong commitmentNumber);
+
+    /// <summary>
+    /// Store channel information needed for signing
+    /// </summary>
+    void RegisterChannel(ChannelId channelId, ChannelSigningInfo signingInfo);
+
+    /// <summary>
+    /// Release (reveal) a per-commitment secret for revocation
+    /// </summary>
+    Secret ReleasePerCommitmentSecret(uint channelKeyIndex, ulong commitmentNumber);
+
+    /// <summary>
+    /// Release (reveal) a per-commitment secret for revocation
+    /// </summary>
+    Secret ReleasePerCommitmentSecret(ChannelId channelId, ulong commitmentNumber);
+
+    /// <summary>
+    /// Sign a transaction using the channel's signing context
+    /// </summary>
+    CompactSignature SignTransaction(ChannelId channelId, SignedTransaction unsignedTransaction);
+
+    /// <summary>
+    /// Verify a signature against a transaction
+    /// </summary>
+    void ValidateSignature(ChannelId channelId, CompactSignature signature, SignedTransaction unsignedTransaction);
 }
