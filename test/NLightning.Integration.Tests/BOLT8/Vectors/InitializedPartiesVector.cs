@@ -6,9 +6,6 @@ using NLightning.Tests.Utils.Vectors;
 namespace NLightning.Integration.Tests.BOLT8.Vectors;
 
 using Infrastructure.Crypto.Primitives;
-using Infrastructure.Protocol.Constants;
-using Infrastructure.Transport.Encryption;
-using Infrastructure.Transport.Handshake.States;
 
 internal sealed class InitializedPartiesVector
 {

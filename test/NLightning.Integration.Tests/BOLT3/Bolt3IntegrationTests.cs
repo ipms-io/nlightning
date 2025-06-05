@@ -4,7 +4,6 @@ using NBitcoin;
 using NBitcoin.Policy;
 using NLightning.Domain.Bitcoin.Interfaces;
 using NLightning.Domain.Protocol.ValueObjects;
-using NLightning.Domain.Transactions.Models;
 using NLightning.Infrastructure.Bitcoin.Builders;
 using NLightning.Infrastructure.Bitcoin.Services;
 using NLightning.Infrastructure.Crypto.Hashes;
@@ -15,10 +14,8 @@ namespace NLightning.Integration.Tests.BOLT3;
 using Domain.Enums;
 using Domain.Money;
 using Domain.Node.Options;
-using Infrastructure.Bitcoin.Factories;
 using Infrastructure.Bitcoin.Outputs;
 using Infrastructure.Bitcoin.Transactions;
-using Infrastructure.Protocol.Models;
 using Infrastructure.Protocol.Services;
 
 public class Bolt3IntegrationTests

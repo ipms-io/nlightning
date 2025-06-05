@@ -2,14 +2,14 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace NLightning.Infrastructure.Bitcoin;
 
-using Domain.Protocol.Factories;
-using Domain.Protocol.Interfaces;
-using Crypto.Functions;
-using Services;
-using Infrastructure.Crypto.Interfaces;
-using Protocol.Factories;
 using Application.Bitcoin.Interfaces;
 using Builders;
+using Crypto.Functions;
+using Domain.Protocol.Factories;
+using Domain.Protocol.Interfaces;
+using Infrastructure.Crypto.Interfaces;
+using Protocol.Factories;
+using Services;
 
 /// <summary>
 /// Extension methods for setting up Bitcoin infrastructure services in an IServiceCollection.

@@ -1,4 +1,3 @@
-using NLightning.Domain.Crypto;
 using NLightning.Domain.Crypto.ValueObjects;
 
 namespace NLightning.Domain.Transport;

@@ -6,6 +6,7 @@ namespace NLightning.Infrastructure.Persistence.EntityConfiguration;
 using Domain.Channels.Constants;
 using Entities;
 using Enums;
+using ValueConverters;
 
 public static class ChannelConfigEntityConfiguration
 {
@@ -15,9 +16,11 @@ public static class ChannelConfigEntityConfiguration
         {
             // Set PrimaryKey
             entity.HasKey(e => e.ChannelId);
-            
+
             // Set required props
-            entity.Property(e => e.ChannelId).IsRequired();
+            entity.Property(e => e.ChannelId)
+                  .HasConversion<ChannelIdConverter>()
+                  .IsRequired();
             entity.Property(e => e.MinimumDepth).IsRequired();
             entity.Property(e => e.ToSelfDelay).IsRequired();
             entity.Property(e => e.MaxAcceptedHtlcs).IsRequired();
@@ -27,7 +30,7 @@ public static class ChannelConfigEntityConfiguration
             entity.Property(e => e.MaxHtlcAmountInFlight).IsRequired();
             entity.Property(e => e.FeeRatePerKwSatoshis).IsRequired();
             entity.Property(e => e.OptionAnchorOutputs).IsRequired();
-            
+
             // Nullable byte[] properties
             entity.Property(e => e.LocalUpfrontShutdownScript).IsRequired(false);
             entity.Property(e => e.RemoteUpfrontShutdownScript).IsRequired(false);
@@ -38,7 +41,7 @@ public static class ChannelConfigEntityConfiguration
             }
         });
     }
-    
+
     private static void OptimizeConfigurationForSqlServer(EntityTypeBuilder<ChannelConfigEntity> entity)
     {
         entity.Property(e => e.ChannelId).HasColumnType($"varbinary({ChannelConstants.ChannelIdLength})");

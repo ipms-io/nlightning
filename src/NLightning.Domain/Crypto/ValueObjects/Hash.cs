@@ -18,6 +18,6 @@ public readonly record struct Hash
 
     public static implicit operator Hash(byte[] bytes) => new(bytes);
     public static implicit operator byte[](Hash hash) => hash.Value;
-    
+
     public static implicit operator ReadOnlyMemory<byte>(Hash hash) => hash.Value;
 }

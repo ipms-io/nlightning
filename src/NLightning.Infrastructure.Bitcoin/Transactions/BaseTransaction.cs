@@ -3,11 +3,17 @@ using NLightning.Domain.Transactions.Constants;
 
 namespace NLightning.Infrastructure.Bitcoin.Transactions;
 
-using Domain.Bitcoin.ValueObjects;
 using Comparers;
-using Domain.Bitcoin.Transactions;
-using Domain.Money;
+using 
+<<<<<<< TODO: Unmerged change from project 'NLightning.Infrastructure.Bitcoin(net9.0)', Before:
 using Domain.Protocol.Constants;
+using Outputs;
+=======
+using Outputs;
+>>>>>>> After
+Domain.Bitcoin.Transactions;
+using Domain.Bitcoin.ValueObjects;
+using Domain.Money;
 using Outputs;
 
 public abstract class BaseTransaction : ITransaction

@@ -11,12 +11,12 @@ public interface IPeerService
     /// Gets the peer's public key.
     /// </summary>
     CompactPubKey PeerPubKey { get; }
-    
+
     /// <summary>
     /// Event raised when the peer is disconnected.
     /// </summary>
     event EventHandler? DisconnectEvent;
-    
+
     /// <summary>
     /// Disconnects from the peer.
     /// </summary>

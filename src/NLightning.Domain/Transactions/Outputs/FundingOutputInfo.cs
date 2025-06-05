@@ -2,9 +2,9 @@ namespace NLightning.Domain.Transactions.Outputs;
 
 using Bitcoin.ValueObjects;
 using Crypto.ValueObjects;
-using Money;
 using Enums;
 using Interfaces;
+using Money;
 
 public class FundingOutputInfo : IOutputInfo
 {

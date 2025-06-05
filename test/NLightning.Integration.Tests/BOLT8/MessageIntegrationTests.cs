@@ -2,7 +2,6 @@ using NLightning.Integration.Tests.TestCollections;
 
 namespace NLightning.Integration.Tests.BOLT8;
 
-using Infrastructure.Protocol.Constants;
 using Vectors;
 
 [Collection(NetworkCollection.NAME)]

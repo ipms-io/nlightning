@@ -7,7 +7,6 @@ using NLightning.Domain.Transactions.Constants;
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
 using Converters;
-using Domain.Protocol.Constants;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Payloads.Interfaces;
 using Domain.ValueObjects;

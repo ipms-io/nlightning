@@ -9,7 +9,7 @@ public enum CommitmentSide : byte
     /// The local node's commitment transaction.
     /// </summary>
     Local = 0,
-    
+
     /// <summary>
     /// The remote node's commitment transaction.
     /// </summary>

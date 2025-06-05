@@ -40,28 +40,28 @@ public class TransportServiceTests
                     switch (steps)
                     {
                         case 2:
-                        {
-                            steps--;
-                            if (inMessage.Length != 50 && inMessage.Length != 0)
                             {
-                                throw new InvalidOperationException("Expected 50 bytes");
-                            }
+                                steps--;
+                                if (inMessage.Length != 50 && inMessage.Length != 0)
+                                {
+                                    throw new InvalidOperationException("Expected 50 bytes");
+                                }
 
-                            outMessage = new byte[50];
-                            return (50, transport);
-                        }
+                                outMessage = new byte[50];
+                                return (50, transport);
+                            }
                         case 1:
-                        {
-                            steps--;
-                            if (inMessage.Length != 50 && inMessage.Length != 66 && inMessage.Length != 0)
                             {
-                                throw new InvalidOperationException("Expected 66 bytes");
+                                steps--;
+                                if (inMessage.Length != 50 && inMessage.Length != 66 && inMessage.Length != 0)
+                                {
+                                    throw new InvalidOperationException("Expected 66 bytes");
+                                }
+
+                                outMessage = new byte[66];
+
+                                return (66, new FakeTransport());
                             }
-
-                            outMessage = new byte[66];
-
-                            return (66, new FakeTransport());
-                        }
                         default:
                             throw new InvalidOperationException("There's no more steps to complete");
                     }

@@ -2,10 +2,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace NLightning.Infrastructure.Persistence.Contexts;
 
+using Entities;
 using EntityConfiguration;
 using Enums;
 using Providers;
-using Entities;
 
 public class NLightningDbContext : DbContext
 {

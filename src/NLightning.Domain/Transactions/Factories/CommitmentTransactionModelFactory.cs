@@ -3,16 +3,16 @@ using NLightning.Domain.Exceptions;
 
 namespace NLightning.Domain.Transactions.Factories;
 
-using Channels.ValueObjects;
-using Protocol.Interfaces;
 using Channels.Enums;
 using Channels.Models;
-using Money;
+using Channels.ValueObjects;
 using Constants;
 using Enums;
 using Interfaces;
 using Models;
+using Money;
 using Outputs;
+using Protocol.Interfaces;
 
 public class CommitmentTransactionModelFactory : ICommitmentTransactionModelFactory
 {

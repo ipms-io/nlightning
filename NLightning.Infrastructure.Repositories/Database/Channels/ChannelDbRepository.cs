@@ -166,16 +166,10 @@ public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRe
             throw new InvalidOperationException(
                 "Channel key sets must contain exactly two entries when mapping channel entity to domain model.");
 
-        var localKeySetEntity = channelEntity.KeySets.FirstOrDefault(k => k.IsLocal);
-        if (localKeySetEntity is null)
-            throw new InvalidOperationException(
+        var localKeySetEntity = channelEntity.KeySets.FirstOrDefault(k => k.IsLocal) ?? throw new InvalidOperationException(
                 "Local key set cannot be null when mapping channel entity to domain model.");
-
-        var remoteKeySetEntity = channelEntity.KeySets.FirstOrDefault(k => !k.IsLocal);
-        if (remoteKeySetEntity is null)
-            throw new InvalidOperationException(
+        var remoteKeySetEntity = channelEntity.KeySets.FirstOrDefault(k => !k.IsLocal) ?? throw new InvalidOperationException(
                 "Remote key set cannot be null when mapping channel entity to domain model.");
-
         var config = ChannelConfigDbRepository.MapEntityToDomain(channelEntity.Config);
         var localKeySet = ChannelKeySetDbRepository.MapEntityToDomain(localKeySetEntity);
         var remoteKeySet = ChannelKeySetDbRepository.MapEntityToDomain(remoteKeySetEntity);
@@ -239,7 +233,7 @@ public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRe
             lastReceivedSig = new CompactSignature(channelEntity.LastReceivedSignature);
 
         return new ChannelModel(
-            channelId: new ChannelId(channelEntity.ChannelId),
+            channelId: channelEntity.ChannelId,
             fundingOutput: fundingOutput,
             isInitiator: channelEntity.IsInitiator,
             remoteNodeId: remoteNodeId,

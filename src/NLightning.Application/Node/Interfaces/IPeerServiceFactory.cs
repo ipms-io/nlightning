@@ -15,7 +15,7 @@ public interface IPeerServiceFactory
     /// <param name="tcpClient">TCP client</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the created peer.</returns>
     Task<IPeerService> CreateConnectedPeerAsync(CompactPubKey peerPubKey, TcpClient tcpClient);
-    
+
     /// <summary>
     /// Creates a peer that is connecting to us.
     /// </summary>

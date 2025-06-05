@@ -4,7 +4,6 @@ using NLightning.Domain.Utils;
 namespace NLightning.Bolt11.Tests.Models;
 
 using Bolt11.Models;
-using Domain.ValueObjects;
 using Enums;
 using Interfaces;
 using Mocks;

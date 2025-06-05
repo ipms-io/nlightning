@@ -59,7 +59,6 @@ public class CommitmentTransactionBuilderTests
         Assert.Equal(expectedTx.ToBytes(), unsignedTx.RawTxBytes);
     }
 
-
     [Fact]
     public void Given_ValidInput_When_Build_Then_gwgReturnsCorrectValues()
     {

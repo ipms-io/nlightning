@@ -7,5 +7,5 @@ public interface IDustService
     ulong CalculateP2WpkhDustLimit();
     ulong CalculateP2WshDustLimit();
     ulong CalculateUnknownSegwitVersionDustLimit();
-    
+
 }

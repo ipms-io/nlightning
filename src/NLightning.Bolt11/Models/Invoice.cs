@@ -4,10 +4,6 @@ using NBitcoin;
 
 namespace NLightning.Bolt11.Models;
 
-using Infrastructure.Bitcoin.Encoders;
-using Domain.Protocol.Interfaces;
-using Domain.Protocol.ValueObjects;
-using Domain.Utils;
 using Domain.Constants;
 using Domain.Crypto.Constants;
 using Domain.Enums;
@@ -15,8 +11,12 @@ using Domain.Models;
 using Domain.Money;
 using Domain.Node;
 using Domain.Protocol.Constants;
+using Domain.Protocol.Interfaces;
+using Domain.Protocol.ValueObjects;
+using Domain.Utils;
 using Enums;
 using Exceptions;
+using Infrastructure.Bitcoin.Encoders;
 using Infrastructure.Crypto.Hashes;
 using TaggedFields;
 

@@ -1,11 +1,9 @@
 using NLightning.Domain.Bitcoin.ValueObjects;
 using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Payloads;
 
 using Interfaces;
-using ValueObjects;
 
 /// <summary>
 /// Represents the payload for the shutdown message.

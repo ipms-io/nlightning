@@ -8,8 +8,6 @@ namespace NLightning.Integration.Tests.BOLT8;
 
 using Infrastructure.Crypto.Interfaces;
 using Infrastructure.Crypto.Primitives;
-using Infrastructure.Protocol.Constants;
-using Infrastructure.Transport.Handshake.States;
 
 [Collection(NetworkCollection.NAME)]
 public class InitiatorIntegrationTests

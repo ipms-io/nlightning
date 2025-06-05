@@ -1,4 +1,3 @@
-using NBitcoin;
 using NLightning.Domain.Channels.ValueObjects;
 using NLightning.Domain.Protocol.ValueObjects;
 

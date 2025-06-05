@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using NLightning.Domain.Transactions.Constants;
 
 namespace NLightning.Infrastructure.Persistence.EntityConfiguration;
 
 using Domain.Channels.Constants;
 using Domain.Crypto.Constants;
-using Domain.Protocol.Constants;
+using Domain.Transactions.Constants;
 using Entities;
 using Enums;
+using ValueConverters;
 
 public static class ChannelEntityConfiguration
 {
@@ -33,7 +33,9 @@ public static class ChannelEntityConfiguration
             entity.Property(e => e.RemoteBalanceSatoshis).IsRequired();
 
             // Required byte[] properties
-            entity.Property(e => e.ChannelId).IsRequired();
+            entity.Property(e => e.ChannelId)
+                  .HasConversion<ChannelIdConverter>()
+                  .IsRequired();
             entity.Property(e => e.FundingTxId).IsRequired();
             entity.Property(e => e.RemoteNodeId).IsRequired();
 
@@ -42,13 +44,19 @@ public static class ChannelEntityConfiguration
             entity.Property(e => e.LastReceivedSignature).IsRequired(false);
 
             // Configure the relationship with ChannelConfig (1:1)
-            entity.HasOne<ChannelConfigEntity>()
+            entity.HasOne(e => e.Config)
                   .WithOne()
                   .HasForeignKey<ChannelConfigEntity>(c => c.ChannelId)
                   .OnDelete(DeleteBehavior.Cascade);
 
-            // Configure relationship with HTLCs (1:many)
+            // Configure the relationship with HTLCs (1:many)
             entity.HasMany(e => e.Htlcs)
+                  .WithOne()
+                  .HasForeignKey(h => h.ChannelId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure the relationship with KeySets (1:many)
+            entity.HasMany(e => e.KeySets)
                   .WithOne()
                   .HasForeignKey(h => h.ChannelId)
                   .OnDelete(DeleteBehavior.Cascade);
@@ -62,6 +70,8 @@ public static class ChannelEntityConfiguration
 
     private static void OptimizeConfigurationForSqlServer(EntityTypeBuilder<ChannelEntity> entity)
     {
+        entity.Property(e => e.LocalBalanceSatoshis).HasColumnType("bigint");
+        entity.Property(e => e.RemoteBalanceSatoshis).HasColumnType("bigint");
         entity.Property(e => e.ChannelId).HasColumnType($"varbinary({ChannelConstants.ChannelIdLength})");
         entity.Property(e => e.FundingTxId).HasColumnType($"varbinary({TransactionConstants.TxIdLength})");
         entity.Property(e => e.RemoteNodeId).HasColumnType($"varbinary({TransactionConstants.TxIdLength})");

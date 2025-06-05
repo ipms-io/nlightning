@@ -2,7 +2,6 @@ using Microsoft.Extensions.Logging;
 
 namespace NLightning.Application.Node.Services;
 
-using Interfaces;
 using Domain.Channels.Interfaces;
 using Domain.Crypto.ValueObjects;
 using Domain.Exceptions;
@@ -11,6 +10,7 @@ using Domain.Protocol.Constants;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Tlv;
+using Interfaces;
 
 /// <summary>
 /// Application service for peer communication that orchestrates domain logic.

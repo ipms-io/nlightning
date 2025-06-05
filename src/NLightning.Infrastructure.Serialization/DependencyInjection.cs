@@ -28,7 +28,7 @@ public static class DependencyInjection
         services.AddSingleton<ITlvSerializer, TlvSerializer>();
         services.AddSingleton<ITlvStreamSerializer, TlvStreamSerializer>();
         services.AddSingleton<IValueObjectSerializerFactory, ValueObjectSerializerFactory>();
-        
+
         return services;
     }
 }

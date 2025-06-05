@@ -10,7 +10,6 @@ using Domain.Constants;
 using Domain.Models;
 using Domain.Money;
 using Domain.Protocol.Constants;
-using Domain.ValueObjects;
 using Exceptions;
 
 public class InvoiceTests

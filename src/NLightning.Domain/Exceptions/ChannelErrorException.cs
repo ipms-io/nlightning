@@ -2,9 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using NLightning.Domain.Channels.ValueObjects;
 
 namespace NLightning.Domain.Exceptions;
-
-using ValueObjects;
-
 /// <summary>
 /// Represents an exception that is thrown when a channel error occurs.
 /// </summary>

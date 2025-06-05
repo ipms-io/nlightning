@@ -5,7 +5,6 @@ namespace NLightning.Domain.Protocol.Payloads;
 
 using Interfaces;
 using Messages;
-using ValueObjects;
 
 /// <summary>
 /// Represents a tx_signatures payload.

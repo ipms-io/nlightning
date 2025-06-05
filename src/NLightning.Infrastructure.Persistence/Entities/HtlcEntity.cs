@@ -1,4 +1,7 @@
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
+
+using NLightning.Domain.Channels.ValueObjects;
+
 namespace NLightning.Infrastructure.Persistence.Entities;
 
 public class HtlcEntity
@@ -8,7 +11,7 @@ public class HtlcEntity
     /// This property is used to establish a relationship between HTLCs and their respective channels.
     /// </summary>
     /// <remarks>This is part of the composite-key identifier</remarks>
-    public required byte[] ChannelId { get; set; }
+    public required ChannelId ChannelId { get; set; }
 
     /// <summary>
     /// Represents the unique identifier for a specific HTLC (Hashed Time-Locked Contract) instance.
@@ -96,9 +99,10 @@ public class HtlcEntity
     /// within the HTLC protocol, using the corresponding cryptographic keys.
     /// </summary>
     /// <remarks>This property is optional, as it may not be present in all scenarios.</remarks>
-    public byte[]?  Signature { get; set; }
+    public byte[]? Signature { get; set; }
 
     // Default constructor for EF Core
     internal HtlcEntity()
-    { }
+    {
+    }
 }

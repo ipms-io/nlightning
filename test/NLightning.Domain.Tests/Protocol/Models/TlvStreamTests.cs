@@ -4,7 +4,6 @@ namespace NLightning.Domain.Tests.Protocol.Models;
 
 using Domain.Protocol.Models;
 using Domain.Protocol.Tlv;
-using Domain.ValueObjects;
 
 public class TlvStreamTests
 {

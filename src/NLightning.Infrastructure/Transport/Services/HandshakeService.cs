@@ -1,10 +1,10 @@
 namespace NLightning.Infrastructure.Transport.Services;
 
 using Domain.Crypto.ValueObjects;
-using Domain.Utils;
-using Infrastructure.Crypto.Interfaces;
 using Domain.Transport;
+using Domain.Utils;
 using Handshake.States;
+using Infrastructure.Crypto.Interfaces;
 using Interfaces;
 using Protocol.Constants;
 
@@ -39,7 +39,7 @@ internal sealed class HandshakeService : IHandshakeService
         {
             _handshakeState = handshakeState;
         }
-        
+
         IsInitiator = isInitiator;
     }
 

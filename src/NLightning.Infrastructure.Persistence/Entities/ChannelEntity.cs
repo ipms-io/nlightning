@@ -1,5 +1,7 @@
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
 
+using NLightning.Domain.Channels.ValueObjects;
+
 namespace NLightning.Infrastructure.Persistence.Entities;
 
 /// <summary>
@@ -10,7 +12,7 @@ public class ChannelEntity
     /// <summary>
     /// The unique channel identifier used to reference this channel on the Lightning Network.
     /// </summary>
-    public required byte[] ChannelId { get; set; }
+    public required ChannelId ChannelId { get; set; }
 
     /// <summary>
     /// The transaction ID of the funding transaction that established this channel.

@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace NLightning.Infrastructure.Persistence.Factories;
 
-using Providers;
 using Contexts;
 using Enums;
+using Providers;
 
 /// <summary>
 /// This is used for dotnet ef CLI to set up connection for migration stuff

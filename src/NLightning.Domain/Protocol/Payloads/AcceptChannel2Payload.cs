@@ -1,13 +1,10 @@
 using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto;
 using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Payloads;
 
 using Interfaces;
 using Money;
-using ValueObjects;
 
 /// <summary>
 /// Represents the payload for the accept_channel2 message.

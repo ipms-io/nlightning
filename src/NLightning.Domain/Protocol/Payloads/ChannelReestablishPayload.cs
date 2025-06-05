@@ -1,12 +1,9 @@
 using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto;
 using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Payloads;
 
 using Interfaces;
-using ValueObjects;
 
 /// <summary>
 /// Represents the payload for the channel_reestablish message.

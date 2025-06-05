@@ -4,7 +4,6 @@ namespace NLightning.Domain.Node.Options;
 
 using Money;
 using Protocol.Constants;
-using ValueObjects;
 
 public class NodeOptions
 {

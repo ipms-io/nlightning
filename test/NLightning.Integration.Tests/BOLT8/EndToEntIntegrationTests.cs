@@ -6,8 +6,6 @@ using NLightning.Tests.Utils.Vectors;
 namespace NLightning.Integration.Tests.BOLT8;
 
 using Infrastructure.Crypto.Primitives;
-using Infrastructure.Protocol.Constants;
-using Infrastructure.Transport.Handshake.States;
 using Vectors;
 
 [Collection(NetworkCollection.NAME)]

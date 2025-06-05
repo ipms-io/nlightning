@@ -2,10 +2,10 @@ using System.Diagnostics;
 
 namespace NLightning.Infrastructure.Transport.Handshake.States;
 
-using Domain.Crypto.ValueObjects;
-using Domain.Utils;
 using Crypto.Interfaces;
 using Domain.Crypto.Constants;
+using Domain.Crypto.ValueObjects;
+using Domain.Utils;
 using Enums;
 using Interfaces;
 using MessagePatterns;
@@ -56,9 +56,9 @@ internal sealed class HandshakeState : IHandshakeState
             throw new ArgumentException("Invalid remote static public key.", nameof(rs));
 
         ArgumentNullException.ThrowIfNull(dh, nameof(dh));
-        
+
         _dh = dh;
-        
+
         _state = new SymmetricState(ProtocolConstants.Name);
         _state.MixHash(ProtocolConstants.Prologue);
 

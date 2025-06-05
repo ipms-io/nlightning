@@ -14,7 +14,7 @@ public interface IHtlcDbRepository
     /// <param name="channelId">Channel ID</param>
     /// <param name="htlc">HTLC to add</param>
     Task AddAsync(ChannelId channelId, Htlc htlc);
-    
+
     /// <summary>
     /// Updates an existing HTLC
     /// </summary>
@@ -29,7 +29,7 @@ public interface IHtlcDbRepository
     /// <param name="htlcId">HTLC ID</param>
     /// <param name="direction">HTLC direction (incoming/outgoing)</param>
     Task DeleteAsync(ChannelId channelId, ulong htlcId, HtlcDirection direction);
-    
+
     /// <summary>
     /// Deletes all HTLCs for a channel
     /// </summary>
@@ -44,14 +44,14 @@ public interface IHtlcDbRepository
     /// <param name="direction">HTLC direction (incoming/outgoing)</param>
     /// <returns>HTLC or null if not found</returns>
     Task<Htlc?> GetByIdAsync(ChannelId channelId, ulong htlcId, HtlcDirection direction);
-    
+
     /// <summary>
     /// Gets all HTLCs for a channel
     /// </summary>
     /// <param name="channelId">Channel ID</param>
     /// <returns>Collection of HTLCs</returns>
     Task<IEnumerable<Htlc>> GetAllForChannelAsync(ChannelId channelId);
-    
+
     /// <summary>
     /// Gets HTLCs for a channel with a specific state
     /// </summary>
@@ -59,7 +59,7 @@ public interface IHtlcDbRepository
     /// <param name="state">HTLC state</param>
     /// <returns>Collection of HTLCs matching the state</returns>
     Task<IEnumerable<Htlc>> GetByChannelIdAndStateAsync(ChannelId channelId, HtlcState state);
-    
+
     /// <summary>
     /// Gets HTLCs for a channel with a specific direction
     /// </summary>

@@ -12,8 +12,8 @@ using NLightning.Domain.Transactions.Interfaces;
 
 namespace NLightning.Application;
 
-using Node.Services;
 using Domain.Protocol.Services;
+using Node.Services;
 
 /// <summary>
 /// Extension methods for setting up application services in an IServiceCollection.

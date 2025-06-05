@@ -10,7 +10,6 @@ using Bolt11.Exceptions;
 using Bolt11.Models;
 using Domain.Models;
 using Domain.Node;
-using Domain.ValueObjects;
 using Infrastructure.Crypto.Hashes;
 
 public class InvoiceIntegrationTests

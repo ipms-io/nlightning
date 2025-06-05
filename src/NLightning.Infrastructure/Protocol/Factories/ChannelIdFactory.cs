@@ -6,8 +6,6 @@ using NLightning.Domain.Protocol.Interfaces;
 namespace NLightning.Infrastructure.Protocol.Factories;
 
 using Crypto.Hashes;
-using Domain.Protocol.Factories;
-using Domain.ValueObjects;
 
 public class ChannelIdFactory : IChannelIdFactory
 {

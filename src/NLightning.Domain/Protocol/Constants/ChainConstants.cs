@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using NLightning.Domain.Protocol.ValueObjects;
-using NLightning.Domain.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Constants;
 

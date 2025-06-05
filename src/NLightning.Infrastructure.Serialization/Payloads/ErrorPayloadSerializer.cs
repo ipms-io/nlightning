@@ -7,7 +7,6 @@ namespace NLightning.Infrastructure.Serialization.Payloads;
 using Converters;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Payloads.Interfaces;
-using Domain.ValueObjects;
 using Exceptions;
 
 public class ErrorPayloadSerializer : IPayloadSerializer<ErrorPayload>

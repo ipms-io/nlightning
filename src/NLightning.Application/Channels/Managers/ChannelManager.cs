@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 
 namespace NLightning.Application.Channels.Managers;
 
-using Domain.Persistence.Interfaces;
 using Bitcoin.Interfaces;
 using Domain.Bitcoin.Interfaces;
 using Domain.Channels.Enums;
@@ -13,6 +12,7 @@ using Domain.Channels.ValueObjects;
 using Domain.Crypto.ValueObjects;
 using Domain.Exceptions;
 using Domain.Node.Options;
+using Domain.Persistence.Interfaces;
 using Domain.Protocol.Constants;
 using Domain.Protocol.Interfaces;
 using Domain.Protocol.Messages;

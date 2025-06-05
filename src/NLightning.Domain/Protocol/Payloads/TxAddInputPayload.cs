@@ -1,12 +1,10 @@
 using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Payloads;
 
 using Constants;
 using Interfaces;
 using Messages;
-using ValueObjects;
 
 /// <summary>
 /// Represents a tx_add_input payload.

@@ -15,17 +15,17 @@ public static class NodeConfigurationExtensions
     {
         // Configure the host builder
         return hostBuilder
-            .ConfigureAppConfiguration(builder =>
-            {
-                builder.AddConfiguration(configuration);
-            })
-            .UseSerilog((_, _, loggerConfig) =>
-            {
-                // Read from current configuration
-                loggerConfig
-                    .ReadFrom.Configuration(configuration)
-                    .Enrich.With<ClassNameEnricher>();
-            });
+              .ConfigureAppConfiguration(builder =>
+               {
+                   builder.AddConfiguration(configuration);
+               })
+              .UseSerilog((_, _, loggerConfig) =>
+               {
+                   // Read from current configuration
+                   loggerConfig
+                      .ReadFrom.Configuration(configuration)
+                      .Enrich.With<ClassNameEnricher>();
+               });
     }
 
     /// <summary>
@@ -37,26 +37,26 @@ public static class NodeConfigurationExtensions
 
         // Configure the host builder
         return hostBuilder
-            .ConfigureAppConfiguration(builder =>
-            {
-                builder.AddConfiguration(config);
-            })
-            .UseSerilog((_, _, loggerConfig) =>
-            {
-                // Read from current configuration
-                loggerConfig
-                    .ReadFrom.Configuration(config)
-                    .Enrich.With<ClassNameEnricher>();
-            });
+              .ConfigureAppConfiguration(builder =>
+               {
+                   builder.AddConfiguration(config);
+               })
+              .UseSerilog((_, _, loggerConfig) =>
+               {
+                   // Read from current configuration
+                   loggerConfig
+                      .ReadFrom.Configuration(config)
+                      .Enrich.With<ClassNameEnricher>();
+               });
     }
 
     public static IConfiguration ReadInitialConfiguration(string[] args)
     {
         // Get network from the command line or environment variable first
         var initialConfig = new ConfigurationBuilder()
-            .AddCommandLine(args)
-            .AddEnvironmentVariables("NLTG_")
-            .Build();
+                           .AddCommandLine(args)
+                           .AddEnvironmentVariables("NLTG_")
+                           .Build();
         var network = initialConfig["network"] ?? initialConfig["n"] ?? "mainnet";
 
         // Check for custom config path first
@@ -98,10 +98,10 @@ public static class NodeConfigurationExtensions
         config.Sources.Clear();
 
         return config
-            .AddJsonFile(configPath!, optional: false, reloadOnChange: false)
-            .AddEnvironmentVariables("NLTG_")
-            .AddCommandLine(args)
-            .Build();
+              .AddJsonFile(configPath!, optional: false, reloadOnChange: false)
+              .AddEnvironmentVariables("NLTG_")
+              .AddCommandLine(args)
+              .Build();
     }
 
     /// <summary>
@@ -166,6 +166,7 @@ public static class NodeConfigurationExtensions
                  "Database": {
                    "Provider": "Sqlite",
                    "ConnectionString": "Data Source=nltg.db;Cache=Shared",
+                   "RunMigrations": false
                  }
                }
                """;

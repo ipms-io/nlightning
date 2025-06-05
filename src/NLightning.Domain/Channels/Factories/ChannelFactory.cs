@@ -1,25 +1,25 @@
 namespace NLightning.Domain.Channels.Factories;
 
-using Crypto.Constants;
-using Protocol.Payloads;
-using Protocol.Tlv;
-using Transactions.Constants;
 using Bitcoin.Interfaces;
 using Bitcoin.ValueObjects;
 using Constants;
-using Enums;
-using Interfaces;
-using Models;
-using ValueObjects;
+using Crypto.Constants;
 using Crypto.Hashes;
 using Crypto.ValueObjects;
 using Domain.Enums;
+using Enums;
 using Exceptions;
+using Interfaces;
+using Models;
 using Money;
 using Node.Options;
 using Protocol.Messages;
+using Protocol.Payloads;
+using Protocol.Tlv;
 using Protocol.ValueObjects;
+using Transactions.Constants;
 using Transactions.Outputs;
+using ValueObjects;
 
 public class ChannelFactory : IChannelFactory
 {
@@ -159,7 +159,6 @@ public class ChannelFactory : IChannelFactory
                                     payload.FundingAmount.Satoshi / 100M);
         if (payload.MaxHtlcValueInFlight < maxHtlcValueInFlight * 0.8M)
             throw new ChannelErrorException($"Max htlc value in flight is too small: {payload.MaxHtlcValueInFlight}");
-
 
         // Check if we consider channel_reserve_satoshis too large. IE. 20% bigger than our channel reserve
         if (payload.ChannelReserveAmount > _nodeOptions.ChannelReserveAmount * 1.2M)

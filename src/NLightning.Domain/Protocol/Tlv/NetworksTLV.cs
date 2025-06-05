@@ -1,7 +1,7 @@
 namespace NLightning.Domain.Protocol.Tlv;
 
-using Domain.Crypto.Constants;
 using Constants;
+using Domain.Crypto.Constants;
 using ValueObjects;
 
 /// <summary>

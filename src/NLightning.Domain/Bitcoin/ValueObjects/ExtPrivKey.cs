@@ -19,7 +19,7 @@ public readonly record struct ExtPrivKey
         ArgumentNullException.ThrowIfNull(value);
         if (value is null || value.Length != CryptoConstants.ExtPrivkeyLen)
             throw new ArgumentException($"Private key must be {CryptoConstants.ExtPrivkeyLen} bytes long.", nameof(value));
-        
+
         Value = value;
     }
 

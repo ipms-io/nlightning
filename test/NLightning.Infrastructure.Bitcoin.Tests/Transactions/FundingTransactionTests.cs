@@ -162,4 +162,3 @@
 //         Assert.Equal(fundingTx.TxId, signedTx.GetHash());
 //     }
 // }
-

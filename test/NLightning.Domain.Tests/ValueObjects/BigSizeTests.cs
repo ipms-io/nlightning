@@ -1,9 +1,6 @@
 using NLightning.Domain.Protocol.ValueObjects;
 
 namespace NLightning.Domain.Tests.ValueObjects;
-
-using Domain.ValueObjects;
-
 public class BigSizeTests
 {
     [Theory]

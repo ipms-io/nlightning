@@ -22,30 +22,33 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1"/>
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.5" />
-    <PackageReference Include="Npgsql" Version="9.0.3" />
-    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
-    <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
-    <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
-    <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="9.0.5"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.5"/>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.5"/>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5"/>
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.5"/>
+    <PackageReference Include="Npgsql" Version="9.0.3"/>
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1"/>
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0"/>
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0"/>
+    <PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0"/>
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0"/>
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\NLightning.Infrastructure.Repositories\NLightning.Infrastructure.Repositories.csproj" />
-    <ProjectReference Include="..\NLightning.Infrastructure.Bitcoin\NLightning.Infrastructure.Bitcoin.csproj" />
-    <ProjectReference Include="..\NLightning.Infrastructure.Serialization\NLightning.Infrastructure.Serialization.csproj" />
-    <ProjectReference Include="..\NLightning.Infrastructure\NLightning.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\NLightning.Infrastructure.Repositories\NLightning.Infrastructure.Repositories.csproj"/>
+    <ProjectReference Include="..\NLightning.Infrastructure.Bitcoin\NLightning.Infrastructure.Bitcoin.csproj"/>
+    <ProjectReference Include="..\NLightning.Infrastructure.Persistence.Postgres\NLightning.Infrastructure.Persistence.Postgres.csproj"/>
+    <ProjectReference Include="..\NLightning.Infrastructure.Persistence.Sqlite\NLightning.Infrastructure.Persistence.Sqlite.csproj"/>
+    <ProjectReference Include="..\NLightning.Infrastructure.Persistence.SqlServer\NLightning.Infrastructure.Persistence.SqlServer.csproj"/>
+    <ProjectReference Include="..\NLightning.Infrastructure.Serialization\NLightning.Infrastructure.Serialization.csproj"/>
+    <ProjectReference Include="..\NLightning.Infrastructure\NLightning.Infrastructure.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Logging.Configuration" />
-    <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Reference Include="Microsoft.Extensions.Logging.Configuration"/>
+    <Reference Include="Microsoft.Extensions.Logging.Console"/>
   </ItemGroup>
 
 </Project>

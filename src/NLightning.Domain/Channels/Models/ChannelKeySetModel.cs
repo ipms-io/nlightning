@@ -22,7 +22,6 @@ public class ChannelKeySetModel
     /// </summary>
     public byte[]? LastRevealedPerCommitmentSecret { get; private set; }
 
-
     public ChannelKeySetModel(uint keyIndex, CompactPubKey fundingCompactPubKey,
                               CompactPubKey revocationCompactBasepoint, CompactPubKey paymentCompactBasepoint,
                               CompactPubKey delayedPaymentCompactBasepoint, CompactPubKey htlcCompactBasepoint,

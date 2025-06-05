@@ -1,5 +1,4 @@
 using System.Text.Json;
-using MessagePack;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NLightning.Domain.Bitcoin.Interfaces;
@@ -15,7 +14,7 @@ public class FeeService : IFeeService
     private static readonly TimeSpan s_defaultCacheExpiration = TimeSpan.FromMinutes(5);
 
     private DateTime _lastFetchTime = DateTime.MinValue;
-    private LightningMoney _cachedFeeRate = LightningMoney.Zero;
+    private readonly LightningMoney _cachedFeeRate = LightningMoney.Zero;
     private Task? _feeTask;
     private CancellationTokenSource? _cts;
 

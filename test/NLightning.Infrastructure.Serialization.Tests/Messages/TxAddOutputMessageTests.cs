@@ -1,4 +1,3 @@
-using NBitcoin;
 using NLightning.Domain.Channels.ValueObjects;
 
 namespace NLightning.Infrastructure.Serialization.Tests.Messages;
@@ -6,7 +5,6 @@ namespace NLightning.Infrastructure.Serialization.Tests.Messages;
 using Domain.Money;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Payloads;
-using Domain.ValueObjects;
 using Helpers;
 using Serialization.Messages.Types;
 

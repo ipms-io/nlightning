@@ -5,11 +5,17 @@ using NLightning.Domain.Serialization.Interfaces;
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
 using Domain.Channels.ValueObjects;
-using Domain.Crypto.ValueObjects;
 using Domain.Crypto.Constants;
+using 
+<<<<<<< TODO: Unmerged change from project 'NLightning.Infrastructure.Serialization(net9.0)', Before:
+using Domain.ValueObjects;
+using Exceptions;
+=======
+using Exceptions;
+>>>>>>> After
+Domain.Crypto.ValueObjects;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Payloads.Interfaces;
-using Domain.ValueObjects;
 using Exceptions;
 
 public class RevokeAndAckPayloadSerializer : IPayloadSerializer<RevokeAndAckPayload>

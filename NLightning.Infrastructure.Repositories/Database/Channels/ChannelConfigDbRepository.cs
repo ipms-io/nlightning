@@ -59,15 +59,15 @@ public class ChannelConfigDbRepository(NLightningDbContext context)
         LightningMoney? channelReserveAmount = null;
         if (entity.ChannelReserveAmountSats.HasValue)
             channelReserveAmount = LightningMoney.Satoshis(entity.ChannelReserveAmountSats.Value);
-        
+
         BitcoinScript? localUpfrontShutdownScript = null;
         if (entity.LocalUpfrontShutdownScript is not null)
             localUpfrontShutdownScript = entity.LocalUpfrontShutdownScript;
-        
+
         BitcoinScript? remoteUpfrontShutdownScript = null;
         if (entity.RemoteUpfrontShutdownScript is not null)
             remoteUpfrontShutdownScript = entity.RemoteUpfrontShutdownScript;
-        
+
         return new ChannelConfig(
             minimumDepth: entity.MinimumDepth,
             toSelfDelay: entity.ToSelfDelay,

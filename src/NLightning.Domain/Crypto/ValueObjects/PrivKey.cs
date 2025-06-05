@@ -18,12 +18,12 @@ public readonly record struct PrivKey
         ArgumentNullException.ThrowIfNull(value);
         if (value is null || value.Length != CryptoConstants.PrivkeyLen)
             throw new ArgumentException($"Private key must be {CryptoConstants.PrivkeyLen} bytes long.", nameof(value));
-        
+
         Value = value;
     }
-    
+
     public static implicit operator PrivKey(byte[] bytes) => new(bytes);
     public static implicit operator byte[](PrivKey hash) => hash.Value;
-    
+
     public static implicit operator ReadOnlySpan<byte>(PrivKey hash) => hash.Value;
 }

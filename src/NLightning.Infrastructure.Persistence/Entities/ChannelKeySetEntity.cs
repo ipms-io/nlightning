@@ -1,6 +1,6 @@
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
 
-using NLightning.Domain.Crypto.ValueObjects;
+using NLightning.Domain.Channels.ValueObjects;
 
 namespace NLightning.Infrastructure.Persistence.Entities;
 
@@ -13,7 +13,7 @@ public class ChannelKeySetEntity
     /// The unique channel identifier this key set belongs to.
     /// </summary>
     /// <remarks>Part of the composite primary key.</remarks>
-    public required byte[] ChannelId { get; set; }
+    public required ChannelId ChannelId { get; set; }
 
     /// <summary>
     /// Indicates whether this key set belongs to the local node or remote node.

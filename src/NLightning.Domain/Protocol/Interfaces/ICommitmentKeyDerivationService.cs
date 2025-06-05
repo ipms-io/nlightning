@@ -1,7 +1,7 @@
 namespace NLightning.Domain.Protocol.Interfaces;
 
-using Domain.Crypto.ValueObjects;
 using Channels.ValueObjects;
+using Domain.Crypto.ValueObjects;
 
 public interface ICommitmentKeyDerivationService
 {

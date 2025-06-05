@@ -252,4 +252,3 @@
 //                                          _commitmentNumber, isChannelFunder);
 //     }
 // }
-

@@ -1,7 +1,7 @@
 namespace NLightning.Infrastructure.Tests.Protocol.Services;
 
-using Domain.Serialization.Interfaces;
 using Domain.Protocol.Messages.Interfaces;
+using Domain.Serialization.Interfaces;
 using Domain.Transport;
 using Infrastructure.Protocol.Services;
 

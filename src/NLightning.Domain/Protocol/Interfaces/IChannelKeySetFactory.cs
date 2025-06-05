@@ -1,5 +1,4 @@
 using NLightning.Domain.Channels.Models;
-using NLightning.Domain.Channels.ValueObjects;
 using NLightning.Domain.Protocol.Payloads;
 
 namespace NLightning.Domain.Protocol.Interfaces;

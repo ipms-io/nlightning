@@ -117,4 +117,3 @@
 //         Assert.NotEqual(output1.ScriptPubKey, output2.ScriptPubKey);
 //     }
 // }
-

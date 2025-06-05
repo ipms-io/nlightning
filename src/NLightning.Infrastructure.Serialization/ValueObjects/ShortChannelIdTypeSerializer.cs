@@ -4,9 +4,6 @@ using NLightning.Domain.Interfaces;
 using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.ValueObjects;
-
-using Domain.ValueObjects;
-
 public class ShortChannelIdTypeSerializer : IValueObjectTypeSerializer<ShortChannelId>
 {
     /// <summary>

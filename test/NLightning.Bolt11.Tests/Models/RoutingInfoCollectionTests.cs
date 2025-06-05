@@ -5,7 +5,6 @@ using NLightning.Tests.Utils.Vectors;
 namespace NLightning.Bolt11.Tests.Models;
 
 using Domain.Models;
-using Domain.ValueObjects;
 
 public class RoutingInfoCollectionTests
 {

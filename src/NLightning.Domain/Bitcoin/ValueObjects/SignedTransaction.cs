@@ -1,5 +1,4 @@
 using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Transactions.Interfaces;
 
 namespace NLightning.Domain.Bitcoin.ValueObjects;
 

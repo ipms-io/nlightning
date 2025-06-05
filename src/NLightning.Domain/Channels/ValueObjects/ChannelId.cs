@@ -36,11 +36,21 @@ public readonly struct ChannelId : IEquatable<ChannelId>, IValueObject
 
     public bool Equals(ChannelId other)
     {
+        // Handle null cases first
+        if (_value is null && other._value is null)
+            return true;
+
+        if (_value is null || other._value is null)
+            return false;
+
         return _value.SequenceEqual(other._value);
     }
 
     public override bool Equals(object? obj)
     {
+        if (obj is null)
+            return false;
+
         return obj is ChannelId other && Equals(other);
     }
 

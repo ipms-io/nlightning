@@ -17,11 +17,11 @@ public class OfferedHtlcOutput : BaseHtlcOutput
     public override ScriptType ScriptType => ScriptType.P2WPKH;
 
     [SetsRequiredMembers]
-    public OfferedHtlcOutput(LightningMoney amount, ulong cltvExpiry, bool hasAnchor, PubKey localHtlcPubKey, 
+    public OfferedHtlcOutput(LightningMoney amount, ulong cltvExpiry, bool hasAnchor, PubKey localHtlcPubKey,
                              ReadOnlyMemory<byte> paymentHash, PubKey remoteHtlcPubKey, PubKey revocationPubKey)
         : base(amount,
                GenerateToRemoteHtlcScript(hasAnchor, localHtlcPubKey, paymentHash, remoteHtlcPubKey, revocationPubKey))
-               
+
     {
         RevocationPubKey = revocationPubKey;
         RemoteHtlcPubKey = remoteHtlcPubKey;
@@ -30,7 +30,7 @@ public class OfferedHtlcOutput : BaseHtlcOutput
         CltvExpiry = cltvExpiry;
     }
 
-    private static Script GenerateToRemoteHtlcScript(bool hasAnchor, PubKey localHtlcPubKey, 
+    private static Script GenerateToRemoteHtlcScript(bool hasAnchor, PubKey localHtlcPubKey,
                                                      ReadOnlyMemory<byte> paymentHash, PubKey remoteHtlcPubKey,
                                                      PubKey revocationPubKey)
     {

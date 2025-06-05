@@ -193,7 +193,7 @@ internal sealed class TransportService : ITransportService
         {
             var buffer = ArrayPool<byte>.Shared.Rent(ProtocolConstants.MaxMessageLength);
             var memoryBuffer = buffer.AsMemory();
-            
+
             try
             {
                 if (_transport == null)
@@ -207,7 +207,7 @@ internal sealed class TransportService : ITransportService
                 var lenRead = await stream.ReadAsync(memoryBuffer[..ProtocolConstants.MessageHeaderSize], _cts.Token);
                 if (lenRead != ProtocolConstants.MessageHeaderSize)
                     throw new ConnectionException("Peer sent wrong length");
-                
+
                 var messageLen = _transport.ReadMessageLength(memoryBuffer[..ProtocolConstants.MessageHeaderSize].Span);
                 if (messageLen > ProtocolConstants.MaxMessageLength)
                     throw new ConnectionException("Peer sent message too long");

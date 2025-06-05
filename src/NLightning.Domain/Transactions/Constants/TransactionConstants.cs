@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.Serialization.Formatters;
 using NLightning.Domain.Money;
 
 namespace NLightning.Domain.Transactions.Constants;

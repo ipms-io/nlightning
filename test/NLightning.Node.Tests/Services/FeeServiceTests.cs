@@ -9,7 +9,6 @@ using NLightning.Infrastructure.Bitcoin.Services;
 namespace NLightning.Node.Tests.Services;
 
 using Domain.Money;
-using NLightning.Node.Services;
 using TestCollections;
 
 [Collection(SerialTestCollection.Name)]
@@ -51,10 +50,10 @@ public class FeeServiceTests
                               .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(),
                                                                 ItExpr.IsAny<CancellationToken>())
                               .ReturnsAsync(() => new HttpResponseMessage
-                               {
-                                   StatusCode = HttpStatusCode.OK,
-                                   Content = new StringContent("{\"fastestFee\": 2}")
-                               });
+                              {
+                                  StatusCode = HttpStatusCode.OK,
+                                  Content = new StringContent("{\"fastestFee\": 2}")
+                              });
         var feeService = new FeeService(new OptionsWrapper<FeeEstimationOptions>(new FeeEstimationOptions()),
                                         new HttpClient(httpMessageHandlerMock.Object),
                                         new Mock<ILogger<FeeService>>().Object);
@@ -145,10 +144,10 @@ public class FeeServiceTests
                               .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(),
                                                                 ItExpr.IsAny<CancellationToken>())
                               .ReturnsAsync(new HttpResponseMessage
-                               {
-                                   StatusCode = HttpStatusCode.OK,
-                                   Content = new StringContent("{\"fastestFee\": 2}")
-                               })
+                              {
+                                  StatusCode = HttpStatusCode.OK,
+                                  Content = new StringContent("{\"fastestFee\": 2}")
+                              })
                               .Callback(() =>
                                {
                                    refreshCount++;

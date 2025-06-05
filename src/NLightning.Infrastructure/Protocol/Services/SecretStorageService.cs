@@ -3,13 +3,13 @@ using System.Security.Cryptography;
 
 namespace NLightning.Infrastructure.Protocol.Services;
 
+using Crypto.Factories;
+using Crypto.Hashes;
+using Crypto.Interfaces;
 using Domain.Crypto.Constants;
 using Domain.Crypto.ValueObjects;
 using Domain.Protocol.Enums;
 using Domain.Protocol.Interfaces;
-using Crypto.Factories;
-using Crypto.Hashes;
-using Crypto.Interfaces;
 using Models;
 
 /// <summary>
@@ -165,7 +165,6 @@ public class SecretStorageService : ISecretStorageService
     {
         throw new NotImplementedException("Loading from index is not implemented yet.");
     }
-
 
     private static int GetBucketIndex(ulong index)
     {

@@ -5,7 +5,6 @@ namespace NLightning.Infrastructure.Serialization.Tests.Messages;
 
 using Domain.Protocol.Messages;
 using Domain.Protocol.Payloads;
-using Domain.ValueObjects;
 using Helpers;
 using Serialization.Messages.Types;
 

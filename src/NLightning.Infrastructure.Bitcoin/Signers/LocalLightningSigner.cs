@@ -5,16 +5,16 @@ using NBitcoin.Crypto;
 
 namespace NLightning.Infrastructure.Bitcoin.Signers;
 
-using Domain.Exceptions;
-using Domain.Channels.ValueObjects;
-using Domain.Crypto.Constants;
-using Domain.Transactions.Outputs;
 using Builders;
-using Domain.Node.Options;
 using Domain.Bitcoin.Interfaces;
 using Domain.Bitcoin.ValueObjects;
+using Domain.Channels.ValueObjects;
+using Domain.Crypto.Constants;
 using Domain.Crypto.ValueObjects;
+using Domain.Exceptions;
+using Domain.Node.Options;
 using Domain.Protocol.Interfaces;
+using Domain.Transactions.Outputs;
 
 public class LocalLightningSigner : ILightningSigner
 {

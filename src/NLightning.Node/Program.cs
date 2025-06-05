@@ -2,7 +2,6 @@ using Microsoft.Extensions.Hosting;
 using NBitcoin;
 using NLightning.Domain.Protocol.ValueObjects;
 using NLightning.Infrastructure.Bitcoin.Managers;
-using NLightning.Infrastructure.Node.Managers;
 using NLightning.Node.Extensions;
 using NLightning.Node.Helpers;
 using NLightning.Node.Utilities;
@@ -12,8 +11,8 @@ try
 {
     // Bootstrap logger for startup messages
     Log.Logger = new LoggerConfiguration()
-        .WriteTo.Console()
-        .CreateBootstrapLogger();
+                .WriteTo.Console()
+                .CreateBootstrapLogger();
 
     // Get network for the PID file path
     var network = CommandLineHelper.GetNetwork(args);
@@ -52,10 +51,12 @@ try
         if (idx >= 0 && idx + 1 < args.Length)
             password = args[idx + 1];
     }
+
     if (string.IsNullOrWhiteSpace(password))
     {
         password = ConsoleUtils.ReadPassword("Enter password for key encryption: ");
     }
+
     if (string.IsNullOrWhiteSpace(password))
     {
         Log.Error("Password cannot be empty.");
@@ -89,10 +90,16 @@ try
     Log.Information("Starting NLTG...");
 
     // Create and run host
-    await Host.CreateDefaultBuilder(args)
-        .ConfigureNltg(initialConfig)
-        .ConfigureNltgServices(keyManager)
-        .RunConsoleAsync();
+    var host = Host.CreateDefaultBuilder(args)
+                   .ConfigureNltg(initialConfig)
+                   .ConfigureNltgServices(keyManager)
+                   .Build();
+
+    // Run migrations if configured
+    await host.MigrateDatabaseIfConfiguredAsync();
+
+    // Run the host
+    await host.RunAsync();
 
     return 0;
 }

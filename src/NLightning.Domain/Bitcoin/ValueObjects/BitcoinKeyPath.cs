@@ -3,7 +3,7 @@ namespace NLightning.Domain.Bitcoin.ValueObjects;
 public readonly record struct BitcoinKeyPath
 {
     public byte[] Value { get; }
-    
+
     /// <summary>
     /// Initializes a new instance of the <see cref="BitcoinKeyPath"/> struct.
     /// </summary>
@@ -13,7 +13,7 @@ public readonly record struct BitcoinKeyPath
         ArgumentNullException.ThrowIfNull(value);
         if (value is null || value.Length == 0)
             throw new ArgumentException("Key path must not be null or empty.", nameof(value));
-        
+
         Value = value;
     }
 

@@ -18,7 +18,7 @@ public sealed class SecureMemory : IDisposable
         _cryptoProvider = CryptoFactory.GetCryptoProvider();
         Length = size;
         _handle = _cryptoProvider.MemoryAlloc((ulong)size);
-        
+
         if (_handle == IntPtr.Zero)
             throw new OutOfMemoryException("Failed to allocate secure memory.");
 

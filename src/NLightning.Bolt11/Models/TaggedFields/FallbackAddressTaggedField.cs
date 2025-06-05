@@ -101,10 +101,7 @@ internal sealed class FallbackAddressTaggedField : ITaggedField
             data = data[..^1];
         }
 
-        var network = Network.GetNetwork(bitcoinNetwork);
-        if (network is null)
-            throw new ArgumentException("Network is unknown or invalid.", nameof(bitcoinNetwork));
-            
+        var network = Network.GetNetwork(bitcoinNetwork) ?? throw new ArgumentException("Network is unknown or invalid.", nameof(bitcoinNetwork));
         BitcoinAddress address = addressType switch
         {
             // Witness P2WPKH

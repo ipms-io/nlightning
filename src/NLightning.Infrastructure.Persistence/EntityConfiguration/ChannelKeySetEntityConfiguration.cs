@@ -7,6 +7,7 @@ using Domain.Channels.Constants;
 using Domain.Crypto.Constants;
 using Entities;
 using Enums;
+using ValueConverters;
 
 public static class ChannelKeySetEntityConfiguration
 {
@@ -23,7 +24,9 @@ public static class ChannelKeySetEntityConfiguration
             entity.Property(e => e.KeyIndex).IsRequired();
 
             // Required byte[] properties
-            entity.Property(e => e.ChannelId).IsRequired();
+            entity.Property(e => e.ChannelId)
+                  .HasConversion<ChannelIdConverter>()
+                  .IsRequired();
             entity.Property(e => e.FundingPubKey).IsRequired();
             entity.Property(e => e.RevocationBasepoint).IsRequired();
             entity.Property(e => e.PaymentBasepoint).IsRequired();
@@ -33,12 +36,6 @@ public static class ChannelKeySetEntityConfiguration
 
             // Nullable byte[] properties
             entity.Property(e => e.LastRevealedPerCommitmentSecret).IsRequired(false);
-
-            // Configure the relationship with Channel
-            entity.HasOne<ChannelEntity>()
-                  .WithMany()
-                  .HasForeignKey(k => k.ChannelId)
-                  .OnDelete(DeleteBehavior.Cascade);
 
             if (databaseType == DatabaseType.MicrosoftSql)
             {

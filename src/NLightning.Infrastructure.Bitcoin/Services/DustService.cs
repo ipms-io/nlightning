@@ -3,7 +3,6 @@ using NLightning.Domain.Bitcoin.Interfaces;
 
 namespace NLightning.Infrastructure.Bitcoin.Services;
 
-using Domain.Channels.Interfaces;
 using Domain.Protocol.Services;
 
 public class DustService : IDustService

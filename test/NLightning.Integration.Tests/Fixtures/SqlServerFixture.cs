@@ -9,7 +9,7 @@ namespace NLightning.Integration.Tests.Fixtures;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class SqlServerFixture : IDisposable
 {
-    private const string CONTAINER_NAME = "sqlserver";
+    private const string ContainerName = "sqlserver";
     private readonly DockerClient _client = new DockerClientConfiguration().CreateClient();
     private string? _containerId;
     private string? _ip;
@@ -26,16 +26,15 @@ public class SqlServerFixture : IDisposable
         GC.SuppressFinalize(this);
 
         // Remove containers
-        RemoveContainer(CONTAINER_NAME).Wait();
+        RemoveContainer(ContainerName).Wait();
 
         _client.Dispose();
     }
 
     public async Task StartSqlServer()
     {
-
         await _client.PullImageAndWaitForCompleted("mcr.microsoft.com/mssql/server", "2022-latest");
-        await RemoveContainer(CONTAINER_NAME);
+        await RemoveContainer(ContainerName);
         var nodeContainer = await _client.Containers.CreateContainerAsync(new CreateContainerParameters
         {
             Image = "mcr.microsoft.com/mssql/server:2022-latest",
@@ -43,8 +42,8 @@ public class SqlServerFixture : IDisposable
             {
                 NetworkMode = "bridge"
             },
-            Name = $"{CONTAINER_NAME}",
-            Hostname = $"{CONTAINER_NAME}",
+            Name = $"{ContainerName}",
+            Hostname = $"{ContainerName}",
             Env =
             [
                 "MSSQL_SA_PASSWORD=Superuser1234*",
@@ -64,14 +63,14 @@ public class SqlServerFixture : IDisposable
             if (db != null)
             {
                 _ip = db.NetworkSettings.Networks.First().Value.IPAddress;
-                DbConnectionString = $"Server={_ip};Database=tempdb;User Id=sa;Password=Superuser1234*;Trust Server Certificate=True;";
+                DbConnectionString =
+                    $"Server={_ip};Database=tempdb;User Id=sa;Password=Superuser1234*;Trust Server Certificate=True;";
                 ipAddressReady = true;
             }
             else
             {
                 await Task.Delay(100);
             }
-
         }
 
         //wait for TCP socket to open
@@ -92,6 +91,7 @@ public class SqlServerFixture : IDisposable
                 {
                     tcpConnectable = true;
                 }
+
                 c.Dispose();
             }
             catch (Exception)
@@ -106,7 +106,8 @@ public class SqlServerFixture : IDisposable
         try
         {
             await _client.Containers.RemoveContainerAsync(name,
-                new ContainerRemoveParameters { Force = true, RemoveVolumes = true });
+                                                          new ContainerRemoveParameters
+                                                          { Force = true, RemoveVolumes = true });
         }
         catch
         {
@@ -116,10 +117,9 @@ public class SqlServerFixture : IDisposable
 
     public bool IsRunning()
     {
-
         try
         {
-            var inspect = _client.Containers.InspectContainerAsync(CONTAINER_NAME);
+            var inspect = _client.Containers.InspectContainerAsync(ContainerName);
             inspect.Wait();
             return inspect.Result.State.Running;
         }
@@ -129,7 +129,6 @@ public class SqlServerFixture : IDisposable
         }
 
         return false;
-
     }
 }
 

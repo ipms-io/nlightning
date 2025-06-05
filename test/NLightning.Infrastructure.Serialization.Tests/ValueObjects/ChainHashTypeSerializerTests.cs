@@ -2,7 +2,6 @@ using NLightning.Domain.Protocol.ValueObjects;
 
 namespace NLightning.Infrastructure.Serialization.Tests.ValueObjects;
 
-using Domain.ValueObjects;
 using Infrastructure.Serialization.ValueObjects;
 
 public class ChainHashTypeSerializerTests

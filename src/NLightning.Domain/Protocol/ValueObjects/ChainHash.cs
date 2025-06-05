@@ -1,7 +1,7 @@
 namespace NLightning.Domain.Protocol.ValueObjects;
 
-using Domain.Interfaces;
 using Crypto.Constants;
+using Domain.Interfaces;
 
 /// <summary>
 /// Represents a chain hash.

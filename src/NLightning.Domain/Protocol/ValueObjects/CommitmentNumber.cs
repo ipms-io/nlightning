@@ -3,7 +3,6 @@ using NLightning.Domain.Crypto.ValueObjects;
 namespace NLightning.Domain.Protocol.ValueObjects;
 
 using Bitcoin.ValueObjects;
-using Crypto;
 using Crypto.Hashes;
 
 /// <summary>

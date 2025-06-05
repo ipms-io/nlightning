@@ -17,7 +17,7 @@ public class ReceivedHtlcOutput : BaseHtlcOutput
     public override ScriptType ScriptType => ScriptType.P2WSH;
 
     [SetsRequiredMembers]
-    public ReceivedHtlcOutput(LightningMoney amount, ulong cltvExpiry, bool hasAnchor, PubKey localHtlcPubKey, 
+    public ReceivedHtlcOutput(LightningMoney amount, ulong cltvExpiry, bool hasAnchor, PubKey localHtlcPubKey,
                               ReadOnlyMemory<byte> paymentHash, PubKey remoteHtlcPubKey, PubKey revocationPubKey)
         : base(amount,
                GenerateToLocalHtlcScript(hasAnchor, cltvExpiry, localHtlcPubKey, paymentHash, remoteHtlcPubKey,
@@ -30,7 +30,7 @@ public class ReceivedHtlcOutput : BaseHtlcOutput
         CltvExpiry = cltvExpiry;
     }
 
-    private static Script GenerateToLocalHtlcScript(bool hasAnchor, ulong cltvExpiry, PubKey localHtlcPubKey, 
+    private static Script GenerateToLocalHtlcScript(bool hasAnchor, ulong cltvExpiry, PubKey localHtlcPubKey,
                                                     ReadOnlyMemory<byte> paymentHash, PubKey remoteHtlcPubKey,
                                                     PubKey revocationPubKey)
     {

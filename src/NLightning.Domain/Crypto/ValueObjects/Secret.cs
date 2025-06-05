@@ -18,7 +18,7 @@ public readonly record struct Secret
 
     public static implicit operator Secret(byte[] bytes) => new(bytes);
     public static implicit operator byte[](Secret hash) => hash.Value;
-    
+
     public static implicit operator ReadOnlyMemory<byte>(Secret hash) => hash.Value;
     public static implicit operator ReadOnlySpan<byte>(Secret hash) => hash.Value;
 }

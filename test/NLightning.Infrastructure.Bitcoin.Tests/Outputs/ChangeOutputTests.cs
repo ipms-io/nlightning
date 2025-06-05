@@ -124,4 +124,3 @@
 //         Assert.NotEqual(0, comparison); // The actual comparison is handled by TransactionOutputComparer
 //     }
 // }
-

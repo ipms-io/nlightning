@@ -1,7 +1,7 @@
 namespace NLightning.Domain.Protocol.Tlv;
 
-using Node;
 using Constants;
+using Node;
 
 /// <summary>
 /// Channel Type TLV.

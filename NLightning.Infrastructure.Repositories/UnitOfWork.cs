@@ -1,11 +1,11 @@
 namespace NLightning.Infrastructure.Repositories;
 
+using Database.Channels;
 using Domain.Channels.Interfaces;
 using Domain.Crypto.Hashes;
 using Domain.Persistence.Interfaces;
 using Domain.Serialization.Interfaces;
 using Persistence.Contexts;
-using Database.Channels;
 
 public class UnitOfWork : IUnitOfWork
 {

@@ -1,13 +1,13 @@
 namespace NLightning.Infrastructure.Protocol.Services;
 
 using Domain.Protocol.Messages;
+using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Payloads;
+using Domain.Protocol.Services;
 using Domain.Serialization.Interfaces;
+using Domain.Transport;
 using Domain.Utils;
 using Exceptions;
-using Domain.Protocol.Messages.Interfaces;
-using Domain.Protocol.Services;
-using Domain.Transport;
 
 /// <summary>
 /// Service for sending and receiving messages.

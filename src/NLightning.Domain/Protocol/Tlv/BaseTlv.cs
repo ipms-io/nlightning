@@ -1,5 +1,3 @@
-using NLightning.Domain.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Tlv;
 
 using ValueObjects;

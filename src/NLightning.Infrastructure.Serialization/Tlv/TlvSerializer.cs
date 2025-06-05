@@ -5,7 +5,6 @@ using NLightning.Domain.Serialization.Interfaces;
 namespace NLightning.Infrastructure.Serialization.Tlv;
 
 using Domain.Protocol.Tlv;
-using Domain.ValueObjects;
 
 public class TlvSerializer : ITlvSerializer
 {

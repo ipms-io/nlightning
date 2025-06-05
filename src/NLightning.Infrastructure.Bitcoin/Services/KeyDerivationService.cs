@@ -18,7 +18,7 @@ public class KeyDerivationService : IKeyDerivationService
     {
         var basePoint = new PubKey(compactBasepoint);
         var percCommitmentPoint = new PubKey(compactPerCommitmentPoint);
-        
+
         // Calculate SHA256(per_commitment_point || basepoint)
         Span<byte> hashBytes = stackalloc byte[CryptoConstants.Sha256HashLen];
         ComputeSha256(percCommitmentPoint, basePoint, hashBytes);
@@ -41,7 +41,7 @@ public class KeyDerivationService : IKeyDerivationService
     {
         var basepointSecret = new Key(basepointSecretPriv);
         var perCommitmentPoint = new PubKey(compactPerCommitmentPoint);
-        
+
         Span<byte> hashBytes = stackalloc byte[CryptoConstants.Sha256HashLen];
         ComputeSha256(perCommitmentPoint, basepointSecret.PubKey, hashBytes);
 
@@ -60,7 +60,7 @@ public class KeyDerivationService : IKeyDerivationService
     {
         var revocationBasepoint = new PubKey(compactRevocationBasepoint);
         var perCommitmentPoint = new PubKey(compactPerCommitmentPoint);
-        
+
         Span<byte> hash1 = stackalloc byte[CryptoConstants.Sha256HashLen];
         Span<byte> hash2 = stackalloc byte[CryptoConstants.Sha256HashLen];
         ComputeSha256(revocationBasepoint, perCommitmentPoint, hash1);
@@ -85,7 +85,7 @@ public class KeyDerivationService : IKeyDerivationService
     {
         var revocationBasepointSecret = new Key(revocationBasepointSecretPriv);
         var perCommitmentSecret = new Key(perCommitmentSecretPriv);
-        
+
         var revocationBasepoint = revocationBasepointSecret.PubKey;
         var perCommitmentPoint = perCommitmentSecret.PubKey;
 

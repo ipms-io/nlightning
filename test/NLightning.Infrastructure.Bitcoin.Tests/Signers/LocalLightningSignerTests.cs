@@ -25,10 +25,10 @@ public class LocalLightningSignerTests
                                                                Bolt3AppendixCVectors.NodeAFundingPubkey.ToBytes()),
                                                            new PubKey(
                                                                Bolt3AppendixCVectors.NodeBFundingPubkey.ToBytes()))
-                                 {
-                                     TransactionId = Bolt3AppendixBVectors.ExpectedTxId.ToBytes(),
-                                     Index = 0,
-                                 });
+                                {
+                                    TransactionId = Bolt3AppendixBVectors.ExpectedTxId.ToBytes(),
+                                    Index = 0,
+                                });
         var keyDerivationServiceMock = new Mock<IKeyDerivationService>();
         var loggerMock = new Mock<ILogger<LocalLightningSigner>>();
         var nodeOptions = new NodeOptions();
@@ -39,13 +39,15 @@ public class LocalLightningSignerTests
 
         var tx = Bolt3AppendixCVectors.ExpectedCommitTx0;
         tx.Inputs[0].WitScript = null;
-        var signedTx = new SignedTransaction(tx.GetHash().ToBytes(), tx.ToBytes());
-        signedTx.OutputInfo = new FundingOutputInfo(Bolt3AppendixBVectors.FundingSatoshis,
-                                                    Bolt3AppendixCVectors.NodeAFundingPubkey.ToBytes(),
-                                                    Bolt3AppendixCVectors.NodeBFundingPubkey.ToBytes())
+        var signedTx = new SignedTransaction(tx.GetHash().ToBytes(), tx.ToBytes())
         {
-            TransactionId = Bolt3AppendixBVectors.ExpectedTxId.ToBytes(),
-            Index = 0,
+            OutputInfo = new FundingOutputInfo(Bolt3AppendixBVectors.FundingSatoshis,
+                                                        Bolt3AppendixCVectors.NodeAFundingPubkey.ToBytes(),
+                                                        Bolt3AppendixCVectors.NodeBFundingPubkey.ToBytes())
+            {
+                TransactionId = Bolt3AppendixBVectors.ExpectedTxId.ToBytes(),
+                Index = 0,
+            }
         };
 
         // When

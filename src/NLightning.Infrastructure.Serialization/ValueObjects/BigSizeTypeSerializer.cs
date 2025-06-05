@@ -6,7 +6,6 @@ using NLightning.Domain.Serialization.Interfaces;
 namespace NLightning.Infrastructure.Serialization.ValueObjects;
 
 using Converters;
-using Domain.ValueObjects;
 
 public class BigSizeTypeSerializer : IValueObjectTypeSerializer<BigSize>
 {

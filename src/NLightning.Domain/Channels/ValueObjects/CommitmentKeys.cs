@@ -50,7 +50,6 @@ public record struct CommitmentKeys
     /// </summary>
     public Secret? PerCommitmentSecret { get; init; }
 
-
     public CommitmentKeys(CompactPubKey localPubKey, CompactPubKey localDelayedPubKey,
                           CompactPubKey revocationPubKey, CompactPubKey localHtlcPubKey,
                           CompactPubKey remoteHtlcPubKey, CompactPubKey perCommitmentPoint,

@@ -1,11 +1,9 @@
 using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Payloads;
 
 using Interfaces;
 using Messages;
-using ValueObjects;
 
 /// <summary>
 /// Represents the payload for the tx_init_rbf message.

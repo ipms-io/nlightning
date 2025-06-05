@@ -104,10 +104,7 @@ public class HtlcDbRepository : BaseDbRepository<HtlcEntity>, IHtlcDbRepository
             signature = htlcEntity.Signature;
 
         using var stream = new MemoryStream(htlcEntity.AddMessageBytes);
-        var addMessage = await messageSerializer.DeserializeMessageAsync<UpdateAddHtlcMessage>(stream);
-        if (addMessage is null)
-            throw new InvalidOperationException("Failed to deserialize HTLC add message");
-
+        var addMessage = await messageSerializer.DeserializeMessageAsync<UpdateAddHtlcMessage>(stream) ?? throw new InvalidOperationException("Failed to deserialize HTLC add message");
         return new Htlc(LightningMoney.MilliSatoshis(htlcEntity.AmountMsat), addMessage,
                         (HtlcDirection)htlcEntity.Direction, htlcEntity.CltvExpiry, htlcEntity.HtlcId,
                         htlcEntity.ObscuredCommitmentNumber, htlcEntity.PaymentHash,

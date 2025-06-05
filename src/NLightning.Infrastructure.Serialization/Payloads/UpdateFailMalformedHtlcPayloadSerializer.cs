@@ -9,7 +9,6 @@ using Converters;
 using Domain.Crypto.Constants;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Payloads.Interfaces;
-using Domain.ValueObjects;
 using Exceptions;
 
 public class UpdateFailMalformedHtlcPayloadSerializer : IPayloadSerializer<UpdateFailMalformedHtlcPayload>

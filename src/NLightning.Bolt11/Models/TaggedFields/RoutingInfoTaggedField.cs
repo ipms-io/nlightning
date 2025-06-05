@@ -7,7 +7,6 @@ namespace NLightning.Bolt11.Models.TaggedFields;
 
 using Constants;
 using Domain.Models;
-using Domain.ValueObjects;
 using Enums;
 using Interfaces;
 

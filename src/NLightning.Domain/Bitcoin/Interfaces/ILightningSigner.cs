@@ -1,8 +1,8 @@
 namespace NLightning.Domain.Bitcoin.Interfaces;
 
 using Channels.ValueObjects;
-using ValueObjects;
 using Crypto.ValueObjects;
+using ValueObjects;
 
 /// <summary>
 /// Interface for transaction signing services that can be implemented either locally 

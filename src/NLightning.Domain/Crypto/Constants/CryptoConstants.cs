@@ -14,7 +14,7 @@ public static class CryptoConstants
     public const int Sha256HashLen = 32;
     public const int Sha256BlockLen = 64;
     public const int LibsodiumSha256StateLen = 104;
-    
+
     public const int Ripemd160HashLen = 20;
 
     public const int ExtPrivkeyLen = 74;

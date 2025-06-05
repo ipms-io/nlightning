@@ -1,5 +1,4 @@
 using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto;
 using NLightning.Domain.Crypto.ValueObjects;
 using NLightning.Domain.Protocol.ValueObjects;
 using NLightning.Domain.ValueObjects;

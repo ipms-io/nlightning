@@ -118,4 +118,3 @@
 //         Assert.Equal(fundingOutput1.ScriptPubKey, fundingOutput2.ScriptPubKey);
 //     }
 // }
-

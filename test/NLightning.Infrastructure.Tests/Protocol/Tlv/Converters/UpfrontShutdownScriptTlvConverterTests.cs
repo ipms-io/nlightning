@@ -1,4 +1,3 @@
-using NBitcoin;
 using NLightning.Domain.Bitcoin.ValueObjects;
 
 namespace NLightning.Infrastructure.Tests.Protocol.Tlv.Converters;

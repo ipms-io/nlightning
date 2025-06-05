@@ -2,8 +2,6 @@ using System.Reflection;
 using System.Text;
 using NLightning.Infrastructure.Crypto.Interfaces;
 using NLightning.Infrastructure.Crypto.Primitives;
-using NLightning.Infrastructure.Protocol.Constants;
-using NLightning.Infrastructure.Transport.Handshake.States;
 using NLightning.Integration.Tests.TestCollections;
 using NLightning.Tests.Utils.Mocks;
 

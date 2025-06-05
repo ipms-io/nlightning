@@ -1,9 +1,9 @@
 namespace NLightning.Infrastructure.Transport.Encryption;
 
-using Domain.Utils;
 using Domain.Crypto.Constants;
 using Domain.Exceptions;
 using Domain.Transport;
+using Domain.Utils;
 using Handshake.States;
 using Protocol.Constants;
 

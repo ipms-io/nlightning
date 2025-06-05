@@ -20,7 +20,7 @@ public readonly record struct ChannelConfig
 
     public ChannelConfig(LightningMoney? channelReserveAmount, LightningMoney localDustLimitAmount,
                          LightningMoney feeRateAmountPerKw, LightningMoney htlcMinimumAmount, ushort maxAcceptedHtlcs,
-                         LightningMoney maxHtlcAmountInFlight, uint minimumDepth, bool optionAnchorOutputs, 
+                         LightningMoney maxHtlcAmountInFlight, uint minimumDepth, bool optionAnchorOutputs,
                          LightningMoney remoteDustLimitAmount, ushort toSelfDelay,
                          BitcoinScript? localUpfrontShutdownScript = null,
                          BitcoinScript? remoteShutdownScriptPubKey = null)
