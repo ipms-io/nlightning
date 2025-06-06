@@ -3,7 +3,6 @@ namespace NLightning.Domain.Channels.Factories;
 using Bitcoin.Interfaces;
 using Bitcoin.ValueObjects;
 using Constants;
-using Crypto.Constants;
 using Crypto.Hashes;
 using Crypto.ValueObjects;
 using Domain.Enums;

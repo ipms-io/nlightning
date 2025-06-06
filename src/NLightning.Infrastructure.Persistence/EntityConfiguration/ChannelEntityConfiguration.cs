@@ -62,9 +62,7 @@ public static class ChannelEntityConfiguration
                   .OnDelete(DeleteBehavior.Cascade);
 
             if (databaseType == DatabaseType.MicrosoftSql)
-            {
                 OptimizeConfigurationForSqlServer(entity);
-            }
         });
     }
 

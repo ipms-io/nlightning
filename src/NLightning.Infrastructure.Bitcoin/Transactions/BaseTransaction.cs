@@ -1,45 +1,46 @@
 using NBitcoin;
-using NLightning.Domain.Transactions.Constants;
 
 namespace NLightning.Infrastructure.Bitcoin.Transactions;
 
 using Comparers;
-using 
-<<<<<<< TODO: Unmerged change from project 'NLightning.Infrastructure.Bitcoin(net9.0)', Before:
-using Domain.Protocol.Constants;
-using Outputs;
-=======
-using Outputs;
->>>>>>> After
-Domain.Bitcoin.Transactions;
+using Domain.Bitcoin.Transactions;
 using Domain.Bitcoin.ValueObjects;
 using Domain.Money;
+using Domain.Transactions.Constants;
 using Outputs;
 
 public abstract class BaseTransaction : ITransaction
 {
     #region Private Fields
+
     private readonly bool _hasAnchorOutput;
     private readonly TransactionBuilder _builder;
     private readonly List<(Coin, Sequence)> _coins = [];
 
     private readonly Transaction _transaction;
+
     #endregion
 
     #region Protected Properties
+
     protected List<BaseOutput> Outputs { get; private set; } = [];
     protected LightningMoney CalculatedFee { get; } = LightningMoney.Zero;
     protected bool Finalized { get; private set; }
+
     protected Transaction FinalizedTransaction => Finalized
-        ? _transaction
-        : throw new Exception("Transaction not finalized.");
+                                                      ? _transaction
+                                                      : throw new Exception("Transaction not finalized.");
+
     #endregion
 
     #region Public Properties
+
     public TxId TxId { get; private set; } = uint256.Zero.ToBytes();
+
     public bool IsValid => Finalized
-        ? _builder.Verify(_transaction)
-        : throw new Exception("Transaction not finalized.");
+                               ? _builder.Verify(_transaction)
+                               : throw new Exception("Transaction not finalized.");
+
     #endregion
 
     #region Constructors
@@ -78,15 +79,18 @@ public abstract class BaseTransaction : ITransaction
         {
             _transaction.Inputs.Add(coin.Outpoint, null, null, sequence);
         }
-
     }
+
     #endregion
 
     #region Abstract Methods
+
     internal abstract void ConstructTransaction(LightningMoney currentFeePerKw);
+
     #endregion
 
     #region Protected Methods
+
     protected void SetLockTime(LockTime lockTime)
     {
         _transaction.LockTime = lockTime;
@@ -121,6 +125,7 @@ public abstract class BaseTransaction : ITransaction
     }
 
     #region Weight Calculation
+
     protected int CalculateOutputWeight()
     {
         var outputWeight = WeightConstants.TransactionBaseWeight;
@@ -179,7 +184,7 @@ public abstract class BaseTransaction : ITransaction
         foreach (var (coin, _) in _coins)
         {
             var input = _transaction.Inputs.SingleOrDefault(i => i.PrevOut == coin.Outpoint)
-                        ?? throw new NullReferenceException("Input not found in transaction.");
+                     ?? throw new NullReferenceException("Input not found in transaction.");
 
             if (input.WitScript.PushCount > 0)
             {
@@ -219,9 +224,11 @@ public abstract class BaseTransaction : ITransaction
 
         return inputWeight;
     }
+
     #endregion
 
     #region Input Management
+
     protected void AddCoin(Coin coin, Sequence sequence)
     {
         ArgumentNullException.ThrowIfNull(coin);
@@ -229,6 +236,7 @@ public abstract class BaseTransaction : ITransaction
         _coins.Add((coin, sequence));
         _transaction.Inputs.Add(coin.Outpoint, null, null, sequence);
     }
+
     protected void AddCoin(Coin coin)
     {
         ArgumentNullException.ThrowIfNull(coin);
@@ -247,6 +255,7 @@ public abstract class BaseTransaction : ITransaction
         indexToRemove = _transaction.Inputs.FindIndex(i => i.PrevOut == coin.Outpoint);
         _transaction.Inputs.RemoveAt(indexToRemove);
     }
+
     protected void RemoveCoin(Coin coin)
     {
         ArgumentNullException.ThrowIfNull(coin);
@@ -257,9 +266,11 @@ public abstract class BaseTransaction : ITransaction
         indexToRemove = _transaction.Inputs.FindIndex(i => i.PrevOut == coin.Outpoint);
         _transaction.Inputs.RemoveAt(indexToRemove);
     }
+
     #endregion
 
     #region Output Management
+
     protected void AddOutput(BaseOutput baseOutput)
     {
         ArgumentNullException.ThrowIfNull(baseOutput);
@@ -313,6 +324,8 @@ public abstract class BaseTransaction : ITransaction
                 break;
         }
     }
+
     #endregion
+
     #endregion
 }

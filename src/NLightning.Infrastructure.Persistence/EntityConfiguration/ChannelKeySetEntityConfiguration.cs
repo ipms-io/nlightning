@@ -38,9 +38,7 @@ public static class ChannelKeySetEntityConfiguration
             entity.Property(e => e.LastRevealedPerCommitmentSecret).IsRequired(false);
 
             if (databaseType == DatabaseType.MicrosoftSql)
-            {
                 OptimizeConfigurationForSqlServer(entity);
-            }
         });
     }
 
