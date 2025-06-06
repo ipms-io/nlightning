@@ -319,7 +319,7 @@ public class InvoiceIntegrationTests
                     throw new InvalidOperationException("f line without invoice line");
                 }
 
-                var network = NBitcoin.Network.Main;
+                var network = Network.Main;
                 if (currentInvoice.ExpectedNetwork == null || currentInvoice.ExpectedNetwork == BitcoinNetwork.Signet)
                 {
                     throw new Exception("Invalid network");
@@ -327,11 +327,11 @@ public class InvoiceIntegrationTests
 
                 if (currentInvoice.ExpectedNetwork == BitcoinNetwork.Testnet)
                 {
-                    network = NBitcoin.Network.TestNet;
+                    network = Network.TestNet;
                 }
                 else if (currentInvoice.ExpectedNetwork == BitcoinNetwork.Regtest)
                 {
-                    network = NBitcoin.Network.RegTest;
+                    network = Network.RegTest;
                 }
 
                 currentInvoice.ExpectedTaggedFields.Add(TaggedFieldTypes.FallbackAddress,

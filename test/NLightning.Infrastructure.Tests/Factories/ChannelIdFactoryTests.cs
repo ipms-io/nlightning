@@ -19,8 +19,10 @@ public class ChannelIdFactoryTests
         // Arrange
         var lesserRevocationBasepoint = new byte[33];
         var greaterRevocationBasepoint = new byte[33];
-        new Random().NextBytes(lesserRevocationBasepoint);
-        new Random().NextBytes(greaterRevocationBasepoint);
+        lesserRevocationBasepoint[0] = 0x02; // Ensure it's a compressed public key
+        greaterRevocationBasepoint[0] = 0x03; // Ensure it's a compressed public key
+        new Random().NextBytes(lesserRevocationBasepoint[1..]);
+        new Random().NextBytes(greaterRevocationBasepoint[1..]);
 
         // Act
         var channelId = _channelIdFactory.CreateV2(lesserRevocationBasepoint, greaterRevocationBasepoint);

@@ -1,8 +1,9 @@
 using NLightning.Domain.Crypto.Constants;
+using NLightning.Domain.Utils.Extensions;
 
 namespace NLightning.Domain.Crypto.ValueObjects;
 
-public readonly record struct CompactPubKey
+public readonly struct CompactPubKey : IEquatable<CompactPubKey>
 {
     public byte[] CompactBytes { get; }
 
@@ -25,4 +26,19 @@ public readonly record struct CompactPubKey
     public static implicit operator ReadOnlyMemory<byte>(CompactPubKey compactPubKey) => compactPubKey.CompactBytes;
 
     public override string ToString() => Convert.ToHexString(CompactBytes);
+
+    public bool Equals(CompactPubKey other)
+    {
+        return CompactBytes.SequenceEqual(other.CompactBytes);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is CompactPubKey other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return CompactBytes.GetByteArrayHashCode();
+    }
 }
