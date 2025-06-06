@@ -58,6 +58,9 @@ namespace NLightning.Infrastructure.Persistence.Sqlite.Migrations
                     b.Property<ushort>("ToSelfDelay")
                         .HasColumnType("INTEGER");
 
+                    b.Property<byte>("UseScidAlias")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("ChannelId");
 
                     b.ToTable("ChannelConfigs");
@@ -69,6 +72,9 @@ namespace NLightning.Infrastructure.Persistence.Sqlite.Migrations
                         .HasColumnType("BLOB");
 
                     b.Property<long>("FundingAmountSatoshis")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<uint>("FundingCreatedAtBlockHeight")
                         .HasColumnType("INTEGER");
 
                     b.Property<uint>("FundingOutputIndex")

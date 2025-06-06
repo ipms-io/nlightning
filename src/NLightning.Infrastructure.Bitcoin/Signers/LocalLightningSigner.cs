@@ -33,8 +33,8 @@ public class LocalLightningSigner : ILightningSigner
     private readonly Network _network;
 
     public LocalLightningSigner(IFundingOutputBuilder fundingOutputBuilder, IKeyDerivationService keyDerivationService,
-                                ILogger<LocalLightningSigner> logger,
-                                NodeOptions nodeOptions, ISecureKeyManager secureKeyManager)
+                                ILogger<LocalLightningSigner> logger, NodeOptions nodeOptions,
+                                ISecureKeyManager secureKeyManager)
     {
         _fundingOutputBuilder = fundingOutputBuilder;
         _keyDerivationService = keyDerivationService;

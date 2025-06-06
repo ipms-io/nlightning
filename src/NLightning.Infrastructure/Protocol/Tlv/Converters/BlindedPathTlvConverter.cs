@@ -11,7 +11,7 @@ public class BlindedPathTlvConverter : ITlvConverter<BlindedPathTlv>
 {
     public BaseTlv ConvertToBase(BlindedPathTlv tlv)
     {
-        tlv.Value = tlv.PathKey.CompactBytes;
+        tlv.Value = tlv.PathKey;
 
         return tlv;
     }
@@ -41,6 +41,6 @@ public class BlindedPathTlvConverter : ITlvConverter<BlindedPathTlv>
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
         return ConvertToBase(tlv as BlindedPathTlv
-                             ?? throw new InvalidCastException($"Error converting BaseTlv to {nameof(BlindedPathTlv)}"));
+                          ?? throw new InvalidCastException($"Error converting BaseTlv to {nameof(BlindedPathTlv)}"));
     }
 }

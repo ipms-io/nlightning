@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using NLightning.Domain.Channels.Interfaces;
+using NLightning.Infrastructure.Repositories.Memory;
 
 namespace NLightning.Infrastructure.Repositories;
 
@@ -18,6 +20,9 @@ public static class DependencyInjection
     {
         // Register UnitOfWork
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        // Register memory repositories
+        services.AddSingleton<IChannelMemoryRepository, ChannelMemoryRepository>();
 
         return services;
     }

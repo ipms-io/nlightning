@@ -77,7 +77,7 @@ public class ChannelFactory : IChannelFactory
         var localKeySet = new ChannelKeySetModel(localKeyIndex, localBasepoints.FundingPubKey,
                                                  localBasepoints.RevocationBasepoint, localBasepoints.PaymentBasepoint,
                                                  localBasepoints.DelayedPaymentBasepoint, localBasepoints.HtlcBasepoint,
-                                                 null, firstPerCommitmentPoint);
+                                                 firstPerCommitmentPoint);
 
         // Create the remote key set from the message
         var remoteKeySet = ChannelKeySetModel.CreateForRemote(message.Payload.FundingPubKey,
@@ -97,12 +97,21 @@ public class ChannelFactory : IChannelFactory
         }
 
         // Generate the channel configuration
-        var channelConfig = new ChannelConfig(payload.ChannelReserveAmount, _nodeOptions.DustLimitAmount,
-                                              payload.FeeRatePerKw, payload.HtlcMinimumAmount, payload.MaxAcceptedHtlcs,
-                                              payload.MaxHtlcValueInFlight, minimumDepth,
+        var useScidAlias = FeatureSupport.No;
+        if (negotiatedFeatures.ScidAlias > FeatureSupport.No)
+        {
+            if (message.ChannelTypeTlv?.Features.IsFeatureSet(Feature.OptionScidAlias, true) ?? false)
+                useScidAlias = FeatureSupport.Compulsory;
+            else
+                useScidAlias = FeatureSupport.Optional;
+        }
+
+        var channelConfig = new ChannelConfig(payload.ChannelReserveAmount, payload.FeeRatePerKw,
+                                              payload.HtlcMinimumAmount, _nodeOptions.DustLimitAmount,
+                                              payload.MaxAcceptedHtlcs, payload.MaxHtlcValueInFlight, minimumDepth,
                                               negotiatedFeatures.AnchorOutputs != FeatureSupport.No,
-                                              payload.DustLimitAmount, payload.ToSelfDelay, localUpfrontShutdownScript,
-                                              remoteUpfrontShutdownScript);
+                                              payload.DustLimitAmount, payload.ToSelfDelay, useScidAlias,
+                                              localUpfrontShutdownScript, remoteUpfrontShutdownScript);
 
         // Generate the commitment numbers
         var commitmentNumber = new CommitmentNumber(remoteKeySet.PaymentCompactBasepoint,

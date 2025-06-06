@@ -113,7 +113,7 @@ public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRe
         htlcs.AddRange(GetHtlcsOrNull(channelModel.LocalFullfiledHtlcs));
         htlcs.AddRange(GetHtlcsOrNull(channelModel.LocalOldHtlcs));
         htlcs.AddRange(GetHtlcsOrNull(channelModel.RemoteOfferedHtlcs));
-        htlcs.AddRange(GetHtlcsOrNull(channelModel.RemoteFulffiledHtlcs));
+        htlcs.AddRange(GetHtlcsOrNull(channelModel.RemoteFulfilledHtlcs));
         htlcs.AddRange(GetHtlcsOrNull(channelModel.RemoteOldHtlcs));
 
         List<HtlcEntity>? htlcEntities = null;
@@ -130,6 +130,7 @@ public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRe
         {
             ChannelId = channelModel.ChannelId,
 
+            FundingCreatedAtBlockHeight = channelModel.FundingCreatedAtBlockHeight,
             FundingTxId = channelModel.FundingOutput.TransactionId ?? new byte[CryptoConstants.Sha256HashLen],
             FundingOutputIndex = channelModel.FundingOutput.Index ?? 0,
             FundingAmountSatoshis = channelModel.FundingOutput.Amount.Satoshi,
@@ -166,10 +167,12 @@ public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRe
             throw new InvalidOperationException(
                 "Channel key sets must contain exactly two entries when mapping channel entity to domain model.");
 
-        var localKeySetEntity = channelEntity.KeySets.FirstOrDefault(k => k.IsLocal) ?? throw new InvalidOperationException(
-                "Local key set cannot be null when mapping channel entity to domain model.");
-        var remoteKeySetEntity = channelEntity.KeySets.FirstOrDefault(k => !k.IsLocal) ?? throw new InvalidOperationException(
-                "Remote key set cannot be null when mapping channel entity to domain model.");
+        var localKeySetEntity = channelEntity.KeySets.FirstOrDefault(k => k.IsLocal) ??
+                                throw new InvalidOperationException(
+                                    "Local key set cannot be null when mapping channel entity to domain model.");
+        var remoteKeySetEntity = channelEntity.KeySets.FirstOrDefault(k => !k.IsLocal) ??
+                                 throw new InvalidOperationException(
+                                     "Remote key set cannot be null when mapping channel entity to domain model.");
         var config = ChannelConfigDbRepository.MapEntityToDomain(channelEntity.Config);
         var localKeySet = ChannelKeySetDbRepository.MapEntityToDomain(localKeySetEntity);
         var remoteKeySet = ChannelKeySetDbRepository.MapEntityToDomain(remoteKeySetEntity);
@@ -232,32 +235,18 @@ public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRe
         if (channelEntity.LastReceivedSignature != null)
             lastReceivedSig = new CompactSignature(channelEntity.LastReceivedSignature);
 
-        return new ChannelModel(
-            channelId: channelEntity.ChannelId,
-            fundingOutput: fundingOutput,
-            isInitiator: channelEntity.IsInitiator,
-            remoteNodeId: remoteNodeId,
-            channelConfig: config,
-            commitmentNumber: commitmentNumber,
-            state: (ChannelState)channelEntity.State,
-            version: (ChannelVersion)channelEntity.Version,
-            localBalance: LightningMoney.Satoshis(channelEntity.LocalBalanceSatoshis),
-            remoteBalance: LightningMoney.Satoshis(channelEntity.RemoteBalanceSatoshis),
-            localKeySet: localKeySet,
-            remoteKeySet: remoteKeySet,
-            localNextHtlcId: channelEntity.LocalNextHtlcId,
-            remoteNextHtlcId: channelEntity.RemoteNextHtlcId,
-            localRevocationNumber: channelEntity.LocalRevocationNumber,
-            remoteRevocationNumber: channelEntity.RemoteRevocationNumber,
-            lastSentSignature: lastSentSig,
-            lastReceivedSignature: lastReceivedSig,
-            localOfferedHtlcs: localOfferedHtlcs,
-            localFulffiledHtlcs: localFulfilledHtlcs,
-            localOldHtlcs: localOldHtlcs,
-            remoteOfferedHtlcs: remoteOfferedHtlcs,
-            remoteFullfiledHtlcs: remoteFulfilledHtlcs,
-            remoteOldHtlcs: remoteOldHtlcs
-        );
+        return new ChannelModel(config, channelEntity.ChannelId, commitmentNumber, fundingOutput,
+                                channelEntity.IsInitiator, lastSentSig, lastReceivedSig,
+                                LightningMoney.Satoshis(channelEntity.LocalBalanceSatoshis), localKeySet,
+                                channelEntity.LocalNextHtlcId, channelEntity.LocalRevocationNumber,
+                                LightningMoney.Satoshis(channelEntity.RemoteBalanceSatoshis), remoteKeySet,
+                                channelEntity.RemoteNextHtlcId, remoteNodeId, channelEntity.RemoteRevocationNumber,
+                                (ChannelState)channelEntity.State, (ChannelVersion)channelEntity.Version,
+                                localOfferedHtlcs, localFulfilledHtlcs, localOldHtlcs, remoteOfferedHtlcs,
+                                remoteFulfilledHtlcs, remoteOldHtlcs)
+        {
+            FundingCreatedAtBlockHeight = channelEntity.FundingCreatedAtBlockHeight
+        };
     }
 
     private static ICollection<Htlc> GetHtlcsOrNull(ICollection<Htlc>? htlcs)

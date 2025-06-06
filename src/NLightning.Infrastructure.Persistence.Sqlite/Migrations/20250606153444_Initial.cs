@@ -15,6 +15,7 @@ namespace NLightning.Infrastructure.Persistence.Sqlite.Migrations
                 columns: table => new
                 {
                     ChannelId = table.Column<byte[]>(type: "BLOB", nullable: false),
+                    FundingCreatedAtBlockHeight = table.Column<uint>(type: "INTEGER", nullable: false),
                     FundingTxId = table.Column<byte[]>(type: "BLOB", nullable: false),
                     FundingOutputIndex = table.Column<uint>(type: "INTEGER", nullable: false),
                     FundingAmountSatoshis = table.Column<long>(type: "INTEGER", nullable: false),
@@ -52,7 +53,8 @@ namespace NLightning.Infrastructure.Persistence.Sqlite.Migrations
                     FeeRatePerKwSatoshis = table.Column<long>(type: "INTEGER", nullable: false),
                     OptionAnchorOutputs = table.Column<bool>(type: "INTEGER", nullable: false),
                     LocalUpfrontShutdownScript = table.Column<byte[]>(type: "BLOB", nullable: true),
-                    RemoteUpfrontShutdownScript = table.Column<byte[]>(type: "BLOB", nullable: true)
+                    RemoteUpfrontShutdownScript = table.Column<byte[]>(type: "BLOB", nullable: true),
+                    UseScidAlias = table.Column<byte>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {

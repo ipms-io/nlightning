@@ -11,7 +11,7 @@ using NLightning.Infrastructure.Persistence.Contexts;
 namespace NLightning.Infrastructure.Persistence.Sqlite.Migrations
 {
     [DbContext(typeof(NLightningDbContext))]
-    [Migration("20250605195947_Initial")]
+    [Migration("20250606153444_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -61,6 +61,9 @@ namespace NLightning.Infrastructure.Persistence.Sqlite.Migrations
                     b.Property<ushort>("ToSelfDelay")
                         .HasColumnType("INTEGER");
 
+                    b.Property<byte>("UseScidAlias")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("ChannelId");
 
                     b.ToTable("ChannelConfigs");
@@ -72,6 +75,9 @@ namespace NLightning.Infrastructure.Persistence.Sqlite.Migrations
                         .HasColumnType("BLOB");
 
                     b.Property<long>("FundingAmountSatoshis")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<uint>("FundingCreatedAtBlockHeight")
                         .HasColumnType("INTEGER");
 
                     b.Property<uint>("FundingOutputIndex")

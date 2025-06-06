@@ -13,13 +13,14 @@ public class ChannelModel
     #region Base Properties
 
     public ChannelConfig ChannelConfig { get; }
-    public ChannelId ChannelId { get; }
+    public ChannelId ChannelId { get; private set; }
+    public CommitmentNumber CommitmentNumber { get; }
+    public uint FundingCreatedAtBlockHeight { get; set; }
     public FundingOutputInfo FundingOutput { get; }
     public bool IsInitiator { get; }
     public CompactPubKey RemoteNodeId { get; }
     public ChannelState State { get; private set; }
-    public ChannelVersion Version { get; set; }
-    public CommitmentNumber CommitmentNumber { get; }
+    public ChannelVersion Version { get; }
 
     #endregion
 
@@ -45,13 +46,14 @@ public class ChannelModel
 
     #region Remote Information
 
+    public ShortChannelId? RemoteAlias { get; set; }
     public LightningMoney RemoteBalance { get; }
     public ChannelKeySetModel RemoteKeySet { get; }
     public ulong RemoteNextHtlcId { get; }
-    public ICollection<Htlc>? RemoteOfferedHtlcs { get; }
-    public ICollection<Htlc>? RemoteFulffiledHtlcs { get; }
-    public ICollection<Htlc>? RemoteOldHtlcs { get; }
     public ulong RemoteRevocationNumber { get; }
+    public ICollection<Htlc>? RemoteFulfilledHtlcs { get; }
+    public ICollection<Htlc>? RemoteOfferedHtlcs { get; }
+    public ICollection<Htlc>? RemoteOldHtlcs { get; }
     public BitcoinScript? RemoteUpfrontShutdownScript { get; }
 
     #endregion
@@ -89,7 +91,7 @@ public class ChannelModel
         LocalFullfiledHtlcs = localFulffiledHtlcs ?? new List<Htlc>();
         LocalOldHtlcs = localOldHtlcs ?? new List<Htlc>();
         RemoteOfferedHtlcs = remoteOfferedHtlcs ?? new List<Htlc>();
-        RemoteFulffiledHtlcs = remoteFullfiledHtlcs ?? new List<Htlc>();
+        RemoteFulfilledHtlcs = remoteFullfiledHtlcs ?? new List<Htlc>();
         RemoteOldHtlcs = remoteOldHtlcs ?? new List<Htlc>();
     }
 
@@ -103,5 +105,13 @@ public class ChannelModel
             throw new ArgumentOutOfRangeException(nameof(newState), "New state must be greater than current state.");
 
         State = newState;
+    }
+
+    public void UpdateChannelId(ChannelId newChannelId)
+    {
+        if (newChannelId == ChannelId.Zero)
+            throw new ArgumentException("New channel ID cannot be empty.", nameof(newChannelId));
+
+        ChannelId = newChannelId;
     }
 }

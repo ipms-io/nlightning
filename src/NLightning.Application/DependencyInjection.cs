@@ -1,19 +1,17 @@
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using NLightning.Application.Bitcoin.Interfaces;
-using NLightning.Application.Channels.Managers;
-using NLightning.Application.Protocol.Factories;
-using NLightning.Domain.Bitcoin.Interfaces;
-using NLightning.Domain.Channels.Interfaces;
-using NLightning.Domain.Node.Options;
-using NLightning.Domain.Protocol.Interfaces;
-using NLightning.Domain.Transactions.Interfaces;
 
 namespace NLightning.Application;
 
+using Channels.Handlers.Interfaces;
+using Channels.Managers;
+using Domain.Bitcoin.Interfaces;
+using Domain.Channels.Interfaces;
+using Domain.Protocol.Interfaces;
 using Domain.Protocol.Services;
 using Node.Services;
+using Protocol.Factories;
 
 /// <summary>
 /// Extension methods for setting up application services in an IServiceCollection.
@@ -28,25 +26,51 @@ public static class DependencyInjection
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         // Singleton services (one instance throughout the application)
-        services.AddSingleton<IPingPongService, PingPongService>();
-        services.AddSingleton<IMessageFactory, MessageFactory>();
         services.AddSingleton<IChannelManager>(sp =>
         {
-            var channelFactory = sp.GetRequiredService<IChannelFactory>();
-            var channelIdFactory = sp.GetRequiredService<IChannelIdFactory>();
-            var commitmentTransactionBuilder = sp.GetRequiredService<ICommitmentTransactionBuilder>();
-            var commitmentTransactionModelFactory = sp.GetRequiredService<ICommitmentTransactionModelFactory>();
-            var messageFactory = sp.GetRequiredService<IMessageFactory>();
-            var nodeOptions = sp.GetRequiredService<IOptions<NodeOptions>>().Value;
+            var channelMemoryRepository = sp.GetRequiredService<IChannelMemoryRepository>();
             var lightningSigner = sp.GetRequiredService<ILightningSigner>();
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-            return new ChannelManager(channelFactory, channelIdFactory, commitmentTransactionBuilder,
-                                      commitmentTransactionModelFactory, lightningSigner,
-                                      loggerFactory.CreateLogger<ChannelManager>(), messageFactory, nodeOptions, sp);
+            return new ChannelManager(channelMemoryRepository, loggerFactory.CreateLogger<ChannelManager>(),
+                                      lightningSigner, sp);
         });
+        services.AddSingleton<IMessageFactory, MessageFactory>();
+        services.AddSingleton<IPingPongService, PingPongService>();
 
-        // Add other application services here
+        // Automatically register all channel message handlers
+        services.AddChannelMessageHandlers();
 
         return services;
+    }
+
+    /// <summary>
+    /// Registers all classes that implement IChannelMessageHandler&lt;T&gt; from the current assembly
+    /// </summary>
+    private static void AddChannelMessageHandlers(this IServiceCollection services)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+
+        // Find all types that implement IChannelMessageHandler<>
+        var handlerTypes = assembly
+                          .GetTypes()
+                          .Where(type => type is { IsClass: true, IsAbstract: false })
+                          .Where(type => type.GetInterfaces()
+                                             .Any(i => i.IsGenericType
+                                                    && i.GetGenericTypeDefinition() ==
+                                                       typeof(IChannelMessageHandler<>)))
+                          .ToArray();
+
+        foreach (var handlerType in handlerTypes)
+        {
+            // Get the interface this handler implements
+            var handlerInterface = handlerType
+                                  .GetInterfaces()
+                                  .First(i => i.IsGenericType
+                                           && i.GetGenericTypeDefinition() == typeof(IChannelMessageHandler<>));
+
+            // Register as scoped (or singleton if you prefer)
+            services.AddScoped(handlerInterface, handlerType);
+            // services.AddScoped(handlerType); // Also register the concrete type for direct resolution
+        }
     }
 }

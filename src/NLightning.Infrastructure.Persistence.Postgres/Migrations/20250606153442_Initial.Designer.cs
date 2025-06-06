@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
 {
     [DbContext(typeof(NLightningDbContext))]
-    [Migration("20250605195945_Initial")]
+    [Migration("20250606153442_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -79,6 +79,10 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("to_self_delay");
 
+                    b.Property<byte>("UseScidAlias")
+                        .HasColumnType("smallint")
+                        .HasColumnName("use_scid_alias");
+
                     b.HasKey("ChannelId")
                         .HasName("pk_channel_configs");
 
@@ -94,6 +98,10 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                     b.Property<long>("FundingAmountSatoshis")
                         .HasColumnType("bigint")
                         .HasColumnName("funding_amount_satoshis");
+
+                    b.Property<long>("FundingCreatedAtBlockHeight")
+                        .HasColumnType("bigint")
+                        .HasColumnName("funding_created_at_block_height");
 
                     b.Property<long>("FundingOutputIndex")
                         .HasColumnType("bigint")

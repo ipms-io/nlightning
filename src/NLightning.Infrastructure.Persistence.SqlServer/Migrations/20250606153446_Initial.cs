@@ -15,6 +15,7 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                 columns: table => new
                 {
                     ChannelId = table.Column<byte[]>(type: "varbinary(32)", nullable: false),
+                    FundingCreatedAtBlockHeight = table.Column<long>(type: "bigint", nullable: false),
                     FundingTxId = table.Column<byte[]>(type: "varbinary(32)", nullable: false),
                     FundingOutputIndex = table.Column<long>(type: "bigint", nullable: false),
                     FundingAmountSatoshis = table.Column<long>(type: "bigint", nullable: false),
@@ -52,7 +53,8 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                     FeeRatePerKwSatoshis = table.Column<long>(type: "bigint", nullable: false),
                     OptionAnchorOutputs = table.Column<bool>(type: "bit", nullable: false),
                     LocalUpfrontShutdownScript = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
-                    RemoteUpfrontShutdownScript = table.Column<byte[]>(type: "varbinary(max)", nullable: true)
+                    RemoteUpfrontShutdownScript = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    UseScidAlias = table.Column<byte>(type: "tinyint", nullable: false)
                 },
                 constraints: table =>
                 {

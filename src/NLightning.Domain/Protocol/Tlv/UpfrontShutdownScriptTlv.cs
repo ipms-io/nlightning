@@ -1,7 +1,6 @@
-using NLightning.Domain.Bitcoin.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Tlv;
 
+using Bitcoin.ValueObjects;
 using Constants;
 
 /// <summary>
@@ -22,7 +21,7 @@ public class UpfrontShutdownScriptTlv : BaseTlv
     {
         ShutdownScriptPubkey = shutdownScriptPubkey;
 
-        Value = shutdownScriptPubkey.Value;
+        Value = shutdownScriptPubkey;
         Length = Value.Length;
     }
 }

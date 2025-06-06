@@ -81,13 +81,15 @@ internal sealed class HandshakeState : IHandshakeState
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(HandshakeState));
 
         if (_messagePatterns.Count == 0)
-            throw new InvalidOperationException("Cannot call WriteMessage after the handshake has already been completed.");
+            throw new InvalidOperationException(
+                "Cannot call WriteMessage after the handshake has already been completed.");
 
         var overhead = _messagePatterns.Peek().Overhead(CryptoConstants.CompactPubkeyLen, _state.HasKeys());
         var ciphertextSize = payload.Length + overhead;
 
         if (ciphertextSize > ProtocolConstants.MaxMessageLength)
-            throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MaxMessageLength} bytes in length.");
+            throw new ArgumentException(
+                $"Noise message must be less than or equal to {ProtocolConstants.MaxMessageLength} bytes in length.");
 
         if (ciphertextSize > messageBuffer.Length)
             throw new ArgumentException("Message buffer does not have enough space to hold the ciphertext.");
@@ -218,11 +220,11 @@ internal sealed class HandshakeState : IHandshakeState
 
         _e = _dh.GenerateKeyPair();
         // Start from position 1, since we need our version there
-        _e.Value.CompactPubKey.CompactBytes.CopyTo(buffer[1..]);
+        ((ReadOnlySpan<byte>)_e.Value.CompactPubKey).CopyTo(buffer[1..]);
         _state.MixHash(_e.Value.CompactPubKey);
 
-        // Don't forget to add our version length to the resulting Span
-        return buffer[(_e.Value.CompactPubKey.CompactBytes.Length + 1)..];
+        // Remember to add our version length to the resulting Span
+        return buffer[(CryptoConstants.CompactPubkeyLen + 1)..];
     }
 
     private Span<byte> WriteS(Span<byte> buffer)
@@ -243,6 +245,7 @@ internal sealed class HandshakeState : IHandshakeState
         {
             throw new InvalidOperationException("Invalid handshake version.");
         }
+
         buffer = buffer[1..];
 
         // Skip the byte from the version and get all bytes from pubkey
@@ -259,9 +262,12 @@ internal sealed class HandshakeState : IHandshakeState
         {
             throw new InvalidOperationException("Invalid handshake version.");
         }
+
         message = message[1..];
 
-        var length = _state.HasKeys() ? CryptoConstants.CompactPubkeyLen + CryptoConstants.Chacha20Poly1305TagLen : CryptoConstants.CompactPubkeyLen;
+        var length = _state.HasKeys()
+                         ? CryptoConstants.CompactPubkeyLen + CryptoConstants.Chacha20Poly1305TagLen
+                         : CryptoConstants.CompactPubkeyLen;
         var temp = message[..length];
 
         _rs = new byte[CryptoConstants.CompactPubkeyLen];

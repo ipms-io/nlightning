@@ -1,9 +1,9 @@
-using NLightning.Domain.Channels.Models;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Node.Options;
-using NLightning.Domain.Protocol.Messages;
-
 namespace NLightning.Domain.Channels.Interfaces;
+
+using Crypto.ValueObjects;
+using Models;
+using Node.Options;
+using Protocol.Messages;
 
 public interface IChannelFactory
 {

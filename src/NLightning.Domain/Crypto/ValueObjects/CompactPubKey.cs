@@ -1,11 +1,11 @@
-using NLightning.Domain.Crypto.Constants;
-using NLightning.Domain.Utils.Extensions;
-
 namespace NLightning.Domain.Crypto.ValueObjects;
+
+using Constants;
+using Utils.Extensions;
 
 public readonly struct CompactPubKey : IEquatable<CompactPubKey>
 {
-    public byte[] CompactBytes { get; }
+    private readonly byte[] _compactBytes;
 
     public CompactPubKey(byte[] compactBytes)
     {
@@ -16,20 +16,31 @@ public readonly struct CompactPubKey : IEquatable<CompactPubKey>
             throw new ArgumentException("Invalid CompactPubKey format. The first byte must be 0x02 or 0x03.",
                                         nameof(compactBytes));
 
-        CompactBytes = compactBytes;
+        _compactBytes = compactBytes;
     }
 
     public static implicit operator CompactPubKey(byte[] bytes) => new(bytes);
-    public static implicit operator byte[](CompactPubKey hash) => hash.CompactBytes;
+    public static implicit operator byte[](CompactPubKey hash) => hash._compactBytes;
 
-    public static implicit operator ReadOnlySpan<byte>(CompactPubKey compactPubKey) => compactPubKey.CompactBytes;
-    public static implicit operator ReadOnlyMemory<byte>(CompactPubKey compactPubKey) => compactPubKey.CompactBytes;
+    public static implicit operator ReadOnlySpan<byte>(CompactPubKey compactPubKey) => compactPubKey._compactBytes;
 
-    public override string ToString() => Convert.ToHexString(CompactBytes);
+    public static implicit operator ReadOnlyMemory<byte>(CompactPubKey compactPubKey) => compactPubKey._compactBytes;
+
+    public static bool operator !=(CompactPubKey left, CompactPubKey right)
+    {
+        return !left.Equals(right);
+    }
+
+    public static bool operator ==(CompactPubKey left, CompactPubKey right)
+    {
+        return left.Equals(right);
+    }
+
+    public override string ToString() => Convert.ToHexString(_compactBytes).ToLowerInvariant();
 
     public bool Equals(CompactPubKey other)
     {
-        return CompactBytes.SequenceEqual(other.CompactBytes);
+        return _compactBytes.SequenceEqual(other._compactBytes);
     }
 
     public override bool Equals(object? obj)
@@ -39,6 +50,6 @@ public readonly struct CompactPubKey : IEquatable<CompactPubKey>
 
     public override int GetHashCode()
     {
-        return CompactBytes.GetByteArrayHashCode();
+        return _compactBytes.GetByteArrayHashCode();
     }
 }

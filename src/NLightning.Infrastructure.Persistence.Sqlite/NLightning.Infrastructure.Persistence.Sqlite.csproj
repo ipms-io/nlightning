@@ -9,7 +9,6 @@
     <Platforms>AnyCPU</Platforms>
 
     <BaseOutputPath>..\NLightning.Infrastructure.Persistence\bin\</BaseOutputPath>
-    <BaseOutputPath>.\bin\</BaseOutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))">

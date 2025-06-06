@@ -1,11 +1,12 @@
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Channels.Interfaces;
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Money;
-using NLightning.Infrastructure.Persistence.Contexts;
-using NLightning.Infrastructure.Persistence.Entities;
-
 namespace NLightning.Infrastructure.Repositories.Database.Channels;
+
+using Domain.Bitcoin.ValueObjects;
+using Domain.Channels.Interfaces;
+using Domain.Channels.ValueObjects;
+using Domain.Enums;
+using Domain.Money;
+using Persistence.Contexts;
+using Persistence.Entities;
 
 public class ChannelConfigDbRepository(NLightningDbContext context)
     : BaseDbRepository<ChannelConfigEntity>(context), IChannelConfigDbRepository
@@ -39,18 +40,19 @@ public class ChannelConfigDbRepository(NLightningDbContext context)
         return new ChannelConfigEntity
         {
             ChannelId = channelId,
-            MinimumDepth = config.MinimumDepth,
-            ToSelfDelay = config.ToSelfDelay,
-            MaxAcceptedHtlcs = config.MaxAcceptedHtlcs,
-            LocalDustLimitAmountSats = config.LocalDustLimitAmount.Satoshi,
-            RemoteDustLimitAmountSats = config.RemoteDustLimitAmount.Satoshi,
-            HtlcMinimumMsat = config.HtlcMinimumAmount.MilliSatoshi,
             ChannelReserveAmountSats = config.ChannelReserveAmount?.Satoshi,
-            MaxHtlcAmountInFlight = config.MaxHtlcAmountInFlight.MilliSatoshi,
             FeeRatePerKwSatoshis = config.FeeRateAmountPerKw.Satoshi,
-            OptionAnchorOutputs = config.OptionAnchorOutputs,
+            HtlcMinimumMsat = config.HtlcMinimumAmount.MilliSatoshi,
+            LocalDustLimitAmountSats = config.LocalDustLimitAmount.Satoshi,
             LocalUpfrontShutdownScript = config.LocalUpfrontShutdownScript,
-            RemoteUpfrontShutdownScript = config.RemoteShutdownScriptPubKey
+            MaxAcceptedHtlcs = config.MaxAcceptedHtlcs,
+            MaxHtlcAmountInFlight = config.MaxHtlcAmountInFlight.MilliSatoshi,
+            MinimumDepth = config.MinimumDepth,
+            OptionAnchorOutputs = config.OptionAnchorOutputs,
+            RemoteDustLimitAmountSats = config.RemoteDustLimitAmount.Satoshi,
+            RemoteUpfrontShutdownScript = config.RemoteShutdownScriptPubKey,
+            ToSelfDelay = config.ToSelfDelay,
+            UseScidAlias = (byte)config.UseScidAlias
         };
     }
 
@@ -68,19 +70,13 @@ public class ChannelConfigDbRepository(NLightningDbContext context)
         if (entity.RemoteUpfrontShutdownScript is not null)
             remoteUpfrontShutdownScript = entity.RemoteUpfrontShutdownScript;
 
-        return new ChannelConfig(
-            minimumDepth: entity.MinimumDepth,
-            toSelfDelay: entity.ToSelfDelay,
-            maxAcceptedHtlcs: entity.MaxAcceptedHtlcs,
-            localDustLimitAmount: LightningMoney.Satoshis(entity.LocalDustLimitAmountSats),
-            remoteDustLimitAmount: LightningMoney.Satoshis(entity.RemoteDustLimitAmountSats),
-            htlcMinimumAmount: LightningMoney.MilliSatoshis(entity.HtlcMinimumMsat),
-            channelReserveAmount: channelReserveAmount,
-            maxHtlcAmountInFlight: LightningMoney.MilliSatoshis(entity.MaxHtlcAmountInFlight),
-            feeRateAmountPerKw: LightningMoney.Satoshis(entity.FeeRatePerKwSatoshis),
-            optionAnchorOutputs: entity.OptionAnchorOutputs,
-            localUpfrontShutdownScript: localUpfrontShutdownScript,
-            remoteShutdownScriptPubKey: remoteUpfrontShutdownScript
+        return new ChannelConfig(channelReserveAmount, LightningMoney.Satoshis(entity.FeeRatePerKwSatoshis),
+                                 LightningMoney.MilliSatoshis(entity.HtlcMinimumMsat),
+                                 LightningMoney.Satoshis(entity.LocalDustLimitAmountSats), entity.MaxAcceptedHtlcs,
+                                 LightningMoney.MilliSatoshis(entity.MaxHtlcAmountInFlight), entity.MinimumDepth,
+                                 entity.OptionAnchorOutputs, LightningMoney.Satoshis(entity.RemoteDustLimitAmountSats),
+                                 entity.ToSelfDelay, (FeatureSupport)entity.UseScidAlias, localUpfrontShutdownScript,
+                                 remoteUpfrontShutdownScript
         );
     }
 }

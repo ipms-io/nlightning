@@ -65,8 +65,7 @@ public class ChannelKeySetDbRepository : BaseDbRepository<ChannelKeySetEntity>, 
     internal static ChannelKeySetModel MapEntityToDomain(ChannelKeySetEntity entity)
     {
         return new ChannelKeySetModel(entity.KeyIndex, entity.FundingPubKey, entity.RevocationBasepoint,
-                                      entity.PaymentBasepoint,
-                                      entity.DelayedPaymentBasepoint, entity.HtlcBasepoint, null,
+                                      entity.PaymentBasepoint, entity.DelayedPaymentBasepoint, entity.HtlcBasepoint,
                                       entity.CurrentPerCommitmentPoint, entity.CurrentPerCommitmentIndex,
                                       entity.LastRevealedPerCommitmentSecret);
     }

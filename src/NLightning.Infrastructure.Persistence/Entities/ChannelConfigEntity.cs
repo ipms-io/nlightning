@@ -74,6 +74,8 @@ public class ChannelConfigEntity
     /// </summary>
     public byte[]? RemoteUpfrontShutdownScript { get; set; }
 
+    public byte UseScidAlias { get; set; }
+
     /// <summary>
     /// Default constructor for EF Core.
     /// </summary>

@@ -24,8 +24,8 @@ public class ChannelIdFactory : IChannelIdFactory
     public ChannelId CreateV2(CompactPubKey lesserRevocationBasepoint, CompactPubKey greaterRevocationBasepoint)
     {
         Span<byte> combined = stackalloc byte[66];
-        lesserRevocationBasepoint.CompactBytes.CopyTo(combined);
-        greaterRevocationBasepoint.CompactBytes.CopyTo(combined[33..]);
+        ((ReadOnlySpan<byte>)lesserRevocationBasepoint).CopyTo(combined);
+        ((ReadOnlySpan<byte>)greaterRevocationBasepoint).CopyTo(combined[33..]);
 
         using var hasher = new Sha256();
         hasher.AppendData(combined);

@@ -15,6 +15,7 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                 columns: table => new
                 {
                     channel_id = table.Column<byte[]>(type: "bytea", nullable: false),
+                    funding_created_at_block_height = table.Column<long>(type: "bigint", nullable: false),
                     funding_tx_id = table.Column<byte[]>(type: "bytea", nullable: false),
                     funding_output_index = table.Column<long>(type: "bigint", nullable: false),
                     funding_amount_satoshis = table.Column<long>(type: "bigint", nullable: false),
@@ -52,7 +53,8 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                     fee_rate_per_kw_satoshis = table.Column<long>(type: "bigint", nullable: false),
                     option_anchor_outputs = table.Column<bool>(type: "boolean", nullable: false),
                     local_upfront_shutdown_script = table.Column<byte[]>(type: "bytea", nullable: true),
-                    remote_upfront_shutdown_script = table.Column<byte[]>(type: "bytea", nullable: true)
+                    remote_upfront_shutdown_script = table.Column<byte[]>(type: "bytea", nullable: true),
+                    use_scid_alias = table.Column<byte>(type: "smallint", nullable: false)
                 },
                 constraints: table =>
                 {

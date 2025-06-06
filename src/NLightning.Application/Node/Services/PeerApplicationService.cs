@@ -143,7 +143,8 @@ public sealed class PeerApplicationService : IPeerService
                              Enum.GetName(message.Type), PeerPubKey);
 
             var replyMessage = await _channelManager.HandleChannelMessageAsync(message, _features, PeerPubKey);
-            await _communicationService.SendMessageAsync(replyMessage);
+            if (replyMessage is not null)
+                await _communicationService.SendMessageAsync(replyMessage);
         }
         catch (Exception e)
         {

@@ -28,7 +28,7 @@ public readonly struct ChannelId : IEquatable<ChannelId>, IValueObject
 
     public override string ToString()
     {
-        return Convert.ToHexString(_value);
+        return Convert.ToHexString(_value).ToLowerInvariant();
     }
 
     public bool Equals(ChannelId other)

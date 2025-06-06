@@ -10,8 +10,8 @@ public class ChannelKeySetModel
     public CompactPubKey RevocationCompactBasepoint { get; }
     public CompactPubKey PaymentCompactBasepoint { get; }
     public CompactPubKey DelayedPaymentCompactBasepoint { get; }
+
     public CompactPubKey HtlcCompactBasepoint { get; }
-    public CompactPubKey? RemotePerCommitmentCompactPoint { get; set; }
     public CompactPubKey CurrentPerCommitmentCompactPoint { get; private set; }
     public ulong CurrentPerCommitmentIndex { get; private set; }
 
@@ -25,7 +25,6 @@ public class ChannelKeySetModel
     public ChannelKeySetModel(uint keyIndex, CompactPubKey fundingCompactPubKey,
                               CompactPubKey revocationCompactBasepoint, CompactPubKey paymentCompactBasepoint,
                               CompactPubKey delayedPaymentCompactBasepoint, CompactPubKey htlcCompactBasepoint,
-                              CompactPubKey? remotePerCommitmentCompactPoint,
                               CompactPubKey currentPerCommitmentCompactPoint,
                               ulong currentPerCommitmentIndex = CryptoConstants.FirstPerCommitmentIndex,
                               byte[]? lastRevealedPerCommitmentSecret = null)
@@ -36,16 +35,15 @@ public class ChannelKeySetModel
         PaymentCompactBasepoint = paymentCompactBasepoint;
         DelayedPaymentCompactBasepoint = delayedPaymentCompactBasepoint;
         HtlcCompactBasepoint = htlcCompactBasepoint;
-        RemotePerCommitmentCompactPoint = remotePerCommitmentCompactPoint;
         CurrentPerCommitmentCompactPoint = currentPerCommitmentCompactPoint;
         CurrentPerCommitmentIndex = currentPerCommitmentIndex;
         LastRevealedPerCommitmentSecret = lastRevealedPerCommitmentSecret;
     }
 
-    public void UpdatePerCommitmentPoint(CompactPubKey newPoint, ulong newCommitmentIndex)
+    public void UpdatePerCommitmentPoint(CompactPubKey newPoint)
     {
         CurrentPerCommitmentCompactPoint = newPoint;
-        CurrentPerCommitmentIndex = newCommitmentIndex;
+        CurrentPerCommitmentIndex--;
     }
 
     /// <summary>
@@ -66,6 +64,6 @@ public class ChannelKeySetModel
                                                      CompactPubKey firstPerCommitmentPoint)
     {
         return new ChannelKeySetModel(0, fundingPubKey, revocationBasepoint, paymentBasepoint, delayedPaymentBasepoint,
-                                      htlcBasepoint, null, firstPerCommitmentPoint, 0);
+                                      htlcBasepoint, firstPerCommitmentPoint);
     }
 }

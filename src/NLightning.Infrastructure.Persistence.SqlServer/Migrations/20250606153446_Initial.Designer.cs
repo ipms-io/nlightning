@@ -12,7 +12,7 @@ using NLightning.Infrastructure.Persistence.Contexts;
 namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
 {
     [DbContext(typeof(NLightningDbContext))]
-    [Migration("20250605195949_Initial")]
+    [Migration("20250606153446_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -66,6 +66,9 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                     b.Property<int>("ToSelfDelay")
                         .HasColumnType("int");
 
+                    b.Property<byte>("UseScidAlias")
+                        .HasColumnType("tinyint");
+
                     b.HasKey("ChannelId");
 
                     b.ToTable("ChannelConfigs");
@@ -77,6 +80,9 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                         .HasColumnType("varbinary(32)");
 
                     b.Property<long>("FundingAmountSatoshis")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("FundingCreatedAtBlockHeight")
                         .HasColumnType("bigint");
 
                     b.Property<long>("FundingOutputIndex")

@@ -1,8 +1,7 @@
-using NLightning.Domain.Crypto.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Tlv;
 
 using Constants;
+using Crypto.ValueObjects;
 
 /// <summary>
 /// Blinded Path TLV.
@@ -21,7 +20,7 @@ public class BlindedPathTlv : BaseTlv
     {
         PathKey = pathKey;
 
-        Value = PathKey.CompactBytes;
+        Value = PathKey;
         Length = Value.Length;
     }
 }

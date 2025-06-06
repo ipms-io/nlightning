@@ -1,8 +1,7 @@
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Channels.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Bitcoin.ValueObjects;
+using Channels.ValueObjects;
 using Interfaces;
 
 /// <summary>
@@ -21,7 +20,7 @@ public class ShutdownPayload(ChannelId channelId, BitcoinScript scriptPubkey) : 
     /// <summary>
     /// len is the scriptpubkey length
     /// </summary>
-    public ushort ScriptPubkeyLen { get; } = (ushort)scriptPubkey.Value.Length;
+    public ushort ScriptPubkeyLen { get; } = (ushort)scriptPubkey.Length;
 
     /// <summary>
     /// The scriptpubkey to send the closing funds to

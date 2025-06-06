@@ -1,9 +1,8 @@
-using NLightning.Domain.Crypto.ValueObjects;
-
 namespace NLightning.Domain.Protocol.ValueObjects;
 
 using Bitcoin.ValueObjects;
 using Crypto.Hashes;
+using Crypto.ValueObjects;
 
 /// <summary>
 /// Manages Lightning Network commitment numbers and their obscuring as defined in BOLT3.
@@ -74,8 +73,8 @@ public record struct CommitmentNumber
                                                   ISha256 sha256)
     {
         // Hash the concatenation of payment basepoints
-        sha256.AppendData(localBasepoint.CompactBytes);
-        sha256.AppendData(remoteBasepoint.CompactBytes);
+        sha256.AppendData(localBasepoint);
+        sha256.AppendData(remoteBasepoint);
 
         Span<byte> hashResult = stackalloc byte[32];
         sha256.GetHashAndReset(hashResult);

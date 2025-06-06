@@ -63,6 +63,9 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                     b.Property<int>("ToSelfDelay")
                         .HasColumnType("int");
 
+                    b.Property<byte>("UseScidAlias")
+                        .HasColumnType("tinyint");
+
                     b.HasKey("ChannelId");
 
                     b.ToTable("ChannelConfigs");
@@ -74,6 +77,9 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                         .HasColumnType("varbinary(32)");
 
                     b.Property<long>("FundingAmountSatoshis")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("FundingCreatedAtBlockHeight")
                         .HasColumnType("bigint");
 
                     b.Property<long>("FundingOutputIndex")

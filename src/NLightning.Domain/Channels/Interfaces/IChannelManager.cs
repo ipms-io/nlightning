@@ -8,6 +8,8 @@ public interface IChannelManager
 {
     Task InitializeAsync();
 
-    Task<IChannelMessage> HandleChannelMessageAsync(IChannelMessage message, FeatureOptions negotiatedFeatures,
-                                                    CompactPubKey peerPubKey);
+    Task<IChannelMessage?> HandleChannelMessageAsync(IChannelMessage message, FeatureOptions negotiatedFeatures,
+                                                     CompactPubKey peerPubKey);
+
+    Task ForgetOldChannelByBlockHeightAsync(uint blockHeight);
 }

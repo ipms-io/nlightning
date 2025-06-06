@@ -15,6 +15,12 @@ public class ChannelEntity
     public required ChannelId ChannelId { get; set; }
 
     /// <summary>
+    /// The block height at which the funding transaction for the channel was created.
+    /// Used to track the blockchain state relevant to the channel's funding process.
+    /// </summary>
+    public uint FundingCreatedAtBlockHeight { get; set; }
+
+    /// <summary>
     /// The transaction ID of the funding transaction that established this channel.
     /// </summary>
     public required byte[] FundingTxId { get; set; }
