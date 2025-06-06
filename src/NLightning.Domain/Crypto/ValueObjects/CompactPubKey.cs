@@ -6,8 +6,6 @@ public readonly record struct CompactPubKey
 {
     public byte[] CompactBytes { get; }
 
-    public static CompactPubKey Empty => new byte[CryptoConstants.CompactPubkeyLen];
-
     public CompactPubKey(byte[] compactBytes)
     {
         if (compactBytes.Length != CryptoConstants.CompactPubkeyLen)

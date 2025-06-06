@@ -2,12 +2,11 @@ using System.Runtime.Serialization;
 
 namespace NLightning.Infrastructure.Serialization.Tests.ValueObjects;
 
-using Domain.ValueObjects;
+using Domain.Bitcoin.ValueObjects;
 using Infrastructure.Serialization.ValueObjects;
 
 public class WitnessTypeSerializerTests
 {
-
     [Fact]
     public async Task Given_ValidWitnessData_When_SerializedAndDeserialized_Then_DataIsPreserved()
     {
@@ -55,7 +54,7 @@ public class WitnessTypeSerializerTests
 
         // When & Then
         await Assert.ThrowsAsync<SerializationException>(async () =>
-            await witnessSerializer.DeserializeAsync(memoryStream));
+                                                             await witnessSerializer.DeserializeAsync(memoryStream));
     }
 
     [Fact]
@@ -68,6 +67,7 @@ public class WitnessTypeSerializerTests
         {
             witnessData[i] = (byte)(i % 256);
         }
+
         var witness = new Witness(witnessData);
 
         using var memoryStream = new MemoryStream();

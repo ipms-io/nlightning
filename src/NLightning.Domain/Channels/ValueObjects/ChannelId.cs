@@ -1,9 +1,8 @@
-using NLightning.Domain.Utils.Extensions;
-
 namespace NLightning.Domain.Channels.ValueObjects;
 
 using Constants;
 using Domain.Interfaces;
+using Utils.Extensions;
 
 /// <summary>
 /// Represents a channel id.
@@ -15,14 +14,12 @@ public readonly struct ChannelId : IEquatable<ChannelId>, IValueObject
 {
     private readonly byte[] _value;
 
-    public static ChannelId Zero => new(new byte[ChannelConstants.ChannelIdLength]);
+    public static ChannelId Zero => new byte[ChannelConstants.ChannelIdLength];
 
     public ChannelId(ReadOnlySpan<byte> value)
     {
         if (value.Length != ChannelConstants.ChannelIdLength)
-        {
             throw new ArgumentException($"ChannelId must be {ChannelConstants.ChannelIdLength} bytes", nameof(value));
-        }
 
         _value = value.ToArray();
     }
@@ -37,9 +34,11 @@ public readonly struct ChannelId : IEquatable<ChannelId>, IValueObject
     public bool Equals(ChannelId other)
     {
         // Handle null cases first
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (_value is null && other._value is null)
             return true;
 
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (_value is null || other._value is null)
             return false;
 

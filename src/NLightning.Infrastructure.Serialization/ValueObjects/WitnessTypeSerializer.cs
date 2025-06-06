@@ -1,12 +1,12 @@
 using System.Buffers;
 using System.Runtime.Serialization;
+using NLightning.Domain.Bitcoin.ValueObjects;
 using NLightning.Domain.Interfaces;
 using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.ValueObjects;
 
 using Converters;
-using Domain.ValueObjects;
 
 public class WitnessTypeSerializer : IValueObjectTypeSerializer<Witness>
 {
@@ -61,6 +61,7 @@ public class WitnessTypeSerializer : IValueObjectTypeSerializer<Witness>
             ArrayPool<byte>.Shared.Return(buffer);
         }
     }
+
     async Task<IValueObject> IValueObjectTypeSerializer.DeserializeAsync(Stream stream)
     {
         return await DeserializeAsync(stream);

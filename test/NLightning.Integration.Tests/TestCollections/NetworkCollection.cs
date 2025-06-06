@@ -1,7 +1,7 @@
 namespace NLightning.Integration.Tests.TestCollections;
 
-[CollectionDefinition(NAME, DisableParallelization = true)]
+[CollectionDefinition(Name, DisableParallelization = true)]
 public class NetworkCollection
 {
-    public const string NAME = "network";
+    public const string Name = "network";
 }

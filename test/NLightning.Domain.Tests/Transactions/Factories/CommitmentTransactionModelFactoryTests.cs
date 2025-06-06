@@ -1,3 +1,4 @@
+using NLightning.Domain.Bitcoin.Interfaces;
 using NLightning.Domain.Channels.Enums;
 using NLightning.Domain.Channels.Models;
 using NLightning.Domain.Channels.ValueObjects;
@@ -19,11 +20,19 @@ public class CommitmentTransactionModelFactoryTests
     public void Given_ValidParameters_When_Creating_Then_ReturnsCommitmentTransactionModel()
     {
         // Given
+        var emptyCompactPubKey = new CompactPubKey([
+            0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00
+        ]);
         var sha256Mock = new Mock<FakeSha256>();
         sha256Mock.Setup(x => x.GetHashAndReset())
                   .Returns(Convert.FromHexString("C8BFEA84214B45899482A4BAD1D85C42130743ED78BA3711F5532BB038521914"));
 
-        var secretStorageServiceMock = new Mock<ISecretStorageService>();
+        var commitmentKeyDerivationService = new Mock<ICommitmentKeyDerivationService>();
+        var lightningSigner = new Mock<ILightningSigner>();
 
         var channelConfig = new ChannelConfig(LightningMoney.Zero, LightningMoney.Zero, LightningMoney.Satoshis(15000),
                                               LightningMoney.Zero, 0, LightningMoney.Zero, 0, false,
@@ -43,21 +52,20 @@ public class CommitmentTransactionModelFactoryTests
                                                  Bolt3AppendixCVectors.NodeARevocationPubkey.ToBytes(),
                                                  Bolt3AppendixCVectors.NodeAPaymentBasepoint.ToBytes(),
                                                  Bolt3AppendixCVectors.NodeADelayedPubkey.ToBytes(),
-                                                 CompactPubKey.Empty,
-                                                 null,
-                                                 CompactPubKey.Empty, 0, secretStorageServiceMock.Object);
+                                                 emptyCompactPubKey, null,
+                                                 emptyCompactPubKey, 0);
         var remoteKeySet = new ChannelKeySetModel(0, Bolt3AppendixCVectors.NodeBFundingPubkey.ToBytes(),
-                                                  CompactPubKey.Empty,
+                                                  emptyCompactPubKey,
                                                   Bolt3AppendixCVectors.NodeBPaymentBasepoint.ToBytes(),
-                                                  CompactPubKey.Empty,
-                                                  CompactPubKey.Empty, null, CompactPubKey.Empty, 0,
-                                                  secretStorageServiceMock.Object);
+                                                  emptyCompactPubKey, emptyCompactPubKey, null, emptyCompactPubKey,
+                                                  0);
         var channel = new ChannelModel(channelConfig, ChannelId.Zero, commitmentNumber, fundingOutputInfo, true, null,
                                        null, Bolt3AppendixCVectors.Tx0ToLocalMsat, localKeySet, 1, 0,
-                                       Bolt3AppendixCVectors.ToRemoteMsat, remoteKeySet, 1, CompactPubKey.Empty, 0,
+                                       Bolt3AppendixCVectors.ToRemoteMsat, remoteKeySet, 1, emptyCompactPubKey, 0,
                                        ChannelState.V1Opening, ChannelVersion.V1);
 
-        var factory = new CommitmentTransactionModelFactory();
+        var factory =
+            new CommitmentTransactionModelFactory(commitmentKeyDerivationService.Object, lightningSigner.Object);
 
         // When
         var transactionModel = factory.CreateCommitmentTransactionModel(channel, CommitmentSide.Local);

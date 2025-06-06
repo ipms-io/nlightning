@@ -22,8 +22,11 @@ public class TxRemoveInputMessageTests
     {
         // Arrange
         var expectedChannelId = ChannelId.Zero;
-        const ulong EXPECTED_SERIAL_ID = 1;
-        var stream = new MemoryStream(Convert.FromHexString("00000000000000000000000000000000000000000000000000000000000000000000000000000001"));
+        const ulong expectedSerialId = 1;
+        var stream =
+            new MemoryStream(
+                Convert.FromHexString(
+                    "00000000000000000000000000000000000000000000000000000000000000000000000000000001"));
 
         // Act
         var message = await _txRemoveInputMessageTypeSerializer.DeserializeAsync(stream);
@@ -31,7 +34,7 @@ public class TxRemoveInputMessageTests
         // Assert
         Assert.NotNull(message);
         Assert.Equal(expectedChannelId, message.Payload.ChannelId);
-        Assert.Equal(EXPECTED_SERIAL_ID, message.Payload.SerialId);
+        Assert.Equal(expectedSerialId, message.Payload.SerialId);
     }
 
     [Fact]
@@ -42,7 +45,8 @@ public class TxRemoveInputMessageTests
         ulong serialId = 1;
         var message = new TxRemoveInputMessage(new TxRemoveInputPayload(channelId, serialId));
         var stream = new MemoryStream();
-        var expectedBytes = Convert.FromHexString("00000000000000000000000000000000000000000000000000000000000000000000000000000001");
+        var expectedBytes =
+            Convert.FromHexString("00000000000000000000000000000000000000000000000000000000000000000000000000000001");
 
         // Act
         await _txRemoveInputMessageTypeSerializer.SerializeAsync(message, stream);

@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Runtime.Serialization;
+using NLightning.Domain.Bitcoin.ValueObjects;
 using NLightning.Domain.Channels.ValueObjects;
 using NLightning.Domain.Serialization.Interfaces;
 using NLightning.Domain.Transactions.Constants;
@@ -9,7 +10,6 @@ namespace NLightning.Infrastructure.Serialization.Payloads;
 using Converters;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Payloads.Interfaces;
-using Domain.ValueObjects;
 using Exceptions;
 
 public class TxSignaturesPayloadSerializer : IPayloadSerializer<TxSignaturesPayload>
@@ -29,7 +29,7 @@ public class TxSignaturesPayloadSerializer : IPayloadSerializer<TxSignaturesPayl
         // Get the ChannelId serializer
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(txSignaturesPayload.ChannelId, stream);
 
         await stream.WriteAsync(txSignaturesPayload.TxId);
@@ -38,7 +38,7 @@ public class TxSignaturesPayloadSerializer : IPayloadSerializer<TxSignaturesPayl
         // Get the Witness serializer
         var witnessSerializer =
             _valueObjectSerializerFactory.GetSerializer<Witness>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(Witness)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(Witness)}");
 
         foreach (var witness in txSignaturesPayload.Witnesses)
         {
@@ -55,7 +55,7 @@ public class TxSignaturesPayloadSerializer : IPayloadSerializer<TxSignaturesPayl
             // Get the ChannelId serializer
             var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
 
             var txId = new byte[TransactionConstants.TxIdLength];
@@ -67,7 +67,7 @@ public class TxSignaturesPayloadSerializer : IPayloadSerializer<TxSignaturesPayl
             // Get the Witness serializer
             var witnessSerializer =
                 _valueObjectSerializerFactory.GetSerializer<Witness>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(Witness)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(Witness)}");
 
             var witnesses = new List<Witness>(numWitnesses);
             for (var i = 0; i < numWitnesses; i++)

@@ -1,7 +1,5 @@
 using System.Buffers;
 using System.Runtime.Serialization;
-using Microsoft.Extensions.Logging;
-using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
@@ -12,28 +10,22 @@ using Domain.Crypto.ValueObjects;
 using Domain.Money;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Payloads.Interfaces;
+using Domain.Serialization.Interfaces;
 using Exceptions;
 
 public class AcceptChannel1PayloadSerializer : IPayloadSerializer<AcceptChannel1Payload>
 {
-    private readonly ILogger<AcceptChannel1PayloadSerializer> _logger;
     private readonly IValueObjectSerializerFactory _valueObjectSerializerFactory;
 
-    public AcceptChannel1PayloadSerializer(ILogger<AcceptChannel1PayloadSerializer> logger,
-                                           IValueObjectSerializerFactory valueObjectSerializerFactory)
+    public AcceptChannel1PayloadSerializer(IValueObjectSerializerFactory valueObjectSerializerFactory)
     {
-        _logger = logger;
         _valueObjectSerializerFactory = valueObjectSerializerFactory;
     }
 
     public async Task SerializeAsync(IMessagePayload payload, Stream stream)
     {
-        _logger.LogTrace("Serializing payload {name}", nameof(AcceptChannel1Payload));
-
         if (payload is not AcceptChannel1Payload acceptChannel1Payload)
             throw new SerializationException($"Payload is not of type {nameof(AcceptChannel1Payload)}");
-
-        _logger.LogTrace("Payload has fundingPubKey: {fundingPubKey}.", acceptChannel1Payload.FundingPubKey);
 
         // Get the value object serializer
         var channelIdSerializer =

@@ -1,7 +1,6 @@
-using NLightning.Domain.Channels.ValueObjects;
-
 namespace NLightning.Infrastructure.Serialization.Tests.Messages;
 
+using Domain.Channels.ValueObjects;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Payloads;
 using Helpers;
@@ -22,8 +21,11 @@ public class TxRemoveOutputMessageTests
     {
         // Arrange
         var expectedChannelId = ChannelId.Zero;
-        const ulong EXPECTED_SERIAL_ID = 1;
-        var stream = new MemoryStream(Convert.FromHexString("00000000000000000000000000000000000000000000000000000000000000000000000000000001"));
+        const ulong expectedSerialId = 1;
+        var stream =
+            new MemoryStream(
+                Convert.FromHexString(
+                    "00000000000000000000000000000000000000000000000000000000000000000000000000000001"));
 
         // Act
         var message = await _txRemoveOutputMessageTypeSerializer.DeserializeAsync(stream);
@@ -31,7 +33,7 @@ public class TxRemoveOutputMessageTests
         // Assert
         Assert.NotNull(message);
         Assert.Equal(expectedChannelId, message.Payload.ChannelId);
-        Assert.Equal(EXPECTED_SERIAL_ID, message.Payload.SerialId);
+        Assert.Equal(expectedSerialId, message.Payload.SerialId);
     }
 
     [Fact]
@@ -42,7 +44,8 @@ public class TxRemoveOutputMessageTests
         ulong serialId = 1;
         var message = new TxRemoveOutputMessage(new TxRemoveOutputPayload(channelId, serialId));
         var stream = new MemoryStream();
-        var expectedBytes = Convert.FromHexString("00000000000000000000000000000000000000000000000000000000000000000000000000000001");
+        var expectedBytes =
+            Convert.FromHexString("00000000000000000000000000000000000000000000000000000000000000000000000000000001");
 
         // Act
         await _txRemoveOutputMessageTypeSerializer.SerializeAsync(message, stream);

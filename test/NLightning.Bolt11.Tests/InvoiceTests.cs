@@ -1,33 +1,37 @@
 using NBitcoin;
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Protocol.ValueObjects;
 using NLightning.Tests.Utils.Vectors;
 
 namespace NLightning.Bolt11.Tests;
 
 using Bolt11.Models;
+using Domain.Channels.ValueObjects;
 using Domain.Constants;
 using Domain.Models;
 using Domain.Money;
 using Domain.Protocol.Constants;
+using Domain.Protocol.ValueObjects;
 using Exceptions;
 
 public class InvoiceTests
 {
-    private static readonly uint256 s_testPaymentHash = new("0001020304050607080900010203040506070809000102030405060708090102");
-    private static readonly uint256 s_testPaymentSecret = new("1111111111111111111111111111111111111111111111111111111111111111");
-    private static readonly RoutingInfo s_defaultRoutingInfo = new(
-        new PubKey(InitiatorValidKeysVector.RemoteStaticPublicKey),
-        new ShortChannelId(870127, 1237, 1), 1, 1, 1
-    );
+    private static readonly uint256 s_testPaymentHash =
+        new("0001020304050607080900010203040506070809000102030405060708090102");
+
+    private static readonly uint256 s_testPaymentSecret =
+        new("1111111111111111111111111111111111111111111111111111111111111111");
+
+    private static readonly RoutingInfo s_defaultRoutingInfo =
+        new(InitiatorValidKeysVector.RemoteStaticPublicKey, new ShortChannelId(870127, 1237, 1), 1, 1, 1);
 
     #region HumanReadablePart
+
     [Theory]
     [InlineData(NetworkConstants.Mainnet, 100_000_000_000, "lnbc1")]
     [InlineData(NetworkConstants.Testnet, 100_000_000_000, "lntb1")]
     [InlineData(NetworkConstants.Regtest, 100_000_000_000, "lnbcrt1")]
     [InlineData(NetworkConstants.Signet, 100_000_000_000, "lntbs1")]
-    public void Given_NetworkType_When_InvoiceIsCreated_Then_PrefixIsCorrect(string network, ulong amountMsats, string expectedPrefix)
+    public void Given_NetworkType_When_InvoiceIsCreated_Then_PrefixIsCorrect(
+        string network, ulong amountMsats, string expectedPrefix)
     {
         // Act
         var invoice = new Invoice(network, amountMsats);
@@ -51,7 +55,8 @@ public class InvoiceTests
     [InlineData(NetworkConstants.Mainnet, 100_000_000_000, "lnbc1")]
     [InlineData(NetworkConstants.Mainnet, 1_000_000_000_000, "lnbc10")]
     [InlineData(NetworkConstants.Mainnet, 10_000_000_000_000, "lnbc100")]
-    public void Given_Amount_When_InvoiceIsCreated_Then_AmountIsCorrect(string network, ulong amountMsats, string expectedHumanReadablePart)
+    public void Given_Amount_When_InvoiceIsCreated_Then_AmountIsCorrect(string network, ulong amountMsats,
+                                                                        string expectedHumanReadablePart)
     {
         // Act
         var invoice = new Invoice(network, amountMsats);
@@ -95,7 +100,8 @@ public class InvoiceTests
     [InlineData(NetworkConstants.Mainnet, 100_000_000, "lnbc1")]
     [InlineData(NetworkConstants.Mainnet, 1_000_000_000, "lnbc10")]
     [InlineData(NetworkConstants.Mainnet, 10_000_000_000, "lnbc100")]
-    public void Given_Amount_When_InvoiceIsCreatedWithInSatoshis_Then_AmountIsCorrect(string network, ulong amountSats, string expectedHumanReadablePart)
+    public void Given_Amount_When_InvoiceIsCreatedWithInSatoshis_Then_AmountIsCorrect(
+        string network, ulong amountSats, string expectedHumanReadablePart)
     {
         // Arrange
         // Act
@@ -104,9 +110,11 @@ public class InvoiceTests
         // Assert
         Assert.Equal(expectedHumanReadablePart, invoice.HumanReadablePart);
     }
+
     #endregion
 
     #region Tagged Fields
+
     [Fact]
     public void Given_Invoice_When_SetTaggedField_Then_InvoiceStringClearedOnChange()
     {
@@ -138,8 +146,8 @@ public class InvoiceTests
         var invoice = new Invoice(BitcoinNetwork.Mainnet);
         var addresses = new List<BitcoinAddress>
         {
-            BitcoinAddress.Create("3EktnHQD7RiAE6uzMj2ZifT9YgRrkSgzQX", BitcoinNetwork.Mainnet),
-            BitcoinAddress.Create("1RustyRX2oai4EYYDpQGWvEL62BBGqN9T", BitcoinNetwork.Mainnet)
+            BitcoinAddress.Create("3EktnHQD7RiAE6uzMj2ZifT9YgRrkSgzQX", Network.Main),
+            BitcoinAddress.Create("1RustyRX2oai4EYYDpQGWvEL62BBGqN9T", Network.Main)
         };
 
         // When
@@ -198,9 +206,11 @@ public class InvoiceTests
         var newComputedExpiry = invoice.ExpiryDate;
         Assert.Equal(customExpiry.ToUnixTimeSeconds(), newComputedExpiry.ToUnixTimeSeconds());
     }
+
     #endregion
 
     #region Encoding/Decoding
+
     [Fact]
     public void Given_NewInvoice_When_EncodeCalled_Then_ReturnsNonEmptyString()
     {
@@ -243,13 +253,15 @@ public class InvoiceTests
     public void Given_ValidInvoiceString_When_DecodeCalled_Then_InvoiceIsReturned()
     {
         // Given
-        const string INVOICE_STRING = "lnbc20m1pvjluezsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygshp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppj3a24vwu6r8ejrss3axul8rxldph2q7z99qrsgqz6qsgww34xlatfj6e3sngrwfy3ytkt29d2qttr8qz2mnedfqysuqypgqex4haa2h8fx3wnypranf3pdwyluftwe680jjcfp438u82xqphf75ym";
+        const string invoiceString =
+            "lnbc20m1pvjluezsp5zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zyg3zygshp58yjmdan79s6qqdhdzgynm4zwqd5d7xmw5fk98klysy043l2ahrqspp5qqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqqqsyqcyq5rqwzqfqypqfppj3a24vwu6r8ejrss3axul8rxldph2q7z99qrsgqz6qsgww34xlatfj6e3sngrwfy3ytkt29d2qttr8qz2mnedfqysuqypgqex4haa2h8fx3wnypranf3pdwyluftwe680jjcfp438u82xqphf75ym";
 
         // When
-        var invoice = Invoice.Decode(INVOICE_STRING, BitcoinNetwork.Mainnet);
+        var invoice = Invoice.Decode(invoiceString, BitcoinNetwork.Mainnet);
 
         // Then
         Assert.Equal(2000000000U, invoice.Amount.MilliSatoshi);
     }
+
     #endregion
 }

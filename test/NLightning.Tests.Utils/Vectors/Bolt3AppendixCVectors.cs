@@ -47,6 +47,10 @@ public static class Bolt3AppendixCVectors
         new(Convert.FromHexString(
                 "3045022100c3127b33dcc741dd6b05b1e63cbd1a9a7d816f37af9b6756fa2376b056f032370220408b96279808fe57eb7e463710804cdf4f108388bc5cf722d8c848d2c7f9f3b0"));
 
+    public static readonly ECDSASignature NodeASignature0 =
+        new(Convert.FromHexString(
+                "30440220616210b2cc4d3afb601013c373bbd8aac54febd9f15400379a8cb65ce7deca60022034236c010991beb7ff770510561ae8dc885b8d38d1947248c38f2ae055647142"));
+
     public static readonly ECDSASignature NodeBSignature1 =
         new(Convert.FromHexString(
                 "3044022009b048187705a8cbc9ad73adbe5af148c3d012e1f067961486c822c7af08158c022006d66f3704cfab3eb2dc49dae24e4aa22a6910fc9b424007583204e3621af2e5"));

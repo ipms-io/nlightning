@@ -81,7 +81,7 @@ public class FeeService : IFeeService
         }
 
         using var linkedCts = CancellationTokenSource
-            .CreateLinkedTokenSource(cancellationToken, _cts?.Token ?? CancellationToken.None);
+           .CreateLinkedTokenSource(cancellationToken, _cts?.Token ?? CancellationToken.None);
 
         await RefreshFeeRateAsync(linkedCts.Token);
         return _cachedFeeRate;
@@ -194,10 +194,11 @@ public class FeeService : IFeeService
         }
     }
 
-    private async Task SaveToFileAsync()
+    private Task SaveToFileAsync()
     {
         _logger.LogDebug("Saving fee rate to file {filePath}", _cacheFilePath);
 
+        return Task.CompletedTask;
         // try
         // {
         //     var cacheData = new FeeRateCacheData
@@ -215,10 +216,11 @@ public class FeeService : IFeeService
         // }
     }
 
-    private async Task LoadFromFileAsync(CancellationToken cancellationToken)
+    private Task LoadFromFileAsync(CancellationToken cancellationToken)
     {
         _logger.LogDebug("Loading fee rate from file {filePath}", _cacheFilePath);
 
+        return Task.CompletedTask;
         // try
         // {
         //     if (!File.Exists(_cacheFilePath))
@@ -292,7 +294,8 @@ public class FeeService : IFeeService
 
         // Check if the file path is absolute or relative
         return Path.IsPathRooted(filePath)
-            ? filePath
-            : Path.Combine(Directory.GetCurrentDirectory(), filePath); // If it's relative, combine it with the current directory
+                   ? filePath
+                   : Path.Combine(Directory.GetCurrentDirectory(),
+                                  filePath); // If it's relative, combine it with the current directory
     }
 }

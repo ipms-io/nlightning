@@ -1,15 +1,14 @@
 using NBitcoin;
-using NLightning.Domain.Utils;
 
 namespace NLightning.Bolt11.Tests.Models.TaggedFields;
 
 using Bolt11.Models.TaggedFields;
 using Constants;
+using Domain.Utils;
 using Enums;
 
 public class DescriptionHashTaggedFieldTests
 {
-    #pragma warning disable format
     private readonly byte[] _expectedBytes =
     [
         0x00, 0x01, 0x02, 0x03, 0x04,
@@ -20,15 +19,14 @@ public class DescriptionHashTaggedFieldTests
         0x19, 0x1A, 0x1B, 0x1C, 0x1D,
         0x1E, 0x1F, 0x00
     ];
-    #pragma warning restore format
 
-    private const string HASH_STRING = "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f";
+    private const string HashString = "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f";
 
     [Fact]
     public void Constructor_FromValue_SetsPropertiesCorrectly()
     {
         // Arrange
-        var expectedValue = new uint256(HASH_STRING);
+        var expectedValue = new uint256(HashString);
 
         // Act
         var taggedField = new DescriptionHashTaggedField(expectedValue);
@@ -43,7 +41,7 @@ public class DescriptionHashTaggedFieldTests
     public void WriteToBitWriter_WritesCorrectData()
     {
         // Arrange
-        var value = new uint256(HASH_STRING);
+        var value = new uint256(HashString);
         var taggedField = new DescriptionHashTaggedField(value);
         var bitWriter = new BitWriter(260);
 
@@ -59,7 +57,7 @@ public class DescriptionHashTaggedFieldTests
     public void IsValid_ReturnsTrueForNonZeroValue()
     {
         // Arrange
-        var value = new uint256(HASH_STRING);
+        var value = new uint256(HashString);
         var taggedField = new DescriptionHashTaggedField(value);
 
         // Act & Assert
@@ -81,7 +79,7 @@ public class DescriptionHashTaggedFieldTests
     public void FromBitReader_CreatesCorrectlyFromBitReader()
     {
         // Arrange
-        var expectedValue = new uint256(HASH_STRING);
+        var expectedValue = new uint256(HashString);
         var bitReader = new BitReader(_expectedBytes);
 
         // Act

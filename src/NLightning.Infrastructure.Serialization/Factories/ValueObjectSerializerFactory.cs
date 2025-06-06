@@ -1,3 +1,4 @@
+using NLightning.Domain.Bitcoin.ValueObjects;
 using NLightning.Domain.Interfaces;
 using NLightning.Domain.Serialization.Interfaces;
 

@@ -301,7 +301,7 @@ public class LocalLightningSigner : ILightningSigner
         }
     }
 
-    private Key GenerateFundingPrivateKey(uint channelKeyIndex)
+    protected virtual Key GenerateFundingPrivateKey(uint channelKeyIndex)
     {
         var channelExtKey = _secureKeyManager.GetKeyAtIndex(channelKeyIndex);
         var channelKey = ExtKey.CreateFromBytes(channelExtKey);

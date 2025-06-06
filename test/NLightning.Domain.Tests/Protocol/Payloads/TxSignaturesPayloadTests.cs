@@ -1,9 +1,8 @@
-using NLightning.Domain.Channels.ValueObjects;
-
 namespace NLightning.Domain.Tests.Protocol.Payloads;
 
+using Domain.Bitcoin.ValueObjects;
+using Domain.Channels.ValueObjects;
 using Domain.Protocol.Payloads;
-using Domain.ValueObjects;
 
 public class TxSignaturesPayloadTests
 {

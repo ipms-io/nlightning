@@ -12,18 +12,18 @@ public class BlazorTestBase : IAsyncLifetime
 {
     private readonly WebApplication _server;
 
-    protected static readonly string ROOT_URI = "http://127.0.0.1:8085";
+    protected static readonly string RootUri = "http://127.0.0.1:8085";
 
-    protected readonly StringWriter CONSOLE_OUTPUT;
+    protected readonly StringWriter ConsoleOutput;
 
     protected IPage? Page;
 
     public BlazorTestBase()
     {
-        CONSOLE_OUTPUT = new StringWriter();
-        Console.SetOut(CONSOLE_OUTPUT);
+        ConsoleOutput = new StringWriter();
+        Console.SetOut(ConsoleOutput);
 
-        var builder = WebApplication.CreateBuilder(["--urls", ROOT_URI]);
+        var builder = WebApplication.CreateBuilder(["--urls", RootUri]);
         builder.Services.AddDirectoryBrowser();
 
         _server = builder.Build();
@@ -37,8 +37,8 @@ public class BlazorTestBase : IAsyncLifetime
             _server.UseDeveloperExceptionPage();
         }
 
-        const string ASSETS_FILE_PATH = "NLightning.BlazorTestApp.staticwebassets.runtime.json";
-        var directoryPaths = StaticAssetsHelper.GetRootLevelEntries(ASSETS_FILE_PATH);
+        const string assetsFilePath = "NLightning.BlazorTestApp.staticwebassets.runtime.json";
+        var directoryPaths = StaticAssetsHelper.GetRootLevelEntries(assetsFilePath);
 
         foreach (var path in directoryPaths)
         {
@@ -85,7 +85,7 @@ public class BlazorTestBase : IAsyncLifetime
 
     protected void ClearOutput()
     {
-        CONSOLE_OUTPUT.GetStringBuilder().Clear();
+        ConsoleOutput.GetStringBuilder().Clear();
     }
 
     private static bool IsBlazorFile(string fileName)
@@ -98,6 +98,6 @@ public class BlazorTestBase : IAsyncLifetime
     {
         await _server.StopAsync();
         Console.SetOut(new StreamWriter(Console.OpenStandardOutput()) { AutoFlush = true });
-        await CONSOLE_OUTPUT.DisposeAsync();
+        await ConsoleOutput.DisposeAsync();
     }
 }

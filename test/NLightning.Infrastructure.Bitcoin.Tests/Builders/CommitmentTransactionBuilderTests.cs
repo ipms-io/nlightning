@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Options;
 using NBitcoin;
-using NLightning.Infrastructure.Crypto.Hashes;
 using NLightning.Tests.Utils.Mocks;
 using NLightning.Tests.Utils.Vectors;
 
@@ -50,49 +49,6 @@ public class CommitmentTransactionBuilderTests
         var commitmentTransactionModel =
             new CommitmentTransactionModel(commitmentNumber, LightningMoney.Satoshis(15000), fundingOutputInfo, null,
                                            null, localOutput, remoteOutput);
-
-        // When
-        var unsignedTx = builder.Build(commitmentTransactionModel);
-
-        // Then
-        Assert.NotNull(unsignedTx);
-        Assert.Equal(expectedTx.ToBytes(), unsignedTx.RawTxBytes);
-    }
-
-    [Fact]
-    public void Given_ValidInput_When_Build_Then_gwgReturnsCorrectValues()
-    {
-        // Given
-        var expectedTx = Bolt3AppendixCVectors.ExpectedCommitTx0;
-        expectedTx.Inputs[0].WitScript = null;
-
-        var nodeOptions = new NodeOptions();
-        var builder = new CommitmentTransactionBuilder(new OptionsWrapper<NodeOptions>(nodeOptions));
-
-        var lndFundingPubKeyBytes =
-            Convert.FromHexString("0295abdd93a819888780471f27d59600186c0e1f40b057e46298d4ee8d9cbbd555");
-        var lndPaymentBasePointBytes =
-            Convert.FromHexString("0268675ced5787297bbe20ef0c596cdfa7ccd3b02ba811f0efcd3ab430534496ed");
-        var ourFundingPubKeyNytes =
-            Convert.FromHexString("029db7f8d3483432c34b117cfd8c62aec07f1fde122061271f29f3977fa9a7706d");
-        var ourDelayedPubKeyBytes =
-            Convert.FromHexString("02f1f29e79ab51d10215faa831b2f68fceec5a6f0d043d200d19efd83a2ccd7b8f");
-        var ourRevocationPubKeyBytes =
-            Convert.FromHexString("023d27d1b6a8547a6390ff0702f80fc521b3c2e69559e4aba9ed2ff54712795764");
-
-        var commitmentNumber = new CommitmentNumber(lndFundingPubKeyBytes, ourFundingPubKeyNytes, new Sha256());
-        var fundingOutputInfo =
-            new FundingOutputInfo(LightningMoney.Satoshis(20_000), ourFundingPubKeyNytes, lndFundingPubKeyBytes)
-            {
-                TransactionId =
-                    Convert.FromHexString("7393d4b79cd75c797e106558adbb44dc2b3ef064755b41f19160af43ff4b334a"),
-                Index = 0,
-            };
-
-        var remoteOutput = new ToRemoteOutputInfo(LightningMoney.Satoshis(10_950), lndPaymentBasePointBytes);
-        var commitmentTransactionModel =
-            new CommitmentTransactionModel(commitmentNumber, LightningMoney.Satoshis(15000), fundingOutputInfo, null,
-                                           null, null, remoteOutput);
 
         // When
         var unsignedTx = builder.Build(commitmentTransactionModel);

@@ -31,28 +31,28 @@ public class AcceptChannel2PayloadSerializer : IPayloadSerializer<AcceptChannel2
         // Get the value object serializer
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(acceptChannel2Payload.ChannelId, stream);
 
         // Serialize other types
         await stream
-            .WriteAsync(EndianBitConverter.GetBytesBigEndian((ulong)acceptChannel2Payload.FundingAmount.Satoshi));
+           .WriteAsync(EndianBitConverter.GetBytesBigEndian((ulong)acceptChannel2Payload.FundingAmount.Satoshi));
         await stream
-            .WriteAsync(EndianBitConverter.GetBytesBigEndian((ulong)acceptChannel2Payload.DustLimitAmount.Satoshi));
+           .WriteAsync(EndianBitConverter.GetBytesBigEndian((ulong)acceptChannel2Payload.DustLimitAmount.Satoshi));
         await stream
-            .WriteAsync(EndianBitConverter
-                .GetBytesBigEndian(acceptChannel2Payload.MaxHtlcValueInFlightAmount.MilliSatoshi));
+           .WriteAsync(EndianBitConverter
+                          .GetBytesBigEndian(acceptChannel2Payload.MaxHtlcValueInFlightAmount.MilliSatoshi));
         await stream
-            .WriteAsync(EndianBitConverter.GetBytesBigEndian(acceptChannel2Payload.HtlcMinimumAmount.MilliSatoshi));
+           .WriteAsync(EndianBitConverter.GetBytesBigEndian(acceptChannel2Payload.HtlcMinimumAmount.MilliSatoshi));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(acceptChannel2Payload.MinimumDepth));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(acceptChannel2Payload.ToSelfDelay));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(acceptChannel2Payload.MaxAcceptedHtlcs));
-        await stream.WriteAsync(acceptChannel2Payload.FundingPubKey);
-        await stream.WriteAsync(acceptChannel2Payload.RevocationBasepoint);
-        await stream.WriteAsync(acceptChannel2Payload.PaymentBasepoint);
-        await stream.WriteAsync(acceptChannel2Payload.DelayedPaymentBasepoint);
-        await stream.WriteAsync(acceptChannel2Payload.HtlcBasepoint);
-        await stream.WriteAsync(acceptChannel2Payload.FirstPerCommitmentPoint);
+        await stream.WriteAsync(acceptChannel2Payload.FundingCompactPubKey);
+        await stream.WriteAsync(acceptChannel2Payload.RevocationCompactBasepoint);
+        await stream.WriteAsync(acceptChannel2Payload.PaymentCompactBasepoint);
+        await stream.WriteAsync(acceptChannel2Payload.DelayedPaymentCompactBasepoint);
+        await stream.WriteAsync(acceptChannel2Payload.HtlcCompactBasepoint);
+        await stream.WriteAsync(acceptChannel2Payload.FirstPerCommitmentCompactPoint);
     }
 
     public async Task<AcceptChannel2Payload?> DeserializeAsync(Stream stream)
@@ -64,7 +64,7 @@ public class AcceptChannel2PayloadSerializer : IPayloadSerializer<AcceptChannel2
             // Get the value object serializer
             var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var temporaryChannelId = await channelIdSerializer.DeserializeAsync(stream);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);

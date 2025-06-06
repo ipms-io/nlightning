@@ -9,7 +9,7 @@ namespace NLightning.Integration.Tests.Fixtures;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class PostgresFixture : IDisposable
 {
-    private const string CONTAINER_NAME = "postgres";
+    private const string ContainerName = "postgres";
     private readonly DockerClient _client = new DockerClientConfiguration().CreateClient();
     private string? _containerId;
     private string? _ip;
@@ -26,7 +26,7 @@ public class PostgresFixture : IDisposable
         GC.SuppressFinalize(this);
 
         // Remove containers
-        RemoveContainer(CONTAINER_NAME).Wait();
+        RemoveContainer(ContainerName).Wait();
 
         _client.Dispose();
     }
@@ -34,7 +34,7 @@ public class PostgresFixture : IDisposable
     public async Task StartPostgres()
     {
         await _client.PullImageAndWaitForCompleted("postgres", "16.2-alpine");
-        await RemoveContainer(CONTAINER_NAME);
+        await RemoveContainer(ContainerName);
         var nodeContainer = await _client.Containers.CreateContainerAsync(new CreateContainerParameters
         {
             Image = "postgres:16.2-alpine",
@@ -42,8 +42,8 @@ public class PostgresFixture : IDisposable
             {
                 NetworkMode = "bridge"
             },
-            Name = $"{CONTAINER_NAME}",
-            Hostname = $"{CONTAINER_NAME}",
+            Name = $"{ContainerName}",
+            Hostname = $"{ContainerName}",
             Env =
             [
                 "POSTGRES_PASSWORD=superuser",
@@ -71,8 +71,8 @@ public class PostgresFixture : IDisposable
             {
                 await Task.Delay(100);
             }
-
         }
+
         //wait for TCP socket to open
         var tcpConnectable = false;
         while (!tcpConnectable)
@@ -104,7 +104,8 @@ public class PostgresFixture : IDisposable
         try
         {
             await _client.Containers.RemoveContainerAsync(name,
-                new ContainerRemoveParameters { Force = true, RemoveVolumes = true });
+                                                          new ContainerRemoveParameters
+                                                          { Force = true, RemoveVolumes = true });
         }
         catch
         {
@@ -116,7 +117,7 @@ public class PostgresFixture : IDisposable
     {
         try
         {
-            var inspect = await _client.Containers.InspectContainerAsync(CONTAINER_NAME);
+            var inspect = await _client.Containers.InspectContainerAsync(ContainerName);
             return inspect.State.Running;
         }
         catch

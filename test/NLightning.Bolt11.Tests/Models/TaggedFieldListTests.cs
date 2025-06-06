@@ -41,10 +41,11 @@ public class TaggedFieldListTests
 
         // When / Then
         var ex = Assert.Throws<ArgumentException>(() =>
-            list.Add(new MockTaggedField { Type = TaggedFieldTypes.Description })
+                                                      list.Add(new MockTaggedField
+                                                      { Type = TaggedFieldTypes.Description })
         );
 
-        Assert.Contains("already contains a tagged field of type DESCRIPTION", ex.Message);
+        Assert.Contains("already contains a tagged field of type Description", ex.Message);
     }
 
     [Fact]
@@ -55,10 +56,11 @@ public class TaggedFieldListTests
 
         // When / Then
         var ex = Assert.Throws<ArgumentException>(() =>
-            list.Add(new MockTaggedField { Type = TaggedFieldTypes.DescriptionHash })
+                                                      list.Add(new MockTaggedField
+                                                      { Type = TaggedFieldTypes.DescriptionHash })
         );
 
-        Assert.Contains("already contains a tagged field of type DESCRIPTION_HASH", ex.Message);
+        Assert.Contains("already contains a tagged field of type DescriptionHash", ex.Message);
     }
 
     [Fact]
@@ -69,10 +71,11 @@ public class TaggedFieldListTests
 
         // When / Then
         var ex = Assert.Throws<ArgumentException>(() =>
-            list.Add(new MockTaggedField { Type = TaggedFieldTypes.Description })
+                                                      list.Add(new MockTaggedField
+                                                      { Type = TaggedFieldTypes.Description })
         );
 
-        Assert.Contains("already contains a tagged field of type DESCRIPTION", ex.Message);
+        Assert.Contains("already contains a tagged field of type Description", ex.Message);
     }
 
     [Fact]

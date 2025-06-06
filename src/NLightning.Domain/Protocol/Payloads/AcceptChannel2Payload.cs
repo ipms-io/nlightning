@@ -1,8 +1,7 @@
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
+using Crypto.ValueObjects;
 using Interfaces;
 using Money;
 
@@ -12,12 +11,21 @@ using Money;
 /// <remarks>
 /// Initializes a new instance of the AcceptChannel2Payload class.
 /// </remarks>
-public class AcceptChannel2Payload(CompactPubKey delayedPaymentBasepoint, LightningMoney dustLimitAmount,
-    CompactPubKey firstPerCommitmentPoint, LightningMoney fundingAmount, CompactPubKey fundingPubKey,
-    CompactPubKey htlcBasepoint, LightningMoney htlcMinimumAmount, ushort maxAcceptedHtlcs,
-                                   LightningMoney maxHtlcValueInFlight, uint minimumDepth, CompactPubKey paymentBasepoint,
-    CompactPubKey revocationBasepoint, ChannelId channelId, ushort toSelfDelay)
-    : IChannelMessagePayload
+public class AcceptChannel2Payload(
+    CompactPubKey delayedPaymentCompactBasepoint,
+    LightningMoney dustLimitAmount,
+    CompactPubKey firstPerCommitmentCompactPoint,
+    LightningMoney fundingAmount,
+    CompactPubKey fundingCompactPubKey,
+    CompactPubKey htlcCompactBasepoint,
+    LightningMoney htlcMinimumAmount,
+    ushort maxAcceptedHtlcs,
+    LightningMoney maxHtlcValueInFlight,
+    uint minimumDepth,
+    CompactPubKey paymentCompactBasepoint,
+    CompactPubKey revocationCompactBasepoint,
+    ChannelId channelId,
+    ushort toSelfDelay) : IChannelMessagePayload
 {
     /// <summary>
     /// The temporary_channel_id is used to identify this channel on a per-peer basis until the funding transaction
@@ -67,30 +75,30 @@ public class AcceptChannel2Payload(CompactPubKey delayedPaymentBasepoint, Lightn
     /// <summary>
     /// funding_pubkey is the public key in the 2-of-2 multisig script of the funding transaction output.
     /// </summary>
-    public CompactPubKey FundingPubKey { get; } = fundingPubKey;
+    public CompactPubKey FundingCompactPubKey { get; } = fundingCompactPubKey;
 
     /// <summary>
     /// revocation_basepoint is used to regenerate the scripts required for the penalty transaction
     /// </summary>
-    public CompactPubKey RevocationBasepoint { get; } = revocationBasepoint;
+    public CompactPubKey RevocationCompactBasepoint { get; } = revocationCompactBasepoint;
 
     /// <summary>
     /// payment_basepoint is used to produce payment signatures for the protocol
     /// </summary>
-    public CompactPubKey PaymentBasepoint { get; } = paymentBasepoint;
+    public CompactPubKey PaymentCompactBasepoint { get; } = paymentCompactBasepoint;
 
     /// <summary>
     /// delayed_payment_basepoint is used to regenerate the scripts required for the penalty transaction
     /// </summary>
-    public CompactPubKey DelayedPaymentBasepoint { get; } = delayedPaymentBasepoint;
+    public CompactPubKey DelayedPaymentCompactBasepoint { get; } = delayedPaymentCompactBasepoint;
 
     /// <summary>
     /// htlc_basepoint is used to produce HTLC signatures for the protocol
     /// </summary>
-    public CompactPubKey HtlcBasepoint { get; } = htlcBasepoint;
+    public CompactPubKey HtlcCompactBasepoint { get; } = htlcCompactBasepoint;
 
     /// <summary>
     /// first_per_commitment_point is the per-commitment point used for the first commitment transaction
     /// </summary>
-    public CompactPubKey FirstPerCommitmentPoint { get; } = firstPerCommitmentPoint;
+    public CompactPubKey FirstPerCommitmentCompactPoint { get; } = firstPerCommitmentCompactPoint;
 }
