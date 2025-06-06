@@ -34,7 +34,7 @@ public class FeeService : IFeeService
         _cacheTimeExpiration = ParseCacheTime(_feeEstimationOptions.CacheExpiration);
 
         // Try to load from the file initially
-        _ = LoadFromFileAsync(CancellationToken.None);
+        _ = LoadFromFileAsync();
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -216,7 +216,7 @@ public class FeeService : IFeeService
         // }
     }
 
-    private Task LoadFromFileAsync(CancellationToken cancellationToken)
+    private Task LoadFromFileAsync()
     {
         _logger.LogDebug("Loading fee rate from file {filePath}", _cacheFilePath);
 
