@@ -119,6 +119,11 @@ internal sealed partial class NativeCryptoProvider : ICryptoProvider
             if (nonce.Length != XChaCha20Constants.NonceSize)
                 throw new ArgumentException("Nonce must be 24 bytes", nameof(nonce));
 
+            if (cipherText.Length != plainText.Length + CryptoConstants.Xchacha20Poly1305TagLen)
+                throw new ArgumentException(
+                    $"Ciphertext must be {plainText.Length + CryptoConstants.Xchacha20Poly1305TagLen} bytes long.",
+                    nameof(cipherText));
+
             // subkey (hchacha20(key, nonce[0:15]))
             Span<byte> subkey = stackalloc byte[XChaCha20Constants.SubkeySize];
             HChaCha20.CreateSubkey(key, nonce, subkey);
@@ -141,7 +146,7 @@ internal sealed partial class NativeCryptoProvider : ICryptoProvider
                 chaCha20Poly1305.ProcessAadBytes(additionalData.ToArray(), 0, additionalData.Length);
             }
 
-            var cipherTextBytes = new byte[cipherText.Length + CryptoConstants.Xchacha20Poly1305TagLen];
+            var cipherTextBytes = new byte[cipherText.Length];
             var len1 = chaCha20Poly1305.ProcessBytes(plainText.ToArray(), 0, plainText.Length, cipherTextBytes, 0);
             var len2 = chaCha20Poly1305.DoFinal(cipherTextBytes, len1);
             cipherTextLength = len1 + len2;
