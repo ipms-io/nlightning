@@ -1,9 +1,8 @@
 namespace NLightning.Infrastructure.Protocol.Services;
 
+using Domain.Protocol.Interfaces;
 using Domain.Protocol.Messages;
-using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Payloads;
-using Domain.Protocol.Services;
 using Domain.Serialization.Interfaces;
 using Domain.Transport;
 using Domain.Utils;

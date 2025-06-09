@@ -1,9 +1,9 @@
 using NBitcoin;
-using NLightning.Domain.Utils;
 
 namespace NLightning.Bolt11.Models.TaggedFields;
 
 using Constants;
+using Domain.Utils;
 using Enums;
 using Interfaces;
 
@@ -59,7 +59,8 @@ internal sealed class DescriptionHashTaggedField : ITaggedField
     {
         if (length != TaggedFieldConstants.HashLength)
         {
-            throw new ArgumentException($"Invalid length for DescriptionHashTaggedField. Expected {TaggedFieldConstants.HashLength}, but got {length}");
+            throw new ArgumentException(
+                $"Invalid length for DescriptionHashTaggedField. Expected {TaggedFieldConstants.HashLength}, but got {length}");
         }
 
         // Read the data from the BitReader

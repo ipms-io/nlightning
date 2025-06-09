@@ -1,11 +1,10 @@
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Protocol.Interfaces;
-
 namespace NLightning.Infrastructure.Protocol.Factories;
 
 using Crypto.Hashes;
+using Domain.Bitcoin.ValueObjects;
+using Domain.Channels.ValueObjects;
+using Domain.Crypto.ValueObjects;
+using Domain.Protocol.Interfaces;
 
 public class ChannelIdFactory : IChannelIdFactory
 {

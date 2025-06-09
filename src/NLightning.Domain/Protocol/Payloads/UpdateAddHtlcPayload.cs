@@ -1,7 +1,6 @@
-using NLightning.Domain.Channels.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
 using Interfaces;
 using Money;
 
@@ -12,8 +11,13 @@ using Money;
 /// Initializes a new instance of the TxAckRbfPayload class.
 /// </remarks>
 /// <param name="channelId">The channel ID.</param>
-public class UpdateAddHtlcPayload(LightningMoney amount, ChannelId channelId, uint cltvExpiry, ulong id,
-                                  ReadOnlyMemory<byte> paymentHash, ReadOnlyMemory<byte>? onionRoutingPacket = null)
+public class UpdateAddHtlcPayload(
+    LightningMoney amount,
+    ChannelId channelId,
+    uint cltvExpiry,
+    ulong id,
+    ReadOnlyMemory<byte> paymentHash,
+    ReadOnlyMemory<byte>? onionRoutingPacket = null)
     : IChannelMessagePayload
 {
     /// <summary>

@@ -1,7 +1,7 @@
-using NLightning.Domain.Crypto.Constants;
-using NLightning.Domain.Crypto.ValueObjects;
-
 namespace NLightning.Domain.Bitcoin.ValueObjects;
+
+using Crypto.Constants;
+using Crypto.ValueObjects;
 
 public readonly record struct ExtPrivKey
 {
@@ -18,7 +18,8 @@ public readonly record struct ExtPrivKey
     {
         ArgumentNullException.ThrowIfNull(value);
         if (value is null || value.Length != CryptoConstants.ExtPrivkeyLen)
-            throw new ArgumentException($"Private key must be {CryptoConstants.ExtPrivkeyLen} bytes long.", nameof(value));
+            throw new ArgumentException($"Private key must be {CryptoConstants.ExtPrivkeyLen} bytes long.",
+                                        nameof(value));
 
         Value = value;
     }

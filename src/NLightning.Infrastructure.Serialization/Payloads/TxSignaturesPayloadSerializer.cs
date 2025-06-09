@@ -2,6 +2,7 @@ using System.Buffers;
 using System.Runtime.Serialization;
 using NLightning.Domain.Bitcoin.ValueObjects;
 using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Domain.Serialization.Interfaces;
 using NLightning.Domain.Transactions.Constants;
 
@@ -9,7 +10,6 @@ namespace NLightning.Infrastructure.Serialization.Payloads;
 
 using Converters;
 using Domain.Protocol.Payloads;
-using Domain.Protocol.Payloads.Interfaces;
 using Exceptions;
 
 public class TxSignaturesPayloadSerializer : IPayloadSerializer<TxSignaturesPayload>

@@ -1,7 +1,7 @@
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Protocol.Enums;
-
 namespace NLightning.Domain.Protocol.Interfaces;
+
+using Crypto.ValueObjects;
+using Enums;
 
 public interface ISecretStorageService : IDisposable
 {

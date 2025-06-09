@@ -14,7 +14,6 @@ using Domain.Node.Options;
 using Domain.Persistence.Interfaces;
 using Domain.Protocol.Interfaces;
 using Domain.Protocol.Messages;
-using Domain.Protocol.Messages.Interfaces;
 using Domain.Transactions.Enums;
 using Domain.Transactions.Interfaces;
 using Interfaces;

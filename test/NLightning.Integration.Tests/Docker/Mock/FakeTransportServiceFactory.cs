@@ -1,8 +1,8 @@
 using System.Net.Sockets;
+using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Integration.Tests.Docker.Mock;
 
-using Domain.Protocol.Factories;
 using Domain.Transport;
 
 internal class FakeTransportServiceFactory : ITransportServiceFactory, ITestTransportServiceFactory

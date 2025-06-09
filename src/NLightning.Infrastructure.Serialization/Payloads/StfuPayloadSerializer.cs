@@ -1,12 +1,12 @@
 using System.Buffers;
 using System.Runtime.Serialization;
 using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
 using Domain.Protocol.Payloads;
-using Domain.Protocol.Payloads.Interfaces;
 using Exceptions;
 
 public class StfuPayloadSerializer : IPayloadSerializer<StfuPayload>
@@ -26,7 +26,7 @@ public class StfuPayloadSerializer : IPayloadSerializer<StfuPayload>
         // Get the value object serializer
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(stfuPayload.ChannelId, stream);
 
         await stream.WriteAsync(new ReadOnlyMemory<byte>([(byte)(stfuPayload.Initiator ? 1 : 0)]));
@@ -41,7 +41,7 @@ public class StfuPayloadSerializer : IPayloadSerializer<StfuPayload>
             // Get the value object serializer
             var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..1]);

@@ -2,17 +2,17 @@ using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLightning.Application.Node.Interfaces;
-using NLightning.Application.Node.Services;
-using NLightning.Domain.Channels.Interfaces;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Exceptions;
-using NLightning.Domain.Node.Options;
-using NLightning.Domain.Protocol.Factories;
-using NLightning.Domain.Protocol.Interfaces;
-using NLightning.Infrastructure.Node.Services;
 
 namespace NLightning.Infrastructure.Node.Factories;
+
+using Application.Node.Interfaces;
+using Application.Node.Services;
+using Domain.Channels.Interfaces;
+using Domain.Crypto.ValueObjects;
+using Domain.Exceptions;
+using Domain.Node.Options;
+using Domain.Protocol.Interfaces;
+using Services;
 
 /// <summary>
 /// Factory for creating peer services.

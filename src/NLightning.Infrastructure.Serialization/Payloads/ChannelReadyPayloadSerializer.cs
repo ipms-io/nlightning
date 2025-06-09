@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Runtime.Serialization;
+using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
@@ -8,7 +9,6 @@ using Domain.Channels.ValueObjects;
 using Domain.Crypto.Constants;
 using Domain.Crypto.ValueObjects;
 using Domain.Protocol.Payloads;
-using Domain.Protocol.Payloads.Interfaces;
 using Exceptions;
 
 public class ChannelReadyPayloadSerializer : IPayloadSerializer<ChannelReadyPayload>
@@ -28,7 +28,7 @@ public class ChannelReadyPayloadSerializer : IPayloadSerializer<ChannelReadyPayl
         // Get the value object serializer
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(channelReadyPayload.ChannelId, stream);
 
         // Serialize other types
@@ -44,7 +44,7 @@ public class ChannelReadyPayloadSerializer : IPayloadSerializer<ChannelReadyPayl
             // Get the value object serializer
             var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.CompactPubkeyLen]);

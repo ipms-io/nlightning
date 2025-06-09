@@ -1,6 +1,6 @@
-using NLightning.Domain.Interfaces;
-
 namespace NLightning.Domain.Serialization.Interfaces;
+
+using Domain.Interfaces;
 
 public interface IValueObjectSerializerFactory
 {

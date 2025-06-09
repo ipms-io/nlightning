@@ -1,6 +1,6 @@
-using NLightning.Domain.Transactions.Interfaces;
-
 namespace NLightning.Infrastructure.Bitcoin.Adapters.OutputAdapters;
+
+using Domain.Transactions.Interfaces;
 
 /// <summary>
 /// Base interface for adapters that convert domain output info models to infrastructure outputs.

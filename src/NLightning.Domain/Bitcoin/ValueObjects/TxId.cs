@@ -1,8 +1,7 @@
-using NLightning.Domain.Utils.Extensions;
-
 namespace NLightning.Domain.Bitcoin.ValueObjects;
 
-using NLightning.Domain.Crypto.Constants;
+using Crypto.Constants;
+using Utils.Extensions;
 
 public struct TxId : IEquatable<TxId>
 {

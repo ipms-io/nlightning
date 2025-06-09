@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Runtime.Serialization;
+using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
@@ -11,9 +12,7 @@ using Domain.Crypto.ValueObjects;
 using Domain.Enums;
 using Domain.Money;
 using Domain.Protocol.Payloads;
-using Domain.Protocol.Payloads.Interfaces;
 using Domain.Protocol.ValueObjects;
-using Domain.ValueObjects;
 using Exceptions;
 
 public class OpenChannel2PayloadSerializer : IPayloadSerializer<OpenChannel2Payload>
@@ -33,13 +32,13 @@ public class OpenChannel2PayloadSerializer : IPayloadSerializer<OpenChannel2Payl
         // Get the ChainHash serializer
         var chainHashSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChainHash>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChainHash)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChainHash)}");
         await chainHashSerializer.SerializeAsync(openChannel2Payload.ChainHash, stream);
 
         // Get the ChannelId serializer
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(openChannel2Payload.ChannelId, stream);
 
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.FundingFeeRatePerKw));
@@ -49,7 +48,7 @@ public class OpenChannel2PayloadSerializer : IPayloadSerializer<OpenChannel2Payl
         await stream.WriteAsync(
             EndianBitConverter.GetBytesBigEndian(openChannel2Payload.MaxHtlcValueInFlightAmount.MilliSatoshi));
         await stream
-            .WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.HtlcMinimumAmount.MilliSatoshi));
+           .WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.HtlcMinimumAmount.MilliSatoshi));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.ToSelfDelay));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.MaxAcceptedHtlcs));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.Locktime));
@@ -64,7 +63,7 @@ public class OpenChannel2PayloadSerializer : IPayloadSerializer<OpenChannel2Payl
         // Get the ChannelFlags serializer
         var channelFlagsSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelFlags>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelFlags)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelFlags)}");
         await channelFlagsSerializer.SerializeAsync(openChannel2Payload.ChannelFlags, stream);
     }
 
@@ -77,13 +76,13 @@ public class OpenChannel2PayloadSerializer : IPayloadSerializer<OpenChannel2Payl
             // Get the ChainHash serializer
             var chainHashSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChainHash>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(ChainHash)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChainHash)}");
             var chainHash = await chainHashSerializer.DeserializeAsync(stream);
 
             // Get the ChannelId serializer
             var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var temporaryChannelId = await channelIdSerializer.DeserializeAsync(stream);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(uint)]);
@@ -98,7 +97,7 @@ public class OpenChannel2PayloadSerializer : IPayloadSerializer<OpenChannel2Payl
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
             var dustLimitSatoshis = LightningMoney
-                .FromUnit(EndianBitConverter.ToUInt64BigEndian(buffer[..sizeof(ulong)]), LightningMoneyUnit.Satoshi);
+               .FromUnit(EndianBitConverter.ToUInt64BigEndian(buffer[..sizeof(ulong)]), LightningMoneyUnit.Satoshi);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
             var maxHtlcValueInFlightMsat = EndianBitConverter.ToUInt64BigEndian(buffer[..sizeof(ulong)]);
@@ -139,7 +138,7 @@ public class OpenChannel2PayloadSerializer : IPayloadSerializer<OpenChannel2Payl
             // Get the ChannelFlags serializer
             var channelFlagsSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelFlags>()
-                ?? throw new SerializationException(
+             ?? throw new SerializationException(
                     $"No serializer found for value object type {nameof(ChannelFlags)}");
             var channelFlags = await channelFlagsSerializer.DeserializeAsync(stream);
 

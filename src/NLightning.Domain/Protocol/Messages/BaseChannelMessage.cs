@@ -4,7 +4,6 @@ using Constants;
 using Interfaces;
 using Models;
 using Payloads;
-using Payloads.Interfaces;
 
 public abstract class BaseChannelMessage : BaseMessage, IChannelMessage
 {

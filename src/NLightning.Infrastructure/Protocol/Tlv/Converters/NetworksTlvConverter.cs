@@ -1,12 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
-using NLightning.Domain.Crypto.Constants;
-using NLightning.Domain.Protocol.ValueObjects;
 
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
+using Domain.Crypto.Constants;
 using Domain.Protocol.Constants;
+using Domain.Protocol.Interfaces;
 using Domain.Protocol.Tlv;
-using Domain.Protocol.Tlv.Converters;
+using Domain.Protocol.ValueObjects;
 
 public class NetworksTlvConverter : ITlvConverter<NetworksTlv>
 {
@@ -47,6 +47,6 @@ public class NetworksTlvConverter : ITlvConverter<NetworksTlv>
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
         return ConvertToBase(tlv as NetworksTlv
-                             ?? throw new InvalidCastException($"Error converting BaseTlv to {nameof(NetworksTlv)}"));
+                          ?? throw new InvalidCastException($"Error converting BaseTlv to {nameof(NetworksTlv)}"));
     }
 }

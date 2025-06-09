@@ -1,7 +1,6 @@
-using NLightning.Domain.Protocol.Services;
+using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Application.Node.Interfaces;
-
 /// <summary>
 /// Interface for a ping pong service factory.
 /// </summary>

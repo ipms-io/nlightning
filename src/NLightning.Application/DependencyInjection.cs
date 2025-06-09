@@ -9,7 +9,6 @@ using Channels.Managers;
 using Domain.Bitcoin.Interfaces;
 using Domain.Channels.Interfaces;
 using Domain.Protocol.Interfaces;
-using Domain.Protocol.Services;
 using Node.Services;
 using Protocol.Factories;
 
@@ -68,9 +67,7 @@ public static class DependencyInjection
                                   .First(i => i.IsGenericType
                                            && i.GetGenericTypeDefinition() == typeof(IChannelMessageHandler<>));
 
-            // Register as scoped (or singleton if you prefer)
             services.AddScoped(handlerInterface, handlerType);
-            // services.AddScoped(handlerType); // Also register the concrete type for direct resolution
         }
     }
 }

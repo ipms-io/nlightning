@@ -1,6 +1,7 @@
+using NLightning.Domain.Channels.ValueObjects;
+
 namespace NLightning.Infrastructure.Serialization.Tests.ValueObjects;
 
-using Domain.ValueObjects;
 using Infrastructure.Serialization.ValueObjects;
 
 public class ChannelFlagTypeSerializerTests
@@ -32,6 +33,6 @@ public class ChannelFlagTypeSerializerTests
 
         // When & Then
         await Assert.ThrowsAsync<EndOfStreamException>(async () =>
-            await channelFlagsSerializer.DeserializeAsync(memoryStream));
+                                                           await channelFlagsSerializer.DeserializeAsync(memoryStream));
     }
 }

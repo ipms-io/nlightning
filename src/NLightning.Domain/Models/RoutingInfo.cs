@@ -1,7 +1,7 @@
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-
 namespace NLightning.Domain.Models;
+
+using Channels.ValueObjects;
+using Crypto.ValueObjects;
 
 /// <summary>
 /// Represents routing information for a payment
@@ -11,7 +11,12 @@ namespace NLightning.Domain.Models;
 /// <param name="feeBaseMsat">The base fee in millisatoshis</param>
 /// <param name="feeProportionalMillionths">The proportional fee in millionths</param>
 /// <param name="cltvExpiryDelta">The CLTV expiry delta</param>
-public sealed class RoutingInfo(CompactPubKey compactPubKey, ShortChannelId shortChannelId, int feeBaseMsat, int feeProportionalMillionths, short cltvExpiryDelta)
+public sealed class RoutingInfo(
+    CompactPubKey compactPubKey,
+    ShortChannelId shortChannelId,
+    int feeBaseMsat,
+    int feeProportionalMillionths,
+    short cltvExpiryDelta)
 {
     /// <summary>
     /// The public key of the node

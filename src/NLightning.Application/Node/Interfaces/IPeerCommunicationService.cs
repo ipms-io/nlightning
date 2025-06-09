@@ -1,7 +1,8 @@
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Protocol.Messages.Interfaces;
+using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Application.Node.Interfaces;
+
+using Domain.Crypto.ValueObjects;
 
 /// <summary>
 /// Interface for communication with a single peer.

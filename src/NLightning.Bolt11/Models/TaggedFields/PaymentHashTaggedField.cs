@@ -1,9 +1,9 @@
 using NBitcoin;
-using NLightning.Domain.Utils;
 
 namespace NLightning.Bolt11.Models.TaggedFields;
 
 using Constants;
+using Domain.Utils;
 using Enums;
 using Interfaces;
 
@@ -59,7 +59,8 @@ internal sealed class PaymentHashTaggedField : ITaggedField
     {
         if (length != TaggedFieldConstants.HashLength)
         {
-            throw new ArgumentException($"Invalid length for PaymentHashTaggedField. Expected {TaggedFieldConstants.HashLength}, but got {length}");
+            throw new ArgumentException(
+                $"Invalid length for PaymentHashTaggedField. Expected {TaggedFieldConstants.HashLength}, but got {length}");
         }
 
         // Read the data from the BitReader

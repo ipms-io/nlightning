@@ -1,8 +1,8 @@
 using System.Text;
-using NLightning.Domain.Channels.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
 using Interfaces;
 using Messages;
 
@@ -35,13 +35,18 @@ public class ErrorPayload : IMessagePayload
     {
         Data = data;
     }
+
     public ErrorPayload(ChannelId? channelId, byte[] data) : this(data)
     {
         if (channelId.HasValue)
             ChannelId = channelId.Value;
     }
+
     public ErrorPayload(ChannelId? channelId, string message) : this(channelId, Encoding.UTF8.GetBytes(message))
-    { }
+    {
+    }
+
     public ErrorPayload(string message) : this(Encoding.UTF8.GetBytes(message))
-    { }
+    {
+    }
 }

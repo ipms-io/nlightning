@@ -1,6 +1,6 @@
-using NLightning.Domain.Crypto.ValueObjects;
-
 namespace NLightning.Domain.Bitcoin.Interfaces;
+
+using Crypto.ValueObjects;
 
 public interface ISignatureValidator
 {

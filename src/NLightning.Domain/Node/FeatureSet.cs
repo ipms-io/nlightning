@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Runtime.Serialization;
 using System.Text;
+using NLightning.Domain.Utils.Interfaces;
 
 namespace NLightning.Domain.Node;
 
 using Enums;
-using Utils;
 
 /// <summary>
 /// Represents the features supported by a node. <see href="https://github.com/lightning/bolts/blob/master/09-features.md">BOLT-9</see>

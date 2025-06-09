@@ -1,6 +1,5 @@
-namespace NLightning.Domain.Protocol.Factories;
+namespace NLightning.Domain.Protocol.Interfaces;
 
-using Services;
 using Transport;
 
 /// <summary>

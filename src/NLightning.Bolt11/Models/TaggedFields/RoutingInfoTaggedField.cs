@@ -1,12 +1,10 @@
-using NBitcoin;
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Utils;
-
 namespace NLightning.Bolt11.Models.TaggedFields;
 
 using Constants;
+using Domain.Channels.ValueObjects;
+using Domain.Crypto.ValueObjects;
 using Domain.Models;
+using Domain.Utils;
 using Enums;
 using Interfaces;
 
@@ -91,7 +89,9 @@ internal sealed class RoutingInfoTaggedField : ITaggedField
         var bitsReadAcc = 0;
         var routingInfos = new RoutingInfoCollection();
 
-        for (var i = 0; i < l && l - bitsReadAcc >= TaggedFieldConstants.RoutingInfoLength; i += TaggedFieldConstants.RoutingInfoLength)
+        for (var i = 0;
+             i < l && l - bitsReadAcc >= TaggedFieldConstants.RoutingInfoLength;
+             i += TaggedFieldConstants.RoutingInfoLength)
         {
             var pubkeyBytes = new byte[34];
             bitsReadAcc += bitReader.ReadBits(pubkeyBytes, 264);
@@ -109,10 +109,10 @@ internal sealed class RoutingInfoTaggedField : ITaggedField
             bitsReadAcc += 16;
 
             routingInfos.Add(new RoutingInfo(new CompactPubKey(pubkeyBytes[..^1]),
-                new ShortChannelId(shortChannelBytes[..^1]),
-                feeBaseMsat,
-                feeProportionalMillionths,
-                minFinalCltvExpiry));
+                                             new ShortChannelId(shortChannelBytes[..^1]),
+                                             feeBaseMsat,
+                                             feeProportionalMillionths,
+                                             minFinalCltvExpiry));
         }
 
         // Skip any extra bits since padding is expected

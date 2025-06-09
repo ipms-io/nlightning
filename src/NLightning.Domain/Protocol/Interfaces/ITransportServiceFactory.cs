@@ -1,6 +1,6 @@
 using System.Net.Sockets;
 
-namespace NLightning.Domain.Protocol.Factories;
+namespace NLightning.Domain.Protocol.Interfaces;
 
 using Transport;
 

@@ -1,4 +1,4 @@
-namespace NLightning.Node.Interfaces;
+namespace NLightning.Infrastructure.Transport.Interfaces;
 
 public interface ITcpListenerService
 {

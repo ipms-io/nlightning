@@ -1,10 +1,10 @@
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Money;
-using NLightning.Domain.Protocol.ValueObjects;
-using NLightning.Domain.Transactions.Interfaces;
-using NLightning.Domain.Transactions.Outputs;
-
 namespace NLightning.Domain.Transactions.Models;
+
+using Bitcoin.ValueObjects;
+using Interfaces;
+using Money;
+using Outputs;
+using Protocol.ValueObjects;
 
 /// <summary>
 /// Represents a commitment transaction in the domain model.

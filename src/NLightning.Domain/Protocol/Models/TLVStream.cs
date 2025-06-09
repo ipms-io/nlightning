@@ -1,8 +1,7 @@
-using NLightning.Domain.Protocol.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Models;
 
 using Tlv;
+using ValueObjects;
 
 /// <summary>
 /// A series of (possibly zero) TLVs

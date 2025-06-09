@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Application.Channels.Managers;
 
@@ -15,7 +16,6 @@ using Domain.Node.Options;
 using Domain.Persistence.Interfaces;
 using Domain.Protocol.Constants;
 using Domain.Protocol.Messages;
-using Domain.Protocol.Messages.Interfaces;
 using Handlers.Interfaces;
 
 public class ChannelManager : IChannelManager

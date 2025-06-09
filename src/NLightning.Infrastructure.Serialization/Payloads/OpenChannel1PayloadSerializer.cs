@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Runtime.Serialization;
+using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
@@ -10,9 +11,7 @@ using Domain.Crypto.Constants;
 using Domain.Crypto.ValueObjects;
 using Domain.Money;
 using Domain.Protocol.Payloads;
-using Domain.Protocol.Payloads.Interfaces;
 using Domain.Protocol.ValueObjects;
-using Domain.ValueObjects;
 using Exceptions;
 
 public class OpenChannel1PayloadSerializer : IPayloadSerializer<OpenChannel1Payload>

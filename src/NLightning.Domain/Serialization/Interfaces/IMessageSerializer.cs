@@ -1,6 +1,6 @@
-using NLightning.Domain.Protocol.Messages.Interfaces;
-
 namespace NLightning.Domain.Serialization.Interfaces;
+
+using Protocol.Interfaces;
 
 public interface IMessageSerializer
 {

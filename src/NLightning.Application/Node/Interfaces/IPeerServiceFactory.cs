@@ -1,7 +1,8 @@
 using System.Net.Sockets;
-using NLightning.Domain.Crypto.ValueObjects;
 
 namespace NLightning.Application.Node.Interfaces;
+
+using Domain.Crypto.ValueObjects;
 
 /// <summary>
 /// Interface for creating peer services.

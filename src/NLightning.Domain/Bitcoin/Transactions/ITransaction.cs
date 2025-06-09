@@ -1,6 +1,6 @@
-using NLightning.Domain.Bitcoin.ValueObjects;
-
 namespace NLightning.Domain.Bitcoin.Transactions;
+
+using ValueObjects;
 
 public interface ITransaction
 {

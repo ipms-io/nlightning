@@ -1,7 +1,7 @@
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Money;
-
 namespace NLightning.Domain.Bitcoin.Outputs;
+
+using Money;
+using ValueObjects;
 
 public interface IOutput
 {

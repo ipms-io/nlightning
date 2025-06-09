@@ -2,11 +2,12 @@ using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLightning.Domain.Node.Options;
-using NLightning.Infrastructure.Node.Interfaces;
-using NLightning.Node.Interfaces;
 
 namespace NLightning.Infrastructure.Transport.Services;
+
+using Domain.Node.Options;
+using Interfaces;
+using Node.Interfaces;
 
 public class TcpListenerService : ITcpListenerService
 {
@@ -106,13 +107,14 @@ public class TcpListenerService : ITcpListenerService
                     {
                         try
                         {
-                            _logger.LogInformation("New peer connection from {RemoteEndPoint}", tcpClient.Client.RemoteEndPoint);
+                            _logger.LogInformation("New peer connection from {RemoteEndPoint}",
+                                                   tcpClient.Client.RemoteEndPoint);
                             await _peerManager.AcceptPeerAsync(tcpClient);
                         }
                         catch (Exception e)
                         {
                             _logger.LogError(e, "Error accepting peer connection for {RemoteEndPoint}",
-                                tcpClient.Client.RemoteEndPoint);
+                                             tcpClient.Client.RemoteEndPoint);
                         }
                     }, cancellationToken);
                 }

@@ -1,4 +1,4 @@
-namespace NLightning.Domain.Utils;
+namespace NLightning.Domain.Utils.Interfaces;
 
 public interface IBitWriter : IDisposable
 {

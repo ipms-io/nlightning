@@ -4,11 +4,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NLightning.Domain.Bitcoin.Interfaces;
 using NLightning.Domain.Protocol.Interfaces;
+using NLightning.Infrastructure.Transport.Interfaces;
 
 namespace NLightning.Node.Services;
 
 using Domain.Node.Options;
-using Interfaces;
 
 public class NltgDaemonService : BackgroundService
 {
@@ -35,8 +35,8 @@ public class NltgDaemonService : BackgroundService
     {
         var network = _configuration["network"] ?? _configuration["n"] ?? _nodeOptions.BitcoinNetwork;
         var isDaemon = _configuration.GetValue<bool?>("daemon")
-                       ?? _configuration.GetValue<bool?>("daemon-child")
-                       ?? _nodeOptions.Daemon;
+                    ?? _configuration.GetValue<bool?>("daemon-child")
+                    ?? _nodeOptions.Daemon;
 
         _logger.LogInformation("NLTG Daemon started on {Network} network", network);
         _logger.LogDebug("Running in daemon mode: {IsDaemon}", isDaemon);

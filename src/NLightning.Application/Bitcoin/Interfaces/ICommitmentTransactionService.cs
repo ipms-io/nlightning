@@ -1,10 +1,10 @@
-using NLightning.Domain.Bitcoin.Transactions;
-using NLightning.Domain.Channels.Models;
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Node.Options;
-
 namespace NLightning.Application.Bitcoin.Interfaces;
+
+using Domain.Bitcoin.Transactions;
+using Domain.Channels.Models;
+using Domain.Channels.ValueObjects;
+using Domain.Crypto.ValueObjects;
+using Domain.Node.Options;
 
 public interface ICommitmentTransactionService
 {

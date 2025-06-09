@@ -4,6 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace NLightning.Domain.Utils;
 
+using Interfaces;
+
 public class BitWriter : IBitWriter
 {
     private int _bitOffset;
@@ -19,15 +21,14 @@ public class BitWriter : IBitWriter
         TotalBits = totalBits;
         var totalBytes = (totalBits + 7) / 8;
         _buffer = ArrayPool<byte>.Shared.Rent(totalBytes);
+        Array.Clear(_buffer, 0, totalBytes);
     }
 
     public void GrowByBits(int additionalBits)
     {
         var requiredBits = _bitOffset + additionalBits;
         if (requiredBits <= TotalBits)
-        {
             return;
-        }
 
         var newTotalBits = Math.Max(TotalBits * 2, requiredBits);
         var newByteCount = (newTotalBits + 7) / 8;
@@ -46,9 +47,8 @@ public class BitWriter : IBitWriter
     public void WriteBits(ReadOnlySpan<byte> value, int valueOffset, int bitLength)
     {
         if (_bitOffset + bitLength > TotalBits)
-        {
-            throw new InvalidOperationException($"Not enough bits to write {bitLength}. Offset={_bitOffset}, capacity={TotalBits}.");
-        }
+            throw new InvalidOperationException(
+                $"Not enough bits to write {bitLength}. Offset={_bitOffset}, capacity={TotalBits}.");
 
         var byteOffset = _bitOffset / 8;
         var shift = _bitOffset % 8;
@@ -92,22 +92,16 @@ public class BitWriter : IBitWriter
     public void WriteBit(bool bit)
     {
         if (_bitOffset >= TotalBits)
-        {
             throw new InvalidOperationException("No more bits to write.");
-        }
 
         var byteIndex = _bitOffset / 8;
         var bitIndex = _bitOffset % 8;
         var shift = 7 - bitIndex;
 
         if (bit)
-        {
             _buffer[byteIndex] |= (byte)(1 << shift);
-        }
         else
-        {
             _buffer[byteIndex] &= (byte)~(1 << shift);
-        }
 
         _bitOffset++;
     }
@@ -140,9 +134,7 @@ public class BitWriter : IBitWriter
         BinaryPrimitives.WriteInt16LittleEndian(bytes, shifted);
 
         if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
-        {
             bytes.Reverse();
-        }
 
         WriteBits(bytes, bits);
     }
@@ -160,9 +152,7 @@ public class BitWriter : IBitWriter
         BinaryPrimitives.WriteUInt16LittleEndian(bytes, shifted);
 
         if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
-        {
             bytes.Reverse();
-        }
 
         WriteBits(bytes, bits);
     }
@@ -180,9 +170,7 @@ public class BitWriter : IBitWriter
         BinaryPrimitives.WriteInt32LittleEndian(bytes, shifted);
 
         if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
-        {
             bytes.Reverse();
-        }
 
         WriteBits(bytes, bits);
     }
@@ -200,9 +188,7 @@ public class BitWriter : IBitWriter
         BinaryPrimitives.WriteInt64LittleEndian(bytes, shifted);
 
         if ((bigEndian && BitConverter.IsLittleEndian) || (!bigEndian && !BitConverter.IsLittleEndian))
-        {
             bytes.Reverse();
-        }
 
         WriteBits(bytes, bits);
     }
@@ -221,9 +207,7 @@ public class BitWriter : IBitWriter
     {
         var bytes = new byte[(TotalBits + 7) / 8];
         for (var i = 0; i < bytes.Length; i++)
-        {
             bytes[i] = _buffer[i];
-        }
 
         return bytes;
     }

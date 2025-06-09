@@ -1,14 +1,14 @@
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLightning.Domain.Serialization.Interfaces;
-using NLightning.Infrastructure.Crypto.Interfaces;
 
 namespace NLightning.Infrastructure.Transport.Factories;
 
 using Domain.Node.Options;
-using Domain.Protocol.Factories;
+using Domain.Protocol.Interfaces;
+using Domain.Serialization.Interfaces;
 using Domain.Transport;
+using Infrastructure.Crypto.Interfaces;
 using Services;
 
 /// <summary>

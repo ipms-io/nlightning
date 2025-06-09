@@ -1,7 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using NLightning.Domain.Protocol.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Constants;
+
+using ValueObjects;
 
 /// <summary>
 /// Constants for the different chains.
@@ -12,7 +13,7 @@ namespace NLightning.Domain.Protocol.Constants;
 [ExcludeFromCodeCoverage]
 public static class ChainConstants
 {
-    #pragma warning disable format
+#pragma warning disable format
     /// <summary>
     /// The main chain.
     /// </summary>
@@ -22,7 +23,7 @@ public static class ChainConstants
         0x93, 0x1e, 0x83, 0x65, 0xe1, 0x5a, 0x08, 0x9c,
         0x68, 0xd6, 0x19, 0x00, 0x00, 0x00, 0x00, 0x00
     ]);
-    
+
     /// <summary>
     /// The testnet chain.
     /// </summary>
@@ -42,5 +43,5 @@ public static class ChainConstants
         0x28, 0xc3, 0x4f, 0x3a, 0x5e, 0x33, 0x2a, 0x1f,
         0xc7, 0xb2, 0xb7, 0x3c, 0xf1, 0x88, 0x91, 0x0f
     ]);
-    #pragma warning restore format
+#pragma warning restore format
 }

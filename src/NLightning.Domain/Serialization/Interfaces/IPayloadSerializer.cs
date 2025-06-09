@@ -1,6 +1,6 @@
-using NLightning.Domain.Protocol.Payloads.Interfaces;
-
 namespace NLightning.Domain.Serialization.Interfaces;
+
+using Protocol.Interfaces;
 
 /// <summary>
 /// Interface for serializers that handle specific message types

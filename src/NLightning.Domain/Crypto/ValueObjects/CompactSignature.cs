@@ -1,7 +1,7 @@
-using NLightning.Domain.Crypto.Constants;
-using NLightning.Domain.Interfaces;
-
 namespace NLightning.Domain.Crypto.ValueObjects;
+
+using Constants;
+using Interfaces;
 
 public record CompactSignature : IValueObject
 {

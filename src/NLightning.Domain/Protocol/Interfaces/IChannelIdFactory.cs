@@ -1,8 +1,8 @@
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Interfaces;
+
+using Bitcoin.ValueObjects;
+using Channels.ValueObjects;
+using Crypto.ValueObjects;
 
 public interface IChannelIdFactory
 {

@@ -1,12 +1,10 @@
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Protocol.ValueObjects;
-using NLightning.Domain.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
+using Crypto.ValueObjects;
 using Interfaces;
 using Money;
+using ValueObjects;
 
 /// <summary>
 /// Represents the payload for the open_channel message.

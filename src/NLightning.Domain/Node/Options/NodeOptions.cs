@@ -1,9 +1,8 @@
-using NLightning.Domain.Protocol.ValueObjects;
-
 namespace NLightning.Domain.Node.Options;
 
 using Money;
 using Protocol.Constants;
+using Protocol.ValueObjects;
 
 public class NodeOptions
 {

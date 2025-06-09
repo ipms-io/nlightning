@@ -1,10 +1,10 @@
-using NLightning.Domain.Bitcoin.Outputs;
-using NLightning.Domain.Bitcoin.Transactions;
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Money;
-
 namespace NLightning.Application.Bitcoin.Interfaces;
+
+using Domain.Bitcoin.Outputs;
+using Domain.Bitcoin.Transactions;
+using Domain.Bitcoin.ValueObjects;
+using Domain.Crypto.ValueObjects;
+using Domain.Money;
 
 public interface IFundingTransactionFactory
 {

@@ -1,7 +1,6 @@
-using NLightning.Domain.Channels.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
 using Constants;
 using Interfaces;
 using Messages;
@@ -54,7 +53,9 @@ public class TxAddInputPayload : IChannelMessagePayload
     {
         if (sequence > InteractiveTransactionConstants.MaxSequence)
         {
-            throw new ArgumentException($"Sequence must be less than or equal to {InteractiveTransactionConstants.MaxSequence}", nameof(sequence));
+            throw new ArgumentException(
+                $"Sequence must be less than or equal to {InteractiveTransactionConstants.MaxSequence}",
+                nameof(sequence));
         }
 
         ChannelId = channelId;

@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Runtime.Serialization;
+using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
@@ -8,7 +9,6 @@ using Domain.Bitcoin.Constants;
 using Domain.Bitcoin.ValueObjects;
 using Domain.Channels.ValueObjects;
 using Domain.Protocol.Payloads;
-using Domain.Protocol.Payloads.Interfaces;
 using Domain.Serialization.Interfaces;
 using Exceptions;
 
@@ -29,7 +29,7 @@ public class ShutdownPayloadSerializer : IPayloadSerializer<ShutdownPayload>
         // Get the value object serializer
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(shutdownPayload.ChannelId, stream);
 
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(shutdownPayload.ScriptPubkeyLen));
@@ -45,7 +45,7 @@ public class ShutdownPayloadSerializer : IPayloadSerializer<ShutdownPayload>
             // Get the value object serializer
             var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ushort)]);

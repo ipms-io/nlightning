@@ -1,10 +1,10 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLightning.Domain.Bitcoin.Interfaces;
 
 namespace NLightning.Infrastructure.Bitcoin.Services;
 
+using Domain.Bitcoin.Interfaces;
 using Domain.Money;
 using Options;
 

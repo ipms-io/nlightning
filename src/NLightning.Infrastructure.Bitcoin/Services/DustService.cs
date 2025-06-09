@@ -1,8 +1,8 @@
 using NBitcoin;
-using NLightning.Domain.Bitcoin.Interfaces;
 
 namespace NLightning.Infrastructure.Bitcoin.Services;
 
+using Domain.Bitcoin.Interfaces;
 using Domain.Protocol.Services;
 
 public class DustService : IDustService
@@ -61,22 +61,27 @@ public class DustService : IDustService
         {
             return amount < CalculateP2PkhDustLimit();
         }
+
         if (scriptPubKey.IsScriptType(ScriptType.P2SH))
         {
             return amount < CalculateP2ShDustLimit();
         }
+
         if (scriptPubKey.IsScriptType(ScriptType.P2WPKH))
         {
             return amount < CalculateP2WpkhDustLimit();
         }
+
         if (scriptPubKey.IsScriptType(ScriptType.P2WSH))
         {
             return amount < CalculateP2WshDustLimit();
         }
+
         if (scriptPubKey.ToBytes()[0] == (byte)OpcodeType.OP_RETURN)
         {
             return false; // OP_RETURN outputs are never dust
         }
+
         return amount < CalculateUnknownSegwitVersionDustLimit();
     }
 }

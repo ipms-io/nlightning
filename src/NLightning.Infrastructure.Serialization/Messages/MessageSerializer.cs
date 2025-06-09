@@ -1,10 +1,10 @@
+using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Messages;
 
 using Converters;
 using Domain.Protocol.Constants;
-using Domain.Protocol.Messages.Interfaces;
 using Exceptions;
 
 public class MessageSerializer : IMessageSerializer
@@ -20,7 +20,7 @@ public class MessageSerializer : IMessageSerializer
     {
         var messageTypeSerializer =
             _messageTypeSerializerFactory.GetSerializer(message.Type)
-            ?? throw new InvalidOperationException($"No serializer found for message type {message.Type}");
+         ?? throw new InvalidOperationException($"No serializer found for message type {message.Type}");
 
         // Write the message type to the stream
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian((ushort)message.Type));

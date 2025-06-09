@@ -72,7 +72,7 @@ public static class HChaCha20
         }
         finally
         {
-            ArrayPool<byte>.Shared.Return(temp);
+            ArrayPool<byte>.Shared.Return(temp, true);
         }
     }
 

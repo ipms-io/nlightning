@@ -1,6 +1,6 @@
-using NLightning.Domain.Interfaces;
-
 namespace NLightning.Domain.Protocol.ValueObjects;
+
+using Domain.Interfaces;
 
 /// <summary>
 /// Represents a variable length integer.
@@ -12,6 +12,7 @@ namespace NLightning.Domain.Protocol.ValueObjects;
 public readonly record struct BigSize(ulong Value) : IValueObject, IComparable
 {
     #region Implicit Conversions
+
     public static implicit operator ulong(BigSize bigSize) => bigSize.Value;
     public static implicit operator BigSize(ulong value) => new(value);
 
@@ -24,6 +25,7 @@ public readonly record struct BigSize(ulong Value) : IValueObject, IComparable
 
         return (long)bigSize.Value;
     }
+
     public static implicit operator BigSize(long value)
     {
         if (value < 0)
@@ -40,8 +42,10 @@ public readonly record struct BigSize(ulong Value) : IValueObject, IComparable
         {
             throw new OverflowException($"Cannot convert {bigSize.Value} to uint because it's too large.");
         }
+
         return (uint)bigSize.Value;
     }
+
     public static implicit operator BigSize(uint value) => new(value);
 
     public static implicit operator int(BigSize bigSize)
@@ -50,14 +54,17 @@ public readonly record struct BigSize(ulong Value) : IValueObject, IComparable
         {
             throw new OverflowException($"Cannot convert {bigSize.Value} to int because it's too large.");
         }
+
         return (int)bigSize.Value;
     }
+
     public static implicit operator BigSize(int value)
     {
         if (value < 0)
         {
             throw new OverflowException($"Cannot convert {value} to BigSize because it's negative.");
         }
+
         return new BigSize((ulong)value);
     }
 
@@ -67,8 +74,10 @@ public readonly record struct BigSize(ulong Value) : IValueObject, IComparable
         {
             throw new OverflowException($"Cannot convert {bigSize.Value} to ushort because it's too large.");
         }
+
         return (ushort)bigSize.Value;
     }
+
     public static implicit operator BigSize(ushort value) => new(value);
 
     public static implicit operator short(BigSize bigSize)
@@ -77,14 +86,17 @@ public readonly record struct BigSize(ulong Value) : IValueObject, IComparable
         {
             throw new OverflowException($"Cannot convert {bigSize.Value} to short because it's too large.");
         }
+
         return (short)bigSize.Value;
     }
+
     public static implicit operator BigSize(short value)
     {
         if (value < 0)
         {
             throw new OverflowException($"Cannot convert {value} to BigSize because it's negative.");
         }
+
         return new BigSize((ulong)value);
     }
 
@@ -94,12 +106,16 @@ public readonly record struct BigSize(ulong Value) : IValueObject, IComparable
         {
             throw new OverflowException($"Cannot convert {bigSize.Value} to byte because it's too large.");
         }
+
         return (byte)bigSize.Value;
     }
+
     public static implicit operator BigSize(byte value) => new(value);
+
     #endregion
 
     #region Equality
+
     public int CompareTo(object? obj)
     {
         if (obj is not BigSize bigSize)
@@ -127,5 +143,6 @@ public readonly record struct BigSize(ulong Value) : IValueObject, IComparable
     {
         return left.Value >= right.Value;
     }
+
     #endregion
 }

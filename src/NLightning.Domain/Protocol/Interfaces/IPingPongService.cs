@@ -1,6 +1,4 @@
-namespace NLightning.Domain.Protocol.Services;
-
-using Messages.Interfaces;
+namespace NLightning.Domain.Protocol.Interfaces;
 
 /// <summary>
 /// Interface for a ping pong service.

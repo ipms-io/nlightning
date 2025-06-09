@@ -1,8 +1,8 @@
 using System.Text;
-using NLightning.Domain.Utils;
 
 namespace NLightning.Bolt11.Models.TaggedFields;
 
+using Domain.Utils;
 using Enums;
 using Interfaces;
 
@@ -84,7 +84,8 @@ internal sealed class DescriptionTaggedField : ITaggedField
         switch (length)
         {
             case < 0:
-                throw new ArgumentException("Invalid length for DescriptionTaggedField. Length must be greater or equal to 0", nameof(length));
+                throw new ArgumentException(
+                    "Invalid length for DescriptionTaggedField. Length must be greater or equal to 0", nameof(length));
             case 0:
                 return new DescriptionTaggedField(string.Empty);
         }

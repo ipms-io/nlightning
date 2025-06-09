@@ -4,7 +4,6 @@ using Constants;
 using Interfaces;
 using Models;
 using Payloads;
-using Payloads.Interfaces;
 
 /// <summary>
 /// Base class for a message.
@@ -26,6 +25,7 @@ public abstract class BaseMessage : IMessage
         Payload = payload;
         Extension = extension;
     }
+
     protected internal BaseMessage(MessageTypes type)
     {
         Type = type;

@@ -1,6 +1,6 @@
-using NLightning.Domain.Crypto.Constants;
-
 namespace NLightning.Domain.Crypto.ValueObjects;
+
+using Constants;
 
 public readonly record struct Hash
 {

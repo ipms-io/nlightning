@@ -1,6 +1,6 @@
-using NLightning.Domain.Channels.Interfaces;
-
 namespace NLightning.Domain.Persistence.Interfaces;
+
+using Channels.Interfaces;
 
 public interface IUnitOfWork : IDisposable
 {

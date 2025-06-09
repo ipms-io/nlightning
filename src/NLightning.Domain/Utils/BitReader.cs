@@ -3,6 +3,8 @@ using System.Runtime.CompilerServices;
 
 namespace NLightning.Domain.Utils;
 
+using Interfaces;
+
 public class BitReader(byte[] buffer) : IBitReader
 {
     private readonly byte[] _buffer = buffer ?? throw new ArgumentNullException(nameof(buffer));
@@ -21,7 +23,8 @@ public class BitReader(byte[] buffer) : IBitReader
     {
         if (_bitOffset + bitLength > _totalBits)
         {
-            throw new InvalidOperationException($"Not enough bits left to read. Requested {bitLength}, but only {_totalBits - _bitOffset} remain.");
+            throw new InvalidOperationException(
+                $"Not enough bits left to read. Requested {bitLength}, but only {_totalBits - _bitOffset} remain.");
         }
 
         var byteOffset = _bitOffset / 8;

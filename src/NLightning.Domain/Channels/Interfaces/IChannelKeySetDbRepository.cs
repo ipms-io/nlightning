@@ -1,7 +1,6 @@
-using NLightning.Domain.Channels.Models;
-
 namespace NLightning.Domain.Channels.Interfaces;
 
+using Models;
 using ValueObjects;
 
 /// <summary>

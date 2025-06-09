@@ -1,8 +1,8 @@
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Node.ValueObjects;
-
 namespace NLightning.Domain.Node.Models;
+
+using Channels.ValueObjects;
+using Crypto.ValueObjects;
+using ValueObjects;
 
 public class Peer
 {

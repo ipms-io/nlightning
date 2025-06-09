@@ -1,11 +1,10 @@
+using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Factories;
 
 using Domain.Protocol.Constants;
-using Domain.Protocol.Factories;
 using Domain.Protocol.Messages;
-using Domain.Protocol.Messages.Interfaces;
 using Interfaces;
 using Messages.Types;
 

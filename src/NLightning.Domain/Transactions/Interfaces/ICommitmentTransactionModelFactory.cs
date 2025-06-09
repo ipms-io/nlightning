@@ -1,9 +1,8 @@
-using NLightning.Domain.Transactions.Models;
-
 namespace NLightning.Domain.Transactions.Interfaces;
 
 using Channels.Models;
 using Enums;
+using Models;
 
 /// <summary>
 /// Interface for the factory that creates commitment transactions.

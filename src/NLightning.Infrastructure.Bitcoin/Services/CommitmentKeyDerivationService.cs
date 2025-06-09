@@ -1,9 +1,8 @@
-using NLightning.Domain.Bitcoin.Interfaces;
-using NLightning.Domain.Crypto.ValueObjects;
-
 namespace NLightning.Infrastructure.Bitcoin.Services;
 
+using Domain.Bitcoin.Interfaces;
 using Domain.Channels.ValueObjects;
+using Domain.Crypto.ValueObjects;
 using Domain.Protocol.Interfaces;
 
 public class CommitmentKeyDerivationService : ICommitmentKeyDerivationService

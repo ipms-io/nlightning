@@ -1,7 +1,6 @@
-using NLightning.Domain.Channels.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Tlv;
 
+using Channels.ValueObjects;
 using Constants;
 
 /// <summary>

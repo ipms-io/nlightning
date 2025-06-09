@@ -1,9 +1,10 @@
+using NLightning.Domain.Protocol.Interfaces;
+
 namespace NLightning.Application.Channels.Handlers.Interfaces;
 
 using Domain.Channels.Enums;
 using Domain.Crypto.ValueObjects;
 using Domain.Node.Options;
-using Domain.Protocol.Messages.Interfaces;
 
 /// <summary>
 /// Base interface for all channel message handlers

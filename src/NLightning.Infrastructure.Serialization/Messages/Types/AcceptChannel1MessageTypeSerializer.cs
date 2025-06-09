@@ -1,12 +1,11 @@
 using System.Runtime.Serialization;
+using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Messages.Types;
 
 using Domain.Protocol.Constants;
-using Domain.Protocol.Factories;
 using Domain.Protocol.Messages;
-using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Tlv;
 using Exceptions;
@@ -34,7 +33,7 @@ public class AcceptChannel1MessageTypeSerializer : IMessageTypeSerializer<Accept
 
         // Get the payload serializer
         var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type)
-                                    ?? throw new SerializationException("No serializer found for payload type");
+                                 ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
 
         // Serialize the TLV stream
@@ -53,9 +52,9 @@ public class AcceptChannel1MessageTypeSerializer : IMessageTypeSerializer<Accept
         {
             // Deserialize payload
             var payloadSerializer = _payloadSerializerFactory.GetSerializer<AcceptChannel1Payload>()
-                                    ?? throw new SerializationException("No serializer found for payload type");
+                                 ?? throw new SerializationException("No serializer found for payload type");
             var payload = await payloadSerializer.DeserializeAsync(stream)
-                          ?? throw new SerializationException("Error serializing payload");
+                       ?? throw new SerializationException("Error serializing payload");
 
             // Deserialize extension
             if (stream.Position >= stream.Length)
@@ -69,7 +68,7 @@ public class AcceptChannel1MessageTypeSerializer : IMessageTypeSerializer<Accept
             if (extension.TryGetTlv(TlvConstants.UpfrontShutdownScript, out var baseUpfrontShutdownTlv))
             {
                 var tlvConverter = _tlvConverterFactory.GetConverter<UpfrontShutdownScriptTlv>()
-                                   ?? throw new SerializationException(
+                                ?? throw new SerializationException(
                                        $"No serializer found for tlv type {nameof(UpfrontShutdownScriptTlv)}");
                 upfrontShutdownScriptTlv = tlvConverter.ConvertFromBase(baseUpfrontShutdownTlv!);
             }
@@ -79,7 +78,7 @@ public class AcceptChannel1MessageTypeSerializer : IMessageTypeSerializer<Accept
             {
                 var tlvConverter =
                     _tlvConverterFactory.GetConverter<ChannelTypeTlv>()
-                    ?? throw new SerializationException($"No serializer found for tlv type {nameof(ChannelTypeTlv)}");
+                 ?? throw new SerializationException($"No serializer found for tlv type {nameof(ChannelTypeTlv)}");
                 channelTypeTlv = tlvConverter.ConvertFromBase(baseChannelTypeTlv!);
             }
 
@@ -90,6 +89,7 @@ public class AcceptChannel1MessageTypeSerializer : IMessageTypeSerializer<Accept
             throw new MessageSerializationException("Error deserializing AcceptChannel1Message", e);
         }
     }
+
     async Task<IMessage> IMessageTypeSerializer.DeserializeAsync(Stream stream)
     {
         return await DeserializeAsync(stream);

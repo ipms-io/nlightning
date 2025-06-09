@@ -1,10 +1,10 @@
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Money;
-using NLightning.Domain.Transactions.Enums;
-using NLightning.Domain.Transactions.Interfaces;
-
 namespace NLightning.Domain.Transactions.Outputs;
+
+using Bitcoin.ValueObjects;
+using Crypto.ValueObjects;
+using Enums;
+using Interfaces;
+using Money;
 
 /// <summary>
 /// Represents the information needed to construct a to_remote output in a commitment transaction.

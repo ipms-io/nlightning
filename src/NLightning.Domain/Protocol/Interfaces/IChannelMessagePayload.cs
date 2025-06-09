@@ -1,6 +1,7 @@
-using NLightning.Domain.Channels.ValueObjects;
+namespace NLightning.Domain.Protocol.Interfaces;
 
-namespace NLightning.Domain.Protocol.Payloads.Interfaces;
+using Channels.ValueObjects;
+
 public interface IChannelMessagePayload : IMessagePayload
 {
     ChannelId ChannelId { get; }

@@ -1,7 +1,7 @@
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-
 namespace NLightning.Domain.Transactions.Outputs;
+
+using Channels.ValueObjects;
+using Crypto.ValueObjects;
 
 /// <summary>
 /// Represents the information needed to construct an offered HTLC output in a commitment transaction.
@@ -15,5 +15,6 @@ public class OfferedHtlcOutputInfo : HtlcOutputInfo
     public OfferedHtlcOutputInfo(Htlc htlc, CompactPubKey localHtlcPubKey, CompactPubKey remoteHtlcPubKey,
                                  CompactPubKey revocationPubKey)
         : base(htlc, localHtlcPubKey, remoteHtlcPubKey, revocationPubKey, true)
-    { }
+    {
+    }
 }

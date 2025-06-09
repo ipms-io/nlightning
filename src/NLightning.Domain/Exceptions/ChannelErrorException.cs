@@ -1,7 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
-using NLightning.Domain.Channels.ValueObjects;
 
 namespace NLightning.Domain.Exceptions;
+
+using Channels.ValueObjects;
+
 /// <summary>
 /// Represents an exception that is thrown when a channel error occurs.
 /// </summary>
@@ -30,6 +32,7 @@ public class ChannelErrorException : ErrorException
         ChannelId = channelId;
         PeerMessage = peerMessage;
     }
+
     public ChannelErrorException(string message, ChannelId? channelId, Exception innerException,
                                  string? peerMessage = null)
         : base(message, innerException)

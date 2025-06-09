@@ -1,7 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using NLightning.Domain.Money;
 
 namespace NLightning.Domain.Transactions.Constants;
+
+using Money;
 
 [ExcludeFromCodeCoverage]
 public static class TransactionConstants

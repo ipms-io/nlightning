@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Application.Node.Services;
 
@@ -8,7 +9,6 @@ using Domain.Exceptions;
 using Domain.Node.Options;
 using Domain.Protocol.Constants;
 using Domain.Protocol.Messages;
-using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Tlv;
 using Interfaces;
 

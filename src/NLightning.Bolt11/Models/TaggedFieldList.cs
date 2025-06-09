@@ -1,9 +1,9 @@
 using System.Diagnostics;
-using NLightning.Domain.Protocol.ValueObjects;
-using NLightning.Domain.Utils;
 
 namespace NLightning.Bolt11.Models;
 
+using Domain.Protocol.ValueObjects;
+using Domain.Utils;
 using Enums;
 using Factories;
 using Interfaces;
@@ -26,21 +26,25 @@ internal class TaggedFieldList : List<ITaggedField>
         // Check for uniqueness
         if (this.Any(x => x.Type.Equals(taggedField.Type)) && taggedField.Type != TaggedFieldTypes.FallbackAddress)
         {
-            throw new ArgumentException($"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
+            throw new ArgumentException(
+                $"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
         }
 
         switch (taggedField.Type)
         {
             case TaggedFieldTypes.Description when this.Any(x => x.Type.Equals(TaggedFieldTypes.DescriptionHash)):
-                throw new ArgumentException($"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
+                throw new ArgumentException(
+                    $"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
             case TaggedFieldTypes.DescriptionHash when this.Any(x => x.Type.Equals(TaggedFieldTypes.Description)):
-                throw new ArgumentException($"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
+                throw new ArgumentException(
+                    $"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
             default:
                 base.Add(taggedField);
                 if (_shouldInvokeChangedEvent)
                 {
                     OnChanged();
                 }
+
                 break;
         }
     }
@@ -162,7 +166,8 @@ internal class TaggedFieldList : List<ITaggedField>
             {
                 try
                 {
-                    var taggedField = TaggedFieldFactory.CreateTaggedFieldFromBitReader(type, bitReader, length, bitcoinNetwork);
+                    var taggedField =
+                        TaggedFieldFactory.CreateTaggedFieldFromBitReader(type, bitReader, length, bitcoinNetwork);
                     if (taggedField.IsValid())
                     {
                         try
@@ -235,8 +240,8 @@ internal class TaggedFieldList : List<ITaggedField>
     {
         var taggedFields = this.Where(x => x.Type.Equals(taggedFieldType)).ToList();
         return taggedFields.Count == 0
-            ? null
-            : taggedFields.Cast<T>().ToList();
+                   ? null
+                   : taggedFields.Cast<T>().ToList();
     }
 
     private void OnChanged()

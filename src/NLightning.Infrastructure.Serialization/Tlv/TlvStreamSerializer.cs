@@ -1,9 +1,9 @@
 using System.Runtime.Serialization;
+using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Tlv;
 
-using Domain.Protocol.Factories;
 using Domain.Protocol.Models;
 using Domain.Protocol.Tlv;
 using Interfaces;

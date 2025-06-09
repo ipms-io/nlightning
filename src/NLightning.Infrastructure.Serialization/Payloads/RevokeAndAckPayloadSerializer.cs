@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Runtime.Serialization;
+using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
@@ -7,7 +8,6 @@ using Domain.Channels.ValueObjects;
 using Domain.Crypto.Constants;
 using Domain.Crypto.ValueObjects;
 using Domain.Protocol.Payloads;
-using Domain.Protocol.Payloads.Interfaces;
 using Domain.Serialization.Interfaces;
 using Exceptions;
 

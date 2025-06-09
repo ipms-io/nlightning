@@ -1,8 +1,7 @@
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
+using Crypto.ValueObjects;
 using Interfaces;
 
 /// <summary>
@@ -12,9 +11,12 @@ using Interfaces;
 /// Initializes a new instance of the ChannelReestablishPayload class.
 /// </remarks>
 /// <param name="channelId">The channel ID.</param>
-public class ChannelReestablishPayload(ChannelId channelId, CompactPubKey myCurrentPerCommitmentPoint,
-                                       ulong nextCommitmentNumber, ulong nextRevocationNumber,
-                                       ReadOnlyMemory<byte> yourLastPerCommitmentSecret) : IChannelMessagePayload
+public class ChannelReestablishPayload(
+    ChannelId channelId,
+    CompactPubKey myCurrentPerCommitmentPoint,
+    ulong nextCommitmentNumber,
+    ulong nextRevocationNumber,
+    ReadOnlyMemory<byte> yourLastPerCommitmentSecret) : IChannelMessagePayload
 {
     /// <summary>
     /// Gets the channel ID.

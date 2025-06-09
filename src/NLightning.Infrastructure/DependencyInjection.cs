@@ -1,18 +1,18 @@
 using Microsoft.Extensions.DependencyInjection;
-using NLightning.Application.Node.Interfaces;
-using NLightning.Domain.Crypto.Hashes;
-using NLightning.Domain.Protocol.Factories;
-using NLightning.Domain.Protocol.Interfaces;
-using NLightning.Infrastructure.Crypto.Hashes;
-using NLightning.Infrastructure.Node.Factories;
-using NLightning.Infrastructure.Node.Interfaces;
-using NLightning.Infrastructure.Node.Managers;
-using NLightning.Infrastructure.Protocol.Factories;
-using NLightning.Infrastructure.Transport.Factories;
-using NLightning.Infrastructure.Transport.Services;
-using NLightning.Node.Interfaces;
 
 namespace NLightning.Infrastructure;
+
+using Application.Node.Interfaces;
+using Crypto.Hashes;
+using Domain.Crypto.Hashes;
+using Domain.Protocol.Interfaces;
+using Node.Factories;
+using Node.Interfaces;
+using Node.Managers;
+using Protocol.Factories;
+using Transport.Factories;
+using Transport.Interfaces;
+using Transport.Services;
 
 public static class DependencyInjection
 {

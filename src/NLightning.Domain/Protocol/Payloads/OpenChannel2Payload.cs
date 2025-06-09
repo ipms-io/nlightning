@@ -1,9 +1,7 @@
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
+using Crypto.ValueObjects;
 using Interfaces;
 using Money;
 using ValueObjects;
@@ -14,13 +12,26 @@ using ValueObjects;
 /// <remarks>
 /// Initializes a new instance of the OpenChannel2Payload class.
 /// </remarks>
-public class OpenChannel2Payload(ChainHash chainHash, ChannelFlags channelFlags, uint commitmentFeeRatePerKw,
-    CompactPubKey delayedPaymentBasepoint, LightningMoney dustLimitAmount,
-    CompactPubKey firstPerCommitmentPoint, ulong fundingAmount, uint fundingFeeRatePerKw,
-    CompactPubKey fundingPubKey, CompactPubKey htlcBasepoint, LightningMoney htlcMinimumAmount,
-                                 uint locktime, ushort maxAcceptedHtlcs, LightningMoney maxHtlcValueInFlight,
-    CompactPubKey paymentBasepoint, CompactPubKey revocationBasepoint, CompactPubKey secondPerCommitmentPoint,
-                                 ushort toSelfDelay, ChannelId channelId) : IChannelMessagePayload
+public class OpenChannel2Payload(
+    ChainHash chainHash,
+    ChannelFlags channelFlags,
+    uint commitmentFeeRatePerKw,
+    CompactPubKey delayedPaymentBasepoint,
+    LightningMoney dustLimitAmount,
+    CompactPubKey firstPerCommitmentPoint,
+    ulong fundingAmount,
+    uint fundingFeeRatePerKw,
+    CompactPubKey fundingPubKey,
+    CompactPubKey htlcBasepoint,
+    LightningMoney htlcMinimumAmount,
+    uint locktime,
+    ushort maxAcceptedHtlcs,
+    LightningMoney maxHtlcValueInFlight,
+    CompactPubKey paymentBasepoint,
+    CompactPubKey revocationBasepoint,
+    CompactPubKey secondPerCommitmentPoint,
+    ushort toSelfDelay,
+    ChannelId channelId) : IChannelMessagePayload
 {
     /// <summary>
     /// The chain_hash value denotes the exact blockchain that the opened channel will reside within.

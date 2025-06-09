@@ -1,16 +1,15 @@
 using Microsoft.Extensions.Logging;
-using NLightning.Application.Node.Interfaces;
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Exceptions;
-using NLightning.Domain.Protocol.Constants;
-using NLightning.Domain.Protocol.Interfaces;
-using NLightning.Domain.Protocol.Messages;
-using NLightning.Domain.Protocol.Messages.Interfaces;
-using NLightning.Domain.Protocol.Payloads;
-using NLightning.Domain.Protocol.Services;
 
 namespace NLightning.Infrastructure.Node.Services;
+
+using Application.Node.Interfaces;
+using Domain.Channels.ValueObjects;
+using Domain.Crypto.ValueObjects;
+using Domain.Exceptions;
+using Domain.Protocol.Constants;
+using Domain.Protocol.Interfaces;
+using Domain.Protocol.Messages;
+using Domain.Protocol.Payloads;
 
 /// <summary>
 /// Service for communication with a single peer.
@@ -48,7 +47,8 @@ public class PeerCommunicationService : IPeerCommunicationService
     /// <param name="peerCompactPubKey">The peer's public key.</param>
     /// <param name="pingPongService">The ping pong service.</param>
     public PeerCommunicationService(ILogger<PeerCommunicationService> logger, IMessageService messageService,
-        IMessageFactory messageFactory, CompactPubKey peerCompactPubKey, IPingPongService pingPongService)
+                                    IMessageFactory messageFactory, CompactPubKey peerCompactPubKey,
+                                    IPingPongService pingPongService)
     {
         _logger = logger;
         _messageService = messageService;

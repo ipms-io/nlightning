@@ -1,7 +1,7 @@
-using NLightning.Domain.Money;
-using NLightning.Domain.Protocol.Constants;
-
 namespace NLightning.Domain.Protocol.Tlv;
+
+using Constants;
+using Money;
 
 /// <summary>
 /// Fee Range TLV.

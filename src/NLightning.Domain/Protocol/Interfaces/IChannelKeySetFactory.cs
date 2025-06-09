@@ -1,7 +1,7 @@
-using NLightning.Domain.Channels.Models;
-using NLightning.Domain.Protocol.Payloads;
-
 namespace NLightning.Domain.Protocol.Interfaces;
+
+using Channels.Models;
+using Payloads;
 
 public interface IChannelKeySetFactory
 {

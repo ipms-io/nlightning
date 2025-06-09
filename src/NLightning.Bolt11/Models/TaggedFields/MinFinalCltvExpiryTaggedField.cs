@@ -1,8 +1,8 @@
 using System.Numerics;
-using NLightning.Domain.Utils;
 
 namespace NLightning.Bolt11.Models.TaggedFields;
 
+using Domain.Utils;
 using Enums;
 using Interfaces;
 
@@ -55,7 +55,8 @@ internal sealed class MinFinalCltvExpiryTaggedField : ITaggedField
     {
         if (length <= 0)
         {
-            throw new ArgumentException("Invalid length for MinFinalCltvExpiryTaggedField. Length must be greater than 0", nameof(length));
+            throw new ArgumentException(
+                "Invalid length for MinFinalCltvExpiryTaggedField. Length must be greater than 0", nameof(length));
         }
 
         // Read the data from the BitReader

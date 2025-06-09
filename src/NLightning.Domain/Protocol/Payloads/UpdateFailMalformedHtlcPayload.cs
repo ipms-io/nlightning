@@ -1,7 +1,6 @@
-using NLightning.Domain.Channels.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
 using Interfaces;
 
 /// <summary>
@@ -10,8 +9,11 @@ using Interfaces;
 /// <remarks>
 /// Initializes a new instance of the UpdateFailMalformedHtlcPayload class.
 /// </remarks>
-public class UpdateFailMalformedHtlcPayload(ChannelId channelId, ushort failureCode, ulong id,
-                                            ReadOnlyMemory<byte> sha256OfOnion) : IChannelMessagePayload
+public class UpdateFailMalformedHtlcPayload(
+    ChannelId channelId,
+    ushort failureCode,
+    ulong id,
+    ReadOnlyMemory<byte> sha256OfOnion) : IChannelMessagePayload
 {
     /// <summary>
     /// The channel_id this message refers to

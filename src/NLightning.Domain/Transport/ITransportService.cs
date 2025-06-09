@@ -1,8 +1,7 @@
-using NLightning.Domain.Crypto.ValueObjects;
-
 namespace NLightning.Domain.Transport;
 
-using Protocol.Messages.Interfaces;
+using Crypto.ValueObjects;
+using Protocol.Interfaces;
 
 public interface ITransportService : IDisposable
 {

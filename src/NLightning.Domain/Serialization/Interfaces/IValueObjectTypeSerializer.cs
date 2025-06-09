@@ -1,6 +1,6 @@
-using NLightning.Domain.Interfaces;
-
 namespace NLightning.Domain.Serialization.Interfaces;
+
+using Domain.Interfaces;
 
 /// <summary>
 /// Interface for serializers that handle specific value object types

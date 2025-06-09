@@ -5,7 +5,6 @@ namespace NLightning.Infrastructure.Bitcoin;
 using Application.Bitcoin.Interfaces;
 using Builders;
 using Crypto.Functions;
-using Domain.Protocol.Factories;
 using Domain.Protocol.Interfaces;
 using Infrastructure.Crypto.Interfaces;
 using Protocol.Factories;

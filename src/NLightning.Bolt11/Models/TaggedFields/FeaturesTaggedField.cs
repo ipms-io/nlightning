@@ -1,8 +1,7 @@
-using NLightning.Domain.Utils;
-
 namespace NLightning.Bolt11.Models.TaggedFields;
 
 using Domain.Node;
+using Domain.Utils;
 using Enums;
 using Interfaces;
 
@@ -55,7 +54,8 @@ internal sealed class FeaturesTaggedField : ITaggedField
     {
         if (length <= 0)
         {
-            throw new ArgumentException("Invalid length for FeaturesTaggedField. Length must be greater than 0", nameof(length));
+            throw new ArgumentException("Invalid length for FeaturesTaggedField. Length must be greater than 0",
+                                        nameof(length));
         }
 
         var shouldPad = length * 5 / 8 == (length * 5 - 7) / 8;

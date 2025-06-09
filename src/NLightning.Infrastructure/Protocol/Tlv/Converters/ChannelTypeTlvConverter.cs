@@ -3,8 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
 using Domain.Protocol.Constants;
+using Domain.Protocol.Interfaces;
 using Domain.Protocol.Tlv;
-using Domain.Protocol.Tlv.Converters;
 
 public class ChannelTypeTlvConverter : ITlvConverter<ChannelTypeTlv>
 {
@@ -40,6 +40,6 @@ public class ChannelTypeTlvConverter : ITlvConverter<ChannelTypeTlv>
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
         return ConvertToBase(tlv as ChannelTypeTlv
-                             ?? throw new InvalidCastException($"Error converting BaseTlv to {nameof(ChannelTypeTlv)}"));
+                          ?? throw new InvalidCastException($"Error converting BaseTlv to {nameof(ChannelTypeTlv)}"));
     }
 }

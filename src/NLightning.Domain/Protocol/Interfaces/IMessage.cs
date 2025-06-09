@@ -1,8 +1,7 @@
-namespace NLightning.Domain.Protocol.Messages.Interfaces;
+namespace NLightning.Domain.Protocol.Interfaces;
 
 using Constants;
 using Models;
-using Payloads.Interfaces;
 
 /// <summary>
 /// Interface for a message.

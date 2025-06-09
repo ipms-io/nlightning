@@ -1,8 +1,7 @@
-using NLightning.Domain.Interfaces;
+namespace NLightning.Domain.Channels.ValueObjects;
 
-namespace NLightning.Domain.ValueObjects;
-
-using Enums;
+using Domain.Enums;
+using Domain.Interfaces;
 
 /// <summary>
 /// Only the least-significant bit of channel_flags is currently defined: announce_channel. This indicates whether
@@ -18,15 +17,18 @@ public readonly record struct ChannelFlags : IValueObject, IEquatable<ChannelFla
     {
         _value = value;
     }
+
     public ChannelFlags(ChannelFlag value)
     {
         _value = (byte)value;
     }
 
     #region Implicit Conversions
+
     public static implicit operator byte(ChannelFlags c) => c._value;
     public static implicit operator ChannelFlags(byte value) => new(value);
     public static implicit operator byte[](ChannelFlags c) => [c._value];
     public static implicit operator ChannelFlags(byte[] value) => new(value[0]);
+
     #endregion
 }

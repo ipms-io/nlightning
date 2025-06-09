@@ -1,8 +1,8 @@
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Money;
-using NLightning.Domain.Transactions.Enums;
-
 namespace NLightning.Domain.Transactions.Interfaces;
+
+using Bitcoin.ValueObjects;
+using Enums;
+using Money;
 
 /// <summary>
 /// Represents the information needed to construct an output in a transaction.

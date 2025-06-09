@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using NBitcoin;
-using NLightning.Infrastructure.Crypto.Hashes;
 
 namespace NLightning.Infrastructure.Bitcoin.Outputs;
 
@@ -8,6 +7,7 @@ using Crypto.Hashes;
 using Domain.Crypto.Constants;
 using Domain.Money;
 using Exceptions;
+using Infrastructure.Crypto.Hashes;
 
 /// <summary>
 /// Represents an offered HTLC output in a commitment transaction.
@@ -44,7 +44,8 @@ public class OfferedHtlcOutput : BaseHtlcOutput
         // Hash the paymentHash
         var paymentHashRipemd160 = Ripemd160.Hash(paymentHash.Span);
 
-        List<Op> ops = [
+        List<Op> ops =
+        [
             OpcodeType.OP_DUP,
             OpcodeType.OP_HASH160,
             Op.GetPushOp(revocationPubKeyHashRipemd160),

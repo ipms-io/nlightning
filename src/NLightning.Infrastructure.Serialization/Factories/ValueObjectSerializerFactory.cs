@@ -6,7 +6,6 @@ namespace NLightning.Infrastructure.Serialization.Factories;
 
 using Domain.Channels.ValueObjects;
 using Domain.Protocol.ValueObjects;
-using Domain.ValueObjects;
 using ValueObjects;
 
 public class ValueObjectSerializerFactory : IValueObjectSerializerFactory

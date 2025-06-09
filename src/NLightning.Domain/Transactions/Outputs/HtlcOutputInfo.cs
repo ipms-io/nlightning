@@ -1,11 +1,11 @@
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Money;
-using NLightning.Domain.Transactions.Enums;
-using NLightning.Domain.Transactions.Interfaces;
-
 namespace NLightning.Domain.Transactions.Outputs;
+
+using Bitcoin.ValueObjects;
+using Channels.ValueObjects;
+using Crypto.ValueObjects;
+using Enums;
+using Interfaces;
+using Money;
 
 /// <summary>
 /// Base class for HTLC output information.

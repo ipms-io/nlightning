@@ -1,6 +1,6 @@
-using NLightning.Domain.Money;
-
 namespace NLightning.Domain.Bitcoin.Interfaces;
+
+using Money;
 
 public interface IFeeService
 {

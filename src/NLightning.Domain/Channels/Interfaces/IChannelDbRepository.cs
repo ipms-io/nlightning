@@ -1,7 +1,7 @@
-using NLightning.Domain.Channels.Models;
-using NLightning.Domain.Channels.ValueObjects;
-
 namespace NLightning.Domain.Channels.Interfaces;
+
+using Models;
+using ValueObjects;
 
 public interface IChannelDbRepository
 {

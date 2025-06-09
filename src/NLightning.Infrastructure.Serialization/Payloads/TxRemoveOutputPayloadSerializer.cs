@@ -1,13 +1,13 @@
 using System.Buffers;
 using System.Runtime.Serialization;
 using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
 using Converters;
 using Domain.Protocol.Payloads;
-using Domain.Protocol.Payloads.Interfaces;
 using Exceptions;
 
 public class TxRemoveOutputPayloadSerializer : IPayloadSerializer<TxRemoveOutputPayload>
@@ -27,7 +27,7 @@ public class TxRemoveOutputPayloadSerializer : IPayloadSerializer<TxRemoveOutput
         // Get the value object serializer
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(txRemoveOutputPayload.ChannelId, stream);
 
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(txRemoveOutputPayload.SerialId));
@@ -42,7 +42,7 @@ public class TxRemoveOutputPayloadSerializer : IPayloadSerializer<TxRemoveOutput
             // Get the value object serializer
             var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);

@@ -3,17 +3,18 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json;
 using NBitcoin;
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Crypto.Constants;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Protocol.Interfaces;
-using NLightning.Domain.Protocol.ValueObjects;
-using NLightning.Infrastructure.Crypto.Ciphers;
-using NLightning.Infrastructure.Crypto.Factories;
-using NLightning.Infrastructure.Crypto.Hashes;
-using NLightning.Infrastructure.Node.Models;
 
 namespace NLightning.Infrastructure.Bitcoin.Managers;
+
+using Domain.Bitcoin.ValueObjects;
+using Domain.Crypto.Constants;
+using Domain.Crypto.ValueObjects;
+using Domain.Protocol.Interfaces;
+using Domain.Protocol.ValueObjects;
+using Infrastructure.Crypto.Ciphers;
+using Infrastructure.Crypto.Factories;
+using Infrastructure.Crypto.Hashes;
+using Node.Models;
 
 /// <summary>
 /// Manages a securely stored private key using protected memory allocation.

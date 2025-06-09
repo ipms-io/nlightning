@@ -1,10 +1,9 @@
 using System.Buffers;
+using NLightning.Domain.Channels.ValueObjects;
 using NLightning.Domain.Interfaces;
 using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.ValueObjects;
-
-using Domain.ValueObjects;
 
 public class ChannelFlagTypeSerializer : IValueObjectTypeSerializer<ChannelFlags>
 {

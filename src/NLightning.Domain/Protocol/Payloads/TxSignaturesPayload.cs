@@ -1,8 +1,7 @@
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Channels.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Bitcoin.ValueObjects;
+using Channels.ValueObjects;
 using Interfaces;
 using Messages;
 

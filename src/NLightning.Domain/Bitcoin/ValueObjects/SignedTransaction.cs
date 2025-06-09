@@ -1,6 +1,6 @@
-using NLightning.Domain.Crypto.ValueObjects;
-
 namespace NLightning.Domain.Bitcoin.ValueObjects;
+
+using Crypto.ValueObjects;
 
 /// <summary>
 /// Represents a fully signed Bitcoin transaction in a domain-agnostic way.

@@ -1,18 +1,19 @@
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
-using NLightning.Application.Channels.Handlers.Interfaces;
-using NLightning.Domain.Channels.Enums;
-using NLightning.Domain.Channels.Interfaces;
-using NLightning.Domain.Channels.Models;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Enums;
-using NLightning.Domain.Exceptions;
-using NLightning.Domain.Node.Options;
-using NLightning.Domain.Persistence.Interfaces;
-using NLightning.Domain.Protocol.Messages;
-using NLightning.Domain.Protocol.Messages.Interfaces;
+using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Application.Channels.Handlers;
+
+using Domain.Channels.Enums;
+using Domain.Channels.Interfaces;
+using Domain.Channels.Models;
+using Domain.Crypto.ValueObjects;
+using Domain.Enums;
+using Domain.Exceptions;
+using Domain.Node.Options;
+using Domain.Persistence.Interfaces;
+using Domain.Protocol.Messages;
+using Interfaces;
 
 public class ChannelReadyMessageHandler : IChannelMessageHandler<ChannelReadyMessage>
 {

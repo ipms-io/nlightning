@@ -1,6 +1,6 @@
-using NLightning.Domain.Crypto.ValueObjects;
-
 namespace NLightning.Application.Node.Interfaces;
+
+using Domain.Crypto.ValueObjects;
 
 /// <summary>
 /// Interface for the peer application service.

@@ -1,7 +1,7 @@
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-
 namespace NLightning.Domain.Protocol.Interfaces;
+
+using Bitcoin.ValueObjects;
+using Crypto.ValueObjects;
 
 public interface ISecureKeyManager
 {

@@ -1,6 +1,6 @@
-using NLightning.Domain.Interfaces;
-
 namespace NLightning.Domain.Channels.ValueObjects;
+
+using Domain.Interfaces;
 
 /// <summary>
 /// Represents a short channel id.

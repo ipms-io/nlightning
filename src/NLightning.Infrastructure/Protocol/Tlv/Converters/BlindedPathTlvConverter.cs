@@ -4,8 +4,8 @@ namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
 using Domain.Crypto.ValueObjects;
 using Domain.Protocol.Constants;
+using Domain.Protocol.Interfaces;
 using Domain.Protocol.Tlv;
-using Domain.Protocol.Tlv.Converters;
 
 public class BlindedPathTlvConverter : ITlvConverter<BlindedPathTlv>
 {

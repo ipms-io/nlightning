@@ -1,7 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using NLightning.Domain.Protocol.ValueObjects;
 
 namespace NLightning.Domain.Protocol.Constants;
+
+using ValueObjects;
 
 /// <summary>
 /// Constants for TLV.

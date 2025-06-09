@@ -1,10 +1,10 @@
 using System.Runtime.Serialization;
+using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Messages.Types;
 
 using Domain.Protocol.Messages;
-using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Payloads;
 using Exceptions;
 
@@ -24,7 +24,7 @@ public class TxRemoveInputMessageTypeSerializer : IMessageTypeSerializer<TxRemov
 
         // Get the payload serializer
         var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type)
-                                    ?? throw new SerializationException("No serializer found for payload type");
+                                 ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
     }
 
@@ -40,9 +40,9 @@ public class TxRemoveInputMessageTypeSerializer : IMessageTypeSerializer<TxRemov
         {
             // Deserialize payload
             var payloadSerializer = _payloadSerializerFactory.GetSerializer<TxRemoveInputPayload>()
-                                    ?? throw new SerializationException("No serializer found for payload type");
+                                 ?? throw new SerializationException("No serializer found for payload type");
             var payload = await payloadSerializer.DeserializeAsync(stream)
-                          ?? throw new SerializationException("Error serializing payload");
+                       ?? throw new SerializationException("Error serializing payload");
 
             return new TxRemoveInputMessage(payload);
         }
@@ -51,6 +51,7 @@ public class TxRemoveInputMessageTypeSerializer : IMessageTypeSerializer<TxRemov
             throw new MessageSerializationException("Error deserializing TxRemoveInputMessage", e);
         }
     }
+
     async Task<IMessage> IMessageTypeSerializer.DeserializeAsync(Stream stream)
     {
         return await DeserializeAsync(stream);

@@ -1,14 +1,14 @@
 using System.Buffers;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
-using NLightning.Domain.Serialization.Interfaces;
-using NLightning.Infrastructure.Crypto.Interfaces;
 
 namespace NLightning.Infrastructure.Transport.Services;
 
+using Crypto.Interfaces;
 using Domain.Crypto.ValueObjects;
 using Domain.Exceptions;
-using Domain.Protocol.Messages.Interfaces;
+using Domain.Protocol.Interfaces;
+using Domain.Serialization.Interfaces;
 using Domain.Transport;
 using Exceptions;
 using Interfaces;
@@ -141,8 +141,9 @@ internal sealed class TransportService : ITransportService
         {
             throw new InvalidOperationException("Handshake not completed");
         }
+
         RemoteStaticPublicKey = _handshakeService.RemoteStaticPublicKey
-                                ?? throw new InvalidOperationException("RemoteStaticPublicKey is null");
+                             ?? throw new InvalidOperationException("RemoteStaticPublicKey is null");
 
         // Listen to messages and raise event
         _logger.LogTrace("Handshake completed, listening to messages");
@@ -250,6 +251,7 @@ internal sealed class TransportService : ITransportService
     }
 
     #region Dispose Pattern
+
     public void Dispose()
     {
         Dispose(true);
@@ -281,5 +283,6 @@ internal sealed class TransportService : ITransportService
     {
         Dispose(false);
     }
+
     #endregion
 }

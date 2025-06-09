@@ -1,7 +1,7 @@
-using NLightning.Domain.Protocol.Constants;
-using NLightning.Domain.Protocol.Payloads.Interfaces;
-
 namespace NLightning.Domain.Serialization.Interfaces;
+
+using Protocol.Constants;
+using Protocol.Interfaces;
 
 public interface IPayloadSerializerFactory
 {

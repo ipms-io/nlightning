@@ -1,11 +1,11 @@
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLightning.Application.Node.Interfaces;
-using NLightning.Domain.Crypto.ValueObjects;
 
 namespace NLightning.Infrastructure.Node.Managers;
 
+using Application.Node.Interfaces;
+using Domain.Crypto.ValueObjects;
 using Domain.Exceptions;
 using Domain.Node.Options;
 using Interfaces;

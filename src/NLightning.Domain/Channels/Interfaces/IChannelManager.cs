@@ -1,8 +1,9 @@
+using NLightning.Domain.Protocol.Interfaces;
+
 namespace NLightning.Domain.Channels.Interfaces;
 
 using Crypto.ValueObjects;
 using Node.Options;
-using Protocol.Messages.Interfaces;
 
 public interface IChannelManager
 {

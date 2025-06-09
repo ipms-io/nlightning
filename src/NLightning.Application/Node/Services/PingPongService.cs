@@ -1,12 +1,11 @@
 using Microsoft.Extensions.Options;
-using NLightning.Domain.Exceptions;
-using NLightning.Domain.Node.Options;
-using NLightning.Domain.Protocol.Interfaces;
-using NLightning.Domain.Protocol.Messages;
-using NLightning.Domain.Protocol.Messages.Interfaces;
-using NLightning.Domain.Protocol.Services;
 
 namespace NLightning.Application.Node.Services;
+
+using Domain.Exceptions;
+using Domain.Node.Options;
+using Domain.Protocol.Interfaces;
+using Domain.Protocol.Messages;
 
 /// <summary>
 /// Service for managing the ping pong protocol.
@@ -49,14 +48,14 @@ internal class PingPongService : IPingPongService
             PingMessageReadyEvent?.Invoke(this, _pingMessage);
 
             using var pongTimeoutTokenSource = CancellationTokenSource
-                .CreateLinkedTokenSource(cancellationToken,
-                                         new CancellationTokenSource(_nodeOptions.NetworkTimeout).Token);
+               .CreateLinkedTokenSource(cancellationToken,
+                                        new CancellationTokenSource(_nodeOptions.NetworkTimeout).Token);
 
             var task = await Task.WhenAny(_pongReceivedTaskSource.Task, Task.Delay(-1, pongTimeoutTokenSource.Token));
             if (task.IsFaulted)
             {
                 DisconnectEvent?
-                    .Invoke(this, new ConnectionException("Pong message not received within network timeout."));
+                   .Invoke(this, new ConnectionException("Pong message not received within network timeout."));
                 return;
             }
 

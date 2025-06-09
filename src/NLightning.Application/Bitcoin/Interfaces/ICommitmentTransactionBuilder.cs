@@ -1,7 +1,7 @@
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Transactions.Models;
-
 namespace NLightning.Application.Bitcoin.Interfaces;
+
+using Domain.Bitcoin.ValueObjects;
+using Domain.Transactions.Models;
 
 public interface ICommitmentTransactionBuilder
 {

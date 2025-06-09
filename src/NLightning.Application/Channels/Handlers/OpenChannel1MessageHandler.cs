@@ -9,7 +9,6 @@ using Domain.Exceptions;
 using Domain.Node.Options;
 using Domain.Protocol.Interfaces;
 using Domain.Protocol.Messages;
-using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Tlv;
 using Interfaces;
 

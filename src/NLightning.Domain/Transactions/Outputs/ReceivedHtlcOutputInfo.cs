@@ -1,7 +1,7 @@
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-
 namespace NLightning.Domain.Transactions.Outputs;
+
+using Channels.ValueObjects;
+using Crypto.ValueObjects;
 
 /// <summary>
 /// Represents the information needed to construct a received HTLC output in a commitment transaction.

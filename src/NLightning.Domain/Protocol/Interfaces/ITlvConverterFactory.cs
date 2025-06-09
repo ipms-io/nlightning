@@ -1,7 +1,6 @@
-namespace NLightning.Domain.Protocol.Factories;
+namespace NLightning.Domain.Protocol.Interfaces;
 
 using Tlv;
-using Tlv.Converters;
 
 public interface ITlvConverterFactory
 {

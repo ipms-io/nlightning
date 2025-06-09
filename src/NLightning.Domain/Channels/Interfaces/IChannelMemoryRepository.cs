@@ -1,7 +1,6 @@
-using NLightning.Domain.Crypto.ValueObjects;
-
 namespace NLightning.Domain.Channels.Interfaces;
 
+using Crypto.ValueObjects;
 using Enums;
 using Models;
 using ValueObjects;

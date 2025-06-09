@@ -1,8 +1,7 @@
-using NLightning.Domain.Protocol.ValueObjects;
-using NLightning.Domain.Utils;
-
 namespace NLightning.Bolt11.Factories;
 
+using Domain.Protocol.ValueObjects;
+using Domain.Utils;
 using Enums;
 using Interfaces;
 using Models.TaggedFields;
@@ -30,7 +29,8 @@ internal static class TaggedFieldFactory
             TaggedFieldTypes.RoutingInfo => RoutingInfoTaggedField.FromBitReader(bitReader, length),
             TaggedFieldTypes.Features => FeaturesTaggedField.FromBitReader(bitReader, length),
             TaggedFieldTypes.ExpiryTime => ExpiryTimeTaggedField.FromBitReader(bitReader, length),
-            TaggedFieldTypes.FallbackAddress => FallbackAddressTaggedField.FromBitReader(bitReader, length, bitcoinNetwork),
+            TaggedFieldTypes.FallbackAddress => FallbackAddressTaggedField.FromBitReader(
+                bitReader, length, bitcoinNetwork),
             TaggedFieldTypes.Description => DescriptionTaggedField.FromBitReader(bitReader, length),
             TaggedFieldTypes.PaymentSecret => PaymentSecretTaggedField.FromBitReader(bitReader, length),
             TaggedFieldTypes.PayeePubKey => PayeePubKeyTaggedField.FromBitReader(bitReader, length),

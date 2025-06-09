@@ -1,6 +1,4 @@
-namespace NLightning.Domain.Protocol.Messages.Interfaces;
-
-using Payloads.Interfaces;
+namespace NLightning.Domain.Protocol.Interfaces;
 
 public interface IChannelMessage : IMessage
 {
