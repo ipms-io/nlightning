@@ -140,7 +140,7 @@ public class Bolt3IntegrationTests
         {
             HasAnchorOutputs = false
         };
-        GenerateHtlcs(false);
+        GenerateHtlcs();
         var testLightningSigner = GetTestLightningSigner(nodeOptions);
         var bolt3CommitmentKeyDerivationService = new Bolt3TestCommitmentKeyDerivationService();
         var commitmentTransactionModelFactory =
@@ -172,7 +172,7 @@ public class Bolt3IntegrationTests
         {
             HasAnchorOutputs = false
         };
-        GenerateHtlcs(false);
+        GenerateHtlcs();
         var testLightningSigner = GetTestLightningSigner(nodeOptions);
         var bolt3CommitmentKeyDerivationService = new Bolt3TestCommitmentKeyDerivationService();
         var commitmentTransactionModelFactory =
@@ -205,7 +205,7 @@ public class Bolt3IntegrationTests
             HasAnchorOutputs = false,
             DustLimitAmount = LightningMoney.Satoshis(546)
         };
-        GenerateHtlcs(false);
+        GenerateHtlcs();
         var testLightningSigner = GetTestLightningSigner(nodeOptions);
         var bolt3CommitmentKeyDerivationService = new Bolt3TestCommitmentKeyDerivationService();
         var commitmentTransactionModelFactory =
@@ -238,7 +238,7 @@ public class Bolt3IntegrationTests
             HasAnchorOutputs = false,
             DustLimitAmount = LightningMoney.Satoshis(546)
         };
-        GenerateHtlcs(false);
+        GenerateHtlcs();
         var testLightningSigner = GetTestLightningSigner(nodeOptions);
         var bolt3CommitmentKeyDerivationService = new Bolt3TestCommitmentKeyDerivationService();
         var commitmentTransactionModelFactory =
@@ -271,7 +271,7 @@ public class Bolt3IntegrationTests
             HasAnchorOutputs = false,
             DustLimitAmount = LightningMoney.Satoshis(546)
         };
-        GenerateHtlcs(false);
+        GenerateHtlcs();
         var testLightningSigner = GetTestLightningSigner(nodeOptions);
         var bolt3CommitmentKeyDerivationService = new Bolt3TestCommitmentKeyDerivationService();
         var commitmentTransactionModelFactory =
@@ -304,7 +304,7 @@ public class Bolt3IntegrationTests
             HasAnchorOutputs = false,
             DustLimitAmount = LightningMoney.Satoshis(546)
         };
-        GenerateHtlcs(false);
+        GenerateHtlcs();
         var testLightningSigner = GetTestLightningSigner(nodeOptions);
         var bolt3CommitmentKeyDerivationService = new Bolt3TestCommitmentKeyDerivationService();
         var commitmentTransactionModelFactory =
@@ -337,7 +337,7 @@ public class Bolt3IntegrationTests
             HasAnchorOutputs = false,
             DustLimitAmount = LightningMoney.Satoshis(546)
         };
-        GenerateHtlcs(false);
+        GenerateHtlcs();
         var testLightningSigner = GetTestLightningSigner(nodeOptions);
         var bolt3CommitmentKeyDerivationService = new Bolt3TestCommitmentKeyDerivationService();
         var commitmentTransactionModelFactory =
@@ -370,7 +370,7 @@ public class Bolt3IntegrationTests
             HasAnchorOutputs = false,
             DustLimitAmount = LightningMoney.Satoshis(546)
         };
-        GenerateHtlcs(false);
+        GenerateHtlcs();
         var testLightningSigner = GetTestLightningSigner(nodeOptions);
         var bolt3CommitmentKeyDerivationService = new Bolt3TestCommitmentKeyDerivationService();
         var commitmentTransactionModelFactory =
@@ -403,7 +403,7 @@ public class Bolt3IntegrationTests
             HasAnchorOutputs = false,
             DustLimitAmount = LightningMoney.Satoshis(546)
         };
-        GenerateHtlcs(false);
+        GenerateHtlcs();
         var testLightningSigner = GetTestLightningSigner(nodeOptions);
         var bolt3CommitmentKeyDerivationService = new Bolt3TestCommitmentKeyDerivationService();
         var commitmentTransactionModelFactory =
@@ -436,7 +436,7 @@ public class Bolt3IntegrationTests
             HasAnchorOutputs = false,
             DustLimitAmount = LightningMoney.Satoshis(546)
         };
-        GenerateHtlcs(false);
+        GenerateHtlcs();
         var testLightningSigner = GetTestLightningSigner(nodeOptions);
         var bolt3CommitmentKeyDerivationService = new Bolt3TestCommitmentKeyDerivationService();
         var commitmentTransactionModelFactory =
@@ -469,7 +469,7 @@ public class Bolt3IntegrationTests
             HasAnchorOutputs = false,
             DustLimitAmount = LightningMoney.Satoshis(546)
         };
-        GenerateHtlcs(false);
+        GenerateHtlcs();
         var testLightningSigner = GetTestLightningSigner(nodeOptions);
         var bolt3CommitmentKeyDerivationService = new Bolt3TestCommitmentKeyDerivationService();
         var commitmentTransactionModelFactory =
@@ -502,7 +502,7 @@ public class Bolt3IntegrationTests
             HasAnchorOutputs = false,
             DustLimitAmount = LightningMoney.Satoshis(546)
         };
-        GenerateHtlcs(false);
+        GenerateHtlcs();
         var testLightningSigner = GetTestLightningSigner(nodeOptions);
         var bolt3CommitmentKeyDerivationService = new Bolt3TestCommitmentKeyDerivationService();
         var commitmentTransactionModelFactory =
@@ -535,7 +535,7 @@ public class Bolt3IntegrationTests
             HasAnchorOutputs = false,
             DustLimitAmount = LightningMoney.Satoshis(546)
         };
-        GenerateHtlcs(false);
+        GenerateHtlcs();
         var testLightningSigner = GetTestLightningSigner(nodeOptions);
         var bolt3CommitmentKeyDerivationService = new Bolt3TestCommitmentKeyDerivationService();
         var commitmentTransactionModelFactory =
@@ -568,7 +568,7 @@ public class Bolt3IntegrationTests
             HasAnchorOutputs = false,
             DustLimitAmount = LightningMoney.Satoshis(546)
         };
-        GenerateHtlcs(false);
+        GenerateHtlcs();
         var testLightningSigner = GetTestLightningSigner(nodeOptions);
         var bolt3CommitmentKeyDerivationService = new Bolt3TestCommitmentKeyDerivationService();
         var commitmentTransactionModelFactory =
@@ -601,7 +601,7 @@ public class Bolt3IntegrationTests
             HasAnchorOutputs = false,
             DustLimitAmount = LightningMoney.Satoshis(546)
         };
-        GenerateHtlcs(false);
+        GenerateHtlcs();
         var testLightningSigner = GetTestLightningSigner(nodeOptions);
         var bolt3CommitmentKeyDerivationService = new Bolt3TestCommitmentKeyDerivationService();
         var commitmentTransactionModelFactory =
@@ -1178,7 +1178,7 @@ public class Bolt3IntegrationTests
 
     #endregion
 
-    private void GenerateHtlcs(bool hasAnchorOutputs)
+    private void GenerateHtlcs()
     {
         _offeredHtlc2 = new Htlc(LightningMoney.Satoshis(2_000), null, HtlcDirection.Outgoing, 502, 2, 0,
                                  Bolt3AppendixCVectors.Htlc2PaymentHash, HtlcState.Offered);
