@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NLightning.Application.Bitcoin.Interfaces;
 using NLightning.Domain.Bitcoin.Interfaces;
 using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Infrastructure.Transport.Interfaces;
@@ -12,6 +13,7 @@ using Domain.Node.Options;
 
 public class NltgDaemonService : BackgroundService
 {
+    private readonly IBlockchainMonitor _blockchainMonitor;
     private readonly IConfiguration _configuration;
     private readonly IFeeService _feeService;
     private readonly ILogger<NltgDaemonService> _logger;
@@ -19,10 +21,11 @@ public class NltgDaemonService : BackgroundService
     private readonly ISecureKeyManager _secureKeyManager;
     private readonly ITcpListenerService _tcpListenerService;
 
-    public NltgDaemonService(IConfiguration configuration, IFeeService feeService, ILogger<NltgDaemonService> logger,
-                             IOptions<NodeOptions> nodeOptions, ISecureKeyManager secureKeyManager,
-                             ITcpListenerService tcpListenerService)
+    public NltgDaemonService(IBlockchainMonitor blockchainMonitor, IConfiguration configuration, IFeeService feeService,
+                             ILogger<NltgDaemonService> logger, IOptions<NodeOptions> nodeOptions,
+                             ISecureKeyManager secureKeyManager, ITcpListenerService tcpListenerService)
     {
+        _blockchainMonitor = blockchainMonitor;
         _configuration = configuration;
         _feeService = feeService;
         _logger = logger;
@@ -49,13 +52,14 @@ public class NltgDaemonService : BackgroundService
             // Start the fee service
             await _feeService.StartAsync(stoppingToken);
 
+            // Start the blockchain monitor service
+            await _blockchainMonitor.StartAsync(stoppingToken);
+
             // Start listening for connections
             await _tcpListenerService.StartAsync(stoppingToken);
 
             while (!stoppingToken.IsCancellationRequested)
-            {
                 await Task.Delay(1000, stoppingToken);
-            }
         }
         catch (OperationCanceledException)
         {
@@ -67,7 +71,8 @@ public class NltgDaemonService : BackgroundService
     {
         _logger.LogInformation("NLTG shutdown requested");
 
-        await Task.WhenAll(_feeService.StopAsync(), _tcpListenerService.StopAsync(), base.StopAsync(cancellationToken));
+        await Task.WhenAll(_blockchainMonitor.StopAsync(), _feeService.StopAsync(), _tcpListenerService.StopAsync(),
+                           base.StopAsync(cancellationToken));
 
         _logger.LogInformation("NLTG daemon service stopped");
     }

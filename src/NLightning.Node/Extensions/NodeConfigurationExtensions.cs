@@ -21,7 +21,7 @@ public static class NodeConfigurationExtensions
                })
               .UseSerilog((_, _, loggerConfig) =>
                {
-                   // Read from current configuration
+                   // Read from the current configuration
                    loggerConfig
                       .ReadFrom.Configuration(configuration)
                       .Enrich.With<ClassNameEnricher>();
@@ -43,7 +43,7 @@ public static class NodeConfigurationExtensions
                })
               .UseSerilog((_, _, loggerConfig) =>
                {
-                   // Read from current configuration
+                   // Read from the current configuration
                    loggerConfig
                       .ReadFrom.Configuration(config)
                       .Enrich.With<ClassNameEnricher>();
@@ -59,7 +59,7 @@ public static class NodeConfigurationExtensions
                            .Build();
         var network = initialConfig["network"] ?? initialConfig["n"] ?? "mainnet";
 
-        // Check for custom config path first
+        // Check for a custom config path first
         var configPath = initialConfig["config"] ?? initialConfig["c"];
         var usingCustomConfig = !string.IsNullOrEmpty(configPath);
 
@@ -167,6 +167,14 @@ public static class NodeConfigurationExtensions
                    "Provider": "Sqlite",
                    "ConnectionString": "Data Source=nltg.db;Cache=Shared",
                    "RunMigrations": false
+                 },
+                 "Bitcoin": {
+                   "RpcEndpoint": "http://localhost:8332",
+                   "RpcUser": "bitcoinrpc",
+                   "RpcPassword": "your_rpc_password",
+                   "ZmqHost": "bitcoinzmq",
+                   "ZmqBlockPort": 8334,
+                   "ZmqTxPort": 8335
                  }
                }
                """;

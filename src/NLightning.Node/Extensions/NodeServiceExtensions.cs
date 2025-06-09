@@ -93,6 +93,7 @@ public static class NodeServiceExtensions
             // Transient services (new instance each time)
 
             // Register options with values from configuration
+            services.AddOptions<BitcoinOptions>().BindConfiguration("Bitcoin").ValidateOnStart();
             services.AddOptions<FeeEstimationOptions>().BindConfiguration("FeeEstimation").ValidateOnStart();
             services.AddOptions<NodeOptions>()
                     .BindConfiguration("Node")

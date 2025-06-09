@@ -4,6 +4,7 @@ using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Application.Channels.Managers;
 
+using Bitcoin.Interfaces;
 using Domain.Bitcoin.Interfaces;
 using Domain.Channels.Constants;
 using Domain.Channels.Enums;
@@ -25,13 +26,20 @@ public class ChannelManager : IChannelManager
     private readonly ILightningSigner _lightningSigner;
     private readonly IServiceProvider _serviceProvider;
 
-    public ChannelManager(IChannelMemoryRepository channelMemoryRepository, ILogger<ChannelManager> logger,
+    public ChannelManager(IBlockchainMonitor blockchainMonitor, IChannelMemoryRepository channelMemoryRepository,
+                          ILogger<ChannelManager> logger,
                           ILightningSigner lightningSigner, IServiceProvider serviceProvider)
     {
         _channelMemoryRepository = channelMemoryRepository;
         _serviceProvider = serviceProvider;
         _logger = logger;
         _lightningSigner = lightningSigner;
+        blockchainMonitor.NewBlockDetected += (_, args) =>
+            ForgetOldChannelByBlockHeightAsync(args.Height)
+               .ContinueWith((task) =>
+                {
+                    _logger.LogDebug(task.Exception, "Error while forgetting stale channels.");
+                }, TaskContinuationOptions.OnlyOnFaulted);
     }
 
     public async Task InitializeAsync()

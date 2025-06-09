@@ -20,6 +20,7 @@ using Interfaces;
 
 public class FundingCreatedMessageHandler : IChannelMessageHandler<FundingCreatedMessage>
 {
+    private readonly IBlockchainMonitor _blockchainMonitor;
     private readonly IChannelIdFactory _channelIdFactory;
     private readonly IChannelMemoryRepository _channelMemoryRepository;
     private readonly ICommitmentTransactionBuilder _commitmentTransactionBuilder;
@@ -29,13 +30,14 @@ public class FundingCreatedMessageHandler : IChannelMessageHandler<FundingCreate
     private readonly IMessageFactory _messageFactory;
     private readonly IUnitOfWork _unitOfWork;
 
-    public FundingCreatedMessageHandler(IChannelIdFactory channelIdFactory,
+    public FundingCreatedMessageHandler(IBlockchainMonitor blockchainMonitor, IChannelIdFactory channelIdFactory,
                                         IChannelMemoryRepository channelMemoryRepository,
                                         ICommitmentTransactionBuilder commitmentTransactionBuilder,
                                         ICommitmentTransactionModelFactory commitmentTransactionModelFactory,
                                         ILightningSigner lightningSigner, ILogger<FundingCreatedMessageHandler> logger,
                                         IMessageFactory messageFactory, IUnitOfWork unitOfWork)
     {
+        _blockchainMonitor = blockchainMonitor;
         _channelIdFactory = channelIdFactory;
         _channelMemoryRepository = channelMemoryRepository;
         _commitmentTransactionBuilder = commitmentTransactionBuilder;
@@ -117,6 +119,16 @@ public class FundingCreatedMessageHandler : IChannelMessageHandler<FundingCreate
 
         // Remove the temporary channel
         _channelMemoryRepository.RemoveTemporaryChannel(peerPubKey, oldChannelId);
+
+        await _blockchainMonitor.WatchTransactionAsync(
+            payload.FundingTxId, channel.ChannelConfig.MinimumDepth,
+            (txId, depth) =>
+            {
+                _logger.LogInformation(
+                    "TRANSACTION {txid} IS CONFIRMED after {depth} blocks. SHOULD SEND CHANNEL_READY TO PEER!", txId,
+                    depth);
+                return Task.CompletedTask;
+            });
 
         return fundingSignedMessage;
     }

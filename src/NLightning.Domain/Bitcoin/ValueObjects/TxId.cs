@@ -3,19 +3,19 @@ namespace NLightning.Domain.Bitcoin.ValueObjects;
 using Crypto.Constants;
 using Utils.Extensions;
 
-public struct TxId : IEquatable<TxId>
+public readonly struct TxId : IEquatable<TxId>
 {
-    public byte[] Hash { get; }
+    private readonly byte[] _value;
 
-    public bool IsZero => Hash.SequenceEqual(Zero.Hash);
-    public bool IsOne => Hash.SequenceEqual(One.Hash);
+    public bool IsZero => _value.SequenceEqual(Zero._value);
+    public bool IsOne => _value.SequenceEqual(One._value);
 
     public TxId(byte[] hash)
     {
         if (hash.Length < CryptoConstants.Sha256HashLen)
             throw new ArgumentException("TxId cannot be empty.", nameof(hash));
 
-        Hash = hash;
+        _value = hash;
     }
 
     public static TxId Zero => new byte[CryptoConstants.Sha256HashLen];
@@ -29,8 +29,9 @@ public struct TxId : IEquatable<TxId>
     };
 
     public static implicit operator TxId(byte[] bytes) => new(bytes);
-    public static implicit operator byte[](TxId txId) => txId.Hash;
-    public static implicit operator ReadOnlyMemory<byte>(TxId compactPubKey) => compactPubKey.Hash;
+    public static implicit operator byte[](TxId txId) => txId._value;
+    public static implicit operator ReadOnlyMemory<byte>(TxId compactPubKey) => compactPubKey._value;
+    public static implicit operator ReadOnlySpan<byte>(TxId compactPubKey) => compactPubKey._value;
 
     public static bool operator !=(TxId left, TxId right)
     {
@@ -44,7 +45,7 @@ public struct TxId : IEquatable<TxId>
 
     public bool Equals(TxId other)
     {
-        return Hash.SequenceEqual(other.Hash);
+        return _value.SequenceEqual(other._value);
     }
 
     public override bool Equals(object? obj)
@@ -54,6 +55,11 @@ public struct TxId : IEquatable<TxId>
 
     public override int GetHashCode()
     {
-        return Hash.GetByteArrayHashCode();
+        return _value.GetByteArrayHashCode();
+    }
+
+    public override string ToString()
+    {
+        return Convert.ToHexString(_value).ToLowerInvariant();
     }
 }
