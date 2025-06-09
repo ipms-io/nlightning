@@ -1,18 +1,20 @@
-using NLightning.Domain.Bitcoin.Interfaces;
-using NLightning.Domain.Channels.Enums;
-using NLightning.Domain.Channels.Models;
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Money;
-using NLightning.Domain.Protocol.Interfaces;
-using NLightning.Domain.Protocol.ValueObjects;
-using NLightning.Domain.Transactions.Enums;
-using NLightning.Domain.Transactions.Factories;
-using NLightning.Domain.Transactions.Outputs;
 using NLightning.Tests.Utils.Mocks;
 using NLightning.Tests.Utils.Vectors;
 
 namespace NLightning.Domain.Tests.Transactions.Factories;
+
+using Domain.Bitcoin.Interfaces;
+using Domain.Channels.Enums;
+using Domain.Channels.Models;
+using Domain.Channels.ValueObjects;
+using Domain.Crypto.ValueObjects;
+using Domain.Money;
+using Domain.Protocol.Interfaces;
+using Domain.Protocol.ValueObjects;
+using Domain.Transactions.Enums;
+using Domain.Transactions.Factories;
+using Domain.Transactions.Outputs;
+using Enums;
 
 public class CommitmentTransactionModelFactoryTests
 {
@@ -34,9 +36,9 @@ public class CommitmentTransactionModelFactoryTests
         var commitmentKeyDerivationService = new Mock<ICommitmentKeyDerivationService>();
         var lightningSigner = new Mock<ILightningSigner>();
 
-        var channelConfig = new ChannelConfig(LightningMoney.Zero, LightningMoney.Zero, LightningMoney.Satoshis(15000),
+        var channelConfig = new ChannelConfig(LightningMoney.Zero, LightningMoney.Satoshis(15_000), LightningMoney.Zero,
                                               LightningMoney.Zero, 0, LightningMoney.Zero, 0, false,
-                                              LightningMoney.Zero, Bolt3AppendixCVectors.LocalDelay);
+                                              LightningMoney.Zero, Bolt3AppendixCVectors.LocalDelay, FeatureSupport.No);
         var fundingOutputInfo = new FundingOutputInfo(Bolt3AppendixBVectors.FundingSatoshis,
                                                       Bolt3AppendixCVectors.NodeAFundingPubkey.ToBytes(),
                                                       Bolt3AppendixCVectors.NodeBFundingPubkey.ToBytes())
@@ -52,13 +54,11 @@ public class CommitmentTransactionModelFactoryTests
                                                  Bolt3AppendixCVectors.NodeARevocationPubkey.ToBytes(),
                                                  Bolt3AppendixCVectors.NodeAPaymentBasepoint.ToBytes(),
                                                  Bolt3AppendixCVectors.NodeADelayedPubkey.ToBytes(),
-                                                 emptyCompactPubKey, null,
-                                                 emptyCompactPubKey, 0);
+                                                 emptyCompactPubKey, emptyCompactPubKey);
         var remoteKeySet = new ChannelKeySetModel(0, Bolt3AppendixCVectors.NodeBFundingPubkey.ToBytes(),
                                                   emptyCompactPubKey,
                                                   Bolt3AppendixCVectors.NodeBPaymentBasepoint.ToBytes(),
-                                                  emptyCompactPubKey, emptyCompactPubKey, null, emptyCompactPubKey,
-                                                  0);
+                                                  emptyCompactPubKey, emptyCompactPubKey, emptyCompactPubKey);
         var channel = new ChannelModel(channelConfig, ChannelId.Zero, commitmentNumber, fundingOutputInfo, true, null,
                                        null, Bolt3AppendixCVectors.Tx0ToLocalMsat, localKeySet, 1, 0,
                                        Bolt3AppendixCVectors.ToRemoteMsat, remoteKeySet, 1, emptyCompactPubKey, 0,

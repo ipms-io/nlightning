@@ -1,15 +1,16 @@
 using Microsoft.Extensions.Logging;
 using NBitcoin;
-using NLightning.Domain.Bitcoin.Interfaces;
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Node.Options;
-using NLightning.Infrastructure.Bitcoin.Builders;
-using NLightning.Infrastructure.Bitcoin.Signers;
 using NLightning.Tests.Utils.Vectors;
-using CompactSignature = NLightning.Domain.Crypto.ValueObjects.CompactSignature;
 
 namespace NLightning.Integration.Tests.BOLT3.Mocks;
+
+using Domain.Bitcoin.Interfaces;
+using Domain.Bitcoin.ValueObjects;
+using Domain.Channels.ValueObjects;
+using Domain.Node.Options;
+using Infrastructure.Bitcoin.Builders;
+using Infrastructure.Bitcoin.Signers;
+using CompactSignature = Domain.Crypto.ValueObjects.CompactSignature;
 
 public class Bolt3TestLightningSigner : LocalLightningSigner, ILightningSigner
 {
@@ -41,6 +42,6 @@ public class Bolt3TestLightningSigner : LocalLightningSigner, ILightningSigner
 
     protected override Key GenerateFundingPrivateKey(uint channelKeyIndex)
     {
-        return Bolt3AppendixCVectors.NodeAFundingPrivkey;
+        return new Key(Bolt3AppendixCVectors.NodeAFundingPrivkey.ToBytes());
     }
 }

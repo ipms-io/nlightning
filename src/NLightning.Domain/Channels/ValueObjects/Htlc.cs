@@ -1,10 +1,9 @@
-using NLightning.Domain.Protocol.Messages;
-
 namespace NLightning.Domain.Channels.ValueObjects;
 
 using Crypto.ValueObjects;
 using Enums;
 using Money;
+using Protocol.Messages;
 
 public readonly record struct Htlc
 {

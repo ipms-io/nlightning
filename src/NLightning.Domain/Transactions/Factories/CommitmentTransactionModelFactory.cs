@@ -1,13 +1,12 @@
-using NLightning.Domain.Bitcoin.Interfaces;
-using NLightning.Domain.Exceptions;
-
 namespace NLightning.Domain.Transactions.Factories;
 
+using Bitcoin.Interfaces;
 using Channels.Enums;
 using Channels.Models;
 using Channels.ValueObjects;
 using Constants;
 using Enums;
+using Exceptions;
 using Interfaces;
 using Models;
 using Money;
@@ -37,12 +36,9 @@ public class CommitmentTransactionModelFactory : ICommitmentTransactionModelFact
         var receivedHtlcOutputs = new List<ReceivedHtlcOutputInfo>();
 
         // Get the HTLCs based on the commitment side
-        var htlcs = side == CommitmentSide.Local
-                        ? channel.LocalOfferedHtlcs
-                        : channel.RemoteOfferedHtlcs;
-
-        // Get the current commitment number
-        var commitmentNumber = channel.CommitmentNumber.Value;
+        var htlcs = new List<Htlc>();
+        htlcs.AddRange(channel.LocalOfferedHtlcs?.ToList() ?? []);
+        htlcs.AddRange(channel.RemoteOfferedHtlcs?.ToList() ?? []);
 
         // Get basepoints from the signer instead of the old key set model
         var localBasepoints = _lightningSigner.GetChannelBasepoints(channel.LocalKeySet.KeyIndex);
@@ -70,7 +66,7 @@ public class CommitmentTransactionModelFactory : ICommitmentTransactionModelFact
         // Calculate base weight
         var weight = WeightConstants.TransactionBaseWeight
                    + TransactionConstants.CommitmentTransactionInputWeight
-                   + (htlcs?.Count ?? 0) * WeightConstants.HtlcOutputWeight
+                   // + htlcs.Count * WeightConstants.HtlcOutputWeight
                    + WeightConstants.P2WshOutputWeight; // To Local Output
 
         // Set initial amounts for to_local and to_remote outputs
@@ -96,12 +92,14 @@ public class CommitmentTransactionModelFactory : ICommitmentTransactionModelFact
             var offeredHtlcWeight = channel.ChannelConfig.OptionAnchorOutputs
                                         ? WeightConstants.HtlcTimeoutWeightAnchors
                                         : WeightConstants.HtlcTimeoutWeightNoAnchors;
-            var offeredHtlcFee = offeredHtlcWeight * channel.ChannelConfig.FeeRateAmountPerKw.Satoshi / 1000L;
+            var offeredHtlcFee =
+                LightningMoney.MilliSatoshis(offeredHtlcWeight * channel.ChannelConfig.FeeRateAmountPerKw.Satoshi);
 
             var receivedHtlcWeight = channel.ChannelConfig.OptionAnchorOutputs
                                          ? WeightConstants.HtlcSuccessWeightAnchors
                                          : WeightConstants.HtlcSuccessWeightNoAnchors;
-            var receivedHtlcFee = receivedHtlcWeight * channel.ChannelConfig.FeeRateAmountPerKw.Satoshi / 1000L;
+            var receivedHtlcFee =
+                LightningMoney.MilliSatoshis(receivedHtlcWeight * channel.ChannelConfig.FeeRateAmountPerKw.Satoshi);
 
             foreach (var htlc in htlcs)
             {
@@ -112,32 +110,35 @@ public class CommitmentTransactionModelFactory : ICommitmentTransactionModelFact
 
                 // Calculate the amounts after subtracting fees
                 var htlcFee = isOffered ? offeredHtlcFee : receivedHtlcFee;
-                var htlcAmount = htlc.Amount - htlcFee;
+                var htlcAmount = htlc.Amount.Satoshi > htlcFee.Satoshi
+                                     ? LightningMoney.Satoshis(htlc.Amount.Satoshi - htlcFee.Satoshi)
+                                     : LightningMoney.Zero;
 
-                // Offered or received depends on isOffered plus dust check
+                // Always subtract the full HTLC amount from to_local
+                toLocalAmount = toLocalAmount > htlc.Amount
+                                    ? toLocalAmount - htlc.Amount
+                                    : LightningMoney.Zero; // If not enough, set to zero
+
+                // Offered or received depends on dust check
+                if (htlcAmount.Satoshi < localDustLimitAmount.Satoshi)
+                    continue;
+
+                weight += WeightConstants.HtlcOutputWeight;
                 if (isOffered)
                 {
-                    if (htlcAmount >= localDustLimitAmount)
-                    {
-                        weight += WeightConstants.HtlcOutputWeight;
-                        offeredHtlcOutputs.Add(new OfferedHtlcOutputInfo(
-                                                   htlc,
-                                                   commitmentKeys.RevocationPubKey,
-                                                   commitmentKeys.LocalHtlcPubKey,
-                                                   commitmentKeys.RemoteHtlcPubKey));
-                    }
+                    offeredHtlcOutputs.Add(new OfferedHtlcOutputInfo(
+                                               htlc,
+                                               commitmentKeys.LocalHtlcPubKey,
+                                               commitmentKeys.RemoteHtlcPubKey,
+                                               commitmentKeys.RevocationPubKey));
                 }
                 else
                 {
-                    if (htlcAmount >= remoteDustLimitAmount)
-                    {
-                        weight += WeightConstants.HtlcOutputWeight;
-                        receivedHtlcOutputs.Add(new ReceivedHtlcOutputInfo(
-                                                    htlc,
-                                                    commitmentKeys.RevocationPubKey,
-                                                    commitmentKeys.LocalHtlcPubKey,
-                                                    commitmentKeys.RemoteHtlcPubKey));
-                    }
+                    receivedHtlcOutputs.Add(new ReceivedHtlcOutputInfo(
+                                                htlc,
+                                                commitmentKeys.LocalHtlcPubKey,
+                                                commitmentKeys.RemoteHtlcPubKey,
+                                                commitmentKeys.RevocationPubKey));
                 }
             }
         }
@@ -166,27 +167,26 @@ public class CommitmentTransactionModelFactory : ICommitmentTransactionModelFact
                 ref GetFeePayerAmount(side, channel.IsInitiator, ref toLocalAmount, ref toRemoteAmount);
 
             // Simple fee deduction when no anchors
-            if (feePayerAmount > fee)
-                feePayerAmount -= fee;
-            else
-                feePayerAmount = LightningMoney.Zero;
+            feePayerAmount = feePayerAmount.Satoshi > fee.Satoshi
+                                 ? LightningMoney.Satoshis(feePayerAmount.Satoshi - fee.Satoshi)
+                                 : LightningMoney.Zero;
         }
 
         // Fail if both amounts are below ChannelReserve
-        if (channel.ChannelConfig.ChannelReserveAmount is not null &&
-            toLocalAmount < channel.ChannelConfig.ChannelReserveAmount &&
-            toRemoteAmount < channel.ChannelConfig.ChannelReserveAmount)
+        if (channel.ChannelConfig.ChannelReserveAmount is not null
+         && toLocalAmount.Satoshi < channel.ChannelConfig.ChannelReserveAmount.Satoshi
+         && toRemoteAmount.Satoshi < channel.ChannelConfig.ChannelReserveAmount.Satoshi)
             throw new ChannelErrorException("Both to_local and to_remote amounts are below the reserve limits.");
 
         // Only create output if the amount is above the dust limit
-        if (toLocalAmount >= localDustLimitAmount)
+        if (toLocalAmount.Satoshi >= localDustLimitAmount.Satoshi)
         {
             toLocalOutput = new ToLocalOutputInfo(toLocalAmount, commitmentKeys.LocalDelayedPubKey,
                                                   commitmentKeys.RevocationPubKey,
                                                   channel.ChannelConfig.ToSelfDelay);
         }
 
-        if (toRemoteAmount >= remoteDustLimitAmount)
+        if (toRemoteAmount.Satoshi >= remoteDustLimitAmount.Satoshi)
         {
             var remotePubKey = side == CommitmentSide.Local
                                    ? channel.RemoteKeySet.PaymentCompactBasepoint
@@ -232,10 +232,9 @@ public class CommitmentTransactionModelFactory : ICommitmentTransactionModelFact
         if (amount > fee)
         {
             amount -= fee;
-            if (amount > anchorAmount)
-                amount -= (amount - anchorAmount - fee); // Adjust as per your logic
-            else
-                amount = LightningMoney.Zero;
+            amount = amount > anchorAmount
+                         ? amount - anchorAmount
+                         : LightningMoney.Zero;
         }
         else
             amount = LightningMoney.Zero;

@@ -18,7 +18,7 @@ public class PeerAddressTests
         var peerAddress = new PeerAddress(address);
 
         // Assert
-        Assert.Equal("028D7500DD4C12685D1F568B4C2B5048E8534B873319F3A8DAA612B469132EC7F7",
+        Assert.Equal("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7",
                      peerAddress.PubKey.ToString());
         Assert.Equal(IPAddress.Parse("127.0.0.1"), peerAddress.Host);
         Assert.Equal(8080, peerAddress.Port);
@@ -76,6 +76,6 @@ public class PeerAddressTests
         var result = peerAddress.ToString();
 
         // Assert
-        Assert.Equal("028D7500DD4C12685D1F568B4C2B5048E8534B873319F3A8DAA612B469132EC7F7@127.0.0.1:8080", result);
+        Assert.Equal("028d7500dd4c12685d1f568b4c2b5048e8534b873319f3a8daa612b469132ec7f7@127.0.0.1:8080", result);
     }
 }

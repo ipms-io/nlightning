@@ -1,11 +1,12 @@
 using NBitcoin;
 using NBitcoin.Crypto;
-using NLightning.Domain.Crypto.Constants;
-using NLightning.Domain.Enums;
-using NLightning.Domain.Money;
-using NLightning.Infrastructure.Crypto.Hashes;
 
 namespace NLightning.Tests.Utils.Vectors;
+
+using Domain.Crypto.Constants;
+using Domain.Enums;
+using Domain.Money;
+using Infrastructure.Crypto.Hashes;
 
 public static class Bolt3AppendixCVectors
 {
@@ -55,65 +56,124 @@ public static class Bolt3AppendixCVectors
         new(Convert.FromHexString(
                 "3044022009b048187705a8cbc9ad73adbe5af148c3d012e1f067961486c822c7af08158c022006d66f3704cfab3eb2dc49dae24e4aa22a6910fc9b424007583204e3621af2e5"));
 
+    public static readonly ECDSASignature NodeASignature1 =
+        new(Convert.FromHexString(
+                "304402206fc2d1f10ea59951eefac0b4b7c396a3c3d87b71ff0b019796ef4535beaf36f902201765b0181e514d04f4c8ad75659d7037be26cdb3f8bb6f78fe61decef484c3ea"));
+
     public static readonly ECDSASignature NodeBSignature2 =
         new(Convert.FromHexString(
                 "3045022100a135f9e8a5ed25f7277446c67956b00ce6f610ead2bdec2c2f686155b7814772022059f1f6e1a8b336a68efcc1af3fe4d422d4827332b5b067501b099c47b7b5b5ee"));
+
+    public static readonly ECDSASignature NodeASignature2 =
+        new(Convert.FromHexString(
+                "30450221009ec15c687898bb4da8b3a833e5ab8bfc51ec6e9202aaa8e66611edfd4a85ed1102203d7183e45078b9735c93450bc3415d3e5a8c576141a711ec6ddcb4a893926bb7"));
 
     public static readonly ECDSASignature NodeBSignature3 =
         new(Convert.FromHexString(
                 "304402203948f900a5506b8de36a4d8502f94f21dd84fd9c2314ab427d52feaa7a0a19f2022059b6a37a4adaa2c5419dc8aea63c6e2a2ec4c4bde46207f6dc1fcd22152fc6e5"));
 
+    public static readonly ECDSASignature NodeASignature3 =
+        new(Convert.FromHexString(
+                "3045022100b15f72908ba3382a34ca5b32519240a22300cc6015b6f9418635fb41f3d01d8802207adb331b9ed1575383dca0f2355e86c173802feecf8298fbea53b9d4610583e9"));
+
     public static readonly ECDSASignature NodeBSignature4 =
         new(Convert.FromHexString(
                 "304502210090b96a2498ce0c0f2fadbec2aab278fed54c1a7838df793ec4d2c78d96ec096202204fdd439c50f90d483baa7b68feeef4bd33bc277695405447bcd0bfb2ca34d7bc"));
+
+    public static readonly ECDSASignature NodeASignature4 =
+        new(Convert.FromHexString(
+                "3045022100ad9a9bbbb75d506ca3b716b336ee3cf975dd7834fcf129d7dd188146eb58a8b4022061a759ee417339f7fe2ea1e8deb83abb6a74db31a09b7648a932a639cda23e33"));
 
     public static readonly ECDSASignature NodeBSignature5 =
         new(Convert.FromHexString(
                 "304402204ca1ba260dee913d318271d86e10ca0f5883026fb5653155cff600fb40895223022037b145204b7054a40e08bb1fefbd826f827b40838d3e501423bcc57924bcb50c"));
 
+    public static readonly ECDSASignature NodeASignature5 =
+        new(Convert.FromHexString(
+                "3044022001014419b5ba00e083ac4e0a85f19afc848aacac2d483b4b525d15e2ae5adbfe022015ebddad6ee1e72b47cb09f3e78459da5be01ccccd95dceca0e056a00cc773c1"));
+
     public static readonly ECDSASignature NodeBSignature6 =
         new(Convert.FromHexString(
                 "304402204bb3d6e279d71d9da414c82de42f1f954267c762b2e2eb8b76bc3be4ea07d4b0022014febc009c5edc8c3fc5d94015de163200f780046f1c293bfed8568f08b70fb3"));
+
+    public static readonly ECDSASignature NodeASignature6 =
+        new(Convert.FromHexString(
+                "3044022072c2e2b1c899b2242656a537dde2892fa3801be0d6df0a87836c550137acde8302201654aa1974d37a829083c3ba15088689f30b56d6a4f6cb14c7bad0ee3116d398"));
 
     public static readonly ECDSASignature NodeBSignature7 =
         new(Convert.FromHexString(
                 "304402201a8c1b1f9671cd9e46c7323a104d7047cc48d3ee80d40d4512e0c72b8dc65666022066d7f9a2ce18c9eb22d2739ffcce05721c767f9b607622a31b6ea5793ddce403"));
 
+    public static readonly ECDSASignature NodeASignature7 =
+        new(Convert.FromHexString(
+                "3044022044d592025b610c0d678f65032e87035cdfe89d1598c522cc32524ae8172417c30220749fef9d5b2ae8cdd91ece442ba8809bc891efedae2291e578475f97715d1767"));
+
     public static readonly ECDSASignature NodeBSignature8 =
         new(Convert.FromHexString(
                 "304502210092a587aeb777f869e7ff0d7898ea619ee26a3dacd1f3672b945eea600be431100220077ee9eae3528d15251f2a52b607b189820e57a6ccfac8d1af502b132ee40169"));
+
+    public static readonly ECDSASignature NodeASignature8 =
+        new(Convert.FromHexString(
+                "3045022100e5efb73c32d32da2d79702299b6317de6fb24a60476e3855926d78484dd1b3c802203557cb66a42c944ef06e00bcc4da35a5bcb2f185aab0f8e403e519e1d66aaf75"));
 
     public static readonly ECDSASignature NodeBSignature9 =
         new(Convert.FromHexString(
                 "3045022100b495d239772a237ff2cf354b1b11be152fd852704cb184e7356d13f2fb1e5e430220723db5cdb9cbd6ead7bfd3deb419cf41053a932418cbb22a67b581f40bc1f13e"));
 
+    public static readonly ECDSASignature NodeASignature9 =
+        new(Convert.FromHexString(
+                "304402201b736d1773a124c745586217a75bed5f66c05716fbe8c7db4fdb3c3069741cdd02205083f39c321c1bcadfc8d97e3c791a66273d936abac0c6a2fde2ed46019508e1"));
+
     public static readonly ECDSASignature NodeBSignature10 =
         new(Convert.FromHexString(
                 "3045022100b4b16d5f8cc9fc4c1aff48831e832a0d8990e133978a66e302c133550954a44d022073573ce127e2200d316f6b612803a5c0c97b8d20e1e44dbe2ac0dd2fb8c95244"));
+
+    public static readonly ECDSASignature NodeASignature10 =
+        new(Convert.FromHexString(
+                "3045022100d72638bc6308b88bb6d45861aae83e5b9ff6e10986546e13bce769c70036e2620220320be7c6d66d22f30b9fcd52af66531505b1310ca3b848c19285b38d8a1a8c19"));
 
     public static readonly ECDSASignature NodeBSignature11 =
         new(Convert.FromHexString(
                 "304402203a286936e74870ca1459c700c71202af0381910a6bfab687ef494ef1bc3e02c902202506c362d0e3bee15e802aa729bf378e051644648253513f1c085b264cc2a720"));
 
+    public static readonly ECDSASignature NodeASignature11 =
+        new(Convert.FromHexString(
+                "30450221008a953551f4d67cb4df3037207fc082ddaf6be84d417b0bd14c80aab66f1b01a402207508796dc75034b2dee876fe01dc05a08b019f3e5d689ac8842ade2f1befccf5"));
+
     public static readonly ECDSASignature NodeBSignature12 =
         new(Convert.FromHexString(
                 "304402200a8544eba1d216f5c5e530597665fa9bec56943c0f66d98fc3d028df52d84f7002201e45fa5c6bc3a506cc2553e7d1c0043a9811313fc39c954692c0d47cfce2bbd3"));
+
+    public static readonly ECDSASignature NodeASignature12 =
+        new(Convert.FromHexString(
+                "3045022100e11b638c05c650c2f63a421d36ef8756c5ce82f2184278643520311cdf50aa200220259565fb9c8e4a87ccaf17f27a3b9ca4f20625754a0920d9c6c239d8156a11de"));
 
     public static readonly ECDSASignature NodeBSignature13 =
         new(Convert.FromHexString(
                 "304402202ade0142008309eb376736575ad58d03e5b115499709c6db0b46e36ff394b492022037b63d78d66404d6504d4c4ac13be346f3d1802928a6d3ad95a6a944227161a2"));
 
+    public static readonly ECDSASignature NodeASignature13 =
+        new(Convert.FromHexString(
+                "304402207e8d51e0c570a5868a78414f4e0cbfaed1106b171b9581542c30718ee4eb95ba02203af84194c97adf98898c9afe2f2ed4a7f8dba05a2dfab28ac9d9c604aa49a379"));
+
     public static readonly ECDSASignature NodeBSignature14 =
         new(Convert.FromHexString(
                 "304402202ade0142008309eb376736575ad58d03e5b115499709c6db0b46e36ff394b492022037b63d78d66404d6504d4c4ac13be346f3d1802928a6d3ad95a6a944227161a2"));
+
+    public static readonly ECDSASignature NodeASignature14 =
+        new(Convert.FromHexString(
+                "304402207e8d51e0c570a5868a78414f4e0cbfaed1106b171b9581542c30718ee4eb95ba02203af84194c97adf98898c9afe2f2ed4a7f8dba05a2dfab28ac9d9c604aa49a379"));
 
     public static readonly ECDSASignature NodeBSignature15 =
         new(Convert.FromHexString(
                 "304402207d0870964530f97b62497b11153c551dca0a1e226815ef0a336651158da0f82402200f5378beee0e77759147b8a0a284decd11bfd2bc55c8fafa41c134fe996d43c8"));
 
+    public static readonly ECDSASignature NodeASignature15 =
+        new(Convert.FromHexString(
+                "304402200d10bf5bc5397fc59d7188ae438d80c77575595a2d488e41bd6363a810cc8d72022012b57e714fbbfdf7a28c47d5b370cb8ac37c8545f596216e5b21e9b236ef457c"));
+
     public static readonly LightningMoney Tx0ToLocalMsat = new(7_000_000, LightningMoneyUnit.Satoshi);
-    public static readonly LightningMoney Tx1ToLocalMsat = new(6_988_000, LightningMoneyUnit.Satoshi);
-    public static readonly LightningMoney Tx15ToLocalMsat = new(6_987_999_999, LightningMoneyUnit.MilliSatoshi);
+    public static readonly LightningMoney Tx15ToLocalMsat = new(6_999_999_999, LightningMoneyUnit.MilliSatoshi);
     public static readonly LightningMoney ToRemoteMsat = new(3_000_000, LightningMoneyUnit.Satoshi);
 
     public const ulong CommitmentNumber = 42;

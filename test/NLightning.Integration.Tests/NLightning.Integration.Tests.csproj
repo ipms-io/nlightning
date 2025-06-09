@@ -43,8 +43,4 @@
     <Content Include="BOLT11/Vectors/ValidInvoices.txt" CopyToOutputDirectory="PreserveNewest"/>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="BOLT3\Vectors\"/>
-  </ItemGroup>
-
 </Project>
