@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\NLightning.Infrastructure.Repositories\NLightning.Infrastructure.Repositories.csproj"/>
+    <ProjectReference Include="..\NLightning.Infrastructure.Repositories\NLightning.Infrastructure.Repositories.csproj"/>
     <ProjectReference Include="..\NLightning.Infrastructure.Bitcoin\NLightning.Infrastructure.Bitcoin.csproj"/>
     <ProjectReference Include="..\NLightning.Infrastructure.Persistence.Postgres\NLightning.Infrastructure.Persistence.Postgres.csproj"/>
     <ProjectReference Include="..\NLightning.Infrastructure.Persistence.Sqlite\NLightning.Infrastructure.Persistence.Sqlite.csproj"/>

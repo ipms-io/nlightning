@@ -51,7 +51,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure.S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Node.Tests", "test\NLightning.Node.Tests\NLightning.Node.Tests.csproj", "{BC559AD8-72B9-4ABF-A7FF-6305E141AB62}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure.Repositories", "NLightning.Infrastructure.Repositories\NLightning.Infrastructure.Repositories.csproj", "{02639428-3F4E-43A9-9585-A5D90EDCA1FF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Infrastructure.Repositories", "src\NLightning.Infrastructure.Repositories\NLightning.Infrastructure.Repositories.csproj", "{02639428-3F4E-43A9-9585-A5D90EDCA1FF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{2746A75F-A7F5-438E-B68F-6AB643F7FE54}"
 	ProjectSection(SolutionItems) = preProject

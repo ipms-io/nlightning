@@ -1,7 +1,7 @@
 name: NLightning Combined Coverage Report (Push)
 on:
   workflow_run:
-    workflows: ["NLightning .NET Build & Tests (Push)", "NLightning.Native .NET Build & Tests (Push)", "NLightning.Wasm .NET Build & Tests (Push)"]
+    workflow: "NLightning .NET Build & Tests (Push)"
     types:
       - completed
 
@@ -11,6 +11,56 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event.workflow_run.conclusion == 'failure' }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Wait for all workflows to complete
+        run: |
+          REQUIRED_WORKFLOWS=(
+            "NLightning .NET Build & Tests (Push)"
+            "NLightning.Native .NET Build & Tests (Push)" 
+            "NLightning.Wasm .NET Build & Tests (Push)"
+          )
+
+          echo "Waiting for all workflows to complete for commit ${{ github.event.workflow_run.head_sha }}"
+
+          # Set timeout to 5 minutes (300 seconds)
+          TIMEOUT=300
+          ELAPSED=0
+          SLEEP_INTERVAL=30
+
+          while [ $ELAPSED -lt $TIMEOUT ]; do
+            all_complete=true
+
+            for workflow in "${REQUIRED_WORKFLOWS[@]}"; do
+              # Get the latest run for this workflow and commit
+              run_data=$(gh api repos/${{ github.repository }}/actions/runs \
+                --jq ".workflow_runs[] | select(.head_sha==\"${{ github.event.workflow_run.head_sha }}\" and .name==\"$workflow\") | {status: .status, conclusion: .conclusion}" \
+                | head -1)
+
+              run_status=$(echo "$run_data" | jq -r '.status')
+              run_conclusion=$(echo "$run_data" | jq -r '.conclusion')
+
+              echo "Workflow '$workflow': status=$run_status, conclusion=$run_conclusion"
+
+              if [ "$run_status" != "completed" ]; then
+                all_complete=false
+                break
+              fi
+            done
+
+            if [ "$all_complete" = true ]; then
+              echo "✅ All workflows completed!"
+              exit 0
+            else
+              echo "⏳ Still waiting for workflows to complete... (${ELAPSED}s/${TIMEOUT}s)"
+              sleep $SLEEP_INTERVAL
+              ELAPSED=$((ELAPSED + SLEEP_INTERVAL))
+            fi
+          done
+
+          echo "❌ Timeout reached after ${TIMEOUT} seconds. Not all workflows completed in time."
+          exit 1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
