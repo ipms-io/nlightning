@@ -1,7 +1,7 @@
 name: NLightning Combined Coverage Report (Push)
 on:
   workflow_run:
-    workflow: "NLightning .NET Build & Tests (Push)"
+    workflows: [ "NLightning .NET Build & Tests (Push)" ]
     types:
       - completed
 

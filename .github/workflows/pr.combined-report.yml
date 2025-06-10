@@ -1,7 +1,7 @@
 name: NLightning Combined Coverage Report (PR)
 on:
   workflow_run:
-    workflow: "NLightning .NET Build & Tests (PR)"
+    workflows: [ "NLightning .NET Build & Tests (PR)" ]
     types:
       - completed
 
