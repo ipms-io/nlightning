@@ -1,6 +1,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin.Policy;
+using NLightning.Domain.Bitcoin.Transactions.Enums;
+using NLightning.Domain.Bitcoin.Transactions.Factories;
+using NLightning.Domain.Bitcoin.Transactions.Outputs;
 using NLightning.Tests.Utils.Vectors;
 
 namespace NLightning.Integration.Tests.BOLT3;
@@ -13,9 +16,6 @@ using Domain.Enums;
 using Domain.Money;
 using Domain.Node.Options;
 using Domain.Protocol.ValueObjects;
-using Domain.Transactions.Enums;
-using Domain.Transactions.Factories;
-using Domain.Transactions.Outputs;
 using Infrastructure.Bitcoin.Builders;
 using Infrastructure.Bitcoin.Services;
 using Infrastructure.Bitcoin.Signers;

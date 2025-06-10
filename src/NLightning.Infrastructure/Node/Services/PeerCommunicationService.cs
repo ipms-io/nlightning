@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Logging;
+using NLightning.Domain.Node.Interfaces;
 
 namespace NLightning.Infrastructure.Node.Services;
 
-using Application.Node.Interfaces;
 using Domain.Channels.ValueObjects;
 using Domain.Crypto.ValueObjects;
 using Domain.Exceptions;
@@ -184,6 +184,7 @@ public class PeerCommunicationService : IPeerCommunicationService
 
     private void RaiseException(Exception exception)
     {
+        var mustDisconnect = false;
         if (exception is ErrorException errorException)
         {
             ChannelId? channelId = null;
@@ -197,6 +198,7 @@ public class PeerCommunicationService : IPeerCommunicationService
             }
 
             _messageService.SendMessageAsync(new ErrorMessage(new ErrorPayload(channelId, message)));
+            mustDisconnect = true;
         }
         else if (exception is WarningException warningException)
         {
@@ -219,9 +221,7 @@ public class PeerCommunicationService : IPeerCommunicationService
         ExceptionRaised?.Invoke(this, exception);
 
         // Disconnect if not already disconnecting
-        if (!_cancellationTokenSource.IsCancellationRequested)
-        {
+        if (mustDisconnect && !_cancellationTokenSource.IsCancellationRequested)
             Disconnect();
-        }
     }
 }

@@ -22,7 +22,53 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.ChannelConfigEntity", b =>
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Bitcoin.BlockchainStateEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("LastProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("LastProcessedBlockHash")
+                        .IsRequired()
+                        .HasColumnType("varbinary(32)");
+
+                    b.Property<long>("LastProcessedHeight")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BlockchainStates");
+                });
+
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Bitcoin.WatchedTransactionEntity", b =>
+                {
+                    b.Property<byte[]>("ChannelId")
+                        .HasColumnType("varbinary(32)");
+
+                    b.Property<byte[]>("TransactionId")
+                        .HasColumnType("varbinary(32)");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("FirstSeenAtHeight")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("RequiredDepth")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ChannelId", "TransactionId");
+
+                    b.ToTable("WatchedTransactions");
+                });
+
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelConfigEntity", b =>
                 {
                     b.Property<byte[]>("ChannelId")
                         .HasColumnType("varbinary(32)");
@@ -71,7 +117,7 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                     b.ToTable("ChannelConfigs");
                 });
 
-            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.ChannelEntity", b =>
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", b =>
                 {
                     b.Property<byte[]>("ChannelId")
                         .HasColumnType("varbinary(32)");
@@ -131,7 +177,7 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                     b.ToTable("Channels");
                 });
 
-            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.ChannelKeySetEntity", b =>
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelKeySetEntity", b =>
                 {
                     b.Property<byte[]>("ChannelId")
                         .HasColumnType("varbinary(32)");
@@ -177,7 +223,7 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                     b.ToTable("ChannelKeySets");
                 });
 
-            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.HtlcEntity", b =>
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.HtlcEntity", b =>
                 {
                     b.Property<byte[]>("ChannelId")
                         .HasColumnType("varbinary(32)");
@@ -219,40 +265,51 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                     b.ToTable("Htlcs");
                 });
 
-            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.ChannelConfigEntity", b =>
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Bitcoin.WatchedTransactionEntity", b =>
                 {
-                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.ChannelEntity", null)
-                        .WithOne("Config")
-                        .HasForeignKey("NLightning.Infrastructure.Persistence.Entities.ChannelConfigEntity", "ChannelId")
+                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", null)
+                        .WithMany("WatchedTransactions")
+                        .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.ChannelKeySetEntity", b =>
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelConfigEntity", b =>
                 {
-                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.ChannelEntity", null)
+                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", null)
+                        .WithOne("Config")
+                        .HasForeignKey("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelConfigEntity", "ChannelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelKeySetEntity", b =>
+                {
+                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", null)
                         .WithMany("KeySets")
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.HtlcEntity", b =>
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.HtlcEntity", b =>
                 {
-                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.ChannelEntity", null)
+                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", null)
                         .WithMany("Htlcs")
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.ChannelEntity", b =>
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", b =>
                 {
                     b.Navigation("Config");
 
                     b.Navigation("Htlcs");
 
                     b.Navigation("KeySets");
+
+                    b.Navigation("WatchedTransactions");
                 });
 #pragma warning restore 612, 618
         }

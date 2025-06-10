@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using NLightning.Infrastructure.Persistence.Contexts;
-using NLightning.Infrastructure.Persistence.Enums;
-using NLightning.Infrastructure.Persistence.Providers;
 
 namespace NLightning.Infrastructure.Persistence;
+
+using Contexts;
+using Enums;
+using Providers;
 
 /// <summary>
 /// Extension methods for setting up Persistence infrastructure services in an IServiceCollection.
@@ -39,23 +40,13 @@ public static class DependencyInjection
                 "Database connection string ('Database:ConnectionString') is not configured.");
         }
 
-        DatabaseType resolvedDatabaseType;
-        switch (providerName.ToLowerInvariant())
+        var resolvedDatabaseType = providerName.ToLowerInvariant() switch
         {
-            case "postgresql":
-            case "postgres":
-                resolvedDatabaseType = DatabaseType.PostgreSql;
-                break;
-            case "sqlite":
-                resolvedDatabaseType = DatabaseType.Sqlite;
-                break;
-            case "sqlserver":
-            case "microsoftsql":
-                resolvedDatabaseType = DatabaseType.MicrosoftSql;
-                break;
-            default:
-                throw new InvalidOperationException($"Unsupported database provider configured: {providerName}");
-        }
+            "postgresql" or "postgres" => DatabaseType.PostgreSql,
+            "sqlite" => DatabaseType.Sqlite,
+            "sqlserver" or "microsoftsql" => DatabaseType.MicrosoftSql,
+            _ => throw new InvalidOperationException($"Unsupported database provider configured: {providerName}")
+        };
 
         services.AddSingleton(new DatabaseTypeProvider(resolvedDatabaseType));
 
@@ -64,7 +55,7 @@ public static class DependencyInjection
             switch (resolvedDatabaseType)
             {
                 case DatabaseType.PostgreSql:
-                    var pgMigrationsAssembly = "NLightning.Infrastructure.Persistence.Postgres";
+                    const string pgMigrationsAssembly = "NLightning.Infrastructure.Persistence.Postgres";
                     optionsBuilder.UseNpgsql(connectionString, sqlOptions =>
                                    {
                                        sqlOptions.MigrationsAssembly(pgMigrationsAssembly);
@@ -74,7 +65,7 @@ public static class DependencyInjection
                     break;
 
                 case DatabaseType.Sqlite:
-                    var sqliteMigrationsAssembly = "NLightning.Infrastructure.Persistence.Sqlite";
+                    const string sqliteMigrationsAssembly = "NLightning.Infrastructure.Persistence.Sqlite";
                     optionsBuilder.UseSqlite(connectionString, sqlOptions =>
                     {
                         sqlOptions.MigrationsAssembly(sqliteMigrationsAssembly);
@@ -82,7 +73,7 @@ public static class DependencyInjection
                     break;
 
                 case DatabaseType.MicrosoftSql:
-                    var sqlServerMigrationsAssembly = "NLightning.Infrastructure.Persistence.SqlServer";
+                    const string sqlServerMigrationsAssembly = "NLightning.Infrastructure.Persistence.SqlServer";
                     optionsBuilder.UseSqlServer(connectionString, sqlOptions =>
                     {
                         sqlOptions.MigrationsAssembly(sqlServerMigrationsAssembly);

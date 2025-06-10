@@ -1,7 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLightning.Application.Bitcoin.Interfaces;
+using NLightning.Infrastructure.Bitcoin.Wallet.Interfaces;
 
 namespace NLightning.Application;
 
@@ -9,7 +9,9 @@ using Channels.Handlers.Interfaces;
 using Channels.Managers;
 using Domain.Bitcoin.Interfaces;
 using Domain.Channels.Interfaces;
+using Domain.Node.Interfaces;
 using Domain.Protocol.Interfaces;
+using Node.Managers;
 using Node.Services;
 using Protocol.Factories;
 
@@ -36,7 +38,9 @@ public static class DependencyInjection
                                       loggerFactory.CreateLogger<ChannelManager>(), lightningSigner, sp);
         });
         services.AddSingleton<IMessageFactory, MessageFactory>();
+        services.AddSingleton<IPeerManager, PeerManager>();
         services.AddSingleton<IPingPongService, PingPongService>();
+        services.AddSingleton<IPingPongServiceFactory, PingPongServiceFactory>();
 
         // Automatically register all channel message handlers
         services.AddChannelMessageHandlers();

@@ -1,9 +1,9 @@
 using NBitcoin;
+using NLightning.Domain.Bitcoin.Transactions.Outputs;
 
 namespace NLightning.Infrastructure.Bitcoin.Builders;
 
 using Domain.Bitcoin.ValueObjects;
-using Domain.Transactions.Outputs;
 using Outputs;
 
 public class FundingOutputBuilder : IFundingOutputBuilder

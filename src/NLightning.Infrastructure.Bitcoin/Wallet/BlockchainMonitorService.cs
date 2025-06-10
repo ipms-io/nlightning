@@ -1,14 +1,17 @@
 using System.Collections.Concurrent;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
 using NetMQ;
 using NetMQ.Sockets;
-using NLightning.Application.Bitcoin.Interfaces;
 using NLightning.Domain.Bitcoin.Events;
+using NLightning.Domain.Bitcoin.Transactions.Models;
 using NLightning.Domain.Bitcoin.ValueObjects;
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Crypto.ValueObjects;
 using NLightning.Domain.Node.Options;
-using NLightning.Infrastructure.Bitcoin.Models;
+using NLightning.Domain.Persistence.Interfaces;
 using NLightning.Infrastructure.Bitcoin.Options;
 using NLightning.Infrastructure.Bitcoin.Wallet.Interfaces;
 
@@ -19,25 +22,29 @@ public class BlockchainMonitorService : IBlockchainMonitor
     private readonly BitcoinOptions _bitcoinOptions;
     private readonly IBitcoinWallet _bitcoinWallet;
     private readonly ILogger<BlockchainMonitorService> _logger;
+    private readonly IServiceProvider _serviceProvider;
     private readonly Network _network;
-    private readonly ConcurrentDictionary<uint256, WatchedTransaction> _watchedTransactions = new();
-    private readonly ConcurrentDictionary<uint256, RevocationWatch> _revocationWatches = new();
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
+    private readonly ConcurrentDictionary<uint256, WatchedTransactionModel> _watchedTransactions = new();
+    private readonly OrderedDictionary<uint, Block> _blocksToProcess = new();
 
-    private uint _lastProcessedHeight;
+    private BlockchainState _blockchainState = new(0, Hash.Empty, DateTime.UtcNow);
     private CancellationTokenSource? _cts;
     private Task? _monitoringTask;
     private SubscriberSocket? _blockSocket;
-    private SubscriberSocket? _transactionSocket;
+    // private SubscriberSocket? _transactionSocket;
 
-    public event EventHandler<NewBlockEventArgs>? NewBlockDetected;
+    public event EventHandler<NewBlockEventArgs>? OnNewBlockDetected;
+    public event EventHandler<TransactionConfirmedEventArgs>? OnTransactionConfirmed;
 
     public BlockchainMonitorService(IOptions<BitcoinOptions> bitcoinOptions, IBitcoinWallet bitcoinWallet,
-                                    ILogger<BlockchainMonitorService> logger,
-                                    IOptions<NodeOptions> nodeOptions)
+                                    ILogger<BlockchainMonitorService> logger, IOptions<NodeOptions> nodeOptions,
+                                    IServiceProvider serviceProvider)
     {
         _bitcoinOptions = bitcoinOptions.Value;
         _bitcoinWallet = bitcoinWallet;
         _logger = logger;
+        _serviceProvider = serviceProvider;
         _network = Network.GetNetwork(nodeOptions.Value.BitcoinNetwork) ?? Network.Main;
     }
 
@@ -45,8 +52,38 @@ public class BlockchainMonitorService : IBlockchainMonitor
     {
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        _lastProcessedHeight = await _bitcoinWallet.GetCurrentBlockHeightAsync();
-        _logger.LogInformation("Starting blockchain monitoring at height {Height}", _lastProcessedHeight);
+        using var scope = _serviceProvider.CreateScope();
+        using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        // Load pending transactions
+        await LoadPendingWatchedTransactionsAsync(uow);
+
+        // Get the current state or create a new one if it doesn't exist
+        _blockchainState = await uow.BlockchainStateDbRepository.GetStateAsync() ?? _blockchainState;
+        if (_blockchainState.LastProcessedHeight == 0)
+        {
+            var lastProcessedHeight = await _bitcoinWallet.GetCurrentBlockHeightAsync();
+            _logger.LogInformation("No blockchain state found, starting from height {Height}", lastProcessedHeight);
+
+            _blockchainState = new BlockchainState(0, Hash.Empty, DateTime.UtcNow);
+            await uow.BlockchainStateDbRepository.AddOrUpdateAsync(_blockchainState);
+            await uow.SaveChangesAsync();
+        }
+        else
+        {
+            _logger.LogInformation("Starting blockchain monitoring at height {Height}, last block hash {LastBlockHash}",
+                                   _blockchainState.LastProcessedHeight, _blockchainState.LastProcessedBlockHash);
+        }
+
+        // Process missing blocks
+        var currentHeight = await _bitcoinWallet.GetCurrentBlockHeightAsync();
+        await AddMissingBlocksToProcessAsync(currentHeight);
+        if (_blocksToProcess.Count > 0)
+        {
+            await ProcessPendingBlocksAsync(uow);
+        }
+
+        await uow.SaveChangesAsync();
 
         // Initialize ZMQ sockets
         InitializeZmqSockets();
@@ -81,29 +118,34 @@ public class BlockchainMonitorService : IBlockchainMonitor
         CleanupZmqSockets();
     }
 
-    public Task WatchTransactionAsync(TxId txId, uint requiredDepth, Func<TxId, uint, Task> onConfirmed)
+    public async Task WatchTransactionAsync(ChannelId channelId, TxId txId, uint requiredDepth)
     {
-        _logger.LogInformation("Watching transaction {TxId} for {RequiredDepth} confirmations", txId, requiredDepth);
+        _logger.LogInformation("Watching transaction {TxId} for {RequiredDepth} confirmations for channel {channelId}",
+                               txId, requiredDepth, channelId);
+
+        using var scope = _serviceProvider.CreateScope();
+        using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
         var nBitcoinTxId = new uint256(txId);
-        var watchedTx = new WatchedTransaction(nBitcoinTxId, requiredDepth,
-                                               (transactionId, reqDepth) =>
-                                                   onConfirmed(transactionId.ToBytes(), reqDepth));
+        var watchedTx = new WatchedTransactionModel(channelId, txId, requiredDepth);
 
-        _watchedTransactions.TryAdd(nBitcoinTxId, watchedTx);
-        return Task.CompletedTask;
+        uow.WatchedTransactionDbRepository.Add(watchedTx);
+
+        _watchedTransactions[nBitcoinTxId] = watchedTx;
+
+        await uow.SaveChangesAsync();
     }
 
-    public Task WatchForRevocationAsync(TxId commitmentTxId, SignedTransaction penaltyTx)
-    {
-        _logger.LogInformation("Watching for revocation of commitment transaction {CommitmentTxId}", commitmentTxId);
-
-        var nBitcoinTxId = new uint256(commitmentTxId);
-        var revocationWatch = new RevocationWatch(nBitcoinTxId, Transaction.Load(penaltyTx.RawTxBytes, _network));
-
-        _revocationWatches.TryAdd(nBitcoinTxId, revocationWatch);
-        return Task.CompletedTask;
-    }
+    // public Task WatchForRevocationAsync(TxId commitmentTxId, SignedTransaction penaltyTx)
+    // {
+    //     _logger.LogInformation("Watching for revocation of commitment transaction {CommitmentTxId}", commitmentTxId);
+    //
+    //     var nBitcoinTxId = new uint256(commitmentTxId);
+    //     var revocationWatch = new RevocationWatch(nBitcoinTxId, Transaction.Load(penaltyTx.RawTxBytes, _network));
+    //
+    //     _revocationWatches.TryAdd(nBitcoinTxId, revocationWatch);
+    //     return Task.CompletedTask;
+    // }
 
     private async Task MonitorBlockchainAsync(CancellationToken cancellationToken)
     {
@@ -121,23 +163,21 @@ public class BlockchainMonitorService : IBlockchainMonitor
                     {
                         if (topic == "rawblock" && _blockSocket.TryReceiveFrameBytes(out var blockHashBytes))
                         {
+                            var currentHeight = await _bitcoinWallet.GetCurrentBlockHeightAsync();
                             var block = Block.Load(blockHashBytes, _network);
-                            await ProcessNewBlock(block);
+                            await ProcessNewBlock(block, currentHeight);
                         }
                     }
 
-                    // Check for new transactions
-                    if (_transactionSocket != null &&
-                        _transactionSocket.TryReceiveFrameString(TimeSpan.FromMilliseconds(100), out var txTopic))
-                    {
-                        if (txTopic == "rawtx" && _transactionSocket.TryReceiveFrameBytes(out var rawTxBytes))
-                        {
-                            await ProcessNewTransaction(rawTxBytes);
-                        }
-                    }
-
-                    // Periodically check watched transactions for confirmations
-                    await CheckWatchedTransactions();
+                    // TODO: Check for new transactions
+                    // if (_transactionSocket != null &&
+                    //     _transactionSocket.TryReceiveFrameString(TimeSpan.FromMilliseconds(100), out var txTopic))
+                    // {
+                    //     if (txTopic == "rawtx" && _transactionSocket.TryReceiveFrameBytes(out var rawTxBytes))
+                    //     {
+                    //         await ProcessNewTransaction(rawTxBytes);
+                    //     }
+                    // }
 
                     // Small delay to prevent CPU spinning
                     await Task.Delay(50, cancellationToken);
@@ -168,10 +208,10 @@ public class BlockchainMonitorService : IBlockchainMonitor
             _blockSocket.Connect($"tcp://{_bitcoinOptions.ZmqHost}:{_bitcoinOptions.ZmqBlockPort}");
             _blockSocket.Subscribe("rawblock");
 
-            // Subscribe to new transactions (for mempool monitoring)
-            _transactionSocket = new SubscriberSocket();
-            _transactionSocket.Connect($"tcp://{_bitcoinOptions.ZmqHost}:{_bitcoinOptions.ZmqTxPort}");
-            _transactionSocket.Subscribe("rawtx");
+            // // Subscribe to new transactions (for mempool monitoring)
+            // _transactionSocket = new SubscriberSocket();
+            // _transactionSocket.Connect($"tcp://{_bitcoinOptions.ZmqHost}:{_bitcoinOptions.ZmqTxPort}");
+            // _transactionSocket.Subscribe("rawtx");
 
             _logger.LogInformation("ZMQ sockets initialized - Block: {BlockPort}, Tx: {TxPort}",
                                    _bitcoinOptions.ZmqBlockPort, _bitcoinOptions.ZmqTxPort);
@@ -191,8 +231,8 @@ public class BlockchainMonitorService : IBlockchainMonitor
             _blockSocket?.Dispose();
             _blockSocket = null;
 
-            _transactionSocket?.Dispose();
-            _transactionSocket = null;
+            // _transactionSocket?.Dispose();
+            // _transactionSocket = null;
 
             _logger.LogDebug("ZMQ sockets cleaned up");
         }
@@ -202,63 +242,120 @@ public class BlockchainMonitorService : IBlockchainMonitor
         }
     }
 
-    private async Task ProcessNewBlock(Block block)
+    private async Task ProcessPendingBlocksAsync(IUnitOfWork uow)
     {
+        await _semaphore.WaitAsync();
+
+        try
+        {
+            while (_blocksToProcess.Count > 0)
+            {
+                var blockKvp = _blocksToProcess.First();
+                if (blockKvp.Key < _blockchainState.LastProcessedHeight)
+                {
+                    // TODO: Maybe we had a reorg?
+                    _logger.LogWarning("Possible reorg detected: Block {Height} is already processed", blockKvp.Key);
+                    _blocksToProcess.Remove(blockKvp.Key);
+                }
+
+                ProcessBlock(blockKvp.Value, blockKvp.Key, uow);
+            }
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    private async Task AddMissingBlocksToProcessAsync(uint currentHeight)
+    {
+        if (currentHeight > _blockchainState.LastProcessedHeight + 1)
+        {
+            _logger.LogWarning("Processing missed blocks from height {LastProcessedHeight} to {CurrentHeight}",
+                               _blockchainState.LastProcessedHeight, currentHeight);
+
+            for (var height = _blockchainState.LastProcessedHeight + 1; height < currentHeight; height++)
+            {
+                if (_blocksToProcess.ContainsKey(height))
+                    continue;
+
+                // Add missing block to process queue
+                var blockAtHeight = await _bitcoinWallet.GetBlockAsync(height);
+                if (blockAtHeight is not null)
+                {
+                    _blocksToProcess[height] = blockAtHeight;
+                }
+                else
+                {
+                    _logger.LogError("Missing block at height {Height}", height);
+                }
+            }
+        }
+    }
+
+    private async Task ProcessNewBlock(Block block, uint currentHeight)
+    {
+        using var scope = _serviceProvider.CreateScope();
+        using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
         var blockHash = block.GetHash();
 
         try
         {
-            _logger.LogDebug("Processing new block {BlockHash}", blockHash);
+            _logger.LogDebug("We have a new block at height {blockHeight}: {BlockHash}", currentHeight, blockHash);
 
-            var currentHeight = await _bitcoinWallet.GetCurrentBlockHeightAsync();
+            // Check for missed blocks first
+            await AddMissingBlocksToProcessAsync(currentHeight);
 
-            // Process any missed blocks first
-            if (currentHeight > _lastProcessedHeight + 1)
-            {
-                for (var height = _lastProcessedHeight + 1; height < currentHeight; height++)
-                {
-                    await ProcessBlock(block, height);
-                }
-            }
+            // Store the current block for processing
+            _blocksToProcess[currentHeight] = block;
 
-            // Process the current block
-            var currentBlock = await _bitcoinWallet.GetBlockAsync(currentHeight);
-            if (currentBlock != null && currentBlock.GetHash() == blockHash)
-            {
-                await ProcessBlock(currentBlock, currentHeight);
-                _lastProcessedHeight = currentHeight;
-            }
+            // Process missing blocks
+            await ProcessPendingBlocksAsync(uow);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error processing new block {BlockHash}", blockHash);
         }
+
+        await uow.SaveChangesAsync();
     }
 
-    private async Task ProcessNewTransaction(byte[] rawTxBytes)
+    // TODO: Check for revocation transactions in mempool
+    // private async Task ProcessNewTransaction(byte[] rawTxBytes)
+    // {
+    //     try
+    //     {
+    //         var transaction = Transaction.Load(rawTxBytes, Network.Main);
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         _logger.LogError(ex, "Error processing new transaction from mempool");
+    //     }
+    // }
+
+    private void ProcessBlock(Block block, uint height, IUnitOfWork uow)
     {
         try
         {
-            var transaction = Transaction.Load(rawTxBytes, Network.Main); // Use appropriate network
-            await CheckRevocationAttempts([transaction]);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error processing new transaction from mempool");
-        }
-    }
+            var blockHash = block.GetHash();
 
-    private async Task ProcessBlock(Block block, uint height)
-    {
-        try
-        {
             _logger.LogDebug("Processing block {Height} with {TxCount} transactions", height, block.Transactions.Count);
 
             // Notify listeners of the new block
-            NewBlockDetected?.Invoke(this, new NewBlockEventArgs(height, block.GetHash().ToBytes()));
+            OnNewBlockDetected?.Invoke(this, new NewBlockEventArgs(height, blockHash.ToBytes()));
 
-            // Check for revocation attempts in this block
-            await CheckRevocationAttempts(block.Transactions);
+            // Check if watched transactions are included in this block
+            CheckWatchedTransactionsForBlock(block.Transactions, height, uow);
+
+            // Update blockchain state
+            _blockchainState.UpdateState(blockHash.ToBytes());
+            uow.BlockchainStateDbRepository.AddOrUpdateAsync(_blockchainState);
+
+            // Check watched for all transactions' depth
+            CheckWatchedTransactionsDepth(uow);
+
+            _blocksToProcess.Remove(height);
         }
         catch (Exception ex)
         {
@@ -266,70 +363,76 @@ public class BlockchainMonitorService : IBlockchainMonitor
         }
     }
 
-    private async Task CheckWatchedTransactions()
+    private void ConfirmTransaction(uint blockHeight, IUnitOfWork uow, WatchedTransactionModel watchedTransaction)
     {
-        var completedWatches = new List<uint256>();
+        _logger.LogInformation(
+            "Transaction {TxId} reached required depth of {depth} confirmations at block {blockHeight}",
+            watchedTransaction.TransactionId, watchedTransaction.RequiredDepth, blockHeight);
 
-        foreach (var kvp in _watchedTransactions)
+        watchedTransaction.MarkAsCompleted();
+        uow.WatchedTransactionDbRepository.Update(watchedTransaction);
+        OnTransactionConfirmed?.Invoke(
+            this, new TransactionConfirmedEventArgs(watchedTransaction, blockHeight));
+
+        _watchedTransactions.TryRemove(new uint256(watchedTransaction.TransactionId), out _);
+    }
+
+    private void CheckWatchedTransactionsForBlock(List<Transaction> blockTransactions, uint blockHeight,
+                                                  IUnitOfWork uow)
+    {
+        _logger.LogDebug("Checking watched transactions for block {height} with {TxCount} transactions", blockHeight,
+                         blockTransactions.Count);
+
+        foreach (var transaction in blockTransactions)
         {
-            var txId = kvp.Key;
-            var watch = kvp.Value;
+            var txId = transaction.GetHash();
+
+            if (!_watchedTransactions.TryGetValue(txId, out var watchedTransaction))
+                continue;
+
+            _logger.LogInformation("Transaction {TxId} found in block at height {Height}", txId, blockHeight);
 
             try
             {
-                var confirmations = await _bitcoinWallet.GetTransactionConfirmationsAsync(txId);
+                // Update first seen height
+                watchedTransaction.SetFirstSeenAtHeight(blockHeight);
+                uow.WatchedTransactionDbRepository.Update(watchedTransaction);
 
-                if (confirmations >= watch.RequiredDepth)
-                {
-                    _logger.LogInformation("Transaction {TxId} reached required depth {RequiredDepth} confirmations",
-                                           txId, watch.RequiredDepth);
-
-                    await watch.OnConfirmed(txId, confirmations);
-                    completedWatches.Add(txId);
-                }
+                if (watchedTransaction.RequiredDepth == 0)
+                    ConfirmTransaction(blockHeight, uow, watchedTransaction);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking confirmations for transaction {TxId}", txId);
             }
         }
+    }
 
-        // Clean up completed watches
-        foreach (var txId in completedWatches)
+    private void CheckWatchedTransactionsDepth(IUnitOfWork uow)
+    {
+        foreach (var (txId, watchedTransaction) in _watchedTransactions)
         {
-            _watchedTransactions.TryRemove(txId, out _);
+            try
+            {
+                var confirmations = _blockchainState.LastProcessedHeight - watchedTransaction.FirstSeenAtHeight;
+                if (confirmations >= watchedTransaction.RequiredDepth)
+                    ConfirmTransaction(_blockchainState.LastProcessedHeight, uow, watchedTransaction);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking confirmations for transaction {TxId}", txId);
+            }
         }
     }
 
-    private async Task CheckRevocationAttempts(List<Transaction> transactions)
+    private async Task LoadPendingWatchedTransactionsAsync(IUnitOfWork uow)
     {
-        foreach (var transaction in transactions)
+        _logger.LogInformation("Loading watched transactions from database");
+
+        var watchedTransactions = await uow.WatchedTransactionDbRepository.GetAllPendingAsync();
+        foreach (var watchedTransaction in watchedTransactions)
         {
-            foreach (var input in transaction.Inputs)
-            {
-                var prevTxId = input.PrevOut.Hash;
-
-                if (_revocationWatches.TryGetValue(prevTxId, out var revocationWatch))
-                {
-                    _logger.LogWarning(
-                        "Detected revocation attempt! Old commitment transaction {CommitmentTxId} was spent",
-                        prevTxId);
-
-                    try
-                    {
-                        // Broadcast penalty transaction
-                        var penaltyTxId = await _bitcoinWallet.SendTransactionAsync(revocationWatch.PenaltyTransaction);
-                        _logger.LogInformation("Successfully broadcast penalty transaction {PenaltyTxId}", penaltyTxId);
-
-                        // Remove the watch since we've handled it
-                        _revocationWatches.TryRemove(prevTxId, out _);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to broadcast penalty transaction for {CommitmentTxId}", prevTxId);
-                    }
-                }
-            }
+            _watchedTransactions[new uint256(watchedTransaction.TransactionId)] = watchedTransaction;
         }
     }
 }

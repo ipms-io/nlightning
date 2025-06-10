@@ -1,10 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
+using NLightning.Infrastructure.Bitcoin.Builders.Interfaces;
 using NLightning.Infrastructure.Bitcoin.Wallet;
 using NLightning.Infrastructure.Bitcoin.Wallet.Interfaces;
 
 namespace NLightning.Infrastructure.Bitcoin;
 
-using Application.Bitcoin.Interfaces;
 using Builders;
 using Crypto.Functions;
 using Domain.Protocol.Interfaces;

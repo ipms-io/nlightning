@@ -2,36 +2,40 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLightning.Application.Bitcoin.Interfaces;
-using NLightning.Domain.Bitcoin.Interfaces;
-using NLightning.Domain.Protocol.Interfaces;
-using NLightning.Infrastructure.Transport.Interfaces;
+using NLightning.Domain.Channels.Interfaces;
+using NLightning.Infrastructure.Bitcoin.Wallet.Interfaces;
 
 namespace NLightning.Node.Services;
 
+using Domain.Bitcoin.Interfaces;
+using Domain.Node.Interfaces;
 using Domain.Node.Options;
+using Domain.Protocol.Interfaces;
 
 public class NltgDaemonService : BackgroundService
 {
     private readonly IBlockchainMonitor _blockchainMonitor;
+    private readonly IChannelManager _channelManager;
     private readonly IConfiguration _configuration;
     private readonly IFeeService _feeService;
     private readonly ILogger<NltgDaemonService> _logger;
+    private readonly IPeerManager _peerManager;
     private readonly NodeOptions _nodeOptions;
     private readonly ISecureKeyManager _secureKeyManager;
-    private readonly ITcpListenerService _tcpListenerService;
 
-    public NltgDaemonService(IBlockchainMonitor blockchainMonitor, IConfiguration configuration, IFeeService feeService,
+    public NltgDaemonService(IBlockchainMonitor blockchainMonitor, IChannelManager channelManager,
+                             IConfiguration configuration, IFeeService feeService,
                              ILogger<NltgDaemonService> logger, IOptions<NodeOptions> nodeOptions,
-                             ISecureKeyManager secureKeyManager, ITcpListenerService tcpListenerService)
+                             IPeerManager peerManager, ISecureKeyManager secureKeyManager)
     {
         _blockchainMonitor = blockchainMonitor;
+        _channelManager = channelManager;
         _configuration = configuration;
         _feeService = feeService;
         _logger = logger;
+        _peerManager = peerManager;
         _nodeOptions = nodeOptions.Value;
         _secureKeyManager = secureKeyManager;
-        _tcpListenerService = tcpListenerService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -52,11 +56,14 @@ public class NltgDaemonService : BackgroundService
             // Start the fee service
             await _feeService.StartAsync(stoppingToken);
 
+            // Initialize the Channel Manager
+            await _channelManager.InitializeAsync();
+
             // Start the blockchain monitor service
             await _blockchainMonitor.StartAsync(stoppingToken);
 
-            // Start listening for connections
-            await _tcpListenerService.StartAsync(stoppingToken);
+            // Start the peer manager service
+            await _peerManager.StartAsync(stoppingToken);
 
             while (!stoppingToken.IsCancellationRequested)
                 await Task.Delay(1000, stoppingToken);
@@ -71,7 +78,7 @@ public class NltgDaemonService : BackgroundService
     {
         _logger.LogInformation("NLTG shutdown requested");
 
-        await Task.WhenAll(_blockchainMonitor.StopAsync(), _feeService.StopAsync(), _tcpListenerService.StopAsync(),
+        await Task.WhenAll(_blockchainMonitor.StopAsync(), _feeService.StopAsync(), _peerManager.StopAsync(),
                            base.StopAsync(cancellationToken));
 
         _logger.LogInformation("NLTG daemon service stopped");

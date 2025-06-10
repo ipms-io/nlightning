@@ -1,3 +1,6 @@
+using NLightning.Domain.Bitcoin.Transactions.Enums;
+using NLightning.Domain.Bitcoin.Transactions.Factories;
+using NLightning.Domain.Bitcoin.Transactions.Outputs;
 using NLightning.Tests.Utils.Mocks;
 using NLightning.Tests.Utils.Vectors;
 
@@ -11,9 +14,6 @@ using Domain.Crypto.ValueObjects;
 using Domain.Money;
 using Domain.Protocol.Interfaces;
 using Domain.Protocol.ValueObjects;
-using Domain.Transactions.Enums;
-using Domain.Transactions.Factories;
-using Domain.Transactions.Outputs;
 using Enums;
 
 public class CommitmentTransactionModelFactoryTests

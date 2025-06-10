@@ -45,6 +45,15 @@ public readonly struct TxId : IEquatable<TxId>
 
     public bool Equals(TxId other)
     {
+        // Handle null cases first
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (_value is null && other._value is null)
+            return true;
+
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (_value is null || other._value is null)
+            return false;
+
         return _value.SequenceEqual(other._value);
     }
 

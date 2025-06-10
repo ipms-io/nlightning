@@ -5,11 +5,9 @@ using Microsoft.Extensions.Options;
 
 namespace NLightning.Infrastructure.Node.Factories;
 
-using Application.Node.Interfaces;
-using Application.Node.Services;
-using Domain.Channels.Interfaces;
 using Domain.Crypto.ValueObjects;
 using Domain.Exceptions;
+using Domain.Node.Interfaces;
 using Domain.Node.Options;
 using Domain.Protocol.Interfaces;
 using Services;
@@ -19,7 +17,6 @@ using Services;
 /// </summary>
 public class PeerServiceFactory : IPeerServiceFactory
 {
-    private readonly IChannelManager _channelManager;
     private readonly ILoggerFactory _loggerFactory;
     private readonly IMessageFactory _messageFactory;
     private readonly IMessageServiceFactory _messageServiceFactory;
@@ -28,12 +25,11 @@ public class PeerServiceFactory : IPeerServiceFactory
     private readonly ITransportServiceFactory _transportServiceFactory;
     private readonly NodeOptions _nodeOptions;
 
-    public PeerServiceFactory(IChannelManager channelManager, ILoggerFactory loggerFactory,
-                              IMessageFactory messageFactory, IMessageServiceFactory messageServiceFactory,
+    public PeerServiceFactory(ILoggerFactory loggerFactory, IMessageFactory messageFactory,
+                              IMessageServiceFactory messageServiceFactory,
                               IPingPongServiceFactory pingPongServiceFactory, ISecureKeyManager secureKeyManager,
                               ITransportServiceFactory transportServiceFactory, IOptions<NodeOptions> nodeOptions)
     {
-        _channelManager = channelManager;
         _loggerFactory = loggerFactory;
         _messageFactory = messageFactory;
         _messageServiceFactory = messageServiceFactory;
@@ -43,18 +39,13 @@ public class PeerServiceFactory : IPeerServiceFactory
         _nodeOptions = nodeOptions.Value;
     }
 
-    /// <summary>
-    /// Creates a peer that we're connecting to.
-    /// </summary>
-    /// <param name="peerPubKey">Peer public key</param>
-    /// <param name="tcpClient">TCP client</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the created peer.</returns>
+    /// <inheritdoc />
     /// <exception cref="ConnectionException">Thrown when the connection to the peer fails.</exception>
     public async Task<IPeerService> CreateConnectedPeerAsync(CompactPubKey peerPubKey, TcpClient tcpClient)
     {
         // Create a specific logger for the communication service
         var commLogger = _loggerFactory.CreateLogger<PeerCommunicationService>();
-        var appLogger = _loggerFactory.CreateLogger<PeerApplicationService>();
+        var appLogger = _loggerFactory.CreateLogger<PeerService>();
 
         // Create and Initialize the transport service
         var key = _secureKeyManager.GetNodeKeyPair();
@@ -80,21 +71,16 @@ public class PeerServiceFactory : IPeerServiceFactory
             new PeerCommunicationService(commLogger, messageService, _messageFactory, peerPubKey, pingPongService);
 
         // Create the application service (application layer)
-        return new PeerApplicationService(_channelManager, communicationService, _nodeOptions.Features, appLogger,
-                                          _nodeOptions.NetworkTimeout);
+        return new PeerService(communicationService, _nodeOptions.Features, appLogger, _nodeOptions.NetworkTimeout);
     }
 
-    /// <summary>
-    /// Creates a peer that is connecting to us.
-    /// </summary>
-    /// <param name="tcpClient">TCP client</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the created peer.</returns>
+    /// <inheritdoc />
     /// <exception cref="ConnectionException">Thrown when the connection to the peer fails.</exception>
     public async Task<IPeerService> CreateConnectingPeerAsync(TcpClient tcpClient)
     {
         // Create loggers
         var commLogger = _loggerFactory.CreateLogger<PeerCommunicationService>();
-        var appLogger = _loggerFactory.CreateLogger<PeerApplicationService>();
+        var appLogger = _loggerFactory.CreateLogger<PeerService>();
 
         var remoteEndPoint =
             (IPEndPoint)(tcpClient.Client.RemoteEndPoint ?? throw new Exception("Failed to get remote endpoint"));
@@ -131,7 +117,6 @@ public class PeerServiceFactory : IPeerServiceFactory
                                                                 pingPongService);
 
         // Create the application service (application layer)
-        return new PeerApplicationService(_channelManager, communicationService, _nodeOptions.Features, appLogger,
-                                          _nodeOptions.NetworkTimeout);
+        return new PeerService(communicationService, _nodeOptions.Features, appLogger, _nodeOptions.NetworkTimeout);
     }
 }

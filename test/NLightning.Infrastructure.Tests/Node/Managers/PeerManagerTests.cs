@@ -4,14 +4,12 @@ using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
-using NLightning.Application.Node.Interfaces;
 using NLightning.Domain.Crypto.ValueObjects;
 
 namespace NLightning.Infrastructure.Tests.Node.Managers;
 
 using Domain.Exceptions;
 using Domain.Node.Options;
-using Infrastructure.Node.Managers;
 using Infrastructure.Protocol.Models;
 using NLightning.Tests.Utils;
 

@@ -1,10 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLightning.Domain.Protocol.Interfaces;
+using NLightning.Infrastructure.Bitcoin.Wallet.Interfaces;
 
 namespace NLightning.Application.Channels.Managers;
 
-using Bitcoin.Interfaces;
 using Domain.Bitcoin.Interfaces;
 using Domain.Channels.Constants;
 using Domain.Channels.Enums;
@@ -27,19 +27,33 @@ public class ChannelManager : IChannelManager
     private readonly IServiceProvider _serviceProvider;
 
     public ChannelManager(IBlockchainMonitor blockchainMonitor, IChannelMemoryRepository channelMemoryRepository,
-                          ILogger<ChannelManager> logger,
-                          ILightningSigner lightningSigner, IServiceProvider serviceProvider)
+                          ILogger<ChannelManager> logger, ILightningSigner lightningSigner,
+                          IServiceProvider serviceProvider)
     {
         _channelMemoryRepository = channelMemoryRepository;
         _serviceProvider = serviceProvider;
         _logger = logger;
         _lightningSigner = lightningSigner;
-        blockchainMonitor.NewBlockDetected += (_, args) =>
+
+        blockchainMonitor.OnNewBlockDetected += (_, args) =>
             ForgetOldChannelByBlockHeightAsync(args.Height)
                .ContinueWith((task) =>
                 {
                     _logger.LogDebug(task.Exception, "Error while forgetting stale channels.");
                 }, TaskContinuationOptions.OnlyOnFaulted);
+
+        blockchainMonitor.OnTransactionConfirmed += (_, args) =>
+        {
+            // Check if the transaction is a funding transaction for any channel
+            if (_channelMemoryRepository.TryGetChannel(args.WatchedTransaction.ChannelId, out var channel)
+             && channel is not null)
+            {
+                // If the channel is not confirmed, update its state
+                channel.UpdateState(ChannelState.ReadyForUs);
+                _channelMemoryRepository.UpdateChannel(channel);
+                _logger.LogInformation("Channel {ChannelId} funding transaction confirmed", channel.ChannelId);
+            }
+        };
     }
 
     public async Task InitializeAsync()
@@ -126,7 +140,13 @@ public class ChannelManager : IChannelManager
 
     public async Task ForgetOldChannelByBlockHeightAsync(uint blockHeight)
     {
-        var heightLimit = blockHeight - ChannelConstants.MaxUnconfirmedChannelAge;
+        var heightLimit = (int)blockHeight - ChannelConstants.MaxUnconfirmedChannelAge;
+        if (heightLimit < 0)
+        {
+            _logger.LogDebug("Block height {BlockHeight} is too low to forget channels", blockHeight);
+            return;
+        }
+
         var staleChannels = _channelMemoryRepository.FindChannels(c => c.FundingCreatedAtBlockHeight <= heightLimit);
 
         _logger.LogDebug(

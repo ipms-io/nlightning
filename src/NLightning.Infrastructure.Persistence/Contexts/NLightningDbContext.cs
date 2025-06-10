@@ -2,8 +2,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace NLightning.Infrastructure.Persistence.Contexts;
 
-using Entities;
-using EntityConfiguration;
+using Entities.Bitcoin;
+using Entities.Channel;
+using EntityConfiguration.Bitcoin;
+using EntityConfiguration.Channel;
 using Enums;
 using Providers;
 
@@ -17,6 +19,11 @@ public class NLightningDbContext : DbContext
         _databaseType = databaseTypeProvider.DatabaseType;
     }
 
+    // Bitcoin DbSets
+    public DbSet<BlockchainStateEntity> BlockchainStates { get; set; }
+    public DbSet<WatchedTransactionEntity> WatchedTransactions { get; set; }
+
+    // Channel DbSets
     public DbSet<ChannelEntity> Channels { get; set; }
     public DbSet<ChannelConfigEntity> ChannelConfigs { get; set; }
     public DbSet<ChannelKeySetEntity> ChannelKeySets { get; set; }
@@ -26,7 +33,11 @@ public class NLightningDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Apply entity configurations
+        // Bitcoin entities
+        modelBuilder.ConfigureBlockchainStateEntity(_databaseType);
+        modelBuilder.ConfigureWatchedTransactionEntity(_databaseType);
+
+        // Channel entities
         modelBuilder.ConfigureChannelEntity(_databaseType);
         modelBuilder.ConfigureChannelConfigEntity(_databaseType);
         modelBuilder.ConfigureChannelKeySetEntity(_databaseType);

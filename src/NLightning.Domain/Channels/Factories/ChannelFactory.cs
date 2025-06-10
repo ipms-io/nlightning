@@ -1,3 +1,6 @@
+using NLightning.Domain.Bitcoin.Transactions.Constants;
+using NLightning.Domain.Bitcoin.Transactions.Outputs;
+
 namespace NLightning.Domain.Channels.Factories;
 
 using Bitcoin.Interfaces;
@@ -16,8 +19,6 @@ using Protocol.Messages;
 using Protocol.Payloads;
 using Protocol.Tlv;
 using Protocol.ValueObjects;
-using Transactions.Constants;
-using Transactions.Outputs;
 using ValueObjects;
 
 public class ChannelFactory : IChannelFactory

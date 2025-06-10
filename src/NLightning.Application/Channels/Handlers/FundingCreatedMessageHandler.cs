@@ -1,8 +1,11 @@
 using Microsoft.Extensions.Logging;
+using NLightning.Domain.Bitcoin.Transactions.Enums;
+using NLightning.Domain.Bitcoin.Transactions.Interfaces;
+using NLightning.Infrastructure.Bitcoin.Builders.Interfaces;
+using NLightning.Infrastructure.Bitcoin.Wallet.Interfaces;
 
 namespace NLightning.Application.Channels.Handlers;
 
-using Bitcoin.Interfaces;
 using Domain.Bitcoin.Interfaces;
 using Domain.Channels.Enums;
 using Domain.Channels.Interfaces;
@@ -14,8 +17,6 @@ using Domain.Node.Options;
 using Domain.Persistence.Interfaces;
 using Domain.Protocol.Interfaces;
 using Domain.Protocol.Messages;
-using Domain.Transactions.Enums;
-using Domain.Transactions.Interfaces;
 using Interfaces;
 
 public class FundingCreatedMessageHandler : IChannelMessageHandler<FundingCreatedMessage>
@@ -120,15 +121,8 @@ public class FundingCreatedMessageHandler : IChannelMessageHandler<FundingCreate
         // Remove the temporary channel
         _channelMemoryRepository.RemoveTemporaryChannel(peerPubKey, oldChannelId);
 
-        await _blockchainMonitor.WatchTransactionAsync(
-            payload.FundingTxId, channel.ChannelConfig.MinimumDepth,
-            (txId, depth) =>
-            {
-                _logger.LogInformation(
-                    "TRANSACTION {txid} IS CONFIRMED after {depth} blocks. SHOULD SEND CHANNEL_READY TO PEER!", txId,
-                    depth);
-                return Task.CompletedTask;
-            });
+        await _blockchainMonitor.WatchTransactionAsync(channel.ChannelId, payload.FundingTxId,
+                                                       channel.ChannelConfig.MinimumDepth);
 
         return fundingSignedMessage;
     }

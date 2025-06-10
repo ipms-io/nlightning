@@ -17,21 +17,25 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.12" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.12"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.12"/>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.12">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.3"/>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.12" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.12"/>
 
     <PackageReference Include="EFCore.NamingConventions" Version="8.0.3"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NLightning.Domain\NLightning.Domain.csproj" />
+    <ProjectReference Include="..\NLightning.Domain\NLightning.Domain.csproj"/>
   </ItemGroup>
-  
+
+  <ItemGroup>
+    <Folder Include="Entities\Node\"/>
+  </ItemGroup>
+
 </Project>

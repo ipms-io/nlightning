@@ -1,3 +1,5 @@
+using NLightning.Domain.Bitcoin.Transactions.Outputs;
+
 namespace NLightning.Domain.Channels.Models;
 
 using Bitcoin.ValueObjects;
@@ -5,7 +7,6 @@ using Crypto.ValueObjects;
 using Enums;
 using Money;
 using Protocol.ValueObjects;
-using Transactions.Outputs;
 using ValueObjects;
 
 public class ChannelModel

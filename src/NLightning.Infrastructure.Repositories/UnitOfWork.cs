@@ -1,6 +1,8 @@
 namespace NLightning.Infrastructure.Repositories;
 
-using Database.Channels;
+using Database.Bitcoin;
+using Database.Channel;
+using Domain.Bitcoin.Interfaces;
 using Domain.Channels.Interfaces;
 using Domain.Crypto.Hashes;
 using Domain.Persistence.Interfaces;
@@ -13,10 +15,21 @@ public class UnitOfWork : IUnitOfWork
     private readonly IMessageSerializer _messageSerializer;
     private readonly ISha256 _sha256;
 
+    // Bitcoin repositories
+    private BlockchainStateDbRepository? _blockchainStateDbRepository;
+    private WatchedTransactionDbRepository? _watchedTransactionDbRepository;
+
+    // Channel repositories
     private ChannelConfigDbRepository? _channelConfigDbRepository;
     private ChannelDbRepository? _channelDbRepository;
     private ChannelKeySetDbRepository? _channelKeySetDbRepository;
     private HtlcDbRepository? _htlcDbRepository;
+
+    public IBlockchainStateDbRepository BlockchainStateDbRepository =>
+        _blockchainStateDbRepository ??= new BlockchainStateDbRepository(_context);
+
+    public IWatchedTransactionDbRepository WatchedTransactionDbRepository =>
+        _watchedTransactionDbRepository ??= new WatchedTransactionDbRepository(_context);
 
     public IChannelConfigDbRepository ChannelConfigDbRepository =>
         _channelConfigDbRepository ??= new ChannelConfigDbRepository(_context);

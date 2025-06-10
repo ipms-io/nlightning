@@ -1,6 +1,7 @@
+using NLightning.Domain.Bitcoin.Transactions.Outputs;
+
 namespace NLightning.Infrastructure.Bitcoin.Builders;
 
-using Domain.Transactions.Outputs;
 using Outputs;
 
 public interface IFundingOutputBuilder

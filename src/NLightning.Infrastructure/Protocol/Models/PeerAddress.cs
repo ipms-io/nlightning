@@ -62,7 +62,7 @@ public sealed partial class PeerAddress
         }
     }
 
-    public PeerAddress(PeerNodeInfo peerNodeInfo) : this(peerNodeInfo.Address)
+    public PeerAddress(PeerAddressInfo peerAddressInfo) : this(peerAddressInfo.Address)
     {
     }
 
