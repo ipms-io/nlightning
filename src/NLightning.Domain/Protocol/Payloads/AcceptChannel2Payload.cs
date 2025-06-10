@@ -1,10 +1,9 @@
-using NBitcoin;
-
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
+using Crypto.ValueObjects;
 using Interfaces;
 using Money;
-using ValueObjects;
 
 /// <summary>
 /// Represents the payload for the accept_channel2 message.
@@ -12,18 +11,27 @@ using ValueObjects;
 /// <remarks>
 /// Initializes a new instance of the AcceptChannel2Payload class.
 /// </remarks>
-public class AcceptChannel2Payload(PubKey delayedPaymentBasepoint, LightningMoney dustLimitAmount,
-                                   PubKey firstPerCommitmentPoint, LightningMoney fundingAmount, PubKey fundingPubKey,
-                                   PubKey htlcBasepoint, LightningMoney htlcMinimumAmount, ushort maxAcceptedHtlcs,
-                                   LightningMoney maxHtlcValueInFlight, uint minimumDepth, PubKey paymentBasepoint,
-                                   PubKey revocationBasepoint, ChannelId temporaryChannelId, ushort toSelfDelay)
-    : IMessagePayload
+public class AcceptChannel2Payload(
+    CompactPubKey delayedPaymentCompactBasepoint,
+    LightningMoney dustLimitAmount,
+    CompactPubKey firstPerCommitmentCompactPoint,
+    LightningMoney fundingAmount,
+    CompactPubKey fundingCompactPubKey,
+    CompactPubKey htlcCompactBasepoint,
+    LightningMoney htlcMinimumAmount,
+    ushort maxAcceptedHtlcs,
+    LightningMoney maxHtlcValueInFlight,
+    uint minimumDepth,
+    CompactPubKey paymentCompactBasepoint,
+    CompactPubKey revocationCompactBasepoint,
+    ChannelId channelId,
+    ushort toSelfDelay) : IChannelMessagePayload
 {
     /// <summary>
     /// The temporary_channel_id is used to identify this channel on a per-peer basis until the funding transaction
     /// is established, at which point it is replaced by the channel_id, which is derived from the funding transaction.
     /// </summary>
-    public ChannelId TemporaryChannelId { get; } = temporaryChannelId;
+    public ChannelId ChannelId { get; } = channelId;
 
     /// <summary>
     /// funding_satoshis is the amount the acceptor is putting into the channel.
@@ -67,30 +75,30 @@ public class AcceptChannel2Payload(PubKey delayedPaymentBasepoint, LightningMone
     /// <summary>
     /// funding_pubkey is the public key in the 2-of-2 multisig script of the funding transaction output.
     /// </summary>
-    public PubKey FundingPubKey { get; } = fundingPubKey;
+    public CompactPubKey FundingCompactPubKey { get; } = fundingCompactPubKey;
 
     /// <summary>
     /// revocation_basepoint is used to regenerate the scripts required for the penalty transaction
     /// </summary>
-    public PubKey RevocationBasepoint { get; } = revocationBasepoint;
+    public CompactPubKey RevocationCompactBasepoint { get; } = revocationCompactBasepoint;
 
     /// <summary>
     /// payment_basepoint is used to produce payment signatures for the protocol
     /// </summary>
-    public PubKey PaymentBasepoint { get; } = paymentBasepoint;
+    public CompactPubKey PaymentCompactBasepoint { get; } = paymentCompactBasepoint;
 
     /// <summary>
     /// delayed_payment_basepoint is used to regenerate the scripts required for the penalty transaction
     /// </summary>
-    public PubKey DelayedPaymentBasepoint { get; } = delayedPaymentBasepoint;
+    public CompactPubKey DelayedPaymentCompactBasepoint { get; } = delayedPaymentCompactBasepoint;
 
     /// <summary>
     /// htlc_basepoint is used to produce HTLC signatures for the protocol
     /// </summary>
-    public PubKey HtlcBasepoint { get; } = htlcBasepoint;
+    public CompactPubKey HtlcCompactBasepoint { get; } = htlcCompactBasepoint;
 
     /// <summary>
     /// first_per_commitment_point is the per-commitment point used for the first commitment transaction
     /// </summary>
-    public PubKey FirstPerCommitmentPoint { get; } = firstPerCommitmentPoint;
+    public CompactPubKey FirstPerCommitmentCompactPoint { get; } = firstPerCommitmentCompactPoint;
 }

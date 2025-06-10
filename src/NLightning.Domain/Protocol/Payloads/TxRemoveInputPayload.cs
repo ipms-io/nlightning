@@ -1,8 +1,8 @@
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
 using Interfaces;
 using Messages;
-using ValueObjects;
 
 /// <summary>
 /// Represents a tx_remove_input payload.
@@ -13,8 +13,8 @@ using ValueObjects;
 /// <param name="channelId">The channel id.</param>
 /// <param name="serialId">The serial id.</param>
 /// <seealso cref="TxRemoveInputMessage"/>
-/// <seealso cref="ValueObjects.ChannelId"/>
-public class TxRemoveInputPayload(ChannelId channelId, ulong serialId) : IMessagePayload
+/// <seealso cref="Channels.ValueObjects.ChannelId"/>
+public class TxRemoveInputPayload(ChannelId channelId, ulong serialId) : IChannelMessagePayload
 {
     /// <summary>
     /// The channel id.

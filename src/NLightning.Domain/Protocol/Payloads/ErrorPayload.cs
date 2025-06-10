@@ -2,9 +2,9 @@ using System.Text;
 
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
 using Interfaces;
 using Messages;
-using ValueObjects;
 
 /// <summary>
 /// Represents an error payload.
@@ -33,16 +33,20 @@ public class ErrorPayload : IMessagePayload
 
     public ErrorPayload(byte[] data)
     {
-        if (data.Any(d => d != 0))
-            Data = data;
+        Data = data;
     }
 
-    public ErrorPayload(ChannelId channelId, byte[] data) : this(data)
+    public ErrorPayload(ChannelId? channelId, byte[] data) : this(data)
     {
-        ChannelId = channelId;
+        if (channelId.HasValue)
+            ChannelId = channelId.Value;
     }
-    public ErrorPayload(ChannelId channelId, string message) : this(channelId, Encoding.UTF8.GetBytes(message))
-    { }
+
+    public ErrorPayload(ChannelId? channelId, string message) : this(channelId, Encoding.UTF8.GetBytes(message))
+    {
+    }
+
     public ErrorPayload(string message) : this(Encoding.UTF8.GetBytes(message))
-    { }
+    {
+    }
 }

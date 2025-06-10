@@ -3,8 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
 using Domain.Protocol.Constants;
+using Domain.Protocol.Interfaces;
 using Domain.Protocol.Tlv;
-using Domain.Protocol.Tlv.Converters;
 
 public class RequireConfirmedInputsTlvConverter : ITlvConverter<RequireConfirmedInputsTlv>
 {
@@ -15,7 +15,7 @@ public class RequireConfirmedInputsTlvConverter : ITlvConverter<RequireConfirmed
 
     public RequireConfirmedInputsTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        if (baseTlv.Type != TlvConstants.REQUIRE_CONFIRMED_INPUTS)
+        if (baseTlv.Type != TlvConstants.RequireConfirmedInputs)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
@@ -38,7 +38,7 @@ public class RequireConfirmedInputsTlvConverter : ITlvConverter<RequireConfirmed
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
         return ConvertToBase(tlv as RequireConfirmedInputsTlv
-                             ?? throw new InvalidCastException(
+                          ?? throw new InvalidCastException(
                                  $"Error converting BaseTlv to {nameof(RequireConfirmedInputsTlv)}"));
     }
 }

@@ -5,8 +5,8 @@ namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 using Domain.Enums;
 using Domain.Money;
 using Domain.Protocol.Constants;
+using Domain.Protocol.Interfaces;
 using Domain.Protocol.Tlv;
-using Domain.Protocol.Tlv.Converters;
 using Infrastructure.Converters;
 
 public class FeeRangeTlvConverter : ITlvConverter<FeeRangeTlv>
@@ -22,7 +22,7 @@ public class FeeRangeTlvConverter : ITlvConverter<FeeRangeTlv>
 
     public FeeRangeTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        if (baseTlv.Type != TlvConstants.FEE_RANGE)
+        if (baseTlv.Type != TlvConstants.FeeRange)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
@@ -33,9 +33,9 @@ public class FeeRangeTlvConverter : ITlvConverter<FeeRangeTlv>
         }
 
         var minFeeAmount = LightningMoney
-            .FromUnit(EndianBitConverter.ToUInt64BigEndian(baseTlv.Value[..sizeof(ulong)]), LightningMoneyUnit.Satoshi);
+           .FromUnit(EndianBitConverter.ToUInt64BigEndian(baseTlv.Value[..sizeof(ulong)]), LightningMoneyUnit.Satoshi);
         var maxFeeAmount = LightningMoney
-            .FromUnit(EndianBitConverter.ToUInt64BigEndian(baseTlv.Value[sizeof(ulong)..]), LightningMoneyUnit.Satoshi);
+           .FromUnit(EndianBitConverter.ToUInt64BigEndian(baseTlv.Value[sizeof(ulong)..]), LightningMoneyUnit.Satoshi);
 
         return new FeeRangeTlv(minFeeAmount, maxFeeAmount);
     }
@@ -50,6 +50,6 @@ public class FeeRangeTlvConverter : ITlvConverter<FeeRangeTlv>
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
         return ConvertToBase(tlv as FeeRangeTlv
-                             ?? throw new InvalidCastException($"Error converting BaseTlv to {nameof(FeeRangeTlv)}"));
+                          ?? throw new InvalidCastException($"Error converting BaseTlv to {nameof(FeeRangeTlv)}"));
     }
 }

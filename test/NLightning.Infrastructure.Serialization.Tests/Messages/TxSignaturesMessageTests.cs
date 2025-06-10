@@ -1,8 +1,10 @@
+using NLightning.Domain.Bitcoin.ValueObjects;
+using NLightning.Domain.Channels.ValueObjects;
+
 namespace NLightning.Infrastructure.Serialization.Tests.Messages;
 
 using Domain.Protocol.Messages;
 using Domain.Protocol.Payloads;
-using Domain.ValueObjects;
 using Helpers;
 using Serialization.Messages.Types;
 
@@ -26,7 +28,8 @@ public class TxSignaturesMessageTests
         {
             new([0xFF, 0xFF, 0xFF, 0xFD])
         };
-        var stream = new MemoryStream(Convert.FromHexString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010004FFFFFFFD"));
+        var stream = new MemoryStream(Convert.FromHexString(
+                                          "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010004FFFFFFFD"));
 
         // Act
         var message = await _txSignaturesMessageTypeSerializer.DeserializeAsync(stream);
@@ -51,7 +54,9 @@ public class TxSignaturesMessageTests
         };
         var message = new TxSignaturesMessage(new TxSignaturesPayload(channelId, txId, witnesses));
         var stream = new MemoryStream();
-        var expectedBytes = Convert.FromHexString("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010004FFFFFFFD");
+        var expectedBytes =
+            Convert.FromHexString(
+                "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010004FFFFFFFD");
 
         // Act
         await _txSignaturesMessageTypeSerializer.SerializeAsync(message, stream);

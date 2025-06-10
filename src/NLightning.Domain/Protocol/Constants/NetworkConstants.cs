@@ -11,8 +11,8 @@ namespace NLightning.Domain.Protocol.Constants;
 [ExcludeFromCodeCoverage]
 public static class NetworkConstants
 {
-    public const string MAINNET = "mainnet";
-    public const string TESTNET = "testnet";
-    public const string REGTEST = "regtest";
-    public const string SIGNET = "signet";
+    public const string Mainnet = "mainnet";
+    public const string Testnet = "testnet";
+    public const string Regtest = "regtest";
+    public const string Signet = "signet";
 }

@@ -11,7 +11,7 @@ using Payloads;
 /// The message type is 70.
 /// </remarks>
 /// <param name="payload">The tx_complete payload.</param>
-public sealed class TxCompleteMessage(TxCompletePayload payload) : BaseMessage(MessageTypes.TX_COMPLETE, payload)
+public sealed class TxCompleteMessage(TxCompletePayload payload) : BaseChannelMessage(MessageTypes.TxComplete, payload)
 {
     /// <summary>
     /// The payload of the message.

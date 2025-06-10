@@ -1,15 +1,14 @@
 using System.Buffers;
 using System.Runtime.Serialization;
-using NLightning.Domain.Serialization.Payloads;
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Protocol.Interfaces;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
 using Converters;
 using Domain.Crypto.Constants;
 using Domain.Protocol.Payloads;
-using Domain.Protocol.Payloads.Interfaces;
-using Domain.Serialization.Factories;
-using Domain.ValueObjects;
 using Exceptions;
 
 public class UpdateFailMalformedHtlcPayloadSerializer : IPayloadSerializer<UpdateFailMalformedHtlcPayload>
@@ -29,7 +28,7 @@ public class UpdateFailMalformedHtlcPayloadSerializer : IPayloadSerializer<Updat
         // Get the ChannelId serializer
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(updateFailMalformedHtlcPayload.ChannelId, stream);
 
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(updateFailMalformedHtlcPayload.Id));
@@ -46,13 +45,13 @@ public class UpdateFailMalformedHtlcPayloadSerializer : IPayloadSerializer<Updat
             // Get the ChannelId serializer
             var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
             var id = EndianBitConverter.ToUInt64BigEndian(buffer[..sizeof(ulong)]);
 
-            var sha256OfOnion = new byte[CryptoConstants.SHA256_HASH_LEN];
+            var sha256OfOnion = new byte[CryptoConstants.Sha256HashLen];
             await stream.ReadExactlyAsync(sha256OfOnion);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ushort)]);

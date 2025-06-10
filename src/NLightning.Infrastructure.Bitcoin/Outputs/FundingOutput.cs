@@ -11,8 +11,8 @@ public class FundingOutput : BaseOutput
     public PubKey LocalPubKey { get; }
     public PubKey RemotePubKey { get; }
 
-    public FundingOutput(PubKey localPubKey, PubKey remotePubKey, LightningMoney amount)
-        : base(CreateMultisigScript(localPubKey, remotePubKey), amount)
+    public FundingOutput(LightningMoney amount, PubKey localPubKey, PubKey remotePubKey)
+        : base(amount, CreateMultisigScript(localPubKey, remotePubKey))
     {
         ArgumentNullException.ThrowIfNull(localPubKey);
         ArgumentNullException.ThrowIfNull(remotePubKey);

@@ -1,4 +1,4 @@
-namespace NLightning.Common.Options;
+namespace NLightning.Infrastructure.Bitcoin.Options;
 
 public class FeeEstimationOptions
 {

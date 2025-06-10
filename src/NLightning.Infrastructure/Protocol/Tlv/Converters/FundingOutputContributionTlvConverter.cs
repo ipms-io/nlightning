@@ -4,8 +4,8 @@ using NLightning.Domain.Money;
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
 using Domain.Protocol.Constants;
+using Domain.Protocol.Interfaces;
 using Domain.Protocol.Tlv;
-using Domain.Protocol.Tlv.Converters;
 using Infrastructure.Converters;
 
 public class FundingOutputContributionTlvConverter : ITlvConverter<FundingOutputContributionTlv>
@@ -17,7 +17,7 @@ public class FundingOutputContributionTlvConverter : ITlvConverter<FundingOutput
 
     public FundingOutputContributionTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        if (baseTlv.Type != TlvConstants.FUNDING_OUTPUT_CONTRIBUTION)
+        if (baseTlv.Type != TlvConstants.FundingOutputContribution)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
@@ -42,7 +42,7 @@ public class FundingOutputContributionTlvConverter : ITlvConverter<FundingOutput
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
         return ConvertToBase(tlv as FundingOutputContributionTlv
-                              ?? throw new InvalidCastException(
-                                  $"Error casting BaseTlv to {nameof(FundingOutputContributionTlv)}"));
+                          ?? throw new InvalidCastException(
+                                 $"Error casting BaseTlv to {nameof(FundingOutputContributionTlv)}"));
     }
 }

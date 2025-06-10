@@ -1,6 +1,7 @@
 namespace NLightning.Domain.Transport;
 
-using Protocol.Messages.Interfaces;
+using Crypto.ValueObjects;
+using Protocol.Interfaces;
 
 public interface ITransportService : IDisposable
 {
@@ -12,5 +13,5 @@ public interface ITransportService : IDisposable
 
     bool IsInitiator { get; }
     bool IsConnected { get; }
-    NBitcoin.PubKey? RemoteStaticPublicKey { get; }
+    CompactPubKey? RemoteStaticPublicKey { get; }
 }

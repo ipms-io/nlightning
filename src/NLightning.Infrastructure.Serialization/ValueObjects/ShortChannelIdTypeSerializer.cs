@@ -1,11 +1,9 @@
 using System.Buffers;
+using NLightning.Domain.Channels.ValueObjects;
+using NLightning.Domain.Interfaces;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.ValueObjects;
-
-using Domain.Serialization.ValueObjects;
-using Domain.ValueObjects;
-using Domain.ValueObjects.Interfaces;
-
 public class ShortChannelIdTypeSerializer : IValueObjectTypeSerializer<ShortChannelId>
 {
     /// <summary>
@@ -33,13 +31,13 @@ public class ShortChannelIdTypeSerializer : IValueObjectTypeSerializer<ShortChan
     /// <exception cref="IOException">Thrown when an I/O error occurs during the read operation.</exception>
     public async Task<ShortChannelId> DeserializeAsync(Stream stream)
     {
-        var buffer = ArrayPool<byte>.Shared.Rent(ShortChannelId.LENGTH);
+        var buffer = ArrayPool<byte>.Shared.Rent(ShortChannelId.Length);
 
         try
         {
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..ShortChannelId.LENGTH]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..ShortChannelId.Length]);
 
-            return new ShortChannelId(buffer[..ShortChannelId.LENGTH]);
+            return new ShortChannelId(buffer[..ShortChannelId.Length]);
         }
         finally
         {

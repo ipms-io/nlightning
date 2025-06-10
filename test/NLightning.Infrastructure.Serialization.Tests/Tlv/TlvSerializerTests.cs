@@ -1,5 +1,5 @@
 using NLightning.Domain.Protocol.Tlv;
-using NLightning.Domain.ValueObjects;
+using NLightning.Domain.Protocol.ValueObjects;
 using NLightning.Infrastructure.Serialization.Factories;
 using NLightning.Infrastructure.Serialization.Tlv;
 

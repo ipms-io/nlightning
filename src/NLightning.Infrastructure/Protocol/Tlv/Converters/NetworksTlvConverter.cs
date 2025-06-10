@@ -2,10 +2,11 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
+using Domain.Crypto.Constants;
 using Domain.Protocol.Constants;
+using Domain.Protocol.Interfaces;
 using Domain.Protocol.Tlv;
-using Domain.Protocol.Tlv.Converters;
-using Domain.ValueObjects;
+using Domain.Protocol.ValueObjects;
 
 public class NetworksTlvConverter : ITlvConverter<NetworksTlv>
 {
@@ -16,21 +17,21 @@ public class NetworksTlvConverter : ITlvConverter<NetworksTlv>
 
     public NetworksTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        if (baseTlv.Type != TlvConstants.NETWORKS)
+        if (baseTlv.Type != TlvConstants.Networks)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
 
-        if (baseTlv.Length % ChainHash.LENGTH != 0)
+        if (baseTlv.Length % CryptoConstants.Sha256HashLen != 0)
         {
             throw new InvalidCastException("Invalid length");
         }
 
         var chainHashes = new List<ChainHash>();
         // split the Value into 32 bytes chunks and add it to the list
-        for (var i = 0; i < baseTlv.Length; i += ChainHash.LENGTH)
+        for (var i = 0; i < baseTlv.Length; i += CryptoConstants.Sha256HashLen)
         {
-            chainHashes.Add(baseTlv.Value[i..(i + ChainHash.LENGTH)]);
+            chainHashes.Add(baseTlv.Value[i..(i + CryptoConstants.Sha256HashLen)]);
         }
 
         return new NetworksTlv(chainHashes);
@@ -46,6 +47,6 @@ public class NetworksTlvConverter : ITlvConverter<NetworksTlv>
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
         return ConvertToBase(tlv as NetworksTlv
-                             ?? throw new InvalidCastException($"Error converting BaseTlv to {nameof(NetworksTlv)}"));
+                          ?? throw new InvalidCastException($"Error converting BaseTlv to {nameof(NetworksTlv)}"));
     }
 }

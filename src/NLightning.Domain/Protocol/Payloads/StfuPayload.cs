@@ -1,7 +1,7 @@
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
 using Interfaces;
-using ValueObjects;
 
 /// <summary>
 /// Represents the payload for the stfu message.
@@ -9,7 +9,7 @@ using ValueObjects;
 /// <remarks>
 /// Initializes a new instance of the StfuPayload class.
 /// </remarks>
-public class StfuPayload(ChannelId channelId, bool initiator) : IMessagePayload
+public class StfuPayload(ChannelId channelId, bool initiator) : IChannelMessagePayload
 {
     /// <summary>
     /// The channel_id this message refers to

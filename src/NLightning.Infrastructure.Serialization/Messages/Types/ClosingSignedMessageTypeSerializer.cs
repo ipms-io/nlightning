@@ -1,15 +1,13 @@
 using System.Runtime.Serialization;
+using NLightning.Domain.Protocol.Interfaces;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Messages.Types;
 
 using Domain.Protocol.Constants;
-using Domain.Protocol.Factories;
 using Domain.Protocol.Messages;
-using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Tlv;
-using Domain.Serialization.Factories;
-using Domain.Serialization.Messages.Types;
 using Exceptions;
 using Interfaces;
 
@@ -35,7 +33,7 @@ public class ClosingSignedMessageTypeSerializer : IMessageTypeSerializer<Closing
 
         // Get the payload serializer
         var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type)
-                                    ?? throw new SerializationException("No serializer found for payload type");
+                                 ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
 
         // Serialize the TLV stream
@@ -54,20 +52,20 @@ public class ClosingSignedMessageTypeSerializer : IMessageTypeSerializer<Closing
         {
             // Deserialize payload
             var payloadSerializer = _payloadSerializerFactory.GetSerializer<ClosingSignedPayload>()
-                                    ?? throw new SerializationException("No serializer found for payload type");
+                                 ?? throw new SerializationException("No serializer found for payload type");
             var payload = await payloadSerializer.DeserializeAsync(stream)
-                          ?? throw new SerializationException("Error serializing payload");
+                       ?? throw new SerializationException("Error serializing payload");
 
             // Deserialize extension
             if (stream.Position >= stream.Length)
                 throw new SerializationException("Required extension is missing");
 
             var extension = await _tlvStreamSerializer.DeserializeAsync(stream);
-            if (extension is null || !extension.TryGetTlv(TlvConstants.FEE_RANGE, out var baseFeeRangeTlv))
+            if (extension is null || !extension.TryGetTlv(TlvConstants.FeeRange, out var baseFeeRangeTlv))
                 throw new SerializationException("Required extension is missing");
 
             var tlvConverter = _tlvConverterFactory.GetConverter<FeeRangeTlv>()
-                               ?? throw new SerializationException(
+                            ?? throw new SerializationException(
                                    $"No serializer found for tlv type {nameof(FeeRangeTlv)}");
             var feeRangeTlv = tlvConverter.ConvertFromBase(baseFeeRangeTlv!);
 
@@ -78,6 +76,7 @@ public class ClosingSignedMessageTypeSerializer : IMessageTypeSerializer<Closing
             throw new MessageSerializationException("Error deserializing ClosingSignedMessage", e);
         }
     }
+
     async Task<IMessage> IMessageTypeSerializer.DeserializeAsync(Stream stream)
     {
         return await DeserializeAsync(stream);

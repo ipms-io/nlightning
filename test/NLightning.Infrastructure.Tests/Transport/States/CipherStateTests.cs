@@ -5,9 +5,12 @@ using Infrastructure.Transport.Handshake.States;
 
 public class CipherStateTests
 {
-    private static readonly byte[] s_dummyKey32 = Enumerable.Repeat<byte>(0x01, CryptoConstants.PRIVKEY_LEN).ToArray();
-    private static readonly byte[] s_differentKey32 = Enumerable.Repeat<byte>(0x02, CryptoConstants.PRIVKEY_LEN).ToArray();
-    private const int TEST_DATA_SIZE = 32;
+    private static readonly byte[] s_dummyKey32 = Enumerable.Repeat<byte>(0x01, CryptoConstants.PrivkeyLen).ToArray();
+
+    private static readonly byte[] s_differentKey32 =
+        Enumerable.Repeat<byte>(0x02, CryptoConstants.PrivkeyLen).ToArray();
+
+    private const int TestDataSize = 32;
 
     [Fact]
     public void Given_NoInitialization_When_HasKeysCalled_Then_ReturnsFalse()
@@ -34,7 +37,7 @@ public class CipherStateTests
         // Then
         Assert.True(cipherState.HasKeys());
         // If we call encryption, we should not throw, meaning _k is set.
-        var data = new byte[TEST_DATA_SIZE];
+        var data = new byte[TestDataSize];
         var enc = new byte[data.Length + 16];
         cipherState.EncryptWithAd(ReadOnlySpan<byte>.Empty, data, enc);
         Assert.NotEqual(data, enc);
@@ -53,7 +56,7 @@ public class CipherStateTests
 
         // Then
         // On the next encryption, the state should use nonce=5, then increment to 6 internally
-        var data = new byte[TEST_DATA_SIZE];
+        var data = new byte[TestDataSize];
         var output = new byte[data.Length + 16];
         cipherState.EncryptWithAd(ReadOnlySpan<byte>.Empty, data, output);
         // No exception => success. We can't easily verify exact nonce usage unless we
@@ -101,7 +104,7 @@ public class CipherStateTests
         // Manually set nonce to 1000, which is the MAX_NONCE
         cipherState.SetNonce(1000);
 
-        var data = new byte[TEST_DATA_SIZE];
+        var data = new byte[TestDataSize];
         var output = new byte[data.Length + 16];
 
         // When/Then
@@ -141,8 +144,8 @@ public class CipherStateTests
         // Given
         using var cipherState = new CipherState();
         cipherState.InitializeKeyAndChainingKey(s_dummyKey32, s_differentKey32);
-        var plaintext = new byte[TEST_DATA_SIZE];
-        var ciphertext = new byte[TEST_DATA_SIZE + 16];
+        var plaintext = new byte[TestDataSize];
+        var ciphertext = new byte[TestDataSize + 16];
 
         // Calls Encrypt once, so we have key material to perform a Rekey
         cipherState.Encrypt(plaintext, ciphertext);

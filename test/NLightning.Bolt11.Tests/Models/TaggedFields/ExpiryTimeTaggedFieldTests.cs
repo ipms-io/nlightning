@@ -1,7 +1,8 @@
+using NLightning.Domain.Utils;
+
 namespace NLightning.Bolt11.Tests.Models.TaggedFields;
 
 using Bolt11.Models.TaggedFields;
-using Common.Utils;
 using Enums;
 
 public class ExpiryTimeTaggedFieldTests
@@ -18,7 +19,7 @@ public class ExpiryTimeTaggedFieldTests
         var taggedField = new ExpiryTimeTaggedField(value);
 
         // Assert
-        Assert.Equal(TaggedFieldTypes.EXPIRY_TIME, taggedField.Type);
+        Assert.Equal(TaggedFieldTypes.ExpiryTime, taggedField.Type);
         Assert.Equal(value, taggedField.Value);
         Assert.Equal(expectedLength, taggedField.Length);
     }

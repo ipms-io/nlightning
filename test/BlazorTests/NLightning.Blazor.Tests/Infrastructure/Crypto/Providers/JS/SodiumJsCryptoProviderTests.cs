@@ -13,7 +13,7 @@ public class SodiumJsCryptoProviderTests : BlazorTestBase
         // Arrange
         Assert.NotNull(Page);
         ClearOutput();
-        await Page.GotoAsync(ROOT_URI, new PageGotoOptions
+        await Page.GotoAsync(RootUri, new PageGotoOptions
         {
             WaitUntil = WaitUntilState.NetworkIdle,
             Timeout = 5000
@@ -47,7 +47,7 @@ public class SodiumJsCryptoProviderTests : BlazorTestBase
         // Arrange
         Assert.NotNull(Page);
         ClearOutput();
-        await Page.GotoAsync(ROOT_URI, new PageGotoOptions
+        await Page.GotoAsync(RootUri, new PageGotoOptions
         {
             WaitUntil = WaitUntilState.NetworkIdle,
             Timeout = 5000
@@ -58,11 +58,12 @@ public class SodiumJsCryptoProviderTests : BlazorTestBase
         Assert.NotNull(a);
         await a.ClickAsync();
 
-        await Page.WaitForSelectorAsync("[data-testid='aeadXChacha20Poly1305IetfResult']", new PageWaitForSelectorOptions
-        {
-            State = WaitForSelectorState.Visible,
-            Timeout = 5000
-        });
+        await Page.WaitForSelectorAsync("[data-testid='aeadXChacha20Poly1305IetfResult']",
+                                        new PageWaitForSelectorOptions
+                                        {
+                                            State = WaitForSelectorState.Visible,
+                                            Timeout = 5000
+                                        });
 
         // Assert
         var resultElement = Page.GetByTestId("aeadXChacha20Poly1305IetfResult");
@@ -85,7 +86,8 @@ public class SodiumJsCryptoProviderTests : BlazorTestBase
             public string? Cipher { get; set; }
 
             [JsonIgnore]
-            public byte[] CipherBytes => Convert.FromHexString(Cipher ?? throw new NullReferenceException("Cipher is null."));
+            public byte[] CipherBytes =>
+                Convert.FromHexString(Cipher ?? throw new NullReferenceException("Cipher is null."));
         }
     }
 }

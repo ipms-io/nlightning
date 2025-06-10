@@ -1,17 +1,16 @@
 using System.Buffers;
 using System.Runtime.Serialization;
-using NBitcoin;
-using NLightning.Domain.Serialization.Payloads;
+using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
 using Converters;
+using Domain.Bitcoin.ValueObjects;
+using Domain.Channels.ValueObjects;
 using Domain.Enums;
 using Domain.Money;
 using Domain.Protocol.Payloads;
-using Domain.Protocol.Payloads.Interfaces;
-using Domain.Serialization.Factories;
-using Domain.ValueObjects;
+using Domain.Serialization.Interfaces;
 using Exceptions;
 
 public class TxAddOutputPayloadSerializer : IPayloadSerializer<TxAddOutputPayload>
@@ -31,13 +30,13 @@ public class TxAddOutputPayloadSerializer : IPayloadSerializer<TxAddOutputPayloa
         // Get the value object serializer
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(txAddOutputPayload.ChannelId, stream);
 
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(txAddOutputPayload.SerialId));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(txAddOutputPayload.Amount.Satoshi));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian((ushort)txAddOutputPayload.Script.Length));
-        await stream.WriteAsync(txAddOutputPayload.Script.ToBytes());
+        await stream.WriteAsync(txAddOutputPayload.Script);
     }
 
     public async Task<TxAddOutputPayload?> DeserializeAsync(Stream stream)
@@ -49,7 +48,7 @@ public class TxAddOutputPayloadSerializer : IPayloadSerializer<TxAddOutputPayloa
             // Get the value object serializer
             var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
 
             var bytes = new byte[8];
@@ -66,7 +65,7 @@ public class TxAddOutputPayloadSerializer : IPayloadSerializer<TxAddOutputPayloa
 
             var scriptBytes = new byte[scriptLength];
             await stream.ReadExactlyAsync(scriptBytes);
-            var script = new Script(scriptBytes);
+            var script = new BitcoinScript(scriptBytes);
 
             return new TxAddOutputPayload(sats, channelId, script, serialId);
         }

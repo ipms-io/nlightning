@@ -1,18 +1,18 @@
 using System.Buffers;
 using System.Runtime.Serialization;
-using NBitcoin;
-using NLightning.Domain.Serialization.Payloads;
+using NLightning.Domain.Protocol.Interfaces;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
 using Converters;
+using Domain.Channels.ValueObjects;
 using Domain.Crypto.Constants;
+using Domain.Crypto.ValueObjects;
 using Domain.Enums;
 using Domain.Money;
 using Domain.Protocol.Payloads;
-using Domain.Protocol.Payloads.Interfaces;
-using Domain.Serialization.Factories;
-using Domain.ValueObjects;
+using Domain.Protocol.ValueObjects;
 using Exceptions;
 
 public class OpenChannel2PayloadSerializer : IPayloadSerializer<OpenChannel2Payload>
@@ -32,14 +32,14 @@ public class OpenChannel2PayloadSerializer : IPayloadSerializer<OpenChannel2Payl
         // Get the ChainHash serializer
         var chainHashSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChainHash>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChainHash)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChainHash)}");
         await chainHashSerializer.SerializeAsync(openChannel2Payload.ChainHash, stream);
 
         // Get the ChannelId serializer
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
-        await channelIdSerializer.SerializeAsync(openChannel2Payload.TemporaryChannelId, stream);
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+        await channelIdSerializer.SerializeAsync(openChannel2Payload.ChannelId, stream);
 
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.FundingFeeRatePerKw));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.CommitmentFeeRatePerKw));
@@ -48,41 +48,41 @@ public class OpenChannel2PayloadSerializer : IPayloadSerializer<OpenChannel2Payl
         await stream.WriteAsync(
             EndianBitConverter.GetBytesBigEndian(openChannel2Payload.MaxHtlcValueInFlightAmount.MilliSatoshi));
         await stream
-            .WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.HtlcMinimumAmount.MilliSatoshi));
+           .WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.HtlcMinimumAmount.MilliSatoshi));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.ToSelfDelay));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.MaxAcceptedHtlcs));
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(openChannel2Payload.Locktime));
-        await stream.WriteAsync(openChannel2Payload.FundingPubKey.ToBytes());
-        await stream.WriteAsync(openChannel2Payload.RevocationBasepoint.ToBytes());
-        await stream.WriteAsync(openChannel2Payload.PaymentBasepoint.ToBytes());
-        await stream.WriteAsync(openChannel2Payload.DelayedPaymentBasepoint.ToBytes());
-        await stream.WriteAsync(openChannel2Payload.HtlcBasepoint.ToBytes());
-        await stream.WriteAsync(openChannel2Payload.FirstPerCommitmentPoint.ToBytes());
-        await stream.WriteAsync(openChannel2Payload.SecondPerCommitmentPoint.ToBytes());
+        await stream.WriteAsync(openChannel2Payload.FundingPubKey);
+        await stream.WriteAsync(openChannel2Payload.RevocationBasepoint);
+        await stream.WriteAsync(openChannel2Payload.PaymentBasepoint);
+        await stream.WriteAsync(openChannel2Payload.DelayedPaymentBasepoint);
+        await stream.WriteAsync(openChannel2Payload.HtlcBasepoint);
+        await stream.WriteAsync(openChannel2Payload.FirstPerCommitmentPoint);
+        await stream.WriteAsync(openChannel2Payload.SecondPerCommitmentPoint);
 
         // Get the ChannelFlags serializer
         var channelFlagsSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelFlags>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelFlags)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelFlags)}");
         await channelFlagsSerializer.SerializeAsync(openChannel2Payload.ChannelFlags, stream);
     }
 
     public async Task<OpenChannel2Payload?> DeserializeAsync(Stream stream)
     {
-        var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.PUBKEY_LEN);
+        var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.CompactPubkeyLen);
 
         try
         {
             // Get the ChainHash serializer
             var chainHashSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChainHash>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(ChainHash)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChainHash)}");
             var chainHash = await chainHashSerializer.DeserializeAsync(stream);
 
             // Get the ChannelId serializer
             var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var temporaryChannelId = await channelIdSerializer.DeserializeAsync(stream);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(uint)]);
@@ -97,7 +97,7 @@ public class OpenChannel2PayloadSerializer : IPayloadSerializer<OpenChannel2Payl
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
             var dustLimitSatoshis = LightningMoney
-                .FromUnit(EndianBitConverter.ToUInt64BigEndian(buffer[..sizeof(ulong)]), LightningMoneyUnit.Satoshi);
+               .FromUnit(EndianBitConverter.ToUInt64BigEndian(buffer[..sizeof(ulong)]), LightningMoneyUnit.Satoshi);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ulong)]);
             var maxHtlcValueInFlightMsat = EndianBitConverter.ToUInt64BigEndian(buffer[..sizeof(ulong)]);
@@ -114,31 +114,31 @@ public class OpenChannel2PayloadSerializer : IPayloadSerializer<OpenChannel2Payl
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(uint)]);
             var locktime = EndianBitConverter.ToUInt32BigEndian(buffer[..sizeof(uint)]);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.PUBKEY_LEN]);
-            var fundingPubKey = new PubKey(buffer[..CryptoConstants.PUBKEY_LEN]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.CompactPubkeyLen]);
+            var fundingPubKey = new CompactPubKey(buffer[..CryptoConstants.CompactPubkeyLen]);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.PUBKEY_LEN]);
-            var revocationBasepoint = new PubKey(buffer[..CryptoConstants.PUBKEY_LEN]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.CompactPubkeyLen]);
+            var revocationBasepoint = new CompactPubKey(buffer[..CryptoConstants.CompactPubkeyLen]);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.PUBKEY_LEN]);
-            var paymentBasepoint = new PubKey(buffer[..CryptoConstants.PUBKEY_LEN]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.CompactPubkeyLen]);
+            var paymentBasepoint = new CompactPubKey(buffer[..CryptoConstants.CompactPubkeyLen]);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.PUBKEY_LEN]);
-            var delayedPaymentBasepoint = new PubKey(buffer[..CryptoConstants.PUBKEY_LEN]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.CompactPubkeyLen]);
+            var delayedPaymentBasepoint = new CompactPubKey(buffer[..CryptoConstants.CompactPubkeyLen]);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.PUBKEY_LEN]);
-            var htlcBasepoint = new PubKey(buffer[..CryptoConstants.PUBKEY_LEN]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.CompactPubkeyLen]);
+            var htlcBasepoint = new CompactPubKey(buffer[..CryptoConstants.CompactPubkeyLen]);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.PUBKEY_LEN]);
-            var firstPerCommitmentPoint = new PubKey(buffer[..CryptoConstants.PUBKEY_LEN]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.CompactPubkeyLen]);
+            var firstPerCommitmentPoint = new CompactPubKey(buffer[..CryptoConstants.CompactPubkeyLen]);
 
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.PUBKEY_LEN]);
-            var secondPerCommitmentPoint = new PubKey(buffer[..CryptoConstants.PUBKEY_LEN]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.CompactPubkeyLen]);
+            var secondPerCommitmentPoint = new CompactPubKey(buffer[..CryptoConstants.CompactPubkeyLen]);
 
             // Get the ChannelFlags serializer
             var channelFlagsSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelFlags>()
-                ?? throw new SerializationException(
+             ?? throw new SerializationException(
                     $"No serializer found for value object type {nameof(ChannelFlags)}");
             var channelFlags = await channelFlagsSerializer.DeserializeAsync(stream);
 

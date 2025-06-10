@@ -8,4 +8,4 @@ using Constants;
 /// <remarks>
 /// The required confirmed inputs TLV is used in the TxInitRbfMessage to communicate if confirmed inputs are required.
 /// </remarks>
-public class RequireConfirmedInputsTlv() : BaseTlv(TlvConstants.REQUIRE_CONFIRMED_INPUTS);
+public class RequireConfirmedInputsTlv() : BaseTlv(TlvConstants.RequireConfirmedInputs);

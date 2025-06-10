@@ -1,9 +1,8 @@
-using NBitcoin.Crypto;
-
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
+using Crypto.ValueObjects;
 using Interfaces;
-using ValueObjects;
 
 /// <summary>
 /// Represents the payload for the commitment_signed message.
@@ -11,8 +10,10 @@ using ValueObjects;
 /// <remarks>
 /// Initializes a new instance of the CommitmentSignedPayload class.
 /// </remarks>
-public class CommitmentSignedPayload(ChannelId channelId, IEnumerable<ECDSASignature> htlcSignatures,
-                                     ECDSASignature signature) : IMessagePayload
+public class CommitmentSignedPayload(
+    ChannelId channelId,
+    IEnumerable<CompactSignature> htlcSignatures,
+    CompactSignature signature) : IChannelMessagePayload
 {
     /// <summary>
     /// The channel_id this message refers to
@@ -22,7 +23,7 @@ public class CommitmentSignedPayload(ChannelId channelId, IEnumerable<ECDSASigna
     /// <summary>
     /// The signature for the commitment transaction
     /// </summary>
-    public ECDSASignature Signature { get; } = signature;
+    public CompactSignature Signature { get; } = signature;
 
     /// <summary>
     /// Number of HTLCs outputs
@@ -38,5 +39,5 @@ public class CommitmentSignedPayload(ChannelId channelId, IEnumerable<ECDSASigna
     /// <summary>
     /// List containing HTLCs signatures
     /// </summary>
-    public IEnumerable<ECDSASignature> HtlcSignatures { get; set; } = htlcSignatures;
+    public IEnumerable<CompactSignature> HtlcSignatures { get; set; } = htlcSignatures;
 }

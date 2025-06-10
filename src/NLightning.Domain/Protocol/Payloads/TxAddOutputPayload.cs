@@ -1,11 +1,10 @@
-using NBitcoin;
-
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Bitcoin.ValueObjects;
+using Channels.ValueObjects;
 using Interfaces;
 using Messages;
 using Money;
-using ValueObjects;
 
 /// <summary>
 /// Represents a tx_add_output payload.
@@ -14,8 +13,8 @@ using ValueObjects;
 /// The tx_add_output payload is used to add an output to the transaction.
 /// </remarks>
 /// <seealso cref="TxAddOutputMessage"/>
-/// <seealso cref="ValueObjects.ChannelId"/>
-public class TxAddOutputPayload : IMessagePayload
+/// <seealso cref="Channels.ValueObjects.ChannelId"/>
+public class TxAddOutputPayload : IChannelMessagePayload
 {
     /// <summary>
     /// The channel id.
@@ -35,7 +34,7 @@ public class TxAddOutputPayload : IMessagePayload
     /// <summary>
     /// The spending script.
     /// </summary>
-    public Script Script { get; }
+    public BitcoinScript Script { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TxAddOutputPayload"/> class.
@@ -45,16 +44,8 @@ public class TxAddOutputPayload : IMessagePayload
     /// <param name="amount">The sats amount.</param>
     /// <param name="script">The spending script.</param>
     /// <exception cref="ArgumentException">ScriptPubKey length is out of bounds.</exception>
-    public TxAddOutputPayload(LightningMoney amount, ChannelId channelId, Script script, ulong serialId)
+    public TxAddOutputPayload(LightningMoney amount, ChannelId channelId, BitcoinScript script, ulong serialId)
     {
-        // Check if script is only types P2WSH, P2WPKH, or P2TR using NBitcoin
-        if (!PayToWitScriptHashTemplate.Instance.CheckScriptPubKey(script)
-            && !PayToWitPubKeyHashTemplate.Instance.CheckScriptPubKey(script)
-            && !PayToTaprootTemplate.Instance.CheckScriptPubKey(script))
-        {
-            throw new ArgumentException("Script is non-standard");
-        }
-
         ChannelId = channelId;
         SerialId = serialId;
         Amount = amount;

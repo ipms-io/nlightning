@@ -1,17 +1,14 @@
-using NBitcoin;
 using NLightning.Tests.Utils.Vectors;
 
 namespace NLightning.Bolt11.Tests.Models;
 
+using Domain.Channels.ValueObjects;
 using Domain.Models;
-using Domain.ValueObjects;
 
 public class RoutingInfoCollectionTests
 {
-    private readonly RoutingInfo _defaultRoutingInfo = new(
-        new PubKey(InitiatorValidKeysVector.RemoteStaticPublicKey),
-        new ShortChannelId(870127, 1237, 1), 1, 1, 1
-    );
+    private readonly RoutingInfo _defaultRoutingInfo =
+        new(InitiatorValidKeysVector.RemoteStaticPublicKey, new ShortChannelId(870127, 1237, 1), 1, 1, 1);
 
     [Fact]
     public void Given_EmptyCollection_When_AddWithinCapacity_Then_ItemIsAddedAndChangedEventRaised()
@@ -43,7 +40,7 @@ public class RoutingInfoCollectionTests
 
         // When / Then
         var ex = Assert.Throws<InvalidOperationException>(() =>
-            collection.Add(_defaultRoutingInfo)
+                                                              collection.Add(_defaultRoutingInfo)
         );
         Assert.Contains("maximum capacity of 12 has been reached", ex.Message);
     }
@@ -54,7 +51,7 @@ public class RoutingInfoCollectionTests
         // Given
         var collection = new RoutingInfoCollection();
         var routingInfos = Enumerable.Range(1, 3)
-            .Select(_ => _defaultRoutingInfo);
+                                     .Select(_ => _defaultRoutingInfo);
 
         // When
         collection.AddRange(routingInfos);
@@ -149,7 +146,7 @@ public class RoutingInfoCollectionTests
 
         collection.Add(_defaultRoutingInfo);
         collection.Add(_defaultRoutingInfo);
-        collection.Add(new RoutingInfo(new PubKey(InitiatorValidKeysVector.RemoteStaticPublicKey),
+        collection.Add(new RoutingInfo(InitiatorValidKeysVector.RemoteStaticPublicKey,
                                        new ShortChannelId(870127, 1237, 1), 2, 1, 1));
 
         // When

@@ -27,9 +27,7 @@ public class FeatureSetSerializer : IFeatureSetSerializer
     {
         // If it's a global feature, cut out any bit greater than 13
         if (asGlobal)
-        {
             featureSet.FeatureFlags.Length = 13;
-        }
 
         // Convert BitArray to byte array
         var bytes = new byte[(featureSet.FeatureFlags.Length + 7) / 8];
@@ -37,9 +35,7 @@ public class FeatureSetSerializer : IFeatureSetSerializer
 
         // Set bytes as big endian
         if (BitConverter.IsLittleEndian)
-        {
             Array.Reverse(bytes);
-        }
 
         // Trim leading zero bytes
         var leadingZeroBytes = 0;
@@ -59,9 +55,7 @@ public class FeatureSetSerializer : IFeatureSetSerializer
 
         // Write the length of the byte array or 1 if all bytes are zero
         if (includeLength)
-        {
             await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian((ushort)trimmedBytes.Length));
-        }
 
         // Otherwise, return the array starting from the first non-zero byte
         await stream.WriteAsync(trimmedBytes);
@@ -96,9 +90,7 @@ public class FeatureSetSerializer : IFeatureSetSerializer
             await stream.ReadExactlyAsync(bytes);
 
             if (BitConverter.IsLittleEndian)
-            {
                 Array.Reverse(bytes);
-            }
 
             // Convert the byte array to BitArray
             return new FeatureSet { FeatureFlags = new BitArray(bytes) };

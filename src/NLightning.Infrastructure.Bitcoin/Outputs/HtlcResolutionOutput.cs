@@ -12,15 +12,17 @@ public class HtlcResolutionOutput : BaseOutput
     public PubKey LocalDelayedPubKey { get; }
     public ulong ToSelfDelay { get; }
 
-    public HtlcResolutionOutput(PubKey revocationPubKey, PubKey localDelayedPubKey, ulong toSelfDelay, LightningMoney amount)
-        : base(GenerateHtlcOutputScript(revocationPubKey, localDelayedPubKey, toSelfDelay), amount)
+    public HtlcResolutionOutput(LightningMoney amount, PubKey localDelayedPubKey, PubKey revocationPubKey,
+                                ulong toSelfDelay)
+        : base(amount, GenerateHtlcOutputScript(revocationPubKey, localDelayedPubKey, toSelfDelay))
     {
         RevocationPubKey = revocationPubKey;
         LocalDelayedPubKey = localDelayedPubKey;
         ToSelfDelay = toSelfDelay;
     }
 
-    private static Script GenerateHtlcOutputScript(PubKey revocationPubKey, PubKey localDelayedPubKey, ulong toSelfDelay)
+    private static Script GenerateHtlcOutputScript(PubKey localDelayedPubKey, PubKey revocationPubKey,
+                                                   ulong toSelfDelay)
     {
         return new Script(
             OpcodeType.OP_IF,

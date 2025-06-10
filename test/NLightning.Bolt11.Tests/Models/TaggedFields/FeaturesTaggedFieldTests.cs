@@ -1,7 +1,8 @@
+using NLightning.Domain.Utils;
+
 namespace NLightning.Bolt11.Tests.Models.TaggedFields;
 
 using Bolt11.Models.TaggedFields;
-using Common.Utils;
 using Domain.Node;
 using Enums;
 
@@ -24,8 +25,8 @@ public class FeaturesTaggedFieldTests
         var taggedField = new FeaturesTaggedField(features);
 
         // Assert
-        Assert.Equal(TaggedFieldTypes.FEATURES, taggedField.Type);
-        Assert.True(features.IsCompatible(taggedField.Value));
+        Assert.Equal(TaggedFieldTypes.Features, taggedField.Type);
+        Assert.True(features.IsCompatible(taggedField.Value, out var _));
         Assert.Equal(expectedLength, taggedField.Length);
     }
 

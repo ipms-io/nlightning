@@ -1,15 +1,13 @@
 using System.Runtime.Serialization;
+using NLightning.Domain.Protocol.Interfaces;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Messages.Types;
 
 using Domain.Protocol.Constants;
-using Domain.Protocol.Factories;
 using Domain.Protocol.Messages;
-using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Tlv;
-using Domain.Serialization.Factories;
-using Domain.Serialization.Messages.Types;
 using Exceptions;
 using Interfaces;
 
@@ -35,7 +33,7 @@ public class TxAckRbfMessageTypeSerializer : IMessageTypeSerializer<TxAckRbfMess
 
         // Get the payload serializer
         var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type)
-                                    ?? throw new SerializationException("No serializer found for payload type");
+                                 ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
 
         // Serialize the TLV stream
@@ -54,9 +52,9 @@ public class TxAckRbfMessageTypeSerializer : IMessageTypeSerializer<TxAckRbfMess
         {
             // Deserialize payload
             var payloadSerializer = _payloadSerializerFactory.GetSerializer<TxAckRbfPayload>()
-                                    ?? throw new SerializationException("No serializer found for payload type");
+                                 ?? throw new SerializationException("No serializer found for payload type");
             var payload = await payloadSerializer.DeserializeAsync(stream)
-                          ?? throw new SerializationException("Error serializing payload");
+                       ?? throw new SerializationException("Error serializing payload");
 
             // Deserialize extension
             if (stream.Position >= stream.Length)
@@ -67,20 +65,20 @@ public class TxAckRbfMessageTypeSerializer : IMessageTypeSerializer<TxAckRbfMess
                 return new TxAckRbfMessage(payload);
 
             FundingOutputContributionTlv? fundingOutputContributionTlv = null;
-            if (extension.TryGetTlv(TlvConstants.FUNDING_OUTPUT_CONTRIBUTION, out var baseFundingOutputContributionTlv))
+            if (extension.TryGetTlv(TlvConstants.FundingOutputContribution, out var baseFundingOutputContributionTlv))
             {
                 var tlvConverter = _tlvConverterFactory.GetConverter<FundingOutputContributionTlv>()
-                                   ?? throw new SerializationException(
+                                ?? throw new SerializationException(
                                        $"No serializer found for tlv type {nameof(FundingOutputContributionTlv)}");
                 fundingOutputContributionTlv = tlvConverter.ConvertFromBase(baseFundingOutputContributionTlv!);
             }
 
             RequireConfirmedInputsTlv? requireConfirmedInputsTlv = null;
-            if (extension.TryGetTlv(TlvConstants.REQUIRE_CONFIRMED_INPUTS, out var baserequireConfirmedInputsTlv))
+            if (extension.TryGetTlv(TlvConstants.RequireConfirmedInputs, out var baserequireConfirmedInputsTlv))
             {
                 var tlvConverter =
                     _tlvConverterFactory.GetConverter<RequireConfirmedInputsTlv>()
-                    ?? throw new SerializationException(
+                 ?? throw new SerializationException(
                         $"No serializer found for tlv type {nameof(RequireConfirmedInputsTlv)}");
                 requireConfirmedInputsTlv = tlvConverter.ConvertFromBase(baserequireConfirmedInputsTlv!);
             }
@@ -92,6 +90,7 @@ public class TxAckRbfMessageTypeSerializer : IMessageTypeSerializer<TxAckRbfMess
             throw new MessageSerializationException("Error deserializing TxAckRbfMessage", e);
         }
     }
+
     async Task<IMessage> IMessageTypeSerializer.DeserializeAsync(Stream stream)
     {
         return await DeserializeAsync(stream);

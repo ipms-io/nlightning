@@ -4,7 +4,6 @@ using NBitcoin;
 
 namespace NLightning.Bolt11.Models;
 
-using Common.Utils;
 using Domain.Constants;
 using Domain.Crypto.Constants;
 using Domain.Enums;
@@ -12,12 +11,13 @@ using Domain.Models;
 using Domain.Money;
 using Domain.Node;
 using Domain.Protocol.Constants;
-using Domain.Protocol.Managers;
-using Domain.ValueObjects;
+using Domain.Protocol.Interfaces;
+using Domain.Protocol.ValueObjects;
+using Domain.Utils;
 using Enums;
 using Exceptions;
+using Infrastructure.Bitcoin.Encoders;
 using Infrastructure.Crypto.Hashes;
-using Infrastructure.Encoders;
 using TaggedFields;
 
 /// <summary>
@@ -29,16 +29,16 @@ using TaggedFields;
 public partial class Invoice
 {
     #region Private Fields
-    private static readonly Dictionary<string, Network> s_supportedNetworks = new()
+    private static readonly Dictionary<string, BitcoinNetwork> s_supportedNetworks = new()
     {
-        { InvoiceConstants.PREFIX_MAINET, Network.MAINNET },
-        { InvoiceConstants.PREFIX_TESTNET, Network.TESTNET },
-        { InvoiceConstants.PREFIX_SIGNET, Network.SIGNET },
-        { InvoiceConstants.PREFIX_REGTEST, Network.REGTEST },
-        { InvoiceConstants.PREFIX_MAINET.ToUpperInvariant(), Network.MAINNET },
-        { InvoiceConstants.PREFIX_TESTNET.ToUpperInvariant(), Network.TESTNET },
-        { InvoiceConstants.PREFIX_SIGNET.ToUpperInvariant(), Network.SIGNET },
-        { InvoiceConstants.PREFIX_REGTEST.ToUpperInvariant(), Network.REGTEST }
+        { InvoiceConstants.PrefixMainet, BitcoinNetwork.Mainnet },
+        { InvoiceConstants.PrefixTestnet, BitcoinNetwork.Testnet },
+        { InvoiceConstants.PrefixSignet, BitcoinNetwork.Signet },
+        { InvoiceConstants.PrefixRegtest, BitcoinNetwork.Regtest },
+        { InvoiceConstants.PrefixMainet.ToUpperInvariant(), BitcoinNetwork.Mainnet },
+        { InvoiceConstants.PrefixTestnet.ToUpperInvariant(), BitcoinNetwork.Testnet },
+        { InvoiceConstants.PrefixSignet.ToUpperInvariant(), BitcoinNetwork.Signet },
+        { InvoiceConstants.PrefixRegtest.ToUpperInvariant(), BitcoinNetwork.Regtest }
     };
 
     [GeneratedRegex(@"^[a-z]+((\d+)([munp])?)?$")]
@@ -46,7 +46,7 @@ public partial class Invoice
 
     private readonly ISecureKeyManager? _secureKeyManager;
 
-    private TaggedFieldList _taggedFields { get; } = [];
+    private TaggedFieldList TaggedFields { get; } = [];
 
     private string? _invoiceString;
     #endregion
@@ -55,7 +55,7 @@ public partial class Invoice
     /// <summary>
     /// The network the invoice is created for
     /// </summary>
-    public Network Network { get; }
+    public BitcoinNetwork BitcoinNetwork { get; }
 
     /// <summary>
     /// The amount for the invoice
@@ -93,13 +93,13 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.PAYMENT_HASH, out PaymentHashTaggedField? paymentHash)
+            return TaggedFields.TryGet(TaggedFieldTypes.PaymentHash, out PaymentHashTaggedField? paymentHash)
                 ? paymentHash!.Value
                 : new uint256();
         }
         internal set
         {
-            _taggedFields.Add(new PaymentHashTaggedField(value));
+            TaggedFields.Add(new PaymentHashTaggedField(value));
         }
     }
 
@@ -115,7 +115,7 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.ROUTING_INFO, out RoutingInfoTaggedField? routingInfo)
+            return TaggedFields.TryGet(TaggedFieldTypes.RoutingInfo, out RoutingInfoTaggedField? routingInfo)
                 ? routingInfo!.Value
                 : null;
         }
@@ -123,7 +123,7 @@ public partial class Invoice
         {
             if (value != null)
             {
-                _taggedFields.Add(new RoutingInfoTaggedField(value));
+                TaggedFields.Add(new RoutingInfoTaggedField(value));
                 value.Changed += OnTaggedFieldsChanged;
             }
         }
@@ -140,7 +140,7 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.FEATURES, out FeaturesTaggedField? features)
+            return TaggedFields.TryGet(TaggedFieldTypes.Features, out FeaturesTaggedField? features)
                 ? features!.Value
                 : null;
         }
@@ -148,7 +148,7 @@ public partial class Invoice
         {
             if (value != null)
             {
-                _taggedFields.Add(new FeaturesTaggedField(value));
+                TaggedFields.Add(new FeaturesTaggedField(value));
                 value.Changed += OnTaggedFieldsChanged;
             }
         }
@@ -165,14 +165,14 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.EXPIRY_TIME, out ExpiryTimeTaggedField? expireIn)
+            return TaggedFields.TryGet(TaggedFieldTypes.ExpiryTime, out ExpiryTimeTaggedField? expireIn)
                 ? DateTimeOffset.FromUnixTimeSeconds(Timestamp + expireIn!.Value)
-                : DateTimeOffset.FromUnixTimeSeconds(Timestamp + InvoiceConstants.DEFAULT_EXPIRATION_SECONDS);
+                : DateTimeOffset.FromUnixTimeSeconds(Timestamp + InvoiceConstants.DefaultExpirationSeconds);
         }
         set
         {
             var expireIn = value.ToUnixTimeSeconds() - Timestamp;
-            _taggedFields.Add(new ExpiryTimeTaggedField((int)expireIn));
+            TaggedFields.Add(new ExpiryTimeTaggedField((int)expireIn));
         }
     }
 
@@ -187,8 +187,8 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields
-                .TryGetAll(TaggedFieldTypes.FALLBACK_ADDRESS, out List<FallbackAddressTaggedField> fallbackAddress)
+            return TaggedFields
+                .TryGetAll(TaggedFieldTypes.FallbackAddress, out List<FallbackAddressTaggedField> fallbackAddress)
                     ? fallbackAddress.Select(x => x.Value).ToList()
                     : null;
         }
@@ -196,7 +196,7 @@ public partial class Invoice
         {
             if (value != null)
             {
-                _taggedFields.AddRange(value.Select(x => new FallbackAddressTaggedField(x)));
+                TaggedFields.AddRange(value.Select(x => new FallbackAddressTaggedField(x)));
             }
         }
     }
@@ -211,7 +211,7 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.DESCRIPTION, out DescriptionTaggedField? description)
+            return TaggedFields.TryGet(TaggedFieldTypes.Description, out DescriptionTaggedField? description)
                 ? description!.Value
                 : null;
         }
@@ -219,7 +219,7 @@ public partial class Invoice
         {
             if (value != null)
             {
-                _taggedFields.Add(new DescriptionTaggedField(value));
+                TaggedFields.Add(new DescriptionTaggedField(value));
             }
         }
     }
@@ -235,13 +235,13 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.PAYMENT_SECRET, out PaymentSecretTaggedField? paymentSecret)
+            return TaggedFields.TryGet(TaggedFieldTypes.PaymentSecret, out PaymentSecretTaggedField? paymentSecret)
                 ? paymentSecret!.Value
                 : new uint256();
         }
         internal set
         {
-            _taggedFields.Add(new PaymentSecretTaggedField(value));
+            TaggedFields.Add(new PaymentSecretTaggedField(value));
         }
     }
 
@@ -256,7 +256,7 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField? payeePubKey)
+            return TaggedFields.TryGet(TaggedFieldTypes.PayeePubKey, out PayeePubKeyTaggedField? payeePubKey)
                 ? payeePubKey!.Value
                 : null;
         }
@@ -264,7 +264,7 @@ public partial class Invoice
         {
             if (value != null)
             {
-                _taggedFields.Add(new PayeePubKeyTaggedField(value));
+                TaggedFields.Add(new PayeePubKeyTaggedField(value));
             }
         }
     }
@@ -280,8 +280,8 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields
-                .TryGet(TaggedFieldTypes.DESCRIPTION_HASH, out DescriptionHashTaggedField? descriptionHash)
+            return TaggedFields
+                .TryGet(TaggedFieldTypes.DescriptionHash, out DescriptionHashTaggedField? descriptionHash)
                     ? descriptionHash!.Value
                     : null;
         }
@@ -289,7 +289,7 @@ public partial class Invoice
         {
             if (value != null)
             {
-                _taggedFields.Add(new DescriptionHashTaggedField(value));
+                TaggedFields.Add(new DescriptionHashTaggedField(value));
             }
         }
     }
@@ -304,8 +304,8 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields
-                .TryGet(TaggedFieldTypes.MIN_FINAL_CLTV_EXPIRY, out MinFinalCltvExpiryTaggedField? minFinalCltvExpiry)
+            return TaggedFields
+                .TryGet(TaggedFieldTypes.MinFinalCltvExpiry, out MinFinalCltvExpiryTaggedField? minFinalCltvExpiry)
                     ? minFinalCltvExpiry!.Value
                     : null;
         }
@@ -313,7 +313,7 @@ public partial class Invoice
         {
             if (value.HasValue)
             {
-                _taggedFields.Add(new MinFinalCltvExpiryTaggedField(value.Value));
+                TaggedFields.Add(new MinFinalCltvExpiryTaggedField(value.Value));
             }
         }
     }
@@ -328,7 +328,7 @@ public partial class Invoice
     {
         get
         {
-            return _taggedFields.TryGet(TaggedFieldTypes.METADATA, out MetadataTaggedField? metadata)
+            return TaggedFields.TryGet(TaggedFieldTypes.Metadata, out MetadataTaggedField? metadata)
                 ? metadata!.Value
                 : null;
         }
@@ -336,7 +336,7 @@ public partial class Invoice
         {
             if (value != null)
             {
-                _taggedFields.Add(new MetadataTaggedField(value));
+                TaggedFields.Add(new MetadataTaggedField(value));
             }
         }
     }
@@ -351,20 +351,20 @@ public partial class Invoice
     /// <param name="description">The description of the invoice</param>
     /// <param name="paymentHash">The payment hash of the invoice</param>
     /// <param name="paymentSecret">The payment secret of the invoice</param>
-    /// <param name="network">The network the invoice is created for</param>
+    /// <param name="bitcoinNetwork">The network the invoice is created for</param>
     /// <param name="secureKeyManager">Secure key manager</param>
     /// <remarks>
     /// The invoice is created with the given amount of millisatoshis, a description, the payment hash and the
     /// payment secret.
     /// </remarks>
-    /// <seealso cref="Network"/>
+    /// <seealso cref="BitcoinNetwork"/>
     public Invoice(LightningMoney amount, string description, uint256 paymentHash, uint256 paymentSecret,
-                   Network network, ISecureKeyManager? secureKeyManager = null)
+                   BitcoinNetwork bitcoinNetwork, ISecureKeyManager? secureKeyManager = null)
     {
         _secureKeyManager = secureKeyManager;
 
         Amount = amount;
-        Network = network;
+        BitcoinNetwork = bitcoinNetwork;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Signature = new CompactSignature(0, new byte[64]);
@@ -374,7 +374,7 @@ public partial class Invoice
         PaymentHash = paymentHash;
         PaymentSecret = paymentSecret;
 
-        _taggedFields.Changed += OnTaggedFieldsChanged;
+        TaggedFields.Changed += OnTaggedFieldsChanged;
     }
 
     /// <summary>
@@ -384,20 +384,20 @@ public partial class Invoice
     /// <param name="descriptionHash">The description hash of the invoice</param>
     /// <param name="paymentHash">The payment hash of the invoice</param>
     /// <param name="paymentSecret">The payment secret of the invoice</param>
-    /// <param name="network">The network the invoice is created for</param>
+    /// <param name="bitcoinNetwork">The network the invoice is created for</param>
     /// <param name="secureKeyManager">Secure key manager</param>
     /// <remarks>
     /// The invoice is created with the given amount of millisatoshis, a description hash, the payment hash and the
     /// payment secret.
     /// </remarks>
-    /// <seealso cref="Network"/>
+    /// <seealso cref="BitcoinNetwork"/>
     public Invoice(LightningMoney amount, uint256 descriptionHash, uint256 paymentHash, uint256 paymentSecret,
-                   Network network, ISecureKeyManager? secureKeyManager = null)
+                   BitcoinNetwork bitcoinNetwork, ISecureKeyManager? secureKeyManager = null)
     {
         _secureKeyManager = secureKeyManager;
 
         Amount = amount;
-        Network = network;
+        BitcoinNetwork = bitcoinNetwork;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Signature = new CompactSignature(0, new byte[64]);
@@ -407,28 +407,28 @@ public partial class Invoice
         PaymentHash = paymentHash;
         PaymentSecret = paymentSecret;
 
-        _taggedFields.Changed += OnTaggedFieldsChanged;
+        TaggedFields.Changed += OnTaggedFieldsChanged;
     }
 
     /// <summary>
     /// This constructor is used by tests
     /// </summary>
-    /// <param name="network">The network the invoice is created for</param>
+    /// <param name="bitcoinNetwork">The network the invoice is created for</param>
     /// <param name="amount">The amount of the invoice</param>
     /// <param name="timestamp">The timestamp of the invoice</param>
     /// <remarks>
     /// The invoice is created with the given network, amount of millisatoshis and timestamp.
     /// </remarks>
-    /// <seealso cref="Network"/>
-    internal Invoice(Network network, LightningMoney? amount = null, long? timestamp = null)
+    /// <seealso cref="BitcoinNetwork"/>
+    internal Invoice(BitcoinNetwork bitcoinNetwork, LightningMoney? amount = null, long? timestamp = null)
     {
         Amount = amount ?? LightningMoney.Zero;
-        Network = network;
+        BitcoinNetwork = bitcoinNetwork;
         HumanReadablePart = BuildHumanReadablePart();
         Timestamp = timestamp ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         Signature = new CompactSignature(0, new byte[64]);
 
-        _taggedFields.Changed += OnTaggedFieldsChanged;
+        TaggedFields.Changed += OnTaggedFieldsChanged;
     }
 
     /// <summary>
@@ -436,7 +436,7 @@ public partial class Invoice
     /// </summary>
     /// <param name="invoiceString">The invoice string</param>
     /// <param name="humanReadablePart">The human-readable part of the invoice</param>
-    /// <param name="network">The network the invoice is created for</param>
+    /// <param name="bitcoinNetwork">The network the invoice is created for</param>
     /// <param name="amount">The amount of the invoice</param>
     /// <param name="timestamp">The timestamp of the invoice</param>
     /// <param name="taggedFields">The tagged fields of the invoice</param>
@@ -445,20 +445,20 @@ public partial class Invoice
     /// The invoice is created with the given human-readable part, network, amount of millisatoshis,
     /// timestamp and tagged fields.
     /// </remarks>
-    /// <seealso cref="Network"/>
-    private Invoice(string invoiceString, string humanReadablePart, Network network, LightningMoney amount,
+    /// <seealso cref="BitcoinNetwork"/>
+    private Invoice(string invoiceString, string humanReadablePart, BitcoinNetwork bitcoinNetwork, LightningMoney amount,
                     long timestamp, TaggedFieldList taggedFields, CompactSignature signature)
     {
         _invoiceString = invoiceString;
 
-        Network = network;
+        BitcoinNetwork = bitcoinNetwork;
         HumanReadablePart = humanReadablePart;
         Amount = amount;
         Timestamp = timestamp;
-        _taggedFields = taggedFields;
+        TaggedFields = taggedFields;
         Signature = signature;
 
-        _taggedFields.Changed += OnTaggedFieldsChanged;
+        TaggedFields.Changed += OnTaggedFieldsChanged;
     }
     #endregion
 
@@ -471,16 +471,16 @@ public partial class Invoice
     /// <param name="description">The description of the invoice</param>
     /// <param name="paymentHash">The payment hash of the invoice</param>
     /// <param name="paymentSecret">The payment secret of the invoice</param>
-    /// <param name="network">The network the invoice is created for</param>
+    /// <param name="bitcoinNetwork">The network the invoice is created for</param>
     /// <remarks>
     /// The invoice is created with the given amount of satoshis, a description, the payment hash and the
     /// payment secret.
     /// </remarks>
     /// <returns>The invoice</returns>
     public static Invoice InSatoshis(ulong amountSats, string description, uint256 paymentHash, uint256 paymentSecret,
-                                     Network network)
+                                     BitcoinNetwork bitcoinNetwork)
     {
-        return new Invoice(LightningMoney.Satoshis(amountSats), description, paymentHash, paymentSecret, network);
+        return new Invoice(LightningMoney.Satoshis(amountSats), description, paymentHash, paymentSecret, bitcoinNetwork);
     }
 
     /// <summary>
@@ -490,16 +490,16 @@ public partial class Invoice
     /// <param name="descriptionHash">The description hash of the invoice</param>
     /// <param name="paymentHash">The payment hash of the invoice</param>
     /// <param name="paymentSecret">The payment secret of the invoice</param>
-    /// <param name="network">The network the invoice is created for</param>
+    /// <param name="bitcoinNetwork">The network the invoice is created for</param>
     /// <remarks>
     /// The invoice is created with the given amount of satoshis, a description hash, the payment hash and the
     /// payment secret.
     /// </remarks>
     /// <returns>The invoice</returns>
     public static Invoice InSatoshis(ulong amountSats, uint256 descriptionHash, uint256 paymentHash,
-                                     uint256 paymentSecret, Network network)
+                                     uint256 paymentSecret, BitcoinNetwork bitcoinNetwork)
     {
-        return new Invoice(LightningMoney.Satoshis(amountSats), descriptionHash, paymentHash, paymentSecret, network);
+        return new Invoice(LightningMoney.Satoshis(amountSats), descriptionHash, paymentHash, paymentSecret, bitcoinNetwork);
     }
 
     /// <summary>
@@ -509,7 +509,7 @@ public partial class Invoice
     /// <param name="expectedNetwork">The expected network of the invoice</param>
     /// <returns>The invoice</returns>
     /// <exception cref="InvoiceSerializationException">If something goes wrong in the decoding process</exception>
-    public static Invoice Decode(string? invoiceString, Network? expectedNetwork = null)
+    public static Invoice Decode(string? invoiceString, BitcoinNetwork? expectedNetwork = null)
     {
         InvoiceSerializationException.ThrowIfNullOrWhiteSpace(invoiceString);
 
@@ -538,7 +538,7 @@ public partial class Invoice
                                       new CompactSignature(signature[^1], signature[..^1]));
 
             // Get pubkey from tagged fields
-            if (taggedFields.TryGet(TaggedFieldTypes.PAYEE_PUB_KEY, out PayeePubKeyTaggedField? pubkeyTaggedField))
+            if (taggedFields.TryGet(TaggedFieldTypes.PayeePubKey, out PayeePubKeyTaggedField? pubkeyTaggedField))
             {
                 invoice.PayeePubKey = pubkeyTaggedField?.Value;
             }
@@ -567,7 +567,7 @@ public partial class Invoice
         try
         {
             // Calculate the size needed for the buffer
-            var sizeInBits = 35 + (_taggedFields.CalculateSizeInBits() * 5) + (_taggedFields.Count * 15);
+            var sizeInBits = 35 + (TaggedFields.CalculateSizeInBits() * 5) + (TaggedFields.Count * 15);
 
             // Initialize the BitWriter buffer
             var bitWriter = new BitWriter(sizeInBits);
@@ -576,7 +576,7 @@ public partial class Invoice
             bitWriter.WriteInt64AsBits(Timestamp, 35);
 
             // Write the tagged fields
-            _taggedFields.WriteToBitWriter(bitWriter);
+            TaggedFields.WriteToBitWriter(bitWriter);
 
             // Sign the invoice
             var compactSignature = SignInvoice(HumanReadablePart, bitWriter, nodeKey);
@@ -605,7 +605,8 @@ public partial class Invoice
         if (_secureKeyManager is null)
             throw new NullReferenceException("Secure key manager is not set, please use Encode(Key nodeKey) instead");
 
-        return Encode(_secureKeyManager.GetNodeKey());
+        var nodeKey = _secureKeyManager.GetNodeKeyPair().PrivKey;
+        return Encode(new Key(nodeKey));
     }
 
     #region Overrides
@@ -635,8 +636,8 @@ public partial class Invoice
     #region Private Methods
     private string BuildHumanReadablePart()
     {
-        StringBuilder sb = new(InvoiceConstants.PREFIX);
-        sb.Append(GetPrefix(Network));
+        StringBuilder sb = new(InvoiceConstants.Prefix);
+        sb.Append(GetPrefix(BitcoinNetwork));
         if (!Amount.IsZero)
         {
             ConvertAmountToHumanReadable(Amount, sb);
@@ -644,15 +645,15 @@ public partial class Invoice
         return sb.ToString();
     }
 
-    private static string GetPrefix(Network network)
+    private static string GetPrefix(BitcoinNetwork bitcoinNetwork)
     {
-        return network.Name switch
+        return bitcoinNetwork.Name switch
         {
-            NetworkConstants.MAINNET => InvoiceConstants.PREFIX_MAINET,
-            NetworkConstants.TESTNET => InvoiceConstants.PREFIX_TESTNET,
-            NetworkConstants.REGTEST => InvoiceConstants.PREFIX_REGTEST,
-            NetworkConstants.SIGNET => InvoiceConstants.PREFIX_SIGNET,
-            _ => throw new ArgumentException("Unsupported network type", nameof(network)),
+            NetworkConstants.Mainnet => InvoiceConstants.PrefixMainet,
+            NetworkConstants.Testnet => InvoiceConstants.PrefixTestnet,
+            NetworkConstants.Regtest => InvoiceConstants.PrefixRegtest,
+            NetworkConstants.Signet => InvoiceConstants.PrefixSignet,
+            _ => throw new ArgumentException("Unsupported network type", nameof(bitcoinNetwork)),
         };
     }
 
@@ -662,7 +663,7 @@ public partial class Invoice
 
         // Start with the smallest multiplier
         var tempAmount = btcAmount * 1_000_000_000_000m; // Start with pico
-        char? suffix = InvoiceConstants.MULTIPLIER_PICO;
+        char? suffix = InvoiceConstants.MultiplierPico;
 
         // Try nano
         if (amount.MilliSatoshi % 10 == 0)
@@ -671,7 +672,7 @@ public partial class Invoice
             if (nanoAmount == decimal.Truncate(nanoAmount))
             {
                 tempAmount = nanoAmount;
-                suffix = InvoiceConstants.MULTIPLIER_NANO;
+                suffix = InvoiceConstants.MultiplierNano;
             }
         }
 
@@ -682,7 +683,7 @@ public partial class Invoice
             if (microAmount == decimal.Truncate(microAmount))
             {
                 tempAmount = microAmount;
-                suffix = InvoiceConstants.MULTIPLIER_MICRO;
+                suffix = InvoiceConstants.MultiplierMicro;
             }
         }
 
@@ -693,7 +694,7 @@ public partial class Invoice
             if (milliAmount == decimal.Truncate(milliAmount))
             {
                 tempAmount = milliAmount;
-                suffix = InvoiceConstants.MULTIPLIER_MILLI;
+                suffix = InvoiceConstants.MultiplierMilli;
             }
         }
 
@@ -753,7 +754,7 @@ public partial class Invoice
         data.CopyTo(message, HumanReadablePart.Length);
 
         // Get sha256 hash of the message
-        var hash = new byte[CryptoConstants.SHA256_HASH_LEN];
+        var hash = new byte[CryptoConstants.Sha256HashLen];
         using var sha256 = new Sha256();
         sha256.AppendData(message);
         sha256.GetHashAndReset(hash);
@@ -785,7 +786,7 @@ public partial class Invoice
         data.CopyTo(message, hrp.Length);
 
         // Get sha256 hash of the message
-        var hash = new byte[CryptoConstants.SHA256_HASH_LEN];
+        var hash = new byte[CryptoConstants.Sha256HashLen];
         using var sha256 = new Sha256();
         sha256.AppendData(message);
         sha256.GetHashAndReset(hash);
@@ -795,7 +796,7 @@ public partial class Invoice
         return key.SignCompact(nBitcoinHash, false);
     }
 
-    private static Network GetNetwork(string? invoiceString)
+    private static BitcoinNetwork GetNetwork(string? invoiceString)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(invoiceString);
 

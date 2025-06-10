@@ -1,7 +1,7 @@
-using NBitcoin;
-
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
+using Crypto.ValueObjects;
 using Interfaces;
 using Money;
 using ValueObjects;
@@ -12,13 +12,26 @@ using ValueObjects;
 /// <remarks>
 /// Initializes a new instance of the OpenChannel2Payload class.
 /// </remarks>
-public class OpenChannel2Payload(ChainHash chainHash, ChannelFlags channelFlags, uint commitmentFeeRatePerKw,
-                                 PubKey delayedPaymentBasepoint, LightningMoney dustLimitAmount,
-                                 PubKey firstPerCommitmentPoint, ulong fundingAmount, uint fundingFeeRatePerKw,
-                                 PubKey fundingPubKey, PubKey htlcBasepoint, LightningMoney htlcMinimumAmount,
-                                 uint locktime, ushort maxAcceptedHtlcs, LightningMoney maxHtlcValueInFlight,
-                                 PubKey paymentBasepoint, PubKey revocationBasepoint, PubKey secondPerCommitmentPoint,
-                                 ushort toSelfDelay, ChannelId temporaryChannelId) : IMessagePayload
+public class OpenChannel2Payload(
+    ChainHash chainHash,
+    ChannelFlags channelFlags,
+    uint commitmentFeeRatePerKw,
+    CompactPubKey delayedPaymentBasepoint,
+    LightningMoney dustLimitAmount,
+    CompactPubKey firstPerCommitmentPoint,
+    ulong fundingAmount,
+    uint fundingFeeRatePerKw,
+    CompactPubKey fundingPubKey,
+    CompactPubKey htlcBasepoint,
+    LightningMoney htlcMinimumAmount,
+    uint locktime,
+    ushort maxAcceptedHtlcs,
+    LightningMoney maxHtlcValueInFlight,
+    CompactPubKey paymentBasepoint,
+    CompactPubKey revocationBasepoint,
+    CompactPubKey secondPerCommitmentPoint,
+    ushort toSelfDelay,
+    ChannelId channelId) : IChannelMessagePayload
 {
     /// <summary>
     /// The chain_hash value denotes the exact blockchain that the opened channel will reside within.
@@ -29,7 +42,7 @@ public class OpenChannel2Payload(ChainHash chainHash, ChannelFlags channelFlags,
     /// The temporary_channel_id is used to identify this channel on a per-peer basis until the funding transaction
     /// is established, at which point it is replaced by the channel_id, which is derived from the funding transaction.
     /// </summary>
-    public ChannelId TemporaryChannelId { get; } = temporaryChannelId;
+    public ChannelId ChannelId { get; } = channelId;
 
     /// <summary>
     /// funding_feerate_perkw indicates the fee rate that the opening node will pay for the funding transaction in
@@ -84,37 +97,37 @@ public class OpenChannel2Payload(ChainHash chainHash, ChannelFlags channelFlags,
     /// <summary>
     /// funding_pubkey is the public key in the 2-of-2 multisig script of the funding transaction output.
     /// </summary>
-    public PubKey FundingPubKey { get; } = fundingPubKey;
+    public CompactPubKey FundingPubKey { get; } = fundingPubKey;
 
     /// <summary>
     /// revocation_basepoint is used to regenerate the scripts required for the penalty transaction
     /// </summary>
-    public PubKey RevocationBasepoint { get; } = revocationBasepoint;
+    public CompactPubKey RevocationBasepoint { get; } = revocationBasepoint;
 
     /// <summary>
     /// payment_basepoint is used to produce payment signatures for the protocol
     /// </summary>
-    public PubKey PaymentBasepoint { get; } = paymentBasepoint;
+    public CompactPubKey PaymentBasepoint { get; } = paymentBasepoint;
 
     /// <summary>
     /// delayed_payment_basepoint is used to regenerate the scripts required for the penalty transaction
     /// </summary>
-    public PubKey DelayedPaymentBasepoint { get; } = delayedPaymentBasepoint;
+    public CompactPubKey DelayedPaymentBasepoint { get; } = delayedPaymentBasepoint;
 
     /// <summary>
     /// htlc_basepoint is used to produce HTLC signatures for the protocol
     /// </summary>
-    public PubKey HtlcBasepoint { get; } = htlcBasepoint;
+    public CompactPubKey HtlcBasepoint { get; } = htlcBasepoint;
 
     /// <summary>
     /// first_per_commitment_point is the per-commitment point used for the first commitment transaction
     /// </summary>
-    public PubKey FirstPerCommitmentPoint { get; } = firstPerCommitmentPoint;
+    public CompactPubKey FirstPerCommitmentPoint { get; } = firstPerCommitmentPoint;
 
     /// <summary>
     /// second_per_commitment_point is the per-commitment point used for the first commitment transaction
     /// </summary>
-    public PubKey SecondPerCommitmentPoint { get; } = secondPerCommitmentPoint;
+    public CompactPubKey SecondPerCommitmentPoint { get; } = secondPerCommitmentPoint;
 
     /// <summary>
     /// Only the least-significant bit of channel_flags is currently defined: announce_channel. This indicates whether

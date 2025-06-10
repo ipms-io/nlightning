@@ -1,5 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using NBitcoin;
+using NLightning.Domain.Crypto.ValueObjects;
+using NLightning.Tests.Utils.Mocks.Interfaces;
 
 namespace NLightning.Tests.Utils.Mocks;
 
@@ -15,7 +17,7 @@ internal class FakeHandshakeService : IHandshakeService, ITestHandshakeService
 
     public bool IsInitiator => _isInitiator;
 
-    public PubKey RemoteStaticPublicKey => new Key().PubKey;
+    public CompactPubKey? RemoteStaticPublicKey => new Key().PubKey.ToBytes();
 
     public void SetIsInitiator(bool isInitiator)
     {

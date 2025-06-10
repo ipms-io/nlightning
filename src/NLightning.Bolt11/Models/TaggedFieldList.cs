@@ -2,8 +2,8 @@ using System.Diagnostics;
 
 namespace NLightning.Bolt11.Models;
 
-using Common.Utils;
-using Domain.ValueObjects;
+using Domain.Protocol.ValueObjects;
+using Domain.Utils;
 using Enums;
 using Factories;
 using Interfaces;
@@ -24,23 +24,27 @@ internal class TaggedFieldList : List<ITaggedField>
     internal new void Add(ITaggedField taggedField)
     {
         // Check for uniqueness
-        if (this.Any(x => x.Type.Equals(taggedField.Type)) && taggedField.Type != TaggedFieldTypes.FALLBACK_ADDRESS)
+        if (this.Any(x => x.Type.Equals(taggedField.Type)) && taggedField.Type != TaggedFieldTypes.FallbackAddress)
         {
-            throw new ArgumentException($"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
+            throw new ArgumentException(
+                $"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
         }
 
         switch (taggedField.Type)
         {
-            case TaggedFieldTypes.DESCRIPTION when this.Any(x => x.Type.Equals(TaggedFieldTypes.DESCRIPTION_HASH)):
-                throw new ArgumentException($"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
-            case TaggedFieldTypes.DESCRIPTION_HASH when this.Any(x => x.Type.Equals(TaggedFieldTypes.DESCRIPTION)):
-                throw new ArgumentException($"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
+            case TaggedFieldTypes.Description when this.Any(x => x.Type.Equals(TaggedFieldTypes.DescriptionHash)):
+                throw new ArgumentException(
+                    $"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
+            case TaggedFieldTypes.DescriptionHash when this.Any(x => x.Type.Equals(TaggedFieldTypes.Description)):
+                throw new ArgumentException(
+                    $"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
             default:
                 base.Add(taggedField);
                 if (_shouldInvokeChangedEvent)
                 {
                     OnChanged();
                 }
+
                 break;
         }
     }
@@ -140,9 +144,9 @@ internal class TaggedFieldList : List<ITaggedField>
     /// Get a new TaggedFieldList from a BitReader
     /// </summary>
     /// <param name="bitReader">The BitReader to read from</param>
-    /// <param name="network">The network type</param>
+    /// <param name="bitcoinNetwork">The network type</param>
     /// <returns>A new TaggedFieldList</returns>
-    internal static TaggedFieldList FromBitReader(BitReader bitReader, Network network)
+    internal static TaggedFieldList FromBitReader(BitReader bitReader, BitcoinNetwork bitcoinNetwork)
     {
         var taggedFields = new TaggedFieldList();
         while (bitReader.HasMoreBits(15))
@@ -162,7 +166,8 @@ internal class TaggedFieldList : List<ITaggedField>
             {
                 try
                 {
-                    var taggedField = TaggedFieldFactory.CreateTaggedFieldFromBitReader(type, bitReader, length, network);
+                    var taggedField =
+                        TaggedFieldFactory.CreateTaggedFieldFromBitReader(type, bitReader, length, bitcoinNetwork);
                     if (taggedField.IsValid())
                     {
                         try
@@ -235,8 +240,8 @@ internal class TaggedFieldList : List<ITaggedField>
     {
         var taggedFields = this.Where(x => x.Type.Equals(taggedFieldType)).ToList();
         return taggedFields.Count == 0
-            ? null
-            : taggedFields.Cast<T>().ToList();
+                   ? null
+                   : taggedFields.Cast<T>().ToList();
     }
 
     private void OnChanged()

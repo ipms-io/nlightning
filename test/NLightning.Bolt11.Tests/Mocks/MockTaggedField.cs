@@ -1,4 +1,4 @@
-using NLightning.Common.Utils;
+using NLightning.Domain.Utils;
 
 namespace NLightning.Bolt11.Tests.Mocks;
 

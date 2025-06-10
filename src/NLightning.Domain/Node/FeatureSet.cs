@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Runtime.Serialization;
 using System.Text;
+using NLightning.Domain.Utils.Interfaces;
 
 namespace NLightning.Domain.Node;
 
 using Enums;
-using Serialization;
 
 /// <summary>
 /// Represents the features supported by a node. <see href="https://github.com/lightning/bolts/blob/master/09-features.md">BOLT-9</see>
@@ -17,14 +17,14 @@ public class FeatureSet
     /// </summary>
     private static readonly Dictionary<Feature, Feature[]> s_featureDependencies = new()
     {
-        // This   \/                          Depends on this \/
-        { Feature.GossipQueriesEx,               [Feature.GossipQueries] },
-        { Feature.PaymentSecret,                  [Feature.VarOnionOptin] },
-        { Feature.BasicMpp,                       [Feature.PaymentSecret] },
-        { Feature.OptionAnchorOutputs,           [Feature.OptionStaticRemoteKey] },
+        // This \/ --- Depends on this \/
+        { Feature.GossipQueriesEx, [Feature.GossipQueries] },
+        { Feature.PaymentSecret, [Feature.VarOnionOptin] },
+        { Feature.BasicMpp, [Feature.PaymentSecret] },
+        { Feature.OptionAnchorOutputs, [Feature.OptionStaticRemoteKey] },
         { Feature.OptionAnchorsZeroFeeHtlcTx, [Feature.OptionStaticRemoteKey] },
-        { Feature.OptionRouteBlinding,           [Feature.VarOnionOptin] },
-        { Feature.OptionZeroconf,                 [Feature.OptionScidAlias] },
+        { Feature.OptionRouteBlinding, [Feature.VarOnionOptin] },
+        { Feature.OptionZeroconf, [Feature.OptionScidAlias] },
     };
 
     internal BitArray FeatureFlags;
@@ -45,7 +45,7 @@ public class FeatureSet
     public event EventHandler? Changed;
 
     /// <summary>
-    /// Gets the position of the last index of one in the BitArray and add 1 because arrays starts at 0.
+    /// Gets the last index-of-one in the BitArray and add 1 because arrays starts at 0.
     /// </summary>
     public int SizeInBits => GetLastIndexOfOne(FeatureFlags);
 
@@ -67,17 +67,13 @@ public class FeatureSet
             if (s_featureDependencies.TryGetValue(feature, out var dependencies))
             {
                 foreach (var dependency in dependencies)
-                {
                     SetFeature(dependency, isCompulsory, isSet);
-                }
             }
         }
         else // If we're unsetting the feature, and it has dependents, unset them first
         {
             foreach (var dependent in s_featureDependencies.Where(x => x.Value.Contains(feature)).Select(x => x.Key))
-            {
                 SetFeature(dependent, isCompulsory, isSet);
-            }
         }
 
         var bitPosition = (int)feature;
@@ -97,6 +93,7 @@ public class FeatureSet
         // Then set the feature itself
         SetFeature(bitPosition, isSet);
     }
+
     /// <summary>
     /// Sets a feature.
     /// </summary>
@@ -105,13 +102,23 @@ public class FeatureSet
     public void SetFeature(int bitPosition, bool isSet)
     {
         if (bitPosition >= FeatureFlags.Length)
-        {
             FeatureFlags.Length = bitPosition + 1;
-        }
 
         FeatureFlags.Set(bitPosition, isSet);
 
         OnChanged();
+    }
+
+    /// <summary>
+    /// Checks if a feature is set either as compulsory or optional.
+    /// </summary>
+    /// <param name="feature">Feature to check.</param>
+    /// <returns>true if the feature is set, false otherwise.</returns>
+    public bool IsFeatureSet(Feature feature)
+    {
+        var bitPosition = (int)feature;
+
+        return IsFeatureSet(bitPosition) || IsFeatureSet(bitPosition - 1);
     }
 
     /// <summary>
@@ -126,12 +133,11 @@ public class FeatureSet
 
         // If the feature is compulsory, adjust the bit position to be even
         if (isCompulsory)
-        {
             bitPosition--;
-        }
 
         return IsFeatureSet(bitPosition);
     }
+
     /// <summary>
     /// Checks if a feature is set.
     /// </summary>
@@ -142,12 +148,11 @@ public class FeatureSet
     {
         // If the feature is compulsory, adjust the bit position to be even
         if (isCompulsory)
-        {
             bitPosition--;
-        }
 
         return IsFeatureSet(bitPosition);
     }
+
     /// <summary>
     /// Checks if a feature is set.
     /// </summary>
@@ -155,74 +160,96 @@ public class FeatureSet
     /// <returns>true if the feature is set, false otherwise.</returns>
     private bool IsFeatureSet(int bitPosition)
     {
-        if (bitPosition >= FeatureFlags.Length)
-        {
-            return false;
-        }
-
-        return FeatureFlags.Get(bitPosition);
+        return bitPosition < FeatureFlags.Length && FeatureFlags.Get(bitPosition);
     }
 
     /// <summary>
     /// Checks if the option_anchor_outputs or option_anchors_zero_fee_htlc_tx feature is set.
     /// </summary>
-    /// <returns>true if one of the features are set, false otherwise.</returns>
+    /// <returns>true if one of the features is set, false otherwise.</returns>
     public bool IsOptionAnchorsSet()
     {
-        return IsFeatureSet(Feature.OptionAnchorOutputs, false) || IsFeatureSet(Feature.OptionAnchorsZeroFeeHtlcTx, false);
+        return IsFeatureSet(Feature.OptionAnchorOutputs, false) ||
+               IsFeatureSet(Feature.OptionAnchorsZeroFeeHtlcTx, false);
     }
 
     /// <summary>
     /// Check if this feature set is compatible with the other provided feature set.
     /// </summary>
     /// <param name="other">The other feature set to check compatibility with.</param>
+    /// <param name="negotiatedFeatureSet">The resulting negotiated feature set.</param>
     /// <returns>true if the feature sets are compatible, false otherwise.</returns>
     /// <remarks>
     /// The other feature set must support the var_onion_optin feature.
-    /// The other feature set must have all dependencies set.
+    /// The other feature set must have all the dependencies set.
     /// </remarks>
-    public bool IsCompatible(FeatureSet other)
+    public bool IsCompatible(FeatureSet other, out FeatureSet? negotiatedFeatureSet)
     {
         // Check if the other node supports var_onion_optin
         if (!other.IsFeatureSet(Feature.VarOnionOptin, false) && !other.IsFeatureSet(Feature.VarOnionOptin, true))
         {
+            negotiatedFeatureSet = null;
             return false;
         }
 
-        for (var i = 1; i < FeatureFlags.Length; i += 2)
+        // Check which one is bigger and iterate on it
+        var maxLength = Math.Max(FeatureFlags.Length, other.FeatureFlags.Length);
+
+        // Create a temporary feature set to store the negotiated features
+        negotiatedFeatureSet = new FeatureSet();
+        for (var i = 1; i < maxLength; i += 2)
         {
             var isLocalOptionalSet = IsFeatureSet(i, false);
             var isLocalCompulsorySet = IsFeatureSet(i, true);
             var isOtherOptionalSet = other.IsFeatureSet(i, false);
             var isOtherCompulsorySet = other.IsFeatureSet(i, true);
 
-            // If feature is unknown
+            // If the feature is unknown
             if (!Enum.IsDefined(typeof(Feature), i))
             {
                 // If the feature is unknown and even, close the connection
                 if (isOtherCompulsorySet)
                 {
+                    negotiatedFeatureSet = null;
                     return false;
                 }
+
+                if (isOtherOptionalSet)
+                    negotiatedFeatureSet.SetFeature(i, false);
             }
             else
             {
                 // If the local feature is compulsory, the other feature should also be set (either optional or compulsory)
                 if (isLocalCompulsorySet && !(isOtherOptionalSet || isOtherCompulsorySet))
                 {
+                    negotiatedFeatureSet = null;
                     return false;
                 }
 
                 // If the other feature is compulsory, the local feature should also be set (either optional or compulsory)
                 if (isOtherCompulsorySet && !(isLocalOptionalSet || isLocalCompulsorySet))
                 {
+                    negotiatedFeatureSet = null;
                     return false;
+                }
+
+                if (isOtherCompulsorySet || isLocalCompulsorySet)
+                {
+                    negotiatedFeatureSet.SetFeature(i, true);
+                }
+                else if (isLocalOptionalSet && isOtherOptionalSet)
+                {
+                    negotiatedFeatureSet.SetFeature(i, false);
                 }
             }
         }
 
         // Check if all the other node's dependencies are set
-        return other.AreDependenciesSet();
+        if (other.AreDependenciesSet())
+            return true;
+
+        negotiatedFeatureSet = null;
+        return false;
     }
 
     /// <summary>
@@ -233,14 +260,10 @@ public class FeatureSet
         // Check if _featureFlags is as long as the length
         var extraLength = length - FeatureFlags.Length;
         if (extraLength > 0)
-        {
             FeatureFlags.Length += extraLength;
-        }
 
         for (var i = 0; i < length && bitWriter.HasMoreBits(1); i++)
-        {
             bitWriter.WriteBit(FeatureFlags[length - i - (shouldPad ? 0 : 1)]);
-        }
     }
 
     /// <summary>
@@ -251,11 +274,7 @@ public class FeatureSet
     /// <remarks>
     /// We don't care if the feature is compulsory or optional.
     /// </remarks>
-    public bool HasFeature(Feature feature)
-    {
-        // Check if feature is either set as compulsory or optional
-        return IsFeatureSet(feature, false) || IsFeatureSet(feature, true);
-    }
+    public bool HasFeature(Feature feature) => IsFeatureSet(feature, false) || IsFeatureSet(feature, true);
 
     /// <summary>
     /// Deserializes the features from a byte array.
@@ -271,9 +290,7 @@ public class FeatureSet
         try
         {
             if (BitConverter.IsLittleEndian)
-            {
                 Array.Reverse(data);
-            }
 
             var bitArray = new BitArray(data);
             return new FeatureSet { FeatureFlags = bitArray };
@@ -299,9 +316,7 @@ public class FeatureSet
             // Create a new bit array
             var bitArray = new BitArray(length + (shouldPad ? 1 : 0));
             for (var i = 0; i < length; i++)
-            {
                 bitArray.Set(length - i - (shouldPad ? 0 : 1), bitReader.ReadBit());
-            }
 
             return new FeatureSet { FeatureFlags = bitArray };
         }
@@ -326,9 +341,7 @@ public class FeatureSet
         var combinedFlags = new BitArray(combinedLength);
 
         for (var i = 0; i < combinedLength; i++)
-        {
             combinedFlags.Set(i, first.IsFeatureSet(i) || second.IsFeatureSet(i));
-        }
 
         return new FeatureSet { FeatureFlags = combinedFlags };
     }
@@ -339,9 +352,7 @@ public class FeatureSet
         for (var i = 0; i < FeatureFlags.Length; i++)
         {
             if (IsFeatureSet(i))
-            {
                 sb.Append($"{(Feature)i}, ");
-            }
         }
 
         return sb.ToString().TrimEnd(' ', ',');
@@ -360,19 +371,13 @@ public class FeatureSet
         foreach (var feature in Enum.GetValues<Feature>())
         {
             if (!IsFeatureSet((int)feature, false) && !IsFeatureSet((int)feature, true))
-            {
                 continue;
-            }
 
             if (!s_featureDependencies.TryGetValue(feature, out var dependencies))
-            {
                 continue;
-            }
 
             if (dependencies.Any(dependency => !IsFeatureSet(dependency, false) && !IsFeatureSet(dependency, true)))
-            {
                 return false;
-            }
         }
 
         return true;
@@ -388,10 +393,9 @@ public class FeatureSet
         for (var i = bitArray.Length - 1; i >= 0; i--)
         {
             if (bitArray[i])
-            {
                 return i;
-            }
         }
-        return -1; // Return -1 if no 1 is found
+
+        return -1; // Return -1 if no number 1 is found
     }
 }

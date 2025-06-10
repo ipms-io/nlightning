@@ -1,8 +1,8 @@
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
 using Interfaces;
 using Messages;
-using ValueObjects;
 
 /// <summary>
 /// Represents the payload for the tx_init_rbf message.
@@ -18,8 +18,8 @@ using ValueObjects;
 /// <param name="feerate">The feerate.</param>
 /// <param name="locktime">The locktime.</param>
 /// <seealso cref="TxInitRbfMessage"/>
-/// <seealso cref="ValueObjects.ChannelId"/>
-public class TxInitRbfPayload(ChannelId channelId, uint feerate, uint locktime) : IMessagePayload
+/// <seealso cref="Channels.ValueObjects.ChannelId"/>
+public class TxInitRbfPayload(ChannelId channelId, uint feerate, uint locktime) : IChannelMessagePayload
 {
     /// <summary>
     /// The channel ID.

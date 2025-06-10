@@ -1,9 +1,9 @@
 namespace NLightning.Infrastructure.Transport.Encryption;
 
-using Common.Utils;
 using Domain.Crypto.Constants;
 using Domain.Exceptions;
 using Domain.Transport;
+using Domain.Utils;
 using Handshake.States;
 using Protocol.Constants;
 
@@ -29,7 +29,7 @@ internal sealed class Transport : ITransport
     /// <inheritdoc/>
     /// <exception cref="ObjectDisposedException">Thrown if the current instance has already been disposed.</exception>
     /// <exception cref="InvalidOperationException">Thrown if the responder has attempted to write a message to a one-way stream.</exception>
-    /// <exception cref="ArgumentException">Thrown if the encrypted payload was greater than <see cref="ProtocolConstants.MAX_MESSAGE_LENGTH"/> bytes in length, or if the output buffer did not have enough space to hold the ciphertext.</exception>
+    /// <exception cref="ArgumentException">Thrown if the encrypted payload was greater than <see cref="ProtocolConstants.MaxMessageLength"/> bytes in length, or if the output buffer did not have enough space to hold the ciphertext.</exception>
     public int WriteMessage(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Transport));
@@ -55,9 +55,9 @@ internal sealed class Transport : ITransport
     {
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Transport));
 
-        if (lc.Length != ProtocolConstants.MESSAGE_HEADER_SIZE)
+        if (lc.Length != ProtocolConstants.MessageHeaderSize)
         {
-            throw new ArgumentException($"Lightning Message Header must be {ProtocolConstants.MESSAGE_HEADER_SIZE} bytes in length.");
+            throw new ArgumentException($"Lightning Message Header must be {ProtocolConstants.MessageHeaderSize} bytes in length.");
         }
 
         // Decrypt the payload length from the message buffer
@@ -72,7 +72,7 @@ internal sealed class Transport : ITransport
         {
             Array.Reverse(l);
         }
-        return BitConverter.ToUInt16(l, 0) + CryptoConstants.CHACHA20_POLY1305_TAG_LEN;
+        return BitConverter.ToUInt16(l, 0) + CryptoConstants.Chacha20Poly1305TagLen;
     }
 
     /// <inheritdoc/>
@@ -97,26 +97,21 @@ internal sealed class Transport : ITransport
     /// Thrown if the responder has attempted to write a message to a one-way stream.
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// Thrown if the encrypted payload was greater than <see cref="ProtocolConstants.MAX_MESSAGE_LENGTH"/>
+    /// Thrown if the encrypted payload was greater than <see cref="ProtocolConstants.MaxMessageLength"/>
     /// bytes in length, or if the output buffer did not have enough space to hold the ciphertext.
     /// </exception>
     private int WriteMessagePart(ReadOnlySpan<byte> payload, Span<byte> messageBuffer)
     {
-        if (payload.Length + CryptoConstants.CHACHA20_POLY1305_TAG_LEN > ProtocolConstants.MAX_MESSAGE_LENGTH)
-        {
-            throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MAX_MESSAGE_LENGTH} bytes in length.");
-        }
+        if (payload.Length + CryptoConstants.Chacha20Poly1305TagLen > ProtocolConstants.MaxMessageLength)
+            throw new ArgumentException(
+                $"Noise message must be less than or equal to {ProtocolConstants.MaxMessageLength} bytes in length.");
 
-        if (payload.Length + CryptoConstants.CHACHA20_POLY1305_TAG_LEN > messageBuffer.Length)
-        {
+        if (payload.Length + CryptoConstants.Chacha20Poly1305TagLen > messageBuffer.Length)
             throw new ArgumentException("Message buffer does not have enough space to hold the ciphertext.");
-        }
 
         var cipher = _initiator ? _sendingKey : _receivingKey;
         if (!cipher.HasKeys())
-        {
             throw new InvalidOperationException("Cipher is missing keys.");
-        }
 
         return cipher.Encrypt(payload, messageBuffer);
     }
@@ -134,7 +129,7 @@ internal sealed class Transport : ITransport
     /// Thrown if the initiator has attempted to read a message from a one-way stream.
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// Thrown if the message was greater than <see cref="ProtocolConstants.MAX_MESSAGE_LENGTH"/>
+    /// Thrown if the message was greater than <see cref="ProtocolConstants.MaxMessageLength"/>
     /// bytes in length, or if the output buffer did not have enough space to hold the plaintext.
     /// </exception>
     /// <exception cref="System.Security.Cryptography.CryptographicException">
@@ -144,22 +139,18 @@ internal sealed class Transport : ITransport
     {
         switch (message.Length)
         {
-            case > ProtocolConstants.MAX_MESSAGE_LENGTH:
-                throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MAX_MESSAGE_LENGTH} bytes in length.");
-            case < CryptoConstants.CHACHA20_POLY1305_TAG_LEN:
-                throw new ArgumentException($"Noise message must be greater than or equal to {CryptoConstants.CHACHA20_POLY1305_TAG_LEN} bytes in length.");
+            case > ProtocolConstants.MaxMessageLength:
+                throw new ArgumentException($"Noise message must be less than or equal to {ProtocolConstants.MaxMessageLength} bytes in length.");
+            case < CryptoConstants.Chacha20Poly1305TagLen:
+                throw new ArgumentException($"Noise message must be greater than or equal to {CryptoConstants.Chacha20Poly1305TagLen} bytes in length.");
         }
 
-        if (message.Length - CryptoConstants.CHACHA20_POLY1305_TAG_LEN > payloadBuffer.Length)
-        {
+        if (message.Length - CryptoConstants.Chacha20Poly1305TagLen > payloadBuffer.Length)
             throw new ArgumentException("Payload buffer does not have enough space to hold the plaintext.");
-        }
 
         var cipher = _initiator ? _receivingKey : _sendingKey;
         if (!cipher.HasKeys())
-        {
             throw new InvalidOperationException("Cipher is missing keys.");
-        }
 
         return cipher.Decrypt(message, payloadBuffer);
     }
@@ -167,9 +158,7 @@ internal sealed class Transport : ITransport
     public void Dispose()
     {
         if (_disposed)
-        {
             return;
-        }
 
         _sendingKey.Dispose();
         _receivingKey.Dispose();

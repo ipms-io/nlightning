@@ -2,8 +2,8 @@ using NBitcoin;
 
 namespace NLightning.Bolt11.Models.TaggedFields;
 
-using Common.Utils;
 using Constants;
+using Domain.Utils;
 using Enums;
 using Interfaces;
 
@@ -16,9 +16,9 @@ using Interfaces;
 /// <seealso cref="ITaggedField"/>
 internal sealed class PayeePubKeyTaggedField : ITaggedField
 {
-    public TaggedFieldTypes Type => TaggedFieldTypes.PAYEE_PUB_KEY;
+    public TaggedFieldTypes Type => TaggedFieldTypes.PayeePubKey;
     internal PubKey Value { get; }
-    public short Length => TaggedFieldConstants.PAYEE_PUBKEY_LENGTH;
+    public short Length => TaggedFieldConstants.PayeePubkeyLength;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExpiryTimeTaggedField"/> class.
@@ -51,9 +51,10 @@ internal sealed class PayeePubKeyTaggedField : ITaggedField
     /// <exception cref="ArgumentException">Thrown when the length is invalid</exception>
     internal static PayeePubKeyTaggedField FromBitReader(BitReader bitReader, short length)
     {
-        if (length != TaggedFieldConstants.PAYEE_PUBKEY_LENGTH)
+        if (length != TaggedFieldConstants.PayeePubkeyLength)
         {
-            throw new ArgumentException($"Invalid length for DescriptionHashTaggedField. Expected {TaggedFieldConstants.PAYEE_PUBKEY_LENGTH}, but got {length}");
+            throw new ArgumentException(
+                $"Invalid length for DescriptionHashTaggedField. Expected {TaggedFieldConstants.PayeePubkeyLength}, but got {length}");
         }
 
         // Read the data from the BitReader

@@ -1,10 +1,11 @@
 using System.Buffers;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.ValueObjects;
 
-using Domain.Serialization.ValueObjects;
-using Domain.ValueObjects;
-using Domain.ValueObjects.Interfaces;
+using Domain.Crypto.Constants;
+using Domain.Interfaces;
+using Domain.Protocol.ValueObjects;
 
 public class ChainHashTypeSerializer : IValueObjectTypeSerializer<ChainHash>
 {
@@ -33,11 +34,11 @@ public class ChainHashTypeSerializer : IValueObjectTypeSerializer<ChainHash>
     /// <exception cref="IOException">Thrown when an I/O error occurs during the read operation.</exception>
     public async Task<ChainHash> DeserializeAsync(Stream stream)
     {
-        var buffer = ArrayPool<byte>.Shared.Rent(ChainHash.LENGTH);
+        var buffer = ArrayPool<byte>.Shared.Rent(CryptoConstants.Sha256HashLen);
 
         try
         {
-            await stream.ReadExactlyAsync(buffer.AsMemory()[..ChainHash.LENGTH]);
+            await stream.ReadExactlyAsync(buffer.AsMemory()[..CryptoConstants.Sha256HashLen]);
 
             return new ChainHash(buffer);
         }

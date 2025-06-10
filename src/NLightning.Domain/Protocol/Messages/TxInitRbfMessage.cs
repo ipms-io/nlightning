@@ -12,7 +12,7 @@ using Tlv;
 /// The tx_init_rbf message initiates a replacement of the transaction after it's been completed.
 /// The message type is 72.
 /// </remarks>
-public sealed class TxInitRbfMessage : BaseMessage
+public sealed class TxInitRbfMessage : BaseChannelMessage
 {
     /// <summary>
     /// The payload of the message.
@@ -23,7 +23,7 @@ public sealed class TxInitRbfMessage : BaseMessage
     public RequireConfirmedInputsTlv? RequireConfirmedInputsTlv { get; }
 
     public TxInitRbfMessage(TxInitRbfPayload payload, FundingOutputContributionTlv? fundingOutputContributionTlv = null, RequireConfirmedInputsTlv? requireConfirmedInputsTlv = null)
-        : base(MessageTypes.TX_INIT_RBF, payload)
+        : base(MessageTypes.TxInitRbf, payload)
     {
         FundingOutputContributionTlv = fundingOutputContributionTlv;
         RequireConfirmedInputsTlv = requireConfirmedInputsTlv;

@@ -8,10 +8,11 @@ public class BlazorCryptoProviderInitializer : BlazorTestBase
     {
         // Arrange
         Assert.NotNull(Page);
-        await Page.GotoAsync("about:blank", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle }); // Make sure page is fresh
+        await Page.GotoAsync("about:blank",
+                             new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle }); // Make sure page is fresh
 
         // Act
-        await Page.GotoAsync(ROOT_URI, new PageGotoOptions
+        await Page.GotoAsync(RootUri, new PageGotoOptions
         {
             WaitUntil = WaitUntilState.NetworkIdle,
             Timeout = 5000
@@ -35,12 +36,13 @@ public class BlazorCryptoProviderInitializer : BlazorTestBase
     {
         // Arrange
         Assert.NotNull(Page);
-        await Page.GotoAsync("about:blank", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle }); // Make sure page is fresh
+        await Page.GotoAsync("about:blank",
+                             new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle }); // Make sure page is fresh
         var console = new List<string>();
         Page.Console += ConsoleListener;
 
         // Act
-        await Page.GotoAsync(ROOT_URI, new PageGotoOptions
+        await Page.GotoAsync(RootUri, new PageGotoOptions
         {
             WaitUntil = WaitUntilState.NetworkIdle,
             Timeout = 5000

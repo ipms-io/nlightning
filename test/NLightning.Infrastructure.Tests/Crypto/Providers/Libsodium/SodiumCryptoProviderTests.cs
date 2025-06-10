@@ -1,4 +1,6 @@
 #if CRYPTO_LIBSODIUM
+using NLightning.Tests.Utils.Vectors;
+
 namespace NLightning.Infrastructure.Tests.Crypto.Providers.Libsodium;
 
 using Infrastructure.Crypto.Providers.Libsodium;

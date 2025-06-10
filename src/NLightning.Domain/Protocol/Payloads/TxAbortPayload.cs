@@ -1,7 +1,7 @@
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
 using Interfaces;
-using ValueObjects;
 
 /// <summary>
 /// Represents the payload for the tx_abort message.
@@ -11,7 +11,7 @@ using ValueObjects;
 /// </remarks>
 /// <param name="channelId">The channel ID.</param>
 /// <param name="data">The data.</param>
-public class TxAbortPayload(ChannelId channelId, byte[] data) : IMessagePayload
+public class TxAbortPayload(ChannelId channelId, byte[] data) : IChannelMessagePayload
 {
     /// <summary>
     /// Gets the channel ID.

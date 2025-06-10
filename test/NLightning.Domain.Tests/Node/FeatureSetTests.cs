@@ -157,7 +157,7 @@ public class FeatureSetTests
         }
 
         // Act
-        var result = features.IsCompatible(other);
+        var result = features.IsCompatible(other, out var _);
 
         // Assert
         Assert.Equal(expected, result);
@@ -174,7 +174,7 @@ public class FeatureSetTests
         other.SetFeature(Feature.VarOnionOptin, false, false);
 
         // Act
-        var result = features.IsCompatible(other);
+        var result = features.IsCompatible(other, out var _);
 
         // Assert
         Assert.False(result);
@@ -190,7 +190,7 @@ public class FeatureSetTests
         other.SetFeature(41, true);
 
         // Act
-        var result = features.IsCompatible(other);
+        var result = features.IsCompatible(other, out var _);
 
         // Assert
         Assert.True(result);
@@ -206,7 +206,7 @@ public class FeatureSetTests
         other.SetFeature(42, true);
 
         // Act
-        var result = features.IsCompatible(other);
+        var result = features.IsCompatible(other, out var _);
 
         // Assert
         Assert.False(result);
@@ -223,7 +223,7 @@ public class FeatureSetTests
         other.SetFeature((int)Feature.OptionScidAlias, false);
 
         // Act
-        var result = features.IsCompatible(other);
+        var result = features.IsCompatible(other, out var _);
 
         // Assert
         Assert.False(result);

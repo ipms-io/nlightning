@@ -1,36 +1,50 @@
 namespace NLightning.Infrastructure.Transport.Services;
 
-using Common.Utils;
-using Crypto.Functions;
+using Domain.Crypto.ValueObjects;
 using Domain.Transport;
+using Domain.Utils;
 using Handshake.States;
+using Infrastructure.Crypto.Interfaces;
 using Interfaces;
 using Protocol.Constants;
 
 /// <summary>
 /// Initializes a new instance of the <see cref="HandshakeService"/> class.
 /// </summary>
-/// <param name="isInitiator">If we are initiating the connection</param>
-/// <param name="localStaticPrivateKey">Our local Private Key</param>
-/// <param name="staticPublicKey">If we are initiating, the remote Public Key, else our local Public Key</param>
-internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> localStaticPrivateKey,
-                                       ReadOnlySpan<byte> staticPublicKey, IHandshakeState? handshakeState = null)
-    : IHandshakeService
+internal sealed class HandshakeService : IHandshakeService
 {
-    private readonly IHandshakeState _handshakeState = handshakeState
-                                                       ?? new HandshakeState(isInitiator, localStaticPrivateKey,
-                                                                             staticPublicKey, new Ecdh());
+    private readonly IHandshakeState _handshakeState;
 
     private byte _steps = 2;
     private bool _disposed;
 
     /// <inheritdoc/>
-    public bool IsInitiator => isInitiator;
+    public bool IsInitiator { get; }
 
-    public NBitcoin.PubKey? RemoteStaticPublicKey => _handshakeState.RemoteStaticPublicKey;
+    public CompactPubKey? RemoteStaticPublicKey => _handshakeState.RemoteStaticPublicKey;
+
+    public HandshakeService(bool isInitiator, ReadOnlySpan<byte> localStaticPrivateKey,
+                            ReadOnlySpan<byte> staticPublicKey, IHandshakeState? handshakeState = null,
+                            IEcdh? dh = null)
+    {
+        if (handshakeState is null)
+        {
+            if (dh is null)
+                throw new ArgumentNullException(nameof(dh),
+                                                "Either a HandshakeState or Ecdh must be provided");
+
+            _handshakeState = new HandshakeState(isInitiator, localStaticPrivateKey, staticPublicKey, dh);
+        }
+        else
+        {
+            _handshakeState = handshakeState;
+        }
+
+        IsInitiator = isInitiator;
+    }
 
     /// <inheritdoc/>
-    /// <exception cref="InvalidOperationException">Thrown when there's no more steps to complete</exception>
+    /// <exception cref="InvalidOperationException">Thrown when there are no more steps to complete</exception>
     public int PerformStep(ReadOnlySpan<byte> inMessage, Span<byte> outMessage, out ITransport? transport)
     {
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(HandshakeService));
@@ -62,7 +76,7 @@ internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> loca
     private int InitiatorWriteActOne(Span<byte> outMessage)
     {
         // Write act one
-        return _handshakeState.WriteMessage(ProtocolConstants.EMPTY_MESSAGE, outMessage).Item1;
+        return _handshakeState.WriteMessage(ProtocolConstants.EmptyMessage, outMessage).Item1;
     }
 
     /// <summary>
@@ -79,7 +93,7 @@ internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> loca
         _ = _handshakeState.ReadMessage(actTwoMessage, outMessage);
 
         // Write act three
-        (var messageSize, _, transport) = _handshakeState.WriteMessage(ProtocolConstants.EMPTY_MESSAGE, outMessage);
+        (var messageSize, _, transport) = _handshakeState.WriteMessage(ProtocolConstants.EmptyMessage, outMessage);
 
         return messageSize;
     }
@@ -110,7 +124,7 @@ internal sealed class HandshakeService(bool isInitiator, ReadOnlySpan<byte> loca
     private int ResponderReadActThree(ReadOnlySpan<byte> actThreeMessage, out ITransport? transport)
     {
         // Read act three
-        var messageBuffer = new byte[ProtocolConstants.MAX_MESSAGE_LENGTH];
+        var messageBuffer = new byte[ProtocolConstants.MaxMessageLength];
         (var messageSize, _, transport) = _handshakeState.ReadMessage(actThreeMessage, messageBuffer);
 
         return messageSize;

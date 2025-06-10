@@ -1,15 +1,13 @@
 using System.Runtime.Serialization;
-using NLightning.Domain.Protocol.Factories;
+using NLightning.Domain.Protocol.Interfaces;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Messages.Types;
 
 using Domain.Protocol.Constants;
 using Domain.Protocol.Messages;
-using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Tlv;
-using Domain.Serialization.Factories;
-using Domain.Serialization.Messages.Types;
 using Exceptions;
 using Interfaces;
 
@@ -20,8 +18,8 @@ public class UpdateAddHtlcMessageTypeSerializer : IMessageTypeSerializer<UpdateA
     private readonly ITlvStreamSerializer _tlvStreamSerializer;
 
     public UpdateAddHtlcMessageTypeSerializer(IPayloadSerializerFactory payloadSerializerFactory,
-                                                         ITlvConverterFactory tlvConverterFactory,
-                                                         ITlvStreamSerializer tlvStreamSerializer)
+                                              ITlvConverterFactory tlvConverterFactory,
+                                              ITlvStreamSerializer tlvStreamSerializer)
     {
         _payloadSerializerFactory = payloadSerializerFactory;
         _tlvConverterFactory = tlvConverterFactory;
@@ -35,7 +33,7 @@ public class UpdateAddHtlcMessageTypeSerializer : IMessageTypeSerializer<UpdateA
 
         // Get the payload serializer
         var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type)
-                                    ?? throw new SerializationException("No serializer found for payload type");
+                                 ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
 
         // Serialize the TLV stream
@@ -54,9 +52,9 @@ public class UpdateAddHtlcMessageTypeSerializer : IMessageTypeSerializer<UpdateA
         {
             // Deserialize payload
             var payloadSerializer = _payloadSerializerFactory.GetSerializer<UpdateAddHtlcPayload>()
-                                    ?? throw new SerializationException("No serializer found for payload type");
+                                 ?? throw new SerializationException("No serializer found for payload type");
             var payload = await payloadSerializer.DeserializeAsync(stream)
-                          ?? throw new SerializationException("Error serializing payload");
+                       ?? throw new SerializationException("Error serializing payload");
 
             // Deserialize extension if available
             if (stream.Position >= stream.Length)
@@ -67,10 +65,10 @@ public class UpdateAddHtlcMessageTypeSerializer : IMessageTypeSerializer<UpdateA
                 return new UpdateAddHtlcMessage(payload);
 
             BlindedPathTlv? blindedPathTlv = null;
-            if (extension.TryGetTlv(TlvConstants.UPFRONT_SHUTDOWN_SCRIPT, out var baseBlindedPathTlv))
+            if (extension.TryGetTlv(TlvConstants.UpfrontShutdownScript, out var baseBlindedPathTlv))
             {
                 var tlvConverter = _tlvConverterFactory.GetConverter<BlindedPathTlv>()
-                                   ?? throw new SerializationException(
+                                ?? throw new SerializationException(
                                        $"No serializer found for tlv type {nameof(BlindedPathTlv)}");
                 blindedPathTlv = tlvConverter.ConvertFromBase(baseBlindedPathTlv!);
             }
@@ -82,6 +80,7 @@ public class UpdateAddHtlcMessageTypeSerializer : IMessageTypeSerializer<UpdateA
             throw new MessageSerializationException("Error deserializing UpdateAddHtlcMessage", e);
         }
     }
+
     async Task<IMessage> IMessageTypeSerializer.DeserializeAsync(Stream stream)
     {
         return await DeserializeAsync(stream);

@@ -1,9 +1,8 @@
-using NBitcoin;
-
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Bitcoin.ValueObjects;
+using Channels.ValueObjects;
 using Interfaces;
-using ValueObjects;
 
 /// <summary>
 /// Represents the payload for the shutdown message.
@@ -11,7 +10,7 @@ using ValueObjects;
 /// <remarks>
 /// Initializes a new instance of the ShutdownPayload class.
 /// </remarks>
-public class ShutdownPayload(ChannelId channelId, Script scriptPubkey) : IMessagePayload
+public class ShutdownPayload(ChannelId channelId, BitcoinScript scriptPubkey) : IChannelMessagePayload
 {
     /// <summary>
     /// The channel_id this message refers to
@@ -26,5 +25,5 @@ public class ShutdownPayload(ChannelId channelId, Script scriptPubkey) : IMessag
     /// <summary>
     /// The scriptpubkey to send the closing funds to
     /// </summary>
-    public Script ScriptPubkey { get; } = scriptPubkey;
+    public BitcoinScript ScriptPubkey { get; } = scriptPubkey;
 }

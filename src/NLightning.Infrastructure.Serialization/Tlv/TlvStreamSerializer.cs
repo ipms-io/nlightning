@@ -1,11 +1,11 @@
 using System.Runtime.Serialization;
+using NLightning.Domain.Protocol.Interfaces;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Tlv;
 
-using Domain.Protocol.Factories;
 using Domain.Protocol.Models;
 using Domain.Protocol.Tlv;
-using Domain.Serialization.Tlv;
 using Interfaces;
 
 public class TlvStreamSerializer : ITlvStreamSerializer
@@ -29,23 +29,29 @@ public class TlvStreamSerializer : ITlvStreamSerializer
             var baseTlv = tlv switch
             {
                 BlindedPathTlv blindedPathTlv => _tlvConverterFactory
-                    .GetConverter<BlindedPathTlv>()?.ConvertToBase(blindedPathTlv),
+                                                .GetConverter<BlindedPathTlv>()?.ConvertToBase(blindedPathTlv),
                 ChannelTypeTlv channelTypeTlv => _tlvConverterFactory
-                    .GetConverter<ChannelTypeTlv>()?.ConvertToBase(channelTypeTlv),
+                                                .GetConverter<ChannelTypeTlv>()?.ConvertToBase(channelTypeTlv),
                 FeeRangeTlv feeRangeTlv => _tlvConverterFactory
-                    .GetConverter<FeeRangeTlv>()?.ConvertToBase(feeRangeTlv),
+                                          .GetConverter<FeeRangeTlv>()?.ConvertToBase(feeRangeTlv),
                 FundingOutputContributionTlv fundingOutputContributionTlv => _tlvConverterFactory
-                    .GetConverter<FundingOutputContributionTlv>()?.ConvertToBase(fundingOutputContributionTlv),
+                                                                            .GetConverter<
+                                                                                 FundingOutputContributionTlv>()
+                                                                           ?.ConvertToBase(
+                                                                                 fundingOutputContributionTlv),
                 NetworksTlv networksTlv => _tlvConverterFactory
-                    .GetConverter<NetworksTlv>()?.ConvertToBase(networksTlv),
+                                          .GetConverter<NetworksTlv>()?.ConvertToBase(networksTlv),
                 NextFundingTlv nextFundingTlv => _tlvConverterFactory
-                    .GetConverter<NextFundingTlv>()?.ConvertToBase(nextFundingTlv),
+                                                .GetConverter<NextFundingTlv>()?.ConvertToBase(nextFundingTlv),
                 RequireConfirmedInputsTlv requireConfirmedInputsTlv => _tlvConverterFactory
-                    .GetConverter<RequireConfirmedInputsTlv>()?.ConvertToBase(requireConfirmedInputsTlv),
+                                                                      .GetConverter<RequireConfirmedInputsTlv>()
+                                                                     ?.ConvertToBase(requireConfirmedInputsTlv),
                 ShortChannelIdTlv shortChannelIdTlv => _tlvConverterFactory
-                    .GetConverter<ShortChannelIdTlv>()?.ConvertToBase(shortChannelIdTlv),
+                                                      .GetConverter<ShortChannelIdTlv>()
+                                                     ?.ConvertToBase(shortChannelIdTlv),
                 UpfrontShutdownScriptTlv upfrontShutdownScriptTlv => _tlvConverterFactory
-                    .GetConverter<UpfrontShutdownScriptTlv>()?.ConvertToBase(upfrontShutdownScriptTlv),
+                                                                    .GetConverter<UpfrontShutdownScriptTlv>()
+                                                                   ?.ConvertToBase(upfrontShutdownScriptTlv),
                 _ => null
             } ?? throw new SerializationException($"No converter found for tlv type {tlv.GetType().Name}");
             await _tlvSerializer.SerializeAsync(baseTlv, stream);
@@ -68,7 +74,7 @@ public class TlvStreamSerializer : ITlvStreamSerializer
                     tlvStream.Add(tlv);
             }
 
-            return tlvStream;
+            return tlvStream.Any() ? tlvStream : null;
         }
         catch (Exception e)
         {

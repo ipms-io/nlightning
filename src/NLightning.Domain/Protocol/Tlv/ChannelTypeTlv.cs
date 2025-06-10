@@ -1,6 +1,7 @@
 namespace NLightning.Domain.Protocol.Tlv;
 
 using Constants;
+using Node;
 
 /// <summary>
 /// Channel Type TLV.
@@ -15,9 +16,15 @@ public class ChannelTypeTlv : BaseTlv
     /// </summary>
     public byte[] ChannelType { get; }
 
-    public ChannelTypeTlv(byte[] channelType) : base(TlvConstants.CHANNEL_TYPE)
+    /// <summary>
+    /// The channel type features
+    /// </summary>
+    public FeatureSet Features { get; }
+
+    public ChannelTypeTlv(byte[] channelType) : base(TlvConstants.ChannelType)
     {
         ChannelType = channelType;
+        Features = FeatureSet.DeserializeFromBytes(channelType);
 
         Value = channelType;
         Length = Value.Length;

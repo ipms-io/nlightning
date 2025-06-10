@@ -1,10 +1,8 @@
-using NBitcoin;
-
 namespace NLightning.Infrastructure.Serialization.Tests.Messages;
 
+using Domain.Channels.ValueObjects;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Payloads;
-using Domain.ValueObjects;
 using Helpers;
 using Serialization.Messages.Types;
 
@@ -23,11 +21,13 @@ public class RevokeAndAckMessageTests
     {
         // Arrange
         var expectedChannelId = ChannelId.Zero;
-        var perCommitmentSecret = Convert.FromHexString("c93ca7dca44d2e45e3cc5419d92750f7fb3a0f180852b73a621f4051c0193a75");
+        var perCommitmentSecret =
+            Convert.FromHexString("c93ca7dca44d2e45e3cc5419d92750f7fb3a0f180852b73a621f4051c0193a75");
         var nextPerCommitmentPoint =
-            new PubKey(Convert.FromHexString("02c93ca7dca44d2e45e3cc5419d92750f7fb3a0f180852b73a621f4051c0193a75"));
+            Convert.FromHexString("02c93ca7dca44d2e45e3cc5419d92750f7fb3a0f180852b73a621f4051c0193a75");
 
-        var stream = new MemoryStream(Convert.FromHexString("0000000000000000000000000000000000000000000000000000000000000000C93CA7DCA44D2E45E3CC5419D92750F7FB3A0F180852B73A621F4051C0193A7502C93CA7DCA44D2E45E3CC5419D92750F7FB3A0F180852B73A621F4051C0193A75"));
+        var stream = new MemoryStream(Convert.FromHexString(
+                                          "0000000000000000000000000000000000000000000000000000000000000000C93CA7DCA44D2E45E3CC5419D92750F7FB3A0F180852B73A621F4051C0193A7502C93CA7DCA44D2E45E3CC5419D92750F7FB3A0F180852B73A621F4051C0193A75"));
 
         // Act
         var message = await _revokeAndAckMessageTypeSerializer.DeserializeAsync(stream);
@@ -44,12 +44,16 @@ public class RevokeAndAckMessageTests
     {
         // Arrange
         var channelId = ChannelId.Zero;
-        var perCommitmentSecret = Convert.FromHexString("c93ca7dca44d2e45e3cc5419d92750f7fb3a0f180852b73a621f4051c0193a75");
+        var perCommitmentSecret =
+            Convert.FromHexString("c93ca7dca44d2e45e3cc5419d92750f7fb3a0f180852b73a621f4051c0193a75");
         var nextPerCommitmentPoint =
-            new PubKey(Convert.FromHexString("02c93ca7dca44d2e45e3cc5419d92750f7fb3a0f180852b73a621f4051c0193a75"));
-        var message = new RevokeAndAckMessage(new RevokeAndAckPayload(channelId, nextPerCommitmentPoint, perCommitmentSecret));
+            Convert.FromHexString("02c93ca7dca44d2e45e3cc5419d92750f7fb3a0f180852b73a621f4051c0193a75");
+        var message =
+            new RevokeAndAckMessage(new RevokeAndAckPayload(channelId, nextPerCommitmentPoint, perCommitmentSecret));
         var stream = new MemoryStream();
-        var expectedBytes = Convert.FromHexString("0000000000000000000000000000000000000000000000000000000000000000C93CA7DCA44D2E45E3CC5419D92750F7FB3A0F180852B73A621F4051C0193A7502C93CA7DCA44D2E45E3CC5419D92750F7FB3A0F180852B73A621F4051C0193A75");
+        var expectedBytes =
+            Convert.FromHexString(
+                "0000000000000000000000000000000000000000000000000000000000000000C93CA7DCA44D2E45E3CC5419D92750F7FB3A0F180852B73A621F4051C0193A7502C93CA7DCA44D2E45E3CC5419D92750F7FB3A0F180852B73A621F4051C0193A75");
 
         // Act
         await _revokeAndAckMessageTypeSerializer.SerializeAsync(message, stream);

@@ -1,12 +1,10 @@
 using System.Buffers;
+using NLightning.Domain.Protocol.ValueObjects;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Tlv;
 
 using Domain.Protocol.Tlv;
-using Domain.Serialization.Factories;
-using Domain.Serialization.Tlv;
-using Domain.Serialization.ValueObjects;
-using Domain.ValueObjects;
 
 public class TlvSerializer : ITlvSerializer
 {
@@ -15,7 +13,7 @@ public class TlvSerializer : ITlvSerializer
     public TlvSerializer(IValueObjectSerializerFactory valueObjectSerializerFactory)
     {
         _bigSizeSerializer = valueObjectSerializerFactory.GetSerializer<BigSize>()
-                             ?? throw new ArgumentNullException(nameof(valueObjectSerializerFactory));
+                          ?? throw new ArgumentNullException(nameof(valueObjectSerializerFactory));
     }
 
     /// <summary>
@@ -32,7 +30,7 @@ public class TlvSerializer : ITlvSerializer
         await _bigSizeSerializer.SerializeAsync(baseTlv.Length, stream);
 
         await stream.WriteAsync(baseTlv.Value);
-    }
+    } //2102C93CA7DCA44D2E45E3CC5419D92750F7FB3A0F180852B73A621F4051C0193A75AC
 
     /// <summary>
     /// Deserializes a BaseTlv value from a stream.

@@ -7,6 +7,7 @@ using Crypto.Hashes;
 using Domain.Crypto.Constants;
 using Domain.Money;
 using Exceptions;
+using Infrastructure.Crypto.Hashes;
 
 /// <summary>
 /// Represents an offered HTLC output in a commitment transaction.
@@ -16,12 +17,11 @@ public class OfferedHtlcOutput : BaseHtlcOutput
     public override ScriptType ScriptType => ScriptType.P2WPKH;
 
     [SetsRequiredMembers]
-    public OfferedHtlcOutput(LightningMoney anchorAmount, PubKey revocationPubKey, PubKey remoteHtlcPubKey,
-                             PubKey localHtlcPubKey, ReadOnlyMemory<byte> paymentHash, LightningMoney amount,
-                             ulong cltvExpiry)
-        : base(GenerateToRemoteHtlcScript(anchorAmount, revocationPubKey, remoteHtlcPubKey, localHtlcPubKey,
-                                          paymentHash),
-               amount)
+    public OfferedHtlcOutput(LightningMoney amount, ulong cltvExpiry, bool hasAnchor, PubKey localHtlcPubKey,
+                             ReadOnlyMemory<byte> paymentHash, PubKey remoteHtlcPubKey, PubKey revocationPubKey)
+        : base(amount,
+               GenerateToRemoteHtlcScript(hasAnchor, localHtlcPubKey, paymentHash, remoteHtlcPubKey, revocationPubKey))
+
     {
         RevocationPubKey = revocationPubKey;
         RemoteHtlcPubKey = remoteHtlcPubKey;
@@ -30,11 +30,13 @@ public class OfferedHtlcOutput : BaseHtlcOutput
         CltvExpiry = cltvExpiry;
     }
 
-    private static Script GenerateToRemoteHtlcScript(LightningMoney anchorAmount, PubKey revocationPubKey, PubKey remoteHtlcPubKey, PubKey localHtlcPubKey, ReadOnlyMemory<byte> paymentHash)
+    private static Script GenerateToRemoteHtlcScript(bool hasAnchor, PubKey localHtlcPubKey,
+                                                     ReadOnlyMemory<byte> paymentHash, PubKey remoteHtlcPubKey,
+                                                     PubKey revocationPubKey)
     {
         // Hash the revocationPubKey
         using var sha256 = new Sha256();
-        Span<byte> revocationPubKeySha256Hash = stackalloc byte[CryptoConstants.SHA256_HASH_LEN];
+        Span<byte> revocationPubKeySha256Hash = stackalloc byte[CryptoConstants.Sha256HashLen];
         sha256.AppendData(revocationPubKey.ToBytes());
         sha256.GetHashAndReset(revocationPubKeySha256Hash);
         var revocationPubKeyHashRipemd160 = Ripemd160.Hash(revocationPubKeySha256Hash);
@@ -42,7 +44,8 @@ public class OfferedHtlcOutput : BaseHtlcOutput
         // Hash the paymentHash
         var paymentHashRipemd160 = Ripemd160.Hash(paymentHash.Span);
 
-        List<Op> ops = [
+        List<Op> ops =
+        [
             OpcodeType.OP_DUP,
             OpcodeType.OP_HASH160,
             Op.GetPushOp(revocationPubKeyHashRipemd160),
@@ -70,7 +73,7 @@ public class OfferedHtlcOutput : BaseHtlcOutput
             OpcodeType.OP_ENDIF
         ];
 
-        if (!anchorAmount.IsZero)
+        if (hasAnchor)
         {
             ops.AddRange([
                 OpcodeType.OP_1,

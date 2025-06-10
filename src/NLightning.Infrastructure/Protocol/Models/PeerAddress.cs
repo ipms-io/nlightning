@@ -1,8 +1,10 @@
 using System.Net;
 using System.Text.RegularExpressions;
-using NBitcoin;
 
 namespace NLightning.Infrastructure.Protocol.Models;
+
+using NLightning.Domain.Crypto.ValueObjects;
+using NLightning.Domain.Node.ValueObjects;
 
 /// <summary>
 /// Represents a peer address.
@@ -15,7 +17,7 @@ public sealed partial class PeerAddress
     /// <summary>
     /// Gets the public key.
     /// </summary>
-    public PubKey PubKey { get; }
+    public CompactPubKey PubKey { get; }
 
     /// <summary>
     /// Gets the host.
@@ -37,11 +39,31 @@ public sealed partial class PeerAddress
     public PeerAddress(string address)
     {
         var parts = address.Split('@');
-        PubKey = new PubKey(parts[0]);
+        if (parts.Length != 2)
+            throw new FormatException("Invalid address format, should be pubkey@host:port");
 
-        var hostPort = parts[1].Split(':');
-        Host = IPAddress.Parse(hostPort[0]);
-        Port = int.Parse(hostPort[1]);
+        PubKey = new CompactPubKey(Convert.FromHexString(parts[0]));
+
+        // Check if the address starts with http
+        if (parts[1].StartsWith("http"))
+        {
+            // split on first // to get the address
+            var hostPort = parts[1].Split("//")[1].Split(":");
+            Host = Dns.GetHostAddresses(hostPort[0])[0];
+
+            // Port may have an extra / at the end. Use regex to keep only the number in the port
+            Port = int.Parse(OnlyDigitsRegex().Match(hostPort[1]).Value);
+        }
+        else
+        {
+            var hostPort = parts[1].Split(':');
+            Host = IPAddress.Parse(hostPort[0]);
+            Port = int.Parse(hostPort[1]);
+        }
+    }
+
+    public PeerAddress(PeerNodeInfo peerNodeInfo) : this(peerNodeInfo.Address)
+    {
     }
 
     /// <summary>
@@ -52,7 +74,7 @@ public sealed partial class PeerAddress
     /// <remarks>
     /// The address is in the format of "http://host:port" or "host:port".
     /// </remarks>
-    public PeerAddress(PubKey pubKey, string address)
+    public PeerAddress(CompactPubKey pubKey, string address)
     {
         PubKey = pubKey;
 
@@ -63,7 +85,7 @@ public sealed partial class PeerAddress
             var host = address.Split("//")[1];
             Host = Dns.GetHostAddresses(host.Split(":")[0])[0];
 
-            // Port may have an extra / at the end. use regex to keep only the number in the port
+            // Port may have an extra / at the end. Use regex to keep only the number in the port
             Port = int.Parse(OnlyDigitsRegex().Match(host.Split(":")[1]).Value);
         }
         else
@@ -80,7 +102,7 @@ public sealed partial class PeerAddress
     /// <param name="pubKey">The public key.</param>
     /// <param name="host">The host.</param>
     /// <param name="port">The port.</param>
-    public PeerAddress(PubKey pubKey, string host, int port)
+    public PeerAddress(CompactPubKey pubKey, string host, int port)
     {
         PubKey = pubKey;
         Host = IPAddress.Parse(host);

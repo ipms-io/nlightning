@@ -20,9 +20,9 @@ public static class TxAddOutputValidator
             throw new InvalidOperationException("SerialId is already included in the transaction.");
         }
 
-        if (currentOutputCount >= InteractiveTransactionConstants.MAX_OUTPUTS_ALLOWED)
+        if (currentOutputCount >= InteractiveTransactionConstants.MaxOutputsAllowed)
         {
-            throw new InvalidOperationException($"Cannot receive more than {InteractiveTransactionConstants.MAX_OUTPUTS_ALLOWED} tx_add_output messages during this negotiation.");
+            throw new InvalidOperationException($"Cannot receive more than {InteractiveTransactionConstants.MaxOutputsAllowed} tx_add_output messages during this negotiation.");
         }
 
         if (output.Amount < dustLimit)
@@ -30,12 +30,12 @@ public static class TxAddOutputValidator
             throw new InvalidOperationException("The sats amount is less than the dust_limit.");
         }
 
-        if (output.Amount > InteractiveTransactionConstants.MAX_MONEY)
+        if (output.Amount > InteractiveTransactionConstants.MaxMoney)
         {
             throw new InvalidOperationException("The sats amount is greater than the maximum allowed (MAX_MONEY).");
         }
 
-        if (!isStandardScript(output.Script.ToBytes()))
+        if (!isStandardScript(output.Script))
         {
             throw new InvalidOperationException("The script is non-standard.");
         }

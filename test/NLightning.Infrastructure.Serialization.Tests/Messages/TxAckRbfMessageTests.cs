@@ -1,3 +1,4 @@
+using NLightning.Domain.Channels.ValueObjects;
 using NLightning.Domain.Money;
 
 namespace NLightning.Infrastructure.Serialization.Tests.Messages;
@@ -5,7 +6,6 @@ namespace NLightning.Infrastructure.Serialization.Tests.Messages;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Tlv;
-using Domain.ValueObjects;
 using Exceptions;
 using Helpers;
 using Serialization.Messages.Types;

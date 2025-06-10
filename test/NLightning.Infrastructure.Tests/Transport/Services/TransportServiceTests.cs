@@ -2,12 +2,12 @@ using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using NBitcoin;
+using NLightning.Domain.Serialization.Interfaces;
 using NLightning.Tests.Utils;
 using NLightning.Tests.Utils.Mocks;
 
 namespace NLightning.Infrastructure.Tests.Transport.Services;
 
-using Domain.Serialization.Messages;
 using Domain.Transport;
 using Exceptions;
 using Infrastructure.Transport.Services;
@@ -18,7 +18,8 @@ public class TransportServiceTests
     private readonly Mock<ILogger> _mockLogger = new();
 
     [Fact]
-    public async Task Given_TransportServiceAsInitiator_When_InitializeIsCalled_Then_HandshakeServicePerformStepIsCalledTwice()
+    public async Task
+        Given_TransportServiceAsInitiator_When_InitializeIsCalled_Then_HandshakeServicePerformStepIsCalledTwice()
     {
         // Given
         var handshakeServiceMock = new Mock<FakeHandshakeService>();
@@ -32,37 +33,39 @@ public class TransportServiceTests
         {
             var steps = 2;
             handshakeServiceMock
-                .Setup(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny))
-                .Returns((byte[] inMessage, out byte[] outMessage) =>
-            {
-                ITransport? transport = null;
-                switch (steps)
+               .Setup(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny))
+               .Returns((byte[] inMessage, out byte[] outMessage) =>
                 {
-                    case 2:
-                        {
-                            steps--;
-                            if (inMessage.Length != 50 && inMessage.Length != 0)
+                    ITransport? transport = null;
+                    switch (steps)
+                    {
+                        case 2:
                             {
-                                throw new InvalidOperationException("Expected 50 bytes");
-                            }
-                            outMessage = new byte[50];
-                            return (50, transport);
-                        }
-                    case 1:
-                        {
-                            steps--;
-                            if (inMessage.Length != 50 && inMessage.Length != 66 && inMessage.Length != 0)
-                            {
-                                throw new InvalidOperationException("Expected 66 bytes");
-                            }
-                            outMessage = new byte[66];
+                                steps--;
+                                if (inMessage.Length != 50 && inMessage.Length != 0)
+                                {
+                                    throw new InvalidOperationException("Expected 50 bytes");
+                                }
 
-                            return (66, new FakeTransport());
-                        }
-                    default:
-                        throw new InvalidOperationException("There's no more steps to complete");
-                }
-            });
+                                outMessage = new byte[50];
+                                return (50, transport);
+                            }
+                        case 1:
+                            {
+                                steps--;
+                                if (inMessage.Length != 50 && inMessage.Length != 66 && inMessage.Length != 0)
+                                {
+                                    throw new InvalidOperationException("Expected 66 bytes");
+                                }
+
+                                outMessage = new byte[66];
+
+                                return (66, new FakeTransport());
+                            }
+                        default:
+                            throw new InvalidOperationException("There's no more steps to complete");
+                    }
+                });
             var tcpClient1 = new TcpClient();
             var acceptTask = Task.Run(async () =>
             {
@@ -97,7 +100,8 @@ public class TransportServiceTests
     }
 
     [Fact]
-    public async Task Given_TransportServiceAsInitiator_When_InitializeIsCalledAndTcpClinetIsDisconnected_Then_ThrowsInvalidOperationException()
+    public async Task
+        Given_TransportServiceAsInitiator_When_InitializeIsCalledAndTcpClinetIsDisconnected_Then_ThrowsInvalidOperationException()
     {
         // Arrange
         var handshakeServiceMock = new Mock<FakeHandshakeService>();
@@ -108,7 +112,7 @@ public class TransportServiceTests
 
         // Act
         var exception = await Assert
-            .ThrowsAnyAsync<InvalidOperationException>(() => transportService.InitializeAsync());
+                           .ThrowsAnyAsync<InvalidOperationException>(() => transportService.InitializeAsync());
 
         // Assert
         Assert.Equal("TcpClient is not connected", exception.Message);
@@ -129,24 +133,24 @@ public class TransportServiceTests
         {
             var steps = 2;
             handshakeServiceMock
-                .Setup(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny))
-                .Returns((byte[] inMessage, out byte[] outMessage) =>
-            {
-                if (steps != 2)
+               .Setup(x => x.PerformStep(It.IsAny<byte[]>(), out It.Ref<byte[]>.IsAny))
+               .Returns((byte[] inMessage, out byte[] outMessage) =>
                 {
-                    throw new InvalidOperationException("There's no more steps to complete");
-                }
+                    if (steps != 2)
+                    {
+                        throw new InvalidOperationException("There's no more steps to complete");
+                    }
 
-                steps--;
-                if (inMessage.Length != 50 && inMessage.Length != 0)
-                {
-                    throw new InvalidOperationException("Expected 50 bytes");
-                }
-                outMessage = new byte[50];
-                ITransport? transport = null;
-                return (50, transport);
+                    steps--;
+                    if (inMessage.Length != 50 && inMessage.Length != 0)
+                    {
+                        throw new InvalidOperationException("Expected 50 bytes");
+                    }
 
-            });
+                    outMessage = new byte[50];
+                    ITransport? transport = null;
+                    return (50, transport);
+                });
             var tcpClient1 = new TcpClient();
             var acceptTask = Task.Run(async () =>
             {
@@ -163,7 +167,7 @@ public class TransportServiceTests
 
             // Act
             var exception = await Assert
-                .ThrowsAnyAsync<ConnectionTimeoutException>(() => transportService.InitializeAsync());
+                               .ThrowsAnyAsync<ConnectionTimeoutException>(() => transportService.InitializeAsync());
             await acceptTask;
 
             // Assert

@@ -1,8 +1,7 @@
 namespace NLightning.Infrastructure.Protocol.Factories;
 
-using Domain.Protocol.Factories;
-using Domain.Protocol.Services;
-using Domain.Serialization.Messages;
+using Domain.Protocol.Interfaces;
+using Domain.Serialization.Interfaces;
 using Domain.Transport;
 using Services;
 

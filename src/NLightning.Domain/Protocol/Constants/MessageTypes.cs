@@ -1,61 +1,68 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace NLightning.Domain.Protocol.Constants;
 
 /// <summary>
 /// Represents the message types used in the Lightning Network.
 /// </summary>
-[ExcludeFromCodeCoverage]
-public static class MessageTypes
+public enum MessageTypes : ushort
 {
     #region Setup & Control
-    public const ushort WARNING = 1,
-                        STFU = 2,
-                        INIT = 16,
-                        ERROR = 17,
-                        PING = 18,
-                        PONG = 19;
+
+    Warning = 1,
+    Stfu = 2,
+    Init = 16,
+    Error = 17,
+    Ping = 18,
+    Pong = 19,
+
     #endregion
 
     #region Channel
-    public const ushort OPEN_CHANNEL = 32,   // NOT IMPLEMENTED
-                        ACCEPT_CHANNEL = 33, // NOT IMPLEMENTED
-                        FUNDING_CREATED = 34, // NOT IMPLEMENTED
-                        FUNDING_SIGNED = 35, // NOT IMPLEMENTED
-                        CHANNEL_READY = 36,
-                        SHUTDOWN = 38,
-                        CLOSING_SIGNED = 39,
-                        OPEN_CHANNEL_2 = 64,
-                        ACCEPT_CHANNEL_2 = 65;
+
+    OpenChannel = 32,
+    AcceptChannel = 33,
+    FundingCreated = 34,
+    FundingSigned = 35,
+    ChannelReady = 36,
+    Shutdown = 38,
+    ClosingSigned = 39,
+    OpenChannel2 = 64,
+    AcceptChannel2 = 65,
+
     #endregion
 
     #region Interactive Transaction Construction
-    public const ushort TX_ADD_INPUT = 66,
-                        TX_ADD_OUTPUT = 67,
-                        TX_REMOVE_INPUT = 68,
-                        TX_REMOVE_OUTPUT = 69,
-                        TX_COMPLETE = 70,
-                        TX_SIGNATURES = 71,
-                        TX_INIT_RBF = 72,
-                        TX_ACK_RBF = 73,
-                        TX_ABORT = 74;
+
+    TxAddInput = 66,
+    TxAddOutput = 67,
+    TxRemoveInput = 68,
+    TxRemoveOutput = 69,
+    TxComplete = 70,
+    TxSignatures = 71,
+    TxInitRbf = 72,
+    TxAckRbf = 73,
+    TxAbort = 74,
+
     #endregion
 
     #region Commitment
-    public const ushort UPDATE_ADD_HTLC = 128,
-                        UPDATE_FULFILL_HTLC = 130,
-                        UPDATE_FAIL_HTLC = 131,
-                        COMMITMENT_SIGNED = 132,
-                        REVOKE_AND_ACK = 133,
-                        UPDATE_FEE = 134,
-                        UPDATE_FAIL_MALFORMED_HTLC = 135,
-                        CHANNEL_REESTABLISH = 136;
+
+    UpdateAddHtlc = 128,
+    UpdateFulfillHtlc = 130,
+    UpdateFailHtlc = 131,
+    CommitmentSigned = 132,
+    RevokeAndAck = 133,
+    UpdateFee = 134,
+    UpdateFailMalformedHtlc = 135,
+    ChannelReestablish = 136,
+
     #endregion
 
     #region Routing
-    public const ushort ANNOUNCEMENT_SIGNATURES = 259,
-                        CHANNEL_ANNOUNCEMENT = 256,
-                        NODE_ANNOUNCEMENT = 257,
-                        CHANNEL_UPDATE = 258;
+
+    AnnouncementSignatures = 259,
+    ChannelAnnouncement = 256,
+    NodeAnnouncement = 257,
+    ChannelUpdate = 258
+
     #endregion
 }

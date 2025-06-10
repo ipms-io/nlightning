@@ -26,26 +26,26 @@ internal enum Token
     /// the responder's ephemeral public key. The result is hashed along
     /// with the old ck to derive a new ck and k, and n is set to zero.
     /// </summary>
-    EE,
+    Ee,
 
     /// <summary>
     /// A DH is performed between the initiator's static private key and
     /// the responder's ephemeral public key. The result is hashed along
     /// with the old ck to derive a new ck and k, and n is set to zero.
     /// </summary>
-    SE,
+    Se,
 
     /// <summary>
     /// A DH is performed between the initiator's ephemeral private key and
     /// the responder's static public key. The result is hashed along
     /// with the old ck to derive a new ck and k, and n is set to zero.
     /// </summary>
-    ES,
+    Es,
 
     /// <summary>
     /// A DH is performed between the initiator's static private key and
     /// the responder's static public key. The result is hashed along
     /// with the old ck to derive a new ck and k, and n is set to zero.
     /// </summary>
-    SS
+    Ss
 }

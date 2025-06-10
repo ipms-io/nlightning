@@ -1,15 +1,13 @@
 using System.Runtime.Serialization;
+using NLightning.Domain.Protocol.Interfaces;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Messages.Types;
 
 using Domain.Protocol.Constants;
-using Domain.Protocol.Factories;
 using Domain.Protocol.Messages;
-using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Tlv;
-using Domain.Serialization.Factories;
-using Domain.Serialization.Messages.Types;
 using Exceptions;
 using Interfaces;
 
@@ -35,7 +33,7 @@ public class ChannelReadyMessageTypeSerializer : IMessageTypeSerializer<ChannelR
 
         // Get the payload serializer
         var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type)
-                                    ?? throw new SerializationException("No serializer found for payload type");
+                                 ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
 
         // Serialize the TLV stream
@@ -54,9 +52,9 @@ public class ChannelReadyMessageTypeSerializer : IMessageTypeSerializer<ChannelR
         {
             // Deserialize payload
             var payloadSerializer = _payloadSerializerFactory.GetSerializer<ChannelReadyPayload>()
-                                    ?? throw new SerializationException("No serializer found for payload type");
+                                 ?? throw new SerializationException("No serializer found for payload type");
             var payload = await payloadSerializer.DeserializeAsync(stream)
-                          ?? throw new SerializationException("Error serializing payload");
+                       ?? throw new SerializationException("Error serializing payload");
 
             // Deserialize extension
             if (stream.Position >= stream.Length)
@@ -67,10 +65,10 @@ public class ChannelReadyMessageTypeSerializer : IMessageTypeSerializer<ChannelR
                 return new ChannelReadyMessage(payload);
 
             ShortChannelIdTlv? shortChannelIdTlv = null;
-            if (extension.TryGetTlv(TlvConstants.SHORT_CHANNEL_ID, out var baseShortChannelId))
+            if (extension.TryGetTlv(TlvConstants.ShortChannelId, out var baseShortChannelId))
             {
                 var tlvConverter = _tlvConverterFactory.GetConverter<ShortChannelIdTlv>()
-                                   ?? throw new SerializationException(
+                                ?? throw new SerializationException(
                                        $"No serializer found for tlv type {nameof(ShortChannelIdTlv)}");
                 shortChannelIdTlv = tlvConverter.ConvertFromBase(baseShortChannelId!);
             }
@@ -82,6 +80,7 @@ public class ChannelReadyMessageTypeSerializer : IMessageTypeSerializer<ChannelR
             throw new MessageSerializationException("Error deserializing ChannelReadyMessage", e);
         }
     }
+
     async Task<IMessage> IMessageTypeSerializer.DeserializeAsync(Stream stream)
     {
         return await DeserializeAsync(stream);

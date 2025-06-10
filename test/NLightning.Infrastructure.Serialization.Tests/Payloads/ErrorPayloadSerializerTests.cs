@@ -1,8 +1,9 @@
+using NLightning.Domain.Channels.ValueObjects;
+
 namespace NLightning.Infrastructure.Serialization.Tests.Payloads;
 
 using Converters;
 using Domain.Protocol.Payloads;
-using Domain.ValueObjects;
 using Infrastructure.Serialization.Factories;
 using Infrastructure.Serialization.Payloads;
 

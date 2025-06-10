@@ -11,7 +11,8 @@ using Payloads;
 /// The message type is 67.
 /// </remarks>
 /// <param name="payload">The tx_add_output payload.</param>
-public sealed class TxAddOutputMessage(TxAddOutputPayload payload) : BaseMessage(MessageTypes.TX_ADD_OUTPUT, payload)
+public sealed class TxAddOutputMessage(TxAddOutputPayload payload)
+    : BaseChannelMessage(MessageTypes.TxAddOutput, payload)
 {
     /// <summary>
     /// The payload of the message.

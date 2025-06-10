@@ -1,7 +1,6 @@
+using NLightning.Domain.Channels.ValueObjects;
+
 namespace NLightning.Domain.Tests.ValueObjects;
-
-using Domain.ValueObjects;
-
 public class ChannelIdTests
 {
     [Fact]

@@ -1,5 +1,6 @@
 namespace NLightning.Infrastructure.Transport.Interfaces;
 
+using Domain.Crypto.ValueObjects;
 using Domain.Transport;
 
 /// <summary>
@@ -12,7 +13,7 @@ internal interface IHandshakeService : IDisposable
     /// </summary>
     bool IsInitiator { get; }
 
-    NBitcoin.PubKey? RemoteStaticPublicKey { get; }
+    CompactPubKey? RemoteStaticPublicKey { get; }
 
     /// <summary>
     /// Perform the next step in the handshake

@@ -3,8 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
 using Domain.Protocol.Constants;
+using Domain.Protocol.Interfaces;
 using Domain.Protocol.Tlv;
-using Domain.Protocol.Tlv.Converters;
 
 public class NextFundingTlvConverter : ITlvConverter<NextFundingTlv>
 {
@@ -15,7 +15,7 @@ public class NextFundingTlvConverter : ITlvConverter<NextFundingTlv>
 
     public NextFundingTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        if (baseTlv.Type != TlvConstants.NEXT_FUNDING)
+        if (baseTlv.Type != TlvConstants.NextFunding)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
@@ -38,7 +38,7 @@ public class NextFundingTlvConverter : ITlvConverter<NextFundingTlv>
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
         return ConvertToBase(tlv as NextFundingTlv
-                             ?? throw new InvalidCastException(
+                          ?? throw new InvalidCastException(
                                  $"Error converting BaseTlv to {nameof(NextFundingTlv)}"));
     }
 }

@@ -2,7 +2,8 @@ using NBitcoin;
 
 namespace NLightning.Bolt11.Models.TaggedFields;
 
-using Common.Utils;
+using Domain.Protocol.ValueObjects;
+using Domain.Utils;
 using Enums;
 using Interfaces;
 
@@ -17,7 +18,7 @@ internal sealed class FallbackAddressTaggedField : ITaggedField
 {
     private readonly byte[] _data;
 
-    public TaggedFieldTypes Type => TaggedFieldTypes.FALLBACK_ADDRESS;
+    public TaggedFieldTypes Type => TaggedFieldTypes.FallbackAddress;
     internal BitcoinAddress Value { get; }
     public short Length { get; }
 
@@ -82,10 +83,11 @@ internal sealed class FallbackAddressTaggedField : ITaggedField
     /// </summary>
     /// <param name="bitReader">The BitReader to read from</param>
     /// <param name="length">The length of the field</param>
-    /// <param name="network">The network type</param>
+    /// <param name="bitcoinNetwork">The network type</param>
     /// <returns>The FallbackAddressTaggedField</returns>
     /// <exception cref="ArgumentException">Thrown when the address is unknown or invalid</exception>
-    internal static FallbackAddressTaggedField FromBitReader(BitReader bitReader, short length, Network network)
+    internal static FallbackAddressTaggedField FromBitReader(BitReader bitReader, short length,
+                                                             BitcoinNetwork bitcoinNetwork)
     {
         // Get Address Type
         var addressType = bitReader.ReadByteFromBits(5);
@@ -100,6 +102,8 @@ internal sealed class FallbackAddressTaggedField : ITaggedField
             data = data[..^1];
         }
 
+        var network = Network.GetNetwork(bitcoinNetwork) ??
+                      throw new ArgumentException("Network is unknown or invalid.", nameof(bitcoinNetwork));
         BitcoinAddress address = addressType switch
         {
             // Witness P2WPKH

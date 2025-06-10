@@ -29,14 +29,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Docker.DotNet" Version="3.125.15" />
-    <PackageReference Include="LNUnit" Version="1.7.7" />
-    <PackageReference Include="xunit.extensibility.core" Version="2.9.3" />
+    <PackageReference Include="Docker.DotNet" Version="3.125.15"/>
+    <PackageReference Include="LNUnit" Version="1.7.7"/>
+    <PackageReference Include="xunit.extensibility.core" Version="2.9.3"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\NLightning.Domain\NLightning.Domain.csproj" />
-    <ProjectReference Include="..\..\src\NLightning.Infrastructure\NLightning.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\NLightning.Domain\NLightning.Domain.csproj"/>
+    <ProjectReference Include="..\..\src\NLightning.Infrastructure.Bitcoin\NLightning.Infrastructure.Bitcoin.csproj"/>
+    <ProjectReference Include="..\..\src\NLightning.Infrastructure\NLightning.Infrastructure.csproj"/>
   </ItemGroup>
 
 </Project>

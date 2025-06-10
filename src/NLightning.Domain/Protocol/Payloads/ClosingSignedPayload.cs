@@ -1,10 +1,9 @@
-using NBitcoin.Crypto;
-
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
+using Crypto.ValueObjects;
 using Interfaces;
 using Money;
-using ValueObjects;
 
 /// <summary>
 /// Represents the payload for the closing_signed message.
@@ -12,7 +11,7 @@ using ValueObjects;
 /// <remarks>
 /// Initializes a new instance of the ClosingSignedPayload class.
 /// </remarks>
-public class ClosingSignedPayload : IMessagePayload
+public class ClosingSignedPayload : IChannelMessagePayload
 {
     /// <summary>
     /// The channel_id is used to identify this channel.
@@ -27,9 +26,9 @@ public class ClosingSignedPayload : IMessagePayload
     /// <summary>
     /// The signature for the closing transaction
     /// </summary>
-    public ECDSASignature Signature { get; }
+    public CompactSignature Signature { get; }
 
-    public ClosingSignedPayload(ChannelId channelId, LightningMoney feeAmount, ECDSASignature signature)
+    public ClosingSignedPayload(ChannelId channelId, LightningMoney feeAmount, CompactSignature signature)
     {
         ChannelId = channelId;
         FeeAmount = feeAmount;

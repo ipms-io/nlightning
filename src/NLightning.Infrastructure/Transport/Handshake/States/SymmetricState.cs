@@ -1,12 +1,12 @@
 namespace NLightning.Infrastructure.Transport.Handshake.States;
 
-using Common.Utils;
 using Crypto.Factories;
 using Crypto.Functions;
 using Crypto.Hashes;
 using Crypto.Interfaces;
 using Crypto.Primitives;
 using Domain.Crypto.Constants;
+using Domain.Utils;
 
 /// <summary>
 /// A SymmetricState object contains a CipherState plus ck (a chaining
@@ -30,10 +30,10 @@ internal sealed class SymmetricState : IDisposable
     public SymmetricState(ReadOnlySpan<byte> protocolName)
     {
         _cryptoProvider = CryptoFactory.GetCryptoProvider();
-        _ck = new SecureMemory(CryptoConstants.SHA256_HASH_LEN);
-        _h = new byte[CryptoConstants.SHA256_HASH_LEN];
+        _ck = new SecureMemory(CryptoConstants.Sha256HashLen);
+        _h = new byte[CryptoConstants.Sha256HashLen];
 
-        if (protocolName.Length <= CryptoConstants.SHA256_HASH_LEN)
+        if (protocolName.Length <= CryptoConstants.Sha256HashLen)
         {
             protocolName.CopyTo(_h);
         }
@@ -56,17 +56,17 @@ internal sealed class SymmetricState : IDisposable
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Hkdf));
 
         var length = inputKeyMaterial.Length;
-        if (length != 0 && length != CryptoConstants.PRIVKEY_LEN)
+        if (length != 0 && length != CryptoConstants.PrivkeyLen)
         {
-            throw new ArgumentOutOfRangeException(nameof(inputKeyMaterial), $"Length should be either 0 or {CryptoConstants.PRIVKEY_LEN}");
+            throw new ArgumentOutOfRangeException(nameof(inputKeyMaterial), $"Length should be either 0 or {CryptoConstants.PrivkeyLen}");
         }
 
-        Span<byte> output = stackalloc byte[2 * CryptoConstants.SHA256_HASH_LEN];
+        Span<byte> output = stackalloc byte[2 * CryptoConstants.Sha256HashLen];
         _hkdf.ExtractAndExpand2(_ck, inputKeyMaterial, output);
 
-        output[..CryptoConstants.SHA256_HASH_LEN].CopyTo(_ck);
+        output[..CryptoConstants.Sha256HashLen].CopyTo(_ck);
 
-        var tempK = output.Slice(CryptoConstants.SHA256_HASH_LEN, CryptoConstants.PRIVKEY_LEN);
+        var tempK = output.Slice(CryptoConstants.Sha256HashLen, CryptoConstants.PrivkeyLen);
         _state.InitializeKeyAndChainingKey(tempK, _ck);
     }
 
@@ -93,18 +93,18 @@ internal sealed class SymmetricState : IDisposable
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Hkdf));
 
         var length = inputKeyMaterial.Length;
-        if (length != 0 && length != CryptoConstants.PRIVKEY_LEN)
+        if (length != 0 && length != CryptoConstants.PrivkeyLen)
         {
-            throw new ArgumentOutOfRangeException(nameof(inputKeyMaterial), $"Length should be either 0 or {CryptoConstants.PRIVKEY_LEN}");
+            throw new ArgumentOutOfRangeException(nameof(inputKeyMaterial), $"Length should be either 0 or {CryptoConstants.PrivkeyLen}");
         }
 
-        Span<byte> output = stackalloc byte[3 * CryptoConstants.SHA256_HASH_LEN];
+        Span<byte> output = stackalloc byte[3 * CryptoConstants.Sha256HashLen];
         _hkdf.ExtractAndExpand3(_ck, inputKeyMaterial, output);
 
-        output[..CryptoConstants.SHA256_HASH_LEN].CopyTo(_ck);
+        output[..CryptoConstants.Sha256HashLen].CopyTo(_ck);
 
-        var tempH = output.Slice(CryptoConstants.SHA256_HASH_LEN, CryptoConstants.SHA256_HASH_LEN);
-        var tempK = output.Slice(2 * CryptoConstants.SHA256_HASH_LEN, CryptoConstants.PRIVKEY_LEN);
+        var tempH = output.Slice(CryptoConstants.Sha256HashLen, CryptoConstants.Sha256HashLen);
+        var tempK = output.Slice(2 * CryptoConstants.Sha256HashLen, CryptoConstants.PrivkeyLen);
 
         MixHash(tempH);
         _state.InitializeKeyAndChainingKey(tempK, _ck);
@@ -156,11 +156,11 @@ internal sealed class SymmetricState : IDisposable
     {
         ExceptionUtils.ThrowIfDisposed(_disposed, nameof(Hkdf));
 
-        Span<byte> output = stackalloc byte[2 * CryptoConstants.SHA256_HASH_LEN];
+        Span<byte> output = stackalloc byte[2 * CryptoConstants.Sha256HashLen];
         _hkdf.ExtractAndExpand2(_ck, null, output);
 
-        var tempK1 = output[..CryptoConstants.PRIVKEY_LEN];
-        var tempK2 = output.Slice(CryptoConstants.SHA256_HASH_LEN, CryptoConstants.PRIVKEY_LEN);
+        var tempK1 = output[..CryptoConstants.PrivkeyLen];
+        var tempK2 = output.Slice(CryptoConstants.Sha256HashLen, CryptoConstants.PrivkeyLen);
 
         var c1 = new CipherState();
         var c2 = new CipherState();

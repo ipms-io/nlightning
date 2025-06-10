@@ -1,8 +1,8 @@
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
 using Interfaces;
 using Money;
-using ValueObjects;
 
 /// <summary>
 /// Represents the payload for the update_add_htlc message.
@@ -11,9 +11,14 @@ using ValueObjects;
 /// Initializes a new instance of the TxAckRbfPayload class.
 /// </remarks>
 /// <param name="channelId">The channel ID.</param>
-public class UpdateAddHtlcPayload(LightningMoney amount, ChannelId channelId, uint cltvExpiry, ulong id,
-                                  ReadOnlyMemory<byte> paymentHash, ReadOnlyMemory<byte>? onionRoutingPacket = null)
-    : IMessagePayload
+public class UpdateAddHtlcPayload(
+    LightningMoney amount,
+    ChannelId channelId,
+    uint cltvExpiry,
+    ulong id,
+    ReadOnlyMemory<byte> paymentHash,
+    ReadOnlyMemory<byte>? onionRoutingPacket = null)
+    : IChannelMessagePayload
 {
     /// <summary>
     /// Gets the channel ID.

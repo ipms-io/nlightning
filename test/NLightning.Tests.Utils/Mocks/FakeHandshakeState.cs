@@ -1,5 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using NBitcoin;
+using NLightning.Domain.Crypto.ValueObjects;
+using NLightning.Tests.Utils.Mocks.Interfaces;
 
 namespace NLightning.Tests.Utils.Mocks;
 
@@ -9,7 +11,7 @@ using Infrastructure.Transport.Interfaces;
 [ExcludeFromCodeCoverage]
 internal class FakeHandshakeState : IHandshakeState, ITestHandshakeState
 {
-    public PubKey RemoteStaticPublicKey => new Key().PubKey;
+    public CompactPubKey? RemoteStaticPublicKey => new Key().PubKey.ToBytes();
 
     public virtual (int, byte[]?, Transport?) WriteMessageTest(byte[] span, byte[] buffer)
     {

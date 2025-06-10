@@ -1,7 +1,7 @@
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
 using Interfaces;
-using ValueObjects;
 
 /// <summary>
 /// Represents the payload for the update_fulfill_htlc message.
@@ -10,7 +10,7 @@ using ValueObjects;
 /// Initializes a new instance of the UpdateFulfillHtlcPayload class.
 /// </remarks>
 public class UpdateFulfillHtlcPayload(ChannelId channelId, ulong id, ReadOnlyMemory<byte> paymentPreimage)
-    : IMessagePayload
+    : IChannelMessagePayload
 {
     /// <summary>
     /// The channel_id this message refers to

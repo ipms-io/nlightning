@@ -11,7 +11,8 @@ using Payloads;
 /// The message type is 132.
 /// </remarks>
 /// <param name="payload"></param>
-public sealed class CommitmentSignedMessage(CommitmentSignedPayload payload) : BaseMessage(MessageTypes.COMMITMENT_SIGNED, payload)
+public sealed class CommitmentSignedMessage(CommitmentSignedPayload payload)
+    : BaseChannelMessage(MessageTypes.CommitmentSigned, payload)
 {
     /// <summary>
     /// The payload of the message.

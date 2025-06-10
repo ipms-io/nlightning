@@ -1,6 +1,6 @@
 namespace NLightning.Bolt11.Models.TaggedFields;
 
-using Common.Utils;
+using Domain.Utils;
 using Enums;
 using Interfaces;
 
@@ -13,7 +13,7 @@ using Interfaces;
 /// <seealso cref="ITaggedField"/>
 internal sealed class MetadataTaggedField : ITaggedField
 {
-    public TaggedFieldTypes Type => TaggedFieldTypes.METADATA;
+    public TaggedFieldTypes Type => TaggedFieldTypes.Metadata;
     internal byte[] Value { get; }
     public short Length { get; }
 
@@ -51,7 +51,8 @@ internal sealed class MetadataTaggedField : ITaggedField
     {
         if (length <= 0)
         {
-            throw new ArgumentException("Invalid length for MetadataTaggedField. Length must be greater than 0", nameof(length));
+            throw new ArgumentException("Invalid length for MetadataTaggedField. Length must be greater than 0",
+                                        nameof(length));
         }
 
         // Read the data from the BitReader

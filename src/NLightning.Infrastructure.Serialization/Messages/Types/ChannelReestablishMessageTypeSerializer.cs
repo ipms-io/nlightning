@@ -1,15 +1,13 @@
 using System.Runtime.Serialization;
+using NLightning.Domain.Protocol.Interfaces;
+using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Messages.Types;
 
 using Domain.Protocol.Constants;
-using Domain.Protocol.Factories;
 using Domain.Protocol.Messages;
-using Domain.Protocol.Messages.Interfaces;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Tlv;
-using Domain.Serialization.Factories;
-using Domain.Serialization.Messages.Types;
 using Exceptions;
 using Interfaces;
 
@@ -35,7 +33,7 @@ public class ChannelReestablishMessageTypeSerializer : IMessageTypeSerializer<Ch
 
         // Get the payload serializer
         var payloadTypeSerializer = _payloadSerializerFactory.GetSerializer(message.Type)
-                                    ?? throw new SerializationException("No serializer found for payload type");
+                                 ?? throw new SerializationException("No serializer found for payload type");
         await payloadTypeSerializer.SerializeAsync(message.Payload, stream);
 
         // Serialize the TLV stream
@@ -54,9 +52,9 @@ public class ChannelReestablishMessageTypeSerializer : IMessageTypeSerializer<Ch
         {
             // Deserialize payload
             var payloadSerializer = _payloadSerializerFactory.GetSerializer<ChannelReestablishPayload>()
-                                    ?? throw new SerializationException("No serializer found for payload type");
+                                 ?? throw new SerializationException("No serializer found for payload type");
             var payload = await payloadSerializer.DeserializeAsync(stream)
-                          ?? throw new SerializationException("Error serializing payload");
+                       ?? throw new SerializationException("Error serializing payload");
 
             // Deserialize extension
             if (stream.Position >= stream.Length)
@@ -67,10 +65,10 @@ public class ChannelReestablishMessageTypeSerializer : IMessageTypeSerializer<Ch
                 return new ChannelReestablishMessage(payload);
 
             NextFundingTlv? nextFundingTlv = null;
-            if (extension.TryGetTlv(TlvConstants.NEXT_FUNDING, out var baseNextFundingTlv))
+            if (extension.TryGetTlv(TlvConstants.NextFunding, out var baseNextFundingTlv))
             {
                 var tlvConverter = _tlvConverterFactory.GetConverter<NextFundingTlv>()
-                                   ?? throw new SerializationException(
+                                ?? throw new SerializationException(
                                        $"No serializer found for tlv type {nameof(NextFundingTlv)}");
                 nextFundingTlv = tlvConverter.ConvertFromBase(baseNextFundingTlv!);
             }
@@ -82,6 +80,7 @@ public class ChannelReestablishMessageTypeSerializer : IMessageTypeSerializer<Ch
             throw new MessageSerializationException("Error deserializing ChannelReestablishMessage", e);
         }
     }
+
     async Task<IMessage> IMessageTypeSerializer.DeserializeAsync(Stream stream)
     {
         return await DeserializeAsync(stream);

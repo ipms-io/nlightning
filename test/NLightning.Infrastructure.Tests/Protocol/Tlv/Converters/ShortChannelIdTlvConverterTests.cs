@@ -1,7 +1,8 @@
+using NLightning.Domain.Channels.ValueObjects;
+
 namespace NLightning.Infrastructure.Tests.Protocol.Tlv.Converters;
 
 using Domain.Protocol.Tlv;
-using Domain.ValueObjects;
 using Infrastructure.Protocol.Tlv.Converters;
 
 public class ShortChannelIdTlvConverterTests

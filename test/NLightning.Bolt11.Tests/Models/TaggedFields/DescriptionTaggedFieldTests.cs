@@ -1,7 +1,8 @@
+using NLightning.Domain.Utils;
+
 namespace NLightning.Bolt11.Tests.Models.TaggedFields;
 
 using Bolt11.Models.TaggedFields;
-using Common.Utils;
 using Enums;
 
 public class DescriptionTaggedFieldTests
@@ -18,7 +19,7 @@ public class DescriptionTaggedFieldTests
         var taggedField = new DescriptionTaggedField(value);
 
         // Assert
-        Assert.Equal(TaggedFieldTypes.DESCRIPTION, taggedField.Type);
+        Assert.Equal(TaggedFieldTypes.Description, taggedField.Type);
         Assert.Equal(value, taggedField.Value);
         Assert.Equal(expectedLength, taggedField.Length);
     }

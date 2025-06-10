@@ -1,27 +1,27 @@
 using System.Diagnostics.CodeAnalysis;
+using NLightning.Infrastructure.Bitcoin.Crypto.Functions;
 
 namespace NLightning.Tests.Utils.Mocks;
 
-using Infrastructure.Crypto.Functions;
+using Domain.Crypto.ValueObjects;
 using Infrastructure.Crypto.Interfaces;
-using Infrastructure.Crypto.Primitives;
 
 [ExcludeFromCodeCoverage]
 internal class FakeFixedKeyDh(byte[] privateKey) : IEcdh
 {
     private readonly Ecdh _ecdh = new();
 
-    public KeyPair GenerateKeyPair()
+    public CryptoKeyPair GenerateKeyPair()
     {
         return _ecdh.GenerateKeyPair(privateKey);
     }
 
-    public KeyPair GenerateKeyPair(ReadOnlySpan<byte> privKey)
+    public CryptoKeyPair GenerateKeyPair(ReadOnlySpan<byte> privKey)
     {
         return _ecdh.GenerateKeyPair(privKey);
     }
 
-    public void SecP256K1Dh(NBitcoin.Key k, ReadOnlySpan<byte> rk, Span<byte> sharedKey)
+    public void SecP256K1Dh(PrivKey k, ReadOnlySpan<byte> rk, Span<byte> sharedKey)
     {
         _ecdh.SecP256K1Dh(k, rk, sharedKey);
     }

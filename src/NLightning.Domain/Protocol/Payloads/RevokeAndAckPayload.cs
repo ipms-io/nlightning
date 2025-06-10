@@ -1,9 +1,8 @@
-using NBitcoin;
-
 namespace NLightning.Domain.Protocol.Payloads;
 
+using Channels.ValueObjects;
+using Crypto.ValueObjects;
 using Interfaces;
-using ValueObjects;
 
 /// <summary>
 /// Represents the payload for the revoke_and_ack message.
@@ -11,8 +10,10 @@ using ValueObjects;
 /// <remarks>
 /// Initializes a new instance of the RevokeAndAckPayload class.
 /// </remarks>
-public class RevokeAndAckPayload(ChannelId channelId, PubKey nextPerCommitmentPoint,
-                                 ReadOnlyMemory<byte> perCommitmentSecret) : IMessagePayload
+public class RevokeAndAckPayload(
+    ChannelId channelId,
+    CompactPubKey nextPerCommitmentPoint,
+    ReadOnlyMemory<byte> perCommitmentSecret) : IChannelMessagePayload
 {
     /// <summary>
     /// The channel_id this message refers to
@@ -27,5 +28,5 @@ public class RevokeAndAckPayload(ChannelId channelId, PubKey nextPerCommitmentPo
     /// <summary>
     /// The next per commitment point
     /// </summary>
-    public PubKey NextPerCommitmentPoint { get; } = nextPerCommitmentPoint;
+    public CompactPubKey NextPerCommitmentPoint { get; } = nextPerCommitmentPoint;
 }

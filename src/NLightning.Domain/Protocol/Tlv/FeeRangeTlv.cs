@@ -21,7 +21,7 @@ public class FeeRangeTlv : BaseTlv
     /// </summary>
     public LightningMoney MaxFeeAmount { get; }
 
-    public FeeRangeTlv(LightningMoney minFeeAmount, LightningMoney maxFeeAmount) : base(TlvConstants.FEE_RANGE)
+    public FeeRangeTlv(LightningMoney minFeeAmount, LightningMoney maxFeeAmount) : base(TlvConstants.FeeRange)
     {
         MinFeeAmount = minFeeAmount;
         MaxFeeAmount = maxFeeAmount;

@@ -1,24 +1,24 @@
 using System.Diagnostics.CodeAnalysis;
-using NBitcoin;
 
 namespace NLightning.Infrastructure.Protocol.Tlv.Converters;
 
+using Domain.Crypto.ValueObjects;
 using Domain.Protocol.Constants;
+using Domain.Protocol.Interfaces;
 using Domain.Protocol.Tlv;
-using Domain.Protocol.Tlv.Converters;
 
 public class BlindedPathTlvConverter : ITlvConverter<BlindedPathTlv>
 {
     public BaseTlv ConvertToBase(BlindedPathTlv tlv)
     {
-        tlv.Value = tlv.PathKey.ToBytes();
+        tlv.Value = tlv.PathKey;
 
         return tlv;
     }
 
     public BlindedPathTlv ConvertFromBase(BaseTlv baseTlv)
     {
-        if (baseTlv.Type != TlvConstants.BLINDED_PATH)
+        if (baseTlv.Type != TlvConstants.BlindedPath)
         {
             throw new InvalidCastException("Invalid TLV type");
         }
@@ -28,7 +28,7 @@ public class BlindedPathTlvConverter : ITlvConverter<BlindedPathTlv>
             throw new InvalidCastException("Invalid length");
         }
 
-        return new BlindedPathTlv(new PubKey(baseTlv.Value));
+        return new BlindedPathTlv(new CompactPubKey(baseTlv.Value));
     }
 
     [ExcludeFromCodeCoverage]
@@ -41,6 +41,6 @@ public class BlindedPathTlvConverter : ITlvConverter<BlindedPathTlv>
     BaseTlv ITlvConverter.ConvertToBase(BaseTlv tlv)
     {
         return ConvertToBase(tlv as BlindedPathTlv
-                             ?? throw new InvalidCastException($"Error converting BaseTlv to {nameof(BlindedPathTlv)}"));
+                          ?? throw new InvalidCastException($"Error converting BaseTlv to {nameof(BlindedPathTlv)}"));
     }
 }

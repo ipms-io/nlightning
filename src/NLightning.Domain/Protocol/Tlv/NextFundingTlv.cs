@@ -15,7 +15,7 @@ public class NextFundingTlv : BaseTlv
     /// </summary>
     public byte[] NextFundingTxId { get; }
 
-    public NextFundingTlv(byte[] nextFundingTxId) : base(TlvConstants.NEXT_FUNDING)
+    public NextFundingTlv(byte[] nextFundingTxId) : base(TlvConstants.NextFunding)
     {
         NextFundingTxId = nextFundingTxId;
 

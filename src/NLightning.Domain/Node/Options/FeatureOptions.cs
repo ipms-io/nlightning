@@ -2,11 +2,12 @@ using System.Net;
 
 namespace NLightning.Domain.Node.Options;
 
+using Domain.Crypto.Constants;
+using Domain.Protocol.ValueObjects;
 using Enums;
 using Protocol.Constants;
 using Protocol.Models;
 using Protocol.Tlv;
-using ValueObjects;
 
 public class FeatureOptions
 {
@@ -244,7 +245,7 @@ public class FeatureOptions
         // If there are no ChainHashes, use Mainnet as default
         if (!ChainHashes.Any())
         {
-            ChainHashes = [ChainConstants.MAIN];
+            ChainHashes = [ChainConstants.Main];
         }
 
         return new NetworksTlv(ChainHashes);
@@ -268,106 +269,107 @@ public class FeatureOptions
         var options = new FeatureOptions
         {
             DataLossProtect = featureSet.IsFeatureSet(Feature.OptionDataLossProtect, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.OptionDataLossProtect, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                                  ? FeatureSupport.Compulsory
+                                  : featureSet.IsFeatureSet(Feature.OptionDataLossProtect, false)
+                                      ? FeatureSupport.Optional
+                                      : FeatureSupport.No,
             InitialRoutingSync = featureSet.IsFeatureSet(Feature.InitialRoutingSync, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.InitialRoutingSync, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                                     ? FeatureSupport.Compulsory
+                                     : featureSet.IsFeatureSet(Feature.InitialRoutingSync, false)
+                                         ? FeatureSupport.Optional
+                                         : FeatureSupport.No,
             UpfrontShutdownScript = featureSet.IsFeatureSet(Feature.OptionUpfrontShutdownScript, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.OptionUpfrontShutdownScript, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                                        ? FeatureSupport.Compulsory
+                                        : featureSet.IsFeatureSet(Feature.OptionUpfrontShutdownScript, false)
+                                            ? FeatureSupport.Optional
+                                            : FeatureSupport.No,
             GossipQueries = featureSet.IsFeatureSet(Feature.GossipQueries, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.GossipQueries, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                                ? FeatureSupport.Compulsory
+                                : featureSet.IsFeatureSet(Feature.GossipQueries, false)
+                                    ? FeatureSupport.Optional
+                                    : FeatureSupport.No,
             ExpandedGossipQueries = featureSet.IsFeatureSet(Feature.GossipQueriesEx, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.GossipQueriesEx, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                                        ? FeatureSupport.Compulsory
+                                        : featureSet.IsFeatureSet(Feature.GossipQueriesEx, false)
+                                            ? FeatureSupport.Optional
+                                            : FeatureSupport.No,
             StaticRemoteKey = featureSet.IsFeatureSet(Feature.OptionStaticRemoteKey, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.OptionStaticRemoteKey, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                                  ? FeatureSupport.Compulsory
+                                  : featureSet.IsFeatureSet(Feature.OptionStaticRemoteKey, false)
+                                      ? FeatureSupport.Optional
+                                      : FeatureSupport.No,
             PaymentSecret = featureSet.IsFeatureSet(Feature.PaymentSecret, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.PaymentSecret, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                                ? FeatureSupport.Compulsory
+                                : featureSet.IsFeatureSet(Feature.PaymentSecret, false)
+                                    ? FeatureSupport.Optional
+                                    : FeatureSupport.No,
             BasicMpp = featureSet.IsFeatureSet(Feature.BasicMpp, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.BasicMpp, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                           ? FeatureSupport.Compulsory
+                           : featureSet.IsFeatureSet(Feature.BasicMpp, false)
+                               ? FeatureSupport.Optional
+                               : FeatureSupport.No,
             LargeChannels = featureSet.IsFeatureSet(Feature.OptionSupportLargeChannel, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.OptionSupportLargeChannel, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                                ? FeatureSupport.Compulsory
+                                : featureSet.IsFeatureSet(Feature.OptionSupportLargeChannel, false)
+                                    ? FeatureSupport.Optional
+                                    : FeatureSupport.No,
             AnchorOutputs = featureSet.IsFeatureSet(Feature.OptionAnchorOutputs, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.OptionAnchorOutputs, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                                ? FeatureSupport.Compulsory
+                                : featureSet.IsFeatureSet(Feature.OptionAnchorOutputs, false)
+                                    ? FeatureSupport.Optional
+                                    : FeatureSupport.No,
             ZeroFeeAnchorTx = featureSet.IsFeatureSet(Feature.OptionAnchorsZeroFeeHtlcTx, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.OptionAnchorsZeroFeeHtlcTx, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                                  ? FeatureSupport.Compulsory
+                                  : featureSet.IsFeatureSet(Feature.OptionAnchorsZeroFeeHtlcTx, false)
+                                      ? FeatureSupport.Optional
+                                      : FeatureSupport.No,
             RouteBlinding = featureSet.IsFeatureSet(Feature.OptionRouteBlinding, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.OptionRouteBlinding, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                                ? FeatureSupport.Compulsory
+                                : featureSet.IsFeatureSet(Feature.OptionRouteBlinding, false)
+                                    ? FeatureSupport.Optional
+                                    : FeatureSupport.No,
             BeyondSegwitShutdown = featureSet.IsFeatureSet(Feature.OptionShutdownAnySegwit, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.OptionShutdownAnySegwit, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                                       ? FeatureSupport.Compulsory
+                                       : featureSet.IsFeatureSet(Feature.OptionShutdownAnySegwit, false)
+                                           ? FeatureSupport.Optional
+                                           : FeatureSupport.No,
             DualFund = featureSet.IsFeatureSet(Feature.OptionDualFund, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.OptionDualFund, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                           ? FeatureSupport.Compulsory
+                           : featureSet.IsFeatureSet(Feature.OptionDualFund, false)
+                               ? FeatureSupport.Optional
+                               : FeatureSupport.No,
             OnionMessages = featureSet.IsFeatureSet(Feature.OptionOnionMessages, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.OptionOnionMessages, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                                ? FeatureSupport.Compulsory
+                                : featureSet.IsFeatureSet(Feature.OptionOnionMessages, false)
+                                    ? FeatureSupport.Optional
+                                    : FeatureSupport.No,
             ChannelType = featureSet.IsFeatureSet(Feature.OptionChannelType, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.OptionChannelType, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                              ? FeatureSupport.Compulsory
+                              : featureSet.IsFeatureSet(Feature.OptionChannelType, false)
+                                  ? FeatureSupport.Optional
+                                  : FeatureSupport.No,
             ScidAlias = featureSet.IsFeatureSet(Feature.OptionScidAlias, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.OptionScidAlias, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                            ? FeatureSupport.Compulsory
+                            : featureSet.IsFeatureSet(Feature.OptionScidAlias, false)
+                                ? FeatureSupport.Optional
+                                : FeatureSupport.No,
             PaymentMetadata = featureSet.IsFeatureSet(Feature.OptionPaymentMetadata, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.OptionPaymentMetadata, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No,
+                                  ? FeatureSupport.Compulsory
+                                  : featureSet.IsFeatureSet(Feature.OptionPaymentMetadata, false)
+                                      ? FeatureSupport.Optional
+                                      : FeatureSupport.No,
             ZeroConf = featureSet.IsFeatureSet(Feature.OptionZeroconf, true)
-                ? FeatureSupport.Compulsory
-                : featureSet.IsFeatureSet(Feature.OptionZeroconf, false)
-                    ? FeatureSupport.Optional
-                    : FeatureSupport.No
+                           ? FeatureSupport.Compulsory
+                           : featureSet.IsFeatureSet(Feature.OptionZeroconf, false)
+                               ? FeatureSupport.Optional
+                               : FeatureSupport.No
         };
 
         if (extension?.TryGetTlv(new BigSize(1), out var chainHashes) ?? false)
         {
-            options.ChainHashes = Enumerable.Range(0, chainHashes!.Value.Length / ChainHash.LENGTH)
-                                            .Select(i => new ChainHash(chainHashes.Value.Skip(i * 32).Take(32).ToArray()));
+            options.ChainHashes = Enumerable.Range(0, chainHashes!.Value.Length / CryptoConstants.Sha256HashLen)
+                                            .Select(i => new ChainHash(
+                                                        chainHashes.Value.Skip(i * 32).Take(32).ToArray()));
         }
 
         // TODO: Add network when implementing BOLT7

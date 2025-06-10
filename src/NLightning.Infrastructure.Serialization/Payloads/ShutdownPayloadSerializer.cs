@@ -1,16 +1,15 @@
 using System.Buffers;
 using System.Runtime.Serialization;
-using NBitcoin;
-using NLightning.Domain.Serialization.Payloads;
+using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Payloads;
 
 using Converters;
 using Domain.Bitcoin.Constants;
+using Domain.Bitcoin.ValueObjects;
+using Domain.Channels.ValueObjects;
 using Domain.Protocol.Payloads;
-using Domain.Protocol.Payloads.Interfaces;
-using Domain.Serialization.Factories;
-using Domain.ValueObjects;
+using Domain.Serialization.Interfaces;
 using Exceptions;
 
 public class ShutdownPayloadSerializer : IPayloadSerializer<ShutdownPayload>
@@ -30,34 +29,34 @@ public class ShutdownPayloadSerializer : IPayloadSerializer<ShutdownPayload>
         // Get the value object serializer
         var channelIdSerializer =
             _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-            ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+         ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
         await channelIdSerializer.SerializeAsync(shutdownPayload.ChannelId, stream);
 
         await stream.WriteAsync(EndianBitConverter.GetBytesBigEndian(shutdownPayload.ScriptPubkeyLen));
-        await stream.WriteAsync(shutdownPayload.ScriptPubkey.ToBytes());
+        await stream.WriteAsync(shutdownPayload.ScriptPubkey);
     }
 
     public async Task<ShutdownPayload?> DeserializeAsync(Stream stream)
     {
-        var buffer = ArrayPool<byte>.Shared.Rent(ScriptConstants.MAX_SCRIPT_SIZE);
+        var buffer = ArrayPool<byte>.Shared.Rent(ScriptConstants.MaxScriptSize);
 
         try
         {
             // Get the value object serializer
             var channelIdSerializer =
                 _valueObjectSerializerFactory.GetSerializer<ChannelId>()
-                ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
+             ?? throw new SerializationException($"No serializer found for value object type {nameof(ChannelId)}");
             var channelId = await channelIdSerializer.DeserializeAsync(stream);
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..sizeof(ushort)]);
             var len = EndianBitConverter.ToUInt16BigEndian(buffer[..sizeof(ushort)]);
 
-            if (len > ScriptConstants.MAX_SCRIPT_SIZE)
+            if (len > ScriptConstants.MaxScriptSize)
                 throw new SerializationException(
-                    $"ScriptPubkey length {len} exceeds maximum size {ScriptConstants.MAX_SCRIPT_SIZE}");
+                    $"ScriptPubkey length {len} exceeds maximum size {ScriptConstants.MaxScriptSize}");
 
             await stream.ReadExactlyAsync(buffer.AsMemory()[..len]);
-            var scriptPubkey = new Script(buffer[..len]);
+            var scriptPubkey = new BitcoinScript(buffer[..len]);
 
             return new ShutdownPayload(channelId, scriptPubkey);
         }

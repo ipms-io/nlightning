@@ -1,7 +1,7 @@
 namespace NLightning.Domain.Tests.Protocol.Payloads;
 
+using Domain.Channels.ValueObjects;
 using Domain.Protocol.Payloads;
-using Domain.ValueObjects;
 
 public class TxAddInputPayloadTests
 {
@@ -10,13 +10,13 @@ public class TxAddInputPayloadTests
     {
         // Arrange
         var channelId = ChannelId.Zero;
-        const ulong SERIAL_ID = 1;
+        const ulong serialId = 1;
         byte[] prevTx = [0x00, 0x01, 0x02, 0x03];
-        const uint PREV_TX_VOUT = 0;
-        const uint SEQUENCE = 0xFFFFFFFE;
+        const uint prevTxVout = 0;
+        const uint sequence = 0xFFFFFFFE;
 
         // Act & Assert
-        Assert.Throws<ArgumentException>(() => new TxAddInputPayload(channelId, SERIAL_ID, prevTx, PREV_TX_VOUT,
-                                                                     SEQUENCE));
+        Assert.Throws<ArgumentException>(() => new TxAddInputPayload(channelId, serialId, prevTx, prevTxVout,
+                                                                     sequence));
     }
 }

@@ -1,21 +1,20 @@
 using System.Globalization;
-using NBitcoin;
 
 namespace NLightning.Domain.Money;
 
 using Enums;
 
-public class LightningMoney : IMoney
+public class LightningMoney
 {
     // For decimal.TryParse. None of the NumberStyles' composed values is useful for bitcoin style
-    private const NumberStyles BITCOIN_STYLE = NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite
-                                               | NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint;
+    private const NumberStyles BitcoinStyle = NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite
+                                                                             | NumberStyles.AllowDecimalPoint;
 
     private ulong _milliSatoshi;
 
-    public const ulong COIN = 100 * 1000 * 1000 * 1000UL;
-    public const ulong CENT = COIN / 100;
-    public const ulong NANO = CENT / 100;
+    public const ulong Coin = 100 * 1000 * 1000 * 1000UL;
+    public const ulong Cent = Coin / 100;
+    public const ulong Nano = Cent / 100;
 
     public ulong MilliSatoshi
     {
@@ -28,7 +27,8 @@ public class LightningMoney : IMoney
 
     public long Satoshi
     {
-        get => checked((long)(_milliSatoshi / 1000));
+        // Should round up to the nearest Satoshi
+        get => checked((long)Math.Round(_milliSatoshi / 1_000D, MidpointRounding.ToNegativeInfinity));
         set
         {
             if (value < 0)
@@ -45,6 +45,7 @@ public class LightningMoney : IMoney
     public bool IsZero => _milliSatoshi == 0;
 
     #region Constructors
+
     public LightningMoney(ulong milliSatoshi)
     {
         MilliSatoshi = milliSatoshi;
@@ -82,9 +83,11 @@ public class LightningMoney : IMoney
             MilliSatoshi = milliSats;
         }
     }
+
     #endregion
 
     #region Parsers
+
     /// <summary>
     /// Parse a bitcoin amount (Culture Invariant)
     /// </summary>
@@ -95,7 +98,7 @@ public class LightningMoney : IMoney
     {
         nRet = null;
 
-        if (!decimal.TryParse(bitcoin, BITCOIN_STYLE, CultureInfo.InvariantCulture, out var value))
+        if (!decimal.TryParse(bitcoin, BitcoinStyle, CultureInfo.InvariantCulture, out var value))
         {
             return false;
         }
@@ -122,11 +125,14 @@ public class LightningMoney : IMoney
         {
             return result;
         }
+
         throw new FormatException("Impossible to parse the string in a bitcoin amount");
     }
+
     #endregion
 
     #region Conversions
+
     /// <summary>
     /// Convert Money to decimal (same as ToDecimal)
     /// </summary>
@@ -139,6 +145,7 @@ public class LightningMoney : IMoney
         // decimal operations are checked by default
         return (decimal)MilliSatoshi / (ulong)unit;
     }
+
     /// <summary>
     /// Convert Money to decimal (same as ToUnit)
     /// </summary>
@@ -148,6 +155,7 @@ public class LightningMoney : IMoney
     {
         return ToUnit(unit);
     }
+
     #endregion
 
     /// <summary>
@@ -171,12 +179,9 @@ public class LightningMoney : IMoney
             }
         }
     }
-    IEnumerable<IMoney> IMoney.Split(int parts)
-    {
-        return Split(parts);
-    }
 
     #region Static Converters
+
     public static LightningMoney FromUnit(decimal amount, LightningMoneyUnit unit)
     {
         return new LightningMoney(amount, unit);
@@ -186,21 +191,21 @@ public class LightningMoney : IMoney
     {
         // overflow safe.
         // decimal operations are checked by default
-        return new LightningMoney(coins * COIN, LightningMoneyUnit.MilliSatoshi);
+        return new LightningMoney(coins * Coin, LightningMoneyUnit.MilliSatoshi);
     }
 
     public static LightningMoney Bits(decimal bits)
     {
         // overflow safe.
         // decimal operations are checked by default
-        return new LightningMoney(bits * CENT, LightningMoneyUnit.MilliSatoshi);
+        return new LightningMoney(bits * Cent, LightningMoneyUnit.MilliSatoshi);
     }
 
     public static LightningMoney Cents(decimal cents)
     {
         // overflow safe.
         // decimal operations are checked by default
-        return new LightningMoney(cents * CENT, LightningMoneyUnit.MilliSatoshi);
+        return new LightningMoney(cents * Cent, LightningMoneyUnit.MilliSatoshi);
     }
 
     public static LightningMoney Satoshis(decimal sats)
@@ -227,16 +232,14 @@ public class LightningMoney : IMoney
     {
         return new LightningMoney((ulong)sats);
     }
+
     #endregion
 
     #region IEquatable<Money> Members
+
     public bool Equals(LightningMoney? other)
     {
         return other is not null && _milliSatoshi.Equals(other._milliSatoshi);
-    }
-    bool IEquatable<IMoney>.Equals(IMoney? other)
-    {
-        return Equals(other);
     }
 
     public int CompareTo(LightningMoney? other)
@@ -244,15 +247,10 @@ public class LightningMoney : IMoney
         return other is null ? 1 : _milliSatoshi.CompareTo(other._milliSatoshi);
     }
 
-    bool IMoney.IsCompatible(IMoney money)
-    {
-        ArgumentNullException.ThrowIfNull(money);
-
-        return money is LightningMoney;
-    }
     #endregion
 
     #region IComparable Members
+
     public int CompareTo(object? obj)
     {
         return obj switch
@@ -262,17 +260,11 @@ public class LightningMoney : IMoney
             _ => _milliSatoshi.CompareTo((ulong)obj)
         };
     }
-    int IComparable.CompareTo(object? obj)
-    {
-        return CompareTo(obj);
-    }
-    int IComparable<IMoney>.CompareTo(IMoney? other)
-    {
-        return CompareTo(other);
-    }
+
     #endregion
 
     #region Unary Operators
+
     public static LightningMoney operator -(LightningMoney left, LightningMoney right)
     {
         ArgumentNullException.ThrowIfNull(left);
@@ -283,10 +275,12 @@ public class LightningMoney : IMoney
 
         return new LightningMoney(checked(left._milliSatoshi - right._milliSatoshi));
     }
+
     public static LightningMoney operator -(LightningMoney _)
     {
         throw new ArithmeticException("LightningMoney does not support unary negation");
     }
+
     public static LightningMoney operator +(LightningMoney left, LightningMoney right)
     {
         ArgumentNullException.ThrowIfNull(left);
@@ -294,6 +288,7 @@ public class LightningMoney : IMoney
 
         return new LightningMoney(checked(left._milliSatoshi + right._milliSatoshi));
     }
+
     public static LightningMoney operator *(ulong left, LightningMoney right)
     {
         ArgumentNullException.ThrowIfNull(right);
@@ -307,17 +302,33 @@ public class LightningMoney : IMoney
 
         return MilliSatoshis(checked(left._milliSatoshi * right));
     }
+
     public static LightningMoney operator *(long left, LightningMoney right)
     {
         ArgumentNullException.ThrowIfNull(right);
 
         return MilliSatoshis(checked((ulong)left * right._milliSatoshi));
     }
+
     public static LightningMoney operator *(LightningMoney left, long right)
     {
         ArgumentNullException.ThrowIfNull(left);
 
         return MilliSatoshis(checked((ulong)right * left._milliSatoshi));
+    }
+
+    public static LightningMoney operator *(decimal left, LightningMoney right)
+    {
+        ArgumentNullException.ThrowIfNull(right);
+
+        return MilliSatoshis((ulong)(left * right._milliSatoshi));
+    }
+
+    public static LightningMoney operator *(LightningMoney left, decimal right)
+    {
+        ArgumentNullException.ThrowIfNull(left);
+
+        return MilliSatoshis((ulong)(right * left._milliSatoshi));
     }
 
     public static LightningMoney operator /(LightningMoney left, ulong right)
@@ -334,6 +345,7 @@ public class LightningMoney : IMoney
 
         return left._milliSatoshi < right._milliSatoshi;
     }
+
     public static bool operator >(LightningMoney left, LightningMoney right)
     {
         ArgumentNullException.ThrowIfNull(left);
@@ -341,6 +353,7 @@ public class LightningMoney : IMoney
 
         return left._milliSatoshi > right._milliSatoshi;
     }
+
     public static bool operator <=(LightningMoney left, LightningMoney right)
     {
         ArgumentNullException.ThrowIfNull(left);
@@ -348,6 +361,7 @@ public class LightningMoney : IMoney
 
         return left._milliSatoshi <= right._milliSatoshi;
     }
+
     public static bool operator >=(LightningMoney left, LightningMoney right)
     {
         ArgumentNullException.ThrowIfNull(left);
@@ -355,24 +369,25 @@ public class LightningMoney : IMoney
 
         return left._milliSatoshi >= right._milliSatoshi;
     }
+
     #endregion
 
     #region Implicit Operators
+
     public static implicit operator LightningMoney(long value)
     {
         return new LightningMoney((ulong)value);
     }
+
     public static implicit operator LightningMoney(ulong value)
     {
         return new LightningMoney(value);
     }
-    public static implicit operator LightningMoney(NBitcoin.Money value)
-    {
-        return new LightningMoney((ulong)value.Satoshi * 1_000UL);
-    }
+
     public static implicit operator LightningMoney(string value)
     {
-        return Parse(value) ?? throw new ArgumentException("Cannot parse value into a valid LightningMoney", nameof(value));
+        return Parse(value) ??
+               throw new ArgumentException("Cannot parse value into a valid LightningMoney", nameof(value));
     }
 
     public static implicit operator long(LightningMoney value)
@@ -385,13 +400,10 @@ public class LightningMoney : IMoney
         return value.MilliSatoshi;
     }
 
-    public static implicit operator NBitcoin.Money(LightningMoney value)
-    {
-        return new NBitcoin.Money(value.Satoshi);
-    }
     #endregion
 
     #region Equality Operators
+
     public override bool Equals(object? obj)
     {
         return obj is LightningMoney item && _milliSatoshi.Equals(item._milliSatoshi);
@@ -415,9 +427,11 @@ public class LightningMoney : IMoney
     {
         return !(a == b);
     }
+
     #endregion
 
     #region ToString
+
     /// <summary>
     /// Returns a culture invariant string representation of Bitcoin amount
     /// </summary>
@@ -426,6 +440,7 @@ public class LightningMoney : IMoney
     {
         return ToString(false);
     }
+
     /// <summary>
     /// Returns a culture invariant string representation of Bitcoin amount
     /// </summary>
@@ -441,6 +456,7 @@ public class LightningMoney : IMoney
 
         return string.Format(CultureInfo.InvariantCulture, fmt, val);
     }
+
     #endregion
 
     /// <summary>
@@ -490,20 +506,22 @@ public class LightningMoney : IMoney
     }
 
     #region IMoney Members
-    public IMoney Add(IMoney money)
+
+    public LightningMoney Add(LightningMoney money)
     {
-        return this + (LightningMoney)money;
+        return this + money;
     }
 
-    public IMoney Sub(IMoney money)
+    public LightningMoney Sub(LightningMoney money)
     {
-        return this - (LightningMoney)money;
+        return this - money;
     }
 
-    public IMoney Negate()
+    public LightningMoney Negate()
     {
         throw new ArithmeticException("LightningMoney does not support unary negation");
     }
+
     #endregion
 
     private static void CheckLightningMoneyUnit(LightningMoneyUnit value, string paramName)

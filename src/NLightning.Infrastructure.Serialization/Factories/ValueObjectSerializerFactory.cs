@@ -1,9 +1,11 @@
+using NLightning.Domain.Bitcoin.ValueObjects;
+using NLightning.Domain.Interfaces;
+using NLightning.Domain.Serialization.Interfaces;
+
 namespace NLightning.Infrastructure.Serialization.Factories;
 
-using Domain.Serialization.Factories;
-using Domain.Serialization.ValueObjects;
-using Domain.ValueObjects;
-using Domain.ValueObjects.Interfaces;
+using Domain.Channels.ValueObjects;
+using Domain.Protocol.ValueObjects;
 using ValueObjects;
 
 public class ValueObjectSerializerFactory : IValueObjectSerializerFactory
