@@ -107,6 +107,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "coverage-reports", "coverag
 		.docfx\docs\coverage-reports\toc.yml = .docfx\docs\coverage-reports\toc.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NLightning.Application.Tests", "test\NLightning.Application.Tests\NLightning.Application.Tests.csproj", "{D6EDE7E1-47E4-452C-B36D-D6B0D63959AD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Release|Any CPU = Release|Any CPU
@@ -337,6 +339,18 @@ Global
 		{02639428-3F4E-43A9-9585-A5D90EDCA1FF}.Debug.Native|Any CPU.Build.0 = Debug|Any CPU
 		{02639428-3F4E-43A9-9585-A5D90EDCA1FF}.Debug.Wasm|Any CPU.ActiveCfg = Debug|Any CPU
 		{02639428-3F4E-43A9-9585-A5D90EDCA1FF}.Debug.Wasm|Any CPU.Build.0 = Debug|Any CPU
+		{D6EDE7E1-47E4-452C-B36D-D6B0D63959AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6EDE7E1-47E4-452C-B36D-D6B0D63959AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6EDE7E1-47E4-452C-B36D-D6B0D63959AD}.Release.Native|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6EDE7E1-47E4-452C-B36D-D6B0D63959AD}.Release.Native|Any CPU.Build.0 = Debug|Any CPU
+		{D6EDE7E1-47E4-452C-B36D-D6B0D63959AD}.Release.Wasm|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6EDE7E1-47E4-452C-B36D-D6B0D63959AD}.Release.Wasm|Any CPU.Build.0 = Debug|Any CPU
+		{D6EDE7E1-47E4-452C-B36D-D6B0D63959AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6EDE7E1-47E4-452C-B36D-D6B0D63959AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6EDE7E1-47E4-452C-B36D-D6B0D63959AD}.Debug.Native|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6EDE7E1-47E4-452C-B36D-D6B0D63959AD}.Debug.Native|Any CPU.Build.0 = Debug|Any CPU
+		{D6EDE7E1-47E4-452C-B36D-D6B0D63959AD}.Debug.Wasm|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6EDE7E1-47E4-452C-B36D-D6B0D63959AD}.Debug.Wasm|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -373,5 +387,6 @@ Global
 		{9B420B23-5DAE-4CDE-A3DB-69663111750D} = {735305B0-B08D-4C48-A1DE-47E8DC2D8032}
 		{18F1E97C-8546-4359-93B3-8D1F5B1CC4B4} = {735305B0-B08D-4C48-A1DE-47E8DC2D8032}
 		{02639428-3F4E-43A9-9585-A5D90EDCA1FF} = {123D0631-533C-447F-B7DA-D1D37E5E64BF}
+		{D6EDE7E1-47E4-452C-B36D-D6B0D63959AD} = {AF4411D4-8EE9-423E-8213-1C9D35E47882}
 	EndGlobalSection
 EndGlobal

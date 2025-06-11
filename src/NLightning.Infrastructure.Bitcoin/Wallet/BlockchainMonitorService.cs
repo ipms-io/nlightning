@@ -26,7 +26,12 @@ public class BlockchainMonitorService : IBlockchainMonitor
     private readonly Network _network;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
     private readonly ConcurrentDictionary<uint256, WatchedTransactionModel> _watchedTransactions = new();
+#if NET9_0_OR_GREATER
     private readonly OrderedDictionary<uint, Block> _blocksToProcess = new();
+#else
+    // TODO: Check if ordering is the same in .NET 8
+    private readonly SortedDictionary<uint, Block> _blocksToProcess = new();
+#endif
 
     private BlockchainState _blockchainState = new(0, Hash.Empty, DateTime.UtcNow);
     private CancellationTokenSource? _cts;

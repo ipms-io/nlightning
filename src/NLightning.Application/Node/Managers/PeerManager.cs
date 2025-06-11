@@ -56,8 +56,19 @@ public sealed class PeerManager : IPeerManager
         foreach (var peerKey in _peers.Keys)
             DisconnectPeer(peerKey);
 
-        while (_peers.Count > 0)
-            await Task.Delay(TimeSpan.FromSeconds(1));
+        // Give it a 10-second timeout to disconnect all peers
+        var timeout = TimeSpan.FromSeconds(5);
+        var timeoutTokenSource = new CancellationTokenSource(timeout);
+
+        try
+        {
+            while (_peers.Count > 0 && !_cts.IsCancellationRequested)
+                await Task.Delay(TimeSpan.FromSeconds(1), timeoutTokenSource.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            _logger.LogWarning("Timeout while waiting for peers to disconnect");
+        }
 
         await _cts.CancelAsync();
     }
