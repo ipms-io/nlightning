@@ -5,17 +5,18 @@ using Microsoft.Extensions.Options;
 using NBitcoin;
 using NetMQ;
 using NetMQ.Sockets;
-using NLightning.Domain.Bitcoin.Events;
-using NLightning.Domain.Bitcoin.Transactions.Models;
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Node.Options;
-using NLightning.Domain.Persistence.Interfaces;
-using NLightning.Infrastructure.Bitcoin.Options;
-using NLightning.Infrastructure.Bitcoin.Wallet.Interfaces;
 
 namespace NLightning.Infrastructure.Bitcoin.Wallet;
+
+using Domain.Bitcoin.Events;
+using Domain.Bitcoin.Transactions.Models;
+using Domain.Bitcoin.ValueObjects;
+using Domain.Channels.ValueObjects;
+using Domain.Crypto.ValueObjects;
+using Domain.Node.Options;
+using Domain.Persistence.Interfaces;
+using Options;
+using Interfaces;
 
 public class BlockchainMonitorService : IBlockchainMonitor
 {
@@ -36,6 +37,7 @@ public class BlockchainMonitorService : IBlockchainMonitor
     private BlockchainState _blockchainState = new(0, Hash.Empty, DateTime.UtcNow);
     private CancellationTokenSource? _cts;
     private Task? _monitoringTask;
+    private uint _lastProcessedBlockHeight;
     private SubscriberSocket? _blockSocket;
     // private SubscriberSocket? _transactionSocket;
 
@@ -76,17 +78,16 @@ public class BlockchainMonitorService : IBlockchainMonitor
         }
         else
         {
+            _lastProcessedBlockHeight = _blockchainState.LastProcessedHeight;
             _logger.LogInformation("Starting blockchain monitoring at height {Height}, last block hash {LastBlockHash}",
-                                   _blockchainState.LastProcessedHeight, _blockchainState.LastProcessedBlockHash);
+                                   _lastProcessedBlockHeight, _blockchainState.LastProcessedBlockHash);
         }
 
         // Process missing blocks
-        var currentHeight = await _bitcoinWallet.GetCurrentBlockHeightAsync();
-        await AddMissingBlocksToProcessAsync(currentHeight);
+        var currentBlockHeight = await _bitcoinWallet.GetCurrentBlockHeightAsync();
+        await AddMissingBlocksToProcessAsync(currentBlockHeight, true);
         if (_blocksToProcess.Count > 0)
-        {
             await ProcessPendingBlocksAsync(uow);
-        }
 
         await uow.SaveChangesAsync();
 
@@ -256,7 +257,7 @@ public class BlockchainMonitorService : IBlockchainMonitor
             while (_blocksToProcess.Count > 0)
             {
                 var blockKvp = _blocksToProcess.First();
-                if (blockKvp.Key < _blockchainState.LastProcessedHeight)
+                if (blockKvp.Key < _lastProcessedBlockHeight)
                 {
                     // TODO: Maybe we had a reorg?
                     _logger.LogWarning("Possible reorg detected: Block {Height} is already processed", blockKvp.Key);
@@ -272,14 +273,16 @@ public class BlockchainMonitorService : IBlockchainMonitor
         }
     }
 
-    private async Task AddMissingBlocksToProcessAsync(uint currentHeight)
+    private async Task AddMissingBlocksToProcessAsync(uint currentHeight, bool includeCurrentBlock = false)
     {
-        if (currentHeight > _blockchainState.LastProcessedHeight + 1)
+        var lastProcessedHeight = _lastProcessedBlockHeight + 1;
+        if (currentHeight > lastProcessedHeight)
         {
             _logger.LogWarning("Processing missed blocks from height {LastProcessedHeight} to {CurrentHeight}",
-                               _blockchainState.LastProcessedHeight, currentHeight);
+                               lastProcessedHeight, currentHeight);
 
-            for (var height = _blockchainState.LastProcessedHeight + 1; height < currentHeight; height++)
+            var adjustedCurrentHeight = includeCurrentBlock ? currentHeight + 1 : currentHeight;
+            for (var height = lastProcessedHeight; height < adjustedCurrentHeight; height++)
             {
                 if (_blocksToProcess.ContainsKey(height))
                     continue;
@@ -357,10 +360,13 @@ public class BlockchainMonitorService : IBlockchainMonitor
             _blockchainState.UpdateState(blockHash.ToBytes());
             uow.BlockchainStateDbRepository.AddOrUpdateAsync(_blockchainState);
 
+            _blocksToProcess.Remove(height);
+
+            // Update our internal state
+            _lastProcessedBlockHeight = height;
+
             // Check watched for all transactions' depth
             CheckWatchedTransactionsDepth(uow);
-
-            _blocksToProcess.Remove(height);
         }
         catch (Exception ex)
         {
@@ -385,9 +391,11 @@ public class BlockchainMonitorService : IBlockchainMonitor
     private void CheckWatchedTransactionsForBlock(List<Transaction> blockTransactions, uint blockHeight,
                                                   IUnitOfWork uow)
     {
-        _logger.LogDebug("Checking watched transactions for block {height} with {TxCount} transactions", blockHeight,
-                         blockTransactions.Count);
+        _logger.LogDebug(
+            "Checking {watchedTransactionCount} watched transactions for block {height} with {TxCount} transactions",
+            _watchedTransactions.Count, blockHeight, blockTransactions.Count);
 
+        ushort index = 0;
         foreach (var transaction in blockTransactions)
         {
             var txId = transaction.GetHash();
@@ -400,7 +408,7 @@ public class BlockchainMonitorService : IBlockchainMonitor
             try
             {
                 // Update first seen height
-                watchedTransaction.SetFirstSeenAtHeight(blockHeight);
+                watchedTransaction.SetHeightAndIndex(blockHeight, index);
                 uow.WatchedTransactionDbRepository.Update(watchedTransaction);
 
                 if (watchedTransaction.RequiredDepth == 0)
@@ -409,6 +417,10 @@ public class BlockchainMonitorService : IBlockchainMonitor
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error checking confirmations for transaction {TxId}", txId);
+            }
+            finally
+            {
+                index++;
             }
         }
     }
@@ -419,9 +431,9 @@ public class BlockchainMonitorService : IBlockchainMonitor
         {
             try
             {
-                var confirmations = _blockchainState.LastProcessedHeight - watchedTransaction.FirstSeenAtHeight;
+                var confirmations = _lastProcessedBlockHeight - watchedTransaction.FirstSeenAtHeight;
                 if (confirmations >= watchedTransaction.RequiredDepth)
-                    ConfirmTransaction(_blockchainState.LastProcessedHeight, uow, watchedTransaction);
+                    ConfirmTransaction(_lastProcessedBlockHeight, uow, watchedTransaction);
             }
             catch (Exception ex)
             {

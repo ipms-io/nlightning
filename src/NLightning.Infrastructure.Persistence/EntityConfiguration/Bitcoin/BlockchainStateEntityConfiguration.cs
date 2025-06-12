@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using NLightning.Domain.Crypto.Constants;
-using NLightning.Infrastructure.Persistence.ValueConverters;
 
 namespace NLightning.Infrastructure.Persistence.EntityConfiguration.Bitcoin;
 
+using Domain.Crypto.Constants;
+using ValueConverters;
 using Entities.Bitcoin;
 using Enums;
 

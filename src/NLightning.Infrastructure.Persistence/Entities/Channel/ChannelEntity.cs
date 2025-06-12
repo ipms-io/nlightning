@@ -29,7 +29,7 @@ public class ChannelEntity
     /// <summary>
     /// The output index in the funding transaction that contains the channel funding.
     /// </summary>
-    public required uint FundingOutputIndex { get; set; }
+    public required ushort FundingOutputIndex { get; set; }
 
     /// <summary>
     /// The amount of satoshis locked in the funding output for this channel.

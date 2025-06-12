@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
-using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Application.Channels.Handlers;
 
+using Domain.Protocol.Interfaces;
 using Domain.Channels.Enums;
 using Domain.Channels.Interfaces;
 using Domain.Channels.Models;
@@ -110,7 +110,7 @@ public class ChannelReadyMessageHandler : IChannelMessageHandler<ChannelReadyMes
                 "Received ChannelReady message for channel {ChannelId} in invalid state {CurrentState} (we are initiator). Expected: ReadyForUs",
                 payload.ChannelId, currentState);
 
-            throw new ChannelErrorException($"Unexpected ChannelReady message in state {currentState}",
+            throw new ChannelErrorException($"Unexpected ChannelReady message in state {Enum.GetName(currentState)}",
                                             payload.ChannelId,
                                             "Protocol violation: unexpected ChannelReady message");
         }
@@ -134,7 +134,7 @@ public class ChannelReadyMessageHandler : IChannelMessageHandler<ChannelReadyMes
             "Received ChannelReady message for channel {ChannelId} in invalid state {CurrentState} (we are not initiator). Expected: V1FundingSigned or ReadyForThem",
             payload.ChannelId, currentState);
 
-        throw new ChannelErrorException($"Unexpected ChannelReady message in state {currentState}",
+        throw new ChannelErrorException($"Unexpected ChannelReady message in state {Enum.GetName(currentState)}",
                                         payload.ChannelId,
                                         "Protocol violation: unexpected ChannelReady message");
     }

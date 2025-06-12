@@ -1,5 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NLightning.Application.Channels.Handlers;
+using NLightning.Domain.Bitcoin.Events;
+using NLightning.Domain.Channels.Events;
 using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Infrastructure.Bitcoin.Wallet.Interfaces;
 
@@ -26,6 +29,8 @@ public class ChannelManager : IChannelManager
     private readonly ILightningSigner _lightningSigner;
     private readonly IServiceProvider _serviceProvider;
 
+    // public event EventHandler<ChannelResponseMessageEventArgs>? OnResponseMessageReady;
+
     public ChannelManager(IBlockchainMonitor blockchainMonitor, IChannelMemoryRepository channelMemoryRepository,
                           ILogger<ChannelManager> logger, ILightningSigner lightningSigner,
                           IServiceProvider serviceProvider)
@@ -35,25 +40,8 @@ public class ChannelManager : IChannelManager
         _logger = logger;
         _lightningSigner = lightningSigner;
 
-        blockchainMonitor.OnNewBlockDetected += (_, args) =>
-            ForgetOldChannelByBlockHeightAsync(args.Height)
-               .ContinueWith((task) =>
-                {
-                    _logger.LogDebug(task.Exception, "Error while forgetting stale channels.");
-                }, TaskContinuationOptions.OnlyOnFaulted);
-
-        blockchainMonitor.OnTransactionConfirmed += (_, args) =>
-        {
-            // Check if the transaction is a funding transaction for any channel
-            if (_channelMemoryRepository.TryGetChannel(args.WatchedTransaction.ChannelId, out var channel)
-             && channel is not null)
-            {
-                // If the channel is not confirmed, update its state
-                channel.UpdateState(ChannelState.ReadyForUs);
-                _channelMemoryRepository.UpdateChannel(channel);
-                _logger.LogInformation("Channel {ChannelId} funding transaction confirmed", channel.ChannelId);
-            }
-        };
+        blockchainMonitor.OnNewBlockDetected += HandleNewBlockDetected;
+        blockchainMonitor.OnTransactionConfirmed += HandleFundingConfirmationAsync;
     }
 
     public async Task InitializeAsync()
@@ -138,44 +126,6 @@ public class ChannelManager : IChannelManager
         }
     }
 
-    public async Task ForgetOldChannelByBlockHeightAsync(uint blockHeight)
-    {
-        var heightLimit = (int)blockHeight - ChannelConstants.MaxUnconfirmedChannelAge;
-        if (heightLimit < 0)
-        {
-            _logger.LogDebug("Block height {BlockHeight} is too low to forget channels", blockHeight);
-            return;
-        }
-
-        var staleChannels = _channelMemoryRepository.FindChannels(c => c.FundingCreatedAtBlockHeight <= heightLimit);
-
-        _logger.LogDebug(
-            "Forgetting stale channels created before block height {HeightLimit}, found {StaleChannelCount} channels",
-            heightLimit, staleChannels.Count);
-
-        foreach (var staleChannel in staleChannels)
-        {
-            _logger.LogInformation(
-                "Forgetting stale channel {ChannelId} with funding created at block height {BlockHeight}",
-                staleChannel.ChannelId, staleChannel.FundingCreatedAtBlockHeight);
-
-            // Set states
-            staleChannel.UpdateState(ChannelState.Stale);
-            _channelMemoryRepository.UpdateChannel(staleChannel);
-
-            // Persist on Db
-            try
-            {
-                await PersistChannelAsync(staleChannel);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Failed to persist stale channel {ChannelId} to database at height {currentHeight}",
-                                 staleChannel.ChannelId, blockHeight);
-            }
-        }
-    }
-
     private IChannelMessageHandler<T> GetChannelMessageHandler<T>(IServiceScope scope)
         where T : IChannelMessage
     {
@@ -213,4 +163,101 @@ public class ChannelManager : IChannelManager
             throw;
         }
     }
+
+    private void HandleNewBlockDetected(object? sender, NewBlockEventArgs args)
+    {
+        ArgumentNullException.ThrowIfNull(args);
+
+        var currentHeight = (int)args.Height;
+        var heightLimit = currentHeight - ChannelConstants.MaxUnconfirmedChannelAge;
+        if (heightLimit < 0)
+        {
+            _logger.LogDebug("Block height {BlockHeight} is too low to forget channels", currentHeight);
+            return;
+        }
+
+        var staleChannels = _channelMemoryRepository.FindChannels(c => c.FundingCreatedAtBlockHeight <= heightLimit);
+
+        _logger.LogDebug(
+            "Forgetting stale channels created before block height {HeightLimit}, found {StaleChannelCount} channels",
+            heightLimit, staleChannels.Count);
+
+        foreach (var staleChannel in staleChannels)
+        {
+            _logger.LogInformation(
+                "Forgetting stale channel {ChannelId} with funding created at block height {BlockHeight}",
+                staleChannel.ChannelId, staleChannel.FundingCreatedAtBlockHeight);
+
+            // Set states
+            staleChannel.UpdateState(ChannelState.Stale);
+            _channelMemoryRepository.UpdateChannel(staleChannel);
+
+            // Persist on Db
+            try
+            {
+                PersistChannelAsync(staleChannel).ContinueWith(task =>
+                {
+                    _logger.LogError(task.Exception, "Error while marking channel {channelId} as stale.",
+                                     staleChannel.ChannelId);
+                }, TaskContinuationOptions.OnlyOnFaulted);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Failed to persist stale channel {ChannelId} to database at height {currentHeight}",
+                                 staleChannel.ChannelId, currentHeight);
+            }
+        }
+    }
+
+    // private void HandleFundingConfirmationAsync(object? sender, TransactionConfirmedEventArgs args)
+    // {
+    //     ArgumentNullException.ThrowIfNull(args);
+    //     if (args.WatchedTransaction.FirstSeenAtHeight is null)
+    //     {
+    //         _logger.LogError(
+    //             "Received null {nameof_FirstSeenAtHeight} in {nameof_TransactionConfirmedEventArgs} for channel {ChannelId}",
+    //             nameof(args.WatchedTransaction.FirstSeenAtHeight), nameof(TransactionConfirmedEventArgs),
+    //             args.WatchedTransaction.ChannelId);
+    //         return;
+    //     }
+    //
+    //     if (args.WatchedTransaction.TransactionIndex is null)
+    //     {
+    //         _logger.LogError(
+    //             "Received null {nameof_FirstSeenAtHeight} in {nameof_TransactionConfirmedEventArgs} for channel {ChannelId}",
+    //             nameof(args.WatchedTransaction.FirstSeenAtHeight), nameof(TransactionConfirmedEventArgs),
+    //             args.WatchedTransaction.ChannelId);
+    //         return;
+    //     }
+    //
+    //     var channelId = args.WatchedTransaction.ChannelId;
+    //     // Check if the transaction is a funding transaction for any channel
+    //     if (!_channelMemoryRepository.TryGetChannel(channelId, out var channel) || channel is null)
+    //     {
+    //         _logger.LogError("Funding confirmation for unknown channel {ChannelId}", channelId);
+    //         return;
+    //     }
+    //
+    //     var scope = _serviceProvider.CreateScope();
+    //     var fundingConfirmedHandler = scope.ServiceProvider.GetRequiredService<FundingConfirmedHandler>();
+    //
+    //     // If we get a response, raise the event with the message
+    //     fundingConfirmedHandler.OnMessageReady += (_, message) =>
+    //         OnResponseMessageReady?.Invoke(this, new ChannelResponseMessageEventArgs(channel.RemoteNodeId, message));
+    //
+    //     // Add confirmation information to the channel
+    //     channel.FundingCreatedAtBlockHeight = args.WatchedTransaction.FirstSeenAtHeight.Value;
+    //     channel.ShortChannelId = new ShortChannelId(args.WatchedTransaction.FirstSeenAtHeight.Value,
+    //                                                 args.WatchedTransaction.TransactionIndex.Value,
+    //                                                 channel.FundingOutput.Index!.Value);
+    //
+    //     fundingConfirmedHandler.HandleAsync(channel).ContinueWith(task =>
+    //     {
+    //         if (task.IsFaulted)
+    //             _logger.LogError(task.Exception, "Error while handling funding confirmation for channel {channelId}",
+    //                              channel.ChannelId);
+    //
+    //         scope.Dispose();
+    //     });
+    // }
 }

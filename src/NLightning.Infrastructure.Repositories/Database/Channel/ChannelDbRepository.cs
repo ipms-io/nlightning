@@ -1,20 +1,21 @@
 using System.Collections.Immutable;
 using Microsoft.EntityFrameworkCore;
-using NLightning.Domain.Bitcoin.Transactions.Outputs;
-using NLightning.Domain.Channels.Enums;
-using NLightning.Domain.Channels.Interfaces;
-using NLightning.Domain.Channels.Models;
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.Constants;
-using NLightning.Domain.Crypto.Hashes;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Money;
-using NLightning.Domain.Protocol.ValueObjects;
-using NLightning.Domain.Serialization.Interfaces;
-using NLightning.Infrastructure.Persistence.Contexts;
-using NLightning.Infrastructure.Persistence.Entities.Channel;
 
 namespace NLightning.Infrastructure.Repositories.Database.Channel;
+
+using Domain.Bitcoin.Transactions.Outputs;
+using Domain.Channels.Enums;
+using Domain.Channels.Interfaces;
+using Domain.Channels.Models;
+using Domain.Channels.ValueObjects;
+using Domain.Crypto.Constants;
+using Domain.Crypto.Hashes;
+using Domain.Crypto.ValueObjects;
+using Domain.Money;
+using Domain.Protocol.ValueObjects;
+using Domain.Serialization.Interfaces;
+using Persistence.Contexts;
+using Persistence.Entities.Channel;
 
 public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRepository
 {
@@ -38,11 +39,6 @@ public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRe
     {
         var channelEntity = await MapDomainToEntity(channelModel, _messageSerializer);
         Update(channelEntity);
-    }
-
-    public Task DeleteAsync(ChannelId channelId)
-    {
-        return DeleteByIdAsync(channelId);
     }
 
     public async Task<ChannelModel?> GetByIdAsync(ChannelId channelId)
@@ -80,6 +76,8 @@ public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRe
         [
             (byte)ChannelState.V1FundingCreated,
             (byte)ChannelState.V1FundingSigned,
+            (byte)ChannelState.ReadyForThem,
+            (byte)ChannelState.ReadyForUs,
             (byte)ChannelState.Open,
             (byte)ChannelState.Closing
         ];
@@ -109,7 +107,7 @@ public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRe
 
         var htlcs = new List<Htlc>();
         htlcs.AddRange(GetHtlcsOrNull(channelModel.LocalOfferedHtlcs));
-        htlcs.AddRange(GetHtlcsOrNull(channelModel.LocalFullfiledHtlcs));
+        htlcs.AddRange(GetHtlcsOrNull(channelModel.LocalFulfilledHtlcs));
         htlcs.AddRange(GetHtlcsOrNull(channelModel.LocalOldHtlcs));
         htlcs.AddRange(GetHtlcsOrNull(channelModel.RemoteOfferedHtlcs));
         htlcs.AddRange(GetHtlcsOrNull(channelModel.RemoteFulfilledHtlcs));

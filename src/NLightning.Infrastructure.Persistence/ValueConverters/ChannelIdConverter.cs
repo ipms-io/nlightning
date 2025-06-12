@@ -7,10 +7,5 @@ using Domain.Channels.ValueObjects;
 /// <summary>
 /// EF Core value converter for ChannelId value object
 /// </summary>
-public class ChannelIdConverter : ValueConverter<ChannelId, byte[]>
-
-{
-    public ChannelIdConverter() : base(channelId => channelId, bytes => new ChannelId(bytes))
-    {
-    }
-}
+public class ChannelIdConverter()
+    : ValueConverter<ChannelId, byte[]>(channelId => channelId, bytes => new ChannelId(bytes));

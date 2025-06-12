@@ -33,8 +33,4 @@
     <ProjectReference Include="..\NLightning.Infrastructure.Persistence\NLightning.Infrastructure.Persistence.csproj"/>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Migrations\" />
-  </ItemGroup>
-
 </Project>

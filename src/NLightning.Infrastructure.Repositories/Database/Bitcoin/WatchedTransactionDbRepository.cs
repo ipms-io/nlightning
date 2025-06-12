@@ -13,6 +13,10 @@ public class WatchedTransactionDbRepository(NLightningDbContext context)
     public void Add(WatchedTransactionModel watchedTransactionModel)
     {
         var watchedTransactionEntity = MapDomainToEntity(watchedTransactionModel);
+
+        if (watchedTransactionEntity.CreatedAt.Equals(DateTime.MinValue))
+            watchedTransactionEntity.CreatedAt = DateTime.UtcNow;
+
         Insert(watchedTransactionEntity);
     }
 
@@ -40,6 +44,7 @@ public class WatchedTransactionDbRepository(NLightningDbContext context)
             TransactionId = watchedTransactionModel.TransactionId,
             RequiredDepth = watchedTransactionModel.RequiredDepth,
             FirstSeenAtHeight = watchedTransactionModel.FirstSeenAtHeight,
+            TransactionIndex = watchedTransactionModel.TransactionIndex,
             CompletedAt = watchedTransactionModel.IsCompleted ? DateTime.UtcNow : null
         };
     }
@@ -51,8 +56,8 @@ public class WatchedTransactionDbRepository(NLightningDbContext context)
         if (entity.CompletedAt.HasValue)
             model.MarkAsCompleted();
 
-        if (entity.FirstSeenAtHeight.HasValue)
-            model.SetFirstSeenAtHeight(entity.FirstSeenAtHeight.Value);
+        if (entity.FirstSeenAtHeight.HasValue && entity.TransactionIndex.HasValue)
+            model.SetHeightAndIndex(entity.FirstSeenAtHeight.Value, entity.TransactionIndex.Value);
 
         return model;
     }

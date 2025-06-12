@@ -74,6 +74,10 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("required_depth");
 
+                    b.Property<int?>("TransactionIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("transaction_index");
+
                     b.HasKey("ChannelId", "TransactionId")
                         .HasName("pk_watched_transactions");
 
@@ -158,8 +162,8 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("funding_created_at_block_height");
 
-                    b.Property<long>("FundingOutputIndex")
-                        .HasColumnType("bigint")
+                    b.Property<int>("FundingOutputIndex")
+                        .HasColumnType("integer")
                         .HasColumnName("funding_output_index");
 
                     b.Property<byte[]>("FundingTxId")

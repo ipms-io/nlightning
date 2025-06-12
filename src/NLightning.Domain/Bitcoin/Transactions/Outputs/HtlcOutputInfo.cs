@@ -60,7 +60,7 @@ public abstract class HtlcOutputInfo : IOutputInfo
     /// <summary>
     /// Gets or sets the index of the output in the transaction once it's created.
     /// </summary>
-    public uint? Index { get; set; }
+    public ushort? Index { get; set; }
 
     /// <summary>
     /// Creates a new instance of HtlcOutputInfo.

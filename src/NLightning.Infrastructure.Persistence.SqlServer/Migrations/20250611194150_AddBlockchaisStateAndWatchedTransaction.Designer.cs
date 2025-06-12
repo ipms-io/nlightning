@@ -12,7 +12,7 @@ using NLightning.Infrastructure.Persistence.Contexts;
 namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
 {
     [DbContext(typeof(NLightningDbContext))]
-    [Migration("20250610200030_AddBlockchaisStateAndWatchedTransaction")]
+    [Migration("20250611194150_AddBlockchaisStateAndWatchedTransaction")]
     partial class AddBlockchaisStateAndWatchedTransaction
     {
         /// <inheritdoc />
@@ -65,6 +65,9 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
 
                     b.Property<long>("RequiredDepth")
                         .HasColumnType("bigint");
+
+                    b.Property<int?>("TransactionIndex")
+                        .HasColumnType("int");
 
                     b.HasKey("ChannelId", "TransactionId");
 
@@ -131,8 +134,8 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                     b.Property<long>("FundingCreatedAtBlockHeight")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("FundingOutputIndex")
-                        .HasColumnType("bigint");
+                    b.Property<int>("FundingOutputIndex")
+                        .HasColumnType("int");
 
                     b.Property<byte[]>("FundingTxId")
                         .IsRequired()

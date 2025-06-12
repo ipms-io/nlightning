@@ -59,11 +59,11 @@ public class NltgDaemonService : BackgroundService
             // Initialize the Channel Manager
             await _channelManager.InitializeAsync();
 
-            // Start the blockchain monitor service
-            await _blockchainMonitor.StartAsync(stoppingToken);
-
             // Start the peer manager service
             await _peerManager.StartAsync(stoppingToken);
+
+            // Start the blockchain monitor service
+            await _blockchainMonitor.StartAsync(stoppingToken);
 
             while (!stoppingToken.IsCancellationRequested)
                 await Task.Delay(1000, stoppingToken);

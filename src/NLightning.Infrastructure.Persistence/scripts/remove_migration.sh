@@ -15,7 +15,7 @@ dotnet ef migrations remove \
 
 echo "Sqlite"
 unset NLIGHTNING_POSTGRES
-export NLIGHTNING_SQLITE=${NLIGHTNING_SQLITE:-'Data Source=:memory:'}
+export NLIGHTNING_SQLITE=${NLIGHTNING_SQLITE:-'Data Source=./nltg.db;Cache=Shared'}
 dotnet ef migrations remove \
   --project ../NLightning.Infrastructure.Persistence.Sqlite \
   --framework net9.0
@@ -23,7 +23,7 @@ dotnet ef migrations remove \
 echo "SqlServer"
 unset NLIGHTNING_POSTGRES
 unset NLIGHTNING_SQLITE
-export NLIGHTNING_SQLSERVER=${NLIGHTNING_SQLSERVER:-'Server=localhost;Database=nlightning;User Id=sa;Password=Superuser1234*;'}
+export NLIGHTNING_SQLSERVER=${NLIGHTNING_SQLSERVER:-'Server=localhost;Database=nlightning;User Id=sa;Password=Superuser1234*;Encrypt=false;'}
 dotnet ef migrations remove \
   --project ../NLightning.Infrastructure.Persistence.SqlServer \
   --framework net9.0

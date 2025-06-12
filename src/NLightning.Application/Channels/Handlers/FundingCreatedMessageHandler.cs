@@ -128,7 +128,7 @@ public class FundingCreatedMessageHandler : IChannelMessageHandler<FundingCreate
     }
 
     /// <summary>
-    /// Persists a channel to the database using a scoped Unit of Work
+    /// Persists a channel to the database using the scoped Unit of Work
     /// </summary>
     private async Task PersistChannelAsync(ChannelModel channel)
     {

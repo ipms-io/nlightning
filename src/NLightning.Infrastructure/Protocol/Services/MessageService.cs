@@ -63,7 +63,7 @@ internal sealed class MessageService : IMessageService
     {
         try
         {
-            var message = _messageSerializer.DeserializeMessageAsync(stream).Result;
+            var message = _messageSerializer.DeserializeMessageAsync(stream).GetAwaiter().GetResult();
             if (message is not null)
             {
                 MessageReceived?.Invoke(this, message);

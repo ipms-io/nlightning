@@ -28,5 +28,5 @@ public interface IOutputInfo
     /// <summary>
     /// Gets or sets the index of the output in the transaction once it's created.
     /// </summary>
-    uint? Index { get; set; }
+    ushort? Index { get; set; }
 }

@@ -1,12 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using NLightning.Domain.Channels.Constants;
-using NLightning.Domain.Crypto.Constants;
-using NLightning.Infrastructure.Persistence.Entities.Channel;
-using NLightning.Infrastructure.Persistence.Enums;
-using NLightning.Infrastructure.Persistence.ValueConverters;
 
 namespace NLightning.Infrastructure.Persistence.EntityConfiguration.Channel;
+
+using Domain.Channels.Constants;
+using Domain.Crypto.Constants;
+using Entities.Channel;
+using Enums;
+using ValueConverters;
 
 public static class ChannelKeySetEntityConfiguration
 {

@@ -58,6 +58,9 @@ namespace NLightning.Infrastructure.Persistence.Sqlite.Migrations
                     b.Property<uint>("RequiredDepth")
                         .HasColumnType("INTEGER");
 
+                    b.Property<ushort?>("TransactionIndex")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("ChannelId", "TransactionId");
 
                     b.ToTable("WatchedTransactions");
@@ -123,7 +126,7 @@ namespace NLightning.Infrastructure.Persistence.Sqlite.Migrations
                     b.Property<uint>("FundingCreatedAtBlockHeight")
                         .HasColumnType("INTEGER");
 
-                    b.Property<uint>("FundingOutputIndex")
+                    b.Property<ushort>("FundingOutputIndex")
                         .HasColumnType("INTEGER");
 
                     b.Property<byte[]>("FundingTxId")

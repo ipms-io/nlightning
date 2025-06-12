@@ -63,6 +63,9 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                     b.Property<long>("RequiredDepth")
                         .HasColumnType("bigint");
 
+                    b.Property<int?>("TransactionIndex")
+                        .HasColumnType("int");
+
                     b.HasKey("ChannelId", "TransactionId");
 
                     b.ToTable("WatchedTransactions");
@@ -128,8 +131,8 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                     b.Property<long>("FundingCreatedAtBlockHeight")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("FundingOutputIndex")
-                        .HasColumnType("bigint");
+                    b.Property<int>("FundingOutputIndex")
+                        .HasColumnType("int");
 
                     b.Property<byte[]>("FundingTxId")
                         .IsRequired()

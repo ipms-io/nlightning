@@ -34,8 +34,4 @@
     <ProjectReference Include="..\NLightning.Domain\NLightning.Domain.csproj"/>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Entities\Node\"/>
-  </ItemGroup>
-
 </Project>
