@@ -1,6 +1,6 @@
 namespace NLightning.Infrastructure.Bitcoin.Adapters.OutputAdapters;
 
-using Domain.Transactions.Outputs;
+using Domain.Bitcoin.Transactions.Outputs;
 using Outputs;
 
 /// <summary>

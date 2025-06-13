@@ -3,12 +3,12 @@ using NBitcoin;
 
 namespace NLightning.Infrastructure.Bitcoin.Builders;
 
-using Application.Bitcoin.Interfaces;
 using Comparers;
+using Domain.Bitcoin.Transactions.Constants;
+using Domain.Bitcoin.Transactions.Models;
 using Domain.Bitcoin.ValueObjects;
 using Domain.Node.Options;
-using Domain.Transactions.Constants;
-using Domain.Transactions.Models;
+using Interfaces;
 using Outputs;
 
 public class CommitmentTransactionBuilder : ICommitmentTransactionBuilder

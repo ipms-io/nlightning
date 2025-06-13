@@ -1,13 +1,13 @@
 using System.Runtime.Serialization;
-using NLightning.Domain.Protocol.Interfaces;
-using NLightning.Domain.Serialization.Interfaces;
 
 namespace NLightning.Infrastructure.Serialization.Messages.Types;
 
 using Domain.Protocol.Constants;
+using Domain.Protocol.Interfaces;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Payloads;
 using Domain.Protocol.Tlv;
+using Domain.Serialization.Interfaces;
 using Exceptions;
 using Interfaces;
 
@@ -72,7 +72,16 @@ public class InitMessageTypeSerializer : IMessageTypeSerializer<InitMessage>
                 networksTlv = tlvConverter.ConvertFromBase(baseNetworkTlv!);
             }
 
-            return new InitMessage(payload, networksTlv);
+            RemoteAddressTlv? remoteAddressTlv = null;
+            if (extension.TryGetTlv(TlvConstants.RemoteAddress, out var baseRemoteAddressTlv))
+            {
+                var tlvConverter = _tlvConverterFactory.GetConverter<RemoteAddressTlv>()
+                                ?? throw new SerializationException(
+                                       $"No serializer found for tlv type {nameof(RemoteAddressTlv)}");
+                remoteAddressTlv = tlvConverter.ConvertFromBase(baseRemoteAddressTlv!);
+            }
+
+            return new InitMessage(payload, networksTlv, remoteAddressTlv);
         }
         catch (SerializationException e)
         {

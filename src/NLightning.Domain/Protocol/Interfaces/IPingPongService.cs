@@ -22,7 +22,12 @@ public interface IPingPongService
     /// <summary>
     /// Event that is raised when a ping message is ready to be sent.
     /// </summary>
-    event EventHandler<IMessage>? PingMessageReadyEvent;
+    event EventHandler<IMessage> OnPingMessageReady;
+
+    /// <summary>
+    /// Event that is raised when a pong message is received.
+    /// </summary>
+    event EventHandler OnPongReceived;
 
     /// <summary>
     /// Event that is raised when the pong is not received in time or the pong message is invalid.

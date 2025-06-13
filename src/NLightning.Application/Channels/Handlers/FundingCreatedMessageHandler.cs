@@ -1,25 +1,26 @@
 using Microsoft.Extensions.Logging;
+using NLightning.Domain.Bitcoin.Transactions.Enums;
+using NLightning.Domain.Bitcoin.Transactions.Interfaces;
+using NLightning.Infrastructure.Bitcoin.Builders.Interfaces;
+using NLightning.Infrastructure.Bitcoin.Wallet.Interfaces;
 
 namespace NLightning.Application.Channels.Handlers;
 
-using Bitcoin.Interfaces;
 using Domain.Bitcoin.Interfaces;
 using Domain.Channels.Enums;
 using Domain.Channels.Interfaces;
 using Domain.Channels.Models;
-using Domain.Channels.ValueObjects;
 using Domain.Crypto.ValueObjects;
 using Domain.Exceptions;
 using Domain.Node.Options;
 using Domain.Persistence.Interfaces;
 using Domain.Protocol.Interfaces;
 using Domain.Protocol.Messages;
-using Domain.Transactions.Enums;
-using Domain.Transactions.Interfaces;
 using Interfaces;
 
 public class FundingCreatedMessageHandler : IChannelMessageHandler<FundingCreatedMessage>
 {
+    private readonly IBlockchainMonitor _blockchainMonitor;
     private readonly IChannelIdFactory _channelIdFactory;
     private readonly IChannelMemoryRepository _channelMemoryRepository;
     private readonly ICommitmentTransactionBuilder _commitmentTransactionBuilder;
@@ -29,13 +30,14 @@ public class FundingCreatedMessageHandler : IChannelMessageHandler<FundingCreate
     private readonly IMessageFactory _messageFactory;
     private readonly IUnitOfWork _unitOfWork;
 
-    public FundingCreatedMessageHandler(IChannelIdFactory channelIdFactory,
+    public FundingCreatedMessageHandler(IBlockchainMonitor blockchainMonitor, IChannelIdFactory channelIdFactory,
                                         IChannelMemoryRepository channelMemoryRepository,
                                         ICommitmentTransactionBuilder commitmentTransactionBuilder,
                                         ICommitmentTransactionModelFactory commitmentTransactionModelFactory,
                                         ILightningSigner lightningSigner, ILogger<FundingCreatedMessageHandler> logger,
                                         IMessageFactory messageFactory, IUnitOfWork unitOfWork)
     {
+        _blockchainMonitor = blockchainMonitor;
         _channelIdFactory = channelIdFactory;
         _channelMemoryRepository = channelMemoryRepository;
         _commitmentTransactionBuilder = commitmentTransactionBuilder;
@@ -66,8 +68,7 @@ public class FundingCreatedMessageHandler : IChannelMessageHandler<FundingCreate
                                             "This channel is already being negotiated with peer");
 
         // Get the channel and set missing props
-        if (!_channelMemoryRepository.TryGetTemporaryChannel(peerPubKey, payload.ChannelId, out var channel)
-         || channel is null)
+        if (!_channelMemoryRepository.TryGetTemporaryChannel(peerPubKey, payload.ChannelId, out var channel))
             throw new ChannelErrorException("Temporary channel not found", payload.ChannelId);
 
         channel.FundingOutput.TransactionId = payload.FundingTxId;
@@ -78,15 +79,7 @@ public class FundingCreatedMessageHandler : IChannelMessageHandler<FundingCreate
         channel.UpdateChannelId(_channelIdFactory.CreateV1(payload.FundingTxId, payload.FundingOutputIndex));
 
         // Register the channel with the signer
-        var channelSigningInfo = new ChannelSigningInfo(
-            payload.FundingTxId,
-            payload.FundingOutputIndex,
-            channel.FundingOutput.Amount,
-            channel.LocalKeySet.FundingCompactPubKey,
-            channel.RemoteKeySet.FundingCompactPubKey,
-            channel.LocalKeySet.KeyIndex
-        );
-        _lightningSigner.RegisterChannel(channel.ChannelId, channelSigningInfo);
+        _lightningSigner.RegisterChannel(channel.ChannelId, channel.GetSigningInfo());
 
         // Generate the base commitment transactions
         var localCommitmentTransaction =
@@ -118,11 +111,14 @@ public class FundingCreatedMessageHandler : IChannelMessageHandler<FundingCreate
         // Remove the temporary channel
         _channelMemoryRepository.RemoveTemporaryChannel(peerPubKey, oldChannelId);
 
+        await _blockchainMonitor.WatchTransactionAsync(channel.ChannelId, payload.FundingTxId,
+                                                       channel.ChannelConfig.MinimumDepth);
+
         return fundingSignedMessage;
     }
 
     /// <summary>
-    /// Persists a channel to the database using a scoped Unit of Work
+    /// Persists a channel to the database using the scoped Unit of Work
     /// </summary>
     private async Task PersistChannelAsync(ChannelModel channel)
     {

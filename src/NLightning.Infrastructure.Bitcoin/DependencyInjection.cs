@@ -1,8 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
+using NLightning.Infrastructure.Bitcoin.Builders.Interfaces;
+using NLightning.Infrastructure.Bitcoin.Wallet;
+using NLightning.Infrastructure.Bitcoin.Wallet.Interfaces;
 
 namespace NLightning.Infrastructure.Bitcoin;
 
-using Application.Bitcoin.Interfaces;
 using Builders;
 using Crypto.Functions;
 using Domain.Protocol.Interfaces;
@@ -23,6 +25,8 @@ public static class DependencyInjection
     public static IServiceCollection AddBitcoinInfrastructure(this IServiceCollection services)
     {
         // Register Singletons
+        services.AddSingleton<IBitcoinWallet, BitcoinWalletService>();
+        services.AddSingleton<IBlockchainMonitor, BlockchainMonitorService>();
         services.AddSingleton<ICommitmentKeyDerivationService, CommitmentKeyDerivationService>();
         services.AddSingleton<ICommitmentTransactionBuilder, CommitmentTransactionBuilder>();
         services.AddSingleton<IEcdh, Ecdh>();

@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace NLightning.Infrastructure.Protocol.Factories;
 
 using Domain.Protocol.Interfaces;
@@ -14,15 +16,17 @@ using Services;
 public sealed class MessageServiceFactory : IMessageServiceFactory
 {
     private readonly IMessageSerializer _messageSerializer;
+    private readonly ILoggerFactory _loggerFactory;
 
-    public MessageServiceFactory(IMessageSerializer messageSerializer)
+    public MessageServiceFactory(IMessageSerializer messageSerializer, ILoggerFactory loggerFactory)
     {
         _messageSerializer = messageSerializer;
+        _loggerFactory = loggerFactory;
     }
 
     /// <inheritdoc />
     public IMessageService CreateMessageService(ITransportService transportService)
     {
-        return new MessageService(_messageSerializer, transportService);
+        return new MessageService(_loggerFactory.CreateLogger<IMessageService>(), _messageSerializer, transportService);
     }
 }

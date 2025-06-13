@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using NBitcoin;
+using NLightning.Domain.Bitcoin.Transactions.Outputs;
 using NLightning.Domain.Channels.ValueObjects;
 using NLightning.Domain.Exceptions;
 using NLightning.Tests.Utils.Vectors;
@@ -9,7 +10,6 @@ namespace NLightning.Infrastructure.Bitcoin.Tests.Signers;
 using Domain.Bitcoin.ValueObjects;
 using Domain.Node.Options;
 using Domain.Protocol.Interfaces;
-using Domain.Transactions.Outputs;
 using Infrastructure.Bitcoin.Builders;
 using Infrastructure.Bitcoin.Outputs;
 using Infrastructure.Bitcoin.Signers;

@@ -22,7 +22,73 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.ChannelConfigEntity", b =>
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Bitcoin.BlockchainStateEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("LastProcessedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_processed_at");
+
+                    b.Property<byte[]>("LastProcessedBlockHash")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("last_processed_block_hash");
+
+                    b.Property<long>("LastProcessedHeight")
+                        .HasColumnType("bigint")
+                        .HasColumnName("last_processed_height");
+
+                    b.HasKey("Id")
+                        .HasName("pk_blockchain_states");
+
+                    b.ToTable("blockchain_states", (string)null);
+                });
+
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Bitcoin.WatchedTransactionEntity", b =>
+                {
+                    b.Property<byte[]>("TransactionId")
+                        .HasColumnType("bytea")
+                        .HasColumnName("transaction_id");
+
+                    b.Property<byte[]>("ChannelId")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("channel_id");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<long?>("FirstSeenAtHeight")
+                        .HasColumnType("bigint")
+                        .HasColumnName("first_seen_at_height");
+
+                    b.Property<long>("RequiredDepth")
+                        .HasColumnType("bigint")
+                        .HasColumnName("required_depth");
+
+                    b.Property<int?>("TransactionIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("transaction_index");
+
+                    b.HasKey("TransactionId")
+                        .HasName("pk_watched_transactions");
+
+                    b.HasIndex("ChannelId")
+                        .HasDatabaseName("ix_watched_transactions_channel_id");
+
+                    b.ToTable("watched_transactions", (string)null);
+                });
+
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelConfigEntity", b =>
                 {
                     b.Property<byte[]>("ChannelId")
                         .HasColumnType("bytea")
@@ -86,7 +152,7 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                     b.ToTable("channel_configs", (string)null);
                 });
 
-            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.ChannelEntity", b =>
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", b =>
                 {
                     b.Property<byte[]>("ChannelId")
                         .HasColumnType("bytea")
@@ -100,8 +166,8 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("funding_created_at_block_height");
 
-                    b.Property<long>("FundingOutputIndex")
-                        .HasColumnType("bigint")
+                    b.Property<int>("FundingOutputIndex")
+                        .HasColumnType("integer")
                         .HasColumnName("funding_output_index");
 
                     b.Property<byte[]>("FundingTxId")
@@ -133,6 +199,10 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                         .HasColumnType("numeric(20,0)")
                         .HasColumnName("local_revocation_number");
 
+                    b.Property<byte[]>("PeerEntityNodeId")
+                        .HasColumnType("bytea")
+                        .HasColumnName("peer_entity_node_id");
+
                     b.Property<decimal>("RemoteBalanceSatoshis")
                         .HasColumnType("numeric")
                         .HasColumnName("remote_balance_satoshis");
@@ -161,10 +231,13 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                     b.HasKey("ChannelId")
                         .HasName("pk_channels");
 
+                    b.HasIndex("PeerEntityNodeId")
+                        .HasDatabaseName("ix_channels_peer_entity_node_id");
+
                     b.ToTable("channels", (string)null);
                 });
 
-            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.ChannelKeySetEntity", b =>
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelKeySetEntity", b =>
                 {
                     b.Property<byte[]>("ChannelId")
                         .HasColumnType("bytea")
@@ -222,7 +295,7 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                     b.ToTable("channel_key_sets", (string)null);
                 });
 
-            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.HtlcEntity", b =>
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.HtlcEntity", b =>
                 {
                     b.Property<byte[]>("ChannelId")
                         .HasColumnType("bytea")
@@ -276,19 +349,62 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                     b.ToTable("htlcs", (string)null);
                 });
 
-            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.ChannelConfigEntity", b =>
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Node.PeerEntity", b =>
                 {
-                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.ChannelEntity", null)
+                    b.Property<byte[]>("NodeId")
+                        .HasColumnType("bytea")
+                        .HasColumnName("node_id");
+
+                    b.Property<string>("Host")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("host");
+
+                    b.Property<DateTime>("LastSeenAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_seen_at");
+
+                    b.Property<long>("Port")
+                        .HasColumnType("bigint")
+                        .HasColumnName("port");
+
+                    b.HasKey("NodeId")
+                        .HasName("pk_peers");
+
+                    b.ToTable("peers", (string)null);
+                });
+
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Bitcoin.WatchedTransactionEntity", b =>
+                {
+                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", null)
+                        .WithMany("WatchedTransactions")
+                        .HasForeignKey("ChannelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_watched_transactions_channels_channel_id");
+                });
+
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelConfigEntity", b =>
+                {
+                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", null)
                         .WithOne("Config")
-                        .HasForeignKey("NLightning.Infrastructure.Persistence.Entities.ChannelConfigEntity", "ChannelId")
+                        .HasForeignKey("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelConfigEntity", "ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_channel_configs_channels_channel_id");
                 });
 
-            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.ChannelKeySetEntity", b =>
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", b =>
                 {
-                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.ChannelEntity", null)
+                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.Node.PeerEntity", null)
+                        .WithMany("Channels")
+                        .HasForeignKey("PeerEntityNodeId")
+                        .HasConstraintName("fk_channels_peers_peer_entity_node_id");
+                });
+
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelKeySetEntity", b =>
+                {
+                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", null)
                         .WithMany("KeySets")
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -296,9 +412,9 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                         .HasConstraintName("fk_channel_key_sets_channels_channel_id");
                 });
 
-            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.HtlcEntity", b =>
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.HtlcEntity", b =>
                 {
-                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.ChannelEntity", null)
+                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", null)
                         .WithMany("Htlcs")
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -306,13 +422,20 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                         .HasConstraintName("fk_htlcs_channels_channel_id");
                 });
 
-            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.ChannelEntity", b =>
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", b =>
                 {
                     b.Navigation("Config");
 
                     b.Navigation("Htlcs");
 
                     b.Navigation("KeySets");
+
+                    b.Navigation("WatchedTransactions");
+                });
+
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Node.PeerEntity", b =>
+                {
+                    b.Navigation("Channels");
                 });
 #pragma warning restore 612, 618
         }

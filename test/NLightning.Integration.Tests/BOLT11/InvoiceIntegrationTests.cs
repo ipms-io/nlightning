@@ -1,15 +1,15 @@
 using System.Text;
 using NBitcoin;
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Protocol.ValueObjects;
 
 namespace NLightning.Integration.Tests.BOLT11;
 
 using Bolt11.Enums;
 using Bolt11.Exceptions;
 using Bolt11.Models;
+using Domain.Channels.ValueObjects;
 using Domain.Models;
 using Domain.Node;
+using Domain.Protocol.ValueObjects;
 using Infrastructure.Crypto.Hashes;
 
 public class InvoiceIntegrationTests

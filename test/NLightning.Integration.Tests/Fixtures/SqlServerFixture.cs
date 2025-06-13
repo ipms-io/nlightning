@@ -16,7 +16,7 @@ public class SqlServerFixture : IDisposable
 
     public SqlServerFixture()
     {
-        StartSqlServer().Wait();
+        StartSqlServer().GetAwaiter().GetResult();
     }
 
     public string? DbConnectionString { get; private set; }
@@ -26,7 +26,7 @@ public class SqlServerFixture : IDisposable
         GC.SuppressFinalize(this);
 
         // Remove containers
-        RemoveContainer(ContainerName).Wait();
+        RemoveContainer(ContainerName).GetAwaiter().GetResult();
 
         _client.Dispose();
     }
@@ -119,9 +119,8 @@ public class SqlServerFixture : IDisposable
     {
         try
         {
-            var inspect = _client.Containers.InspectContainerAsync(ContainerName);
-            inspect.Wait();
-            return inspect.Result.State.Running;
+            var inspectResult = _client.Containers.InspectContainerAsync(ContainerName).GetAwaiter().GetResult();
+            return inspectResult.State.Running;
         }
         catch
         {

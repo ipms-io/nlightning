@@ -1,5 +1,5 @@
 using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Protocol.ValueObjects;
+using NLightning.Domain.Protocol.Models;
 using NLightning.Tests.Utils.Mocks;
 
 namespace NLightning.Domain.Tests.Protocol.ValueObjects;
