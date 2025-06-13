@@ -1,8 +1,10 @@
-using NLightning.Domain.Bitcoin.Interfaces;
+using NLightning.Domain.Node.Models;
 
 namespace NLightning.Domain.Persistence.Interfaces;
 
+using Bitcoin.Interfaces;
 using Channels.Interfaces;
+using Node.Interfaces;
 
 public interface IUnitOfWork : IDisposable
 {
@@ -15,6 +17,11 @@ public interface IUnitOfWork : IDisposable
     IChannelDbRepository ChannelDbRepository { get; }
     IChannelKeySetDbRepository ChannelKeySetDbRepository { get; }
     IHtlcDbRepository HtlcDbRepository { get; }
+
+    // Node repositories
+    IPeerDbRepository PeerDbRepository { get; }
+
+    Task<ICollection<PeerModel>> GetPeersForStartupAsync();
 
     void SaveChanges();
     Task SaveChangesAsync();

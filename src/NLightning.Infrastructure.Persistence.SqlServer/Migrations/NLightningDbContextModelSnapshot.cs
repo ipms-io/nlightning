@@ -45,10 +45,11 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
 
             modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Bitcoin.WatchedTransactionEntity", b =>
                 {
-                    b.Property<byte[]>("ChannelId")
+                    b.Property<byte[]>("TransactionId")
                         .HasColumnType("varbinary(32)");
 
-                    b.Property<byte[]>("TransactionId")
+                    b.Property<byte[]>("ChannelId")
+                        .IsRequired()
                         .HasColumnType("varbinary(32)");
 
                     b.Property<DateTime?>("CompletedAt")
@@ -66,7 +67,9 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                     b.Property<int?>("TransactionIndex")
                         .HasColumnType("int");
 
-                    b.HasKey("ChannelId", "TransactionId");
+                    b.HasKey("TransactionId");
+
+                    b.HasIndex("ChannelId");
 
                     b.ToTable("WatchedTransactions");
                 });
@@ -156,6 +159,9 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                     b.Property<decimal>("LocalRevocationNumber")
                         .HasColumnType("decimal(20,0)");
 
+                    b.Property<byte[]>("PeerEntityNodeId")
+                        .HasColumnType("varbinary(33)");
+
                     b.Property<long>("RemoteBalanceSatoshis")
                         .HasColumnType("bigint");
 
@@ -176,6 +182,8 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                         .HasColumnType("tinyint");
 
                     b.HasKey("ChannelId");
+
+                    b.HasIndex("PeerEntityNodeId");
 
                     b.ToTable("Channels");
                 });
@@ -268,6 +276,26 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                     b.ToTable("Htlcs");
                 });
 
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Node.PeerEntity", b =>
+                {
+                    b.Property<byte[]>("NodeId")
+                        .HasColumnType("varbinary(33)");
+
+                    b.Property<string>("Host")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("LastSeenAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("Port")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("NodeId");
+
+                    b.ToTable("Peers");
+                });
+
             modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Bitcoin.WatchedTransactionEntity", b =>
                 {
                     b.HasOne("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", null)
@@ -284,6 +312,13 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                         .HasForeignKey("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelConfigEntity", "ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", b =>
+                {
+                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.Node.PeerEntity", null)
+                        .WithMany("Channels")
+                        .HasForeignKey("PeerEntityNodeId");
                 });
 
             modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelKeySetEntity", b =>
@@ -313,6 +348,11 @@ namespace NLightning.Infrastructure.Persistence.SqlServer.Migrations
                     b.Navigation("KeySets");
 
                     b.Navigation("WatchedTransactions");
+                });
+
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Node.PeerEntity", b =>
+                {
+                    b.Navigation("Channels");
                 });
 #pragma warning restore 612, 618
         }

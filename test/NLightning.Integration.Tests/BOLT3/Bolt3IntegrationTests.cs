@@ -1,13 +1,12 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NBitcoin.Policy;
-using NLightning.Domain.Bitcoin.Transactions.Enums;
-using NLightning.Domain.Bitcoin.Transactions.Factories;
-using NLightning.Domain.Bitcoin.Transactions.Outputs;
 using NLightning.Tests.Utils.Vectors;
 
 namespace NLightning.Integration.Tests.BOLT3;
 
+using Domain.Bitcoin.Transactions.Enums;
+using Domain.Bitcoin.Transactions.Factories;
+using Domain.Bitcoin.Transactions.Outputs;
 using Domain.Channels.Enums;
 using Domain.Channels.Models;
 using Domain.Channels.ValueObjects;
@@ -48,13 +47,6 @@ public class Bolt3IntegrationTests
         TransactionId = Bolt3AppendixBVectors.ExpectedTxId.ToBytes(),
         Index = 0
     };
-
-    private readonly StandardTransactionPolicy _dontCheckFeePolicy = new()
-    {
-        CheckFee = false
-    };
-
-    private readonly LightningMoney _anchorAmount = LightningMoney.Satoshis(330);
 
     private Htlc? _offeredHtlc2;
     private Htlc? _offeredHtlc3;

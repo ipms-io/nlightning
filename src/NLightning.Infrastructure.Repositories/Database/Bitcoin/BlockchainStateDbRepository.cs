@@ -10,19 +10,16 @@ using Persistence.Entities.Bitcoin;
 public class BlockchainStateDbRepository(NLightningDbContext context)
     : BaseDbRepository<BlockchainStateEntity>(context), IBlockchainStateDbRepository
 {
-    public async Task AddOrUpdateAsync(BlockchainState blockchainState)
+    public void Add(BlockchainState blockchainState)
     {
-        var existingEntity = await DbSet.AsNoTracking().FirstOrDefaultAsync();
-        if (existingEntity is null)
-        {
-            var entity = MapDomainToEntity(blockchainState, Guid.NewGuid());
-            Insert(entity);
-        }
-        else
-        {
-            var entity = MapDomainToEntity(blockchainState, existingEntity.Id);
-            Update(entity);
-        }
+        var entity = MapDomainToEntity(blockchainState);
+        Insert(entity);
+    }
+
+    public void Update(BlockchainState blockchainState)
+    {
+        var entity = MapDomainToEntity(blockchainState);
+        Update(entity);
     }
 
     public async Task<BlockchainState?> GetStateAsync()
@@ -31,11 +28,11 @@ public class BlockchainStateDbRepository(NLightningDbContext context)
         return entity is null ? null : MapEntityToDomain(entity);
     }
 
-    private static BlockchainStateEntity MapDomainToEntity(BlockchainState blockchainState, Guid id)
+    private static BlockchainStateEntity MapDomainToEntity(BlockchainState blockchainState)
     {
         return new BlockchainStateEntity
         {
-            Id = id,
+            Id = blockchainState.Id,
             LastProcessedHeight = blockchainState.LastProcessedHeight,
             LastProcessedBlockHash = blockchainState.LastProcessedBlockHash,
             LastProcessedAt = blockchainState.LastProcessedAt
@@ -44,6 +41,9 @@ public class BlockchainStateDbRepository(NLightningDbContext context)
 
     private static BlockchainState MapEntityToDomain(BlockchainStateEntity entity)
     {
-        return new BlockchainState(entity.LastProcessedHeight, entity.LastProcessedBlockHash, entity.LastProcessedAt);
+        return new BlockchainState(entity.LastProcessedHeight, entity.LastProcessedBlockHash, entity.LastProcessedAt)
+        {
+            Id = entity.Id
+        };
     }
 }

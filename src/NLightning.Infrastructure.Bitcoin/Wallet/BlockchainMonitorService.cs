@@ -15,8 +15,8 @@ using Domain.Channels.ValueObjects;
 using Domain.Crypto.ValueObjects;
 using Domain.Node.Options;
 using Domain.Persistence.Interfaces;
-using Options;
 using Interfaces;
+using Options;
 
 public class BlockchainMonitorService : IBlockchainMonitor
 {
@@ -25,7 +25,8 @@ public class BlockchainMonitorService : IBlockchainMonitor
     private readonly ILogger<BlockchainMonitorService> _logger;
     private readonly IServiceProvider _serviceProvider;
     private readonly Network _network;
-    private readonly SemaphoreSlim _semaphore = new(1, 1);
+    private readonly SemaphoreSlim _newBlockSemaphore = new(1, 1);
+    private readonly SemaphoreSlim _blockBacklogSemaphore = new(1, 1);
     private readonly ConcurrentDictionary<uint256, WatchedTransactionModel> _watchedTransactions = new();
 #if NET9_0_OR_GREATER
     private readonly OrderedDictionary<uint, Block> _blocksToProcess = new();
@@ -66,28 +67,34 @@ public class BlockchainMonitorService : IBlockchainMonitor
         await LoadPendingWatchedTransactionsAsync(uow);
 
         // Get the current state or create a new one if it doesn't exist
-        _blockchainState = await uow.BlockchainStateDbRepository.GetStateAsync() ?? _blockchainState;
-        if (_blockchainState.LastProcessedHeight == 0)
+        var currentBlockchainState = await uow.BlockchainStateDbRepository.GetStateAsync();
+        if (currentBlockchainState is null)
         {
             var lastProcessedHeight = await _bitcoinWallet.GetCurrentBlockHeightAsync();
             _logger.LogInformation("No blockchain state found, starting from height {Height}", lastProcessedHeight);
 
             _blockchainState = new BlockchainState(0, Hash.Empty, DateTime.UtcNow);
-            await uow.BlockchainStateDbRepository.AddOrUpdateAsync(_blockchainState);
-            await uow.SaveChangesAsync();
+            uow.BlockchainStateDbRepository.Add(_blockchainState);
         }
         else
         {
+            _blockchainState = currentBlockchainState;
             _lastProcessedBlockHeight = _blockchainState.LastProcessedHeight;
             _logger.LogInformation("Starting blockchain monitoring at height {Height}, last block hash {LastBlockHash}",
                                    _lastProcessedBlockHeight, _blockchainState.LastProcessedBlockHash);
         }
 
-        // Process missing blocks
+        // Get the current block height from the wallet
         var currentBlockHeight = await _bitcoinWallet.GetCurrentBlockHeightAsync();
-        await AddMissingBlocksToProcessAsync(currentBlockHeight, true);
-        if (_blocksToProcess.Count > 0)
-            await ProcessPendingBlocksAsync(uow);
+
+        // Add the current block to the processing queue
+        var currentBlock = await _bitcoinWallet.GetBlockAsync(_lastProcessedBlockHeight);
+        if (currentBlock is not null)
+            _blocksToProcess[_lastProcessedBlockHeight] = currentBlock;
+
+        // Add missing blocks to the processing queue and process any pending blocks
+        await AddMissingBlocksToProcessAsync(currentBlockHeight);
+        await ProcessPendingBlocksAsync(uow);
 
         await uow.SaveChangesAsync();
 
@@ -169,9 +176,34 @@ public class BlockchainMonitorService : IBlockchainMonitor
                     {
                         if (topic == "rawblock" && _blockSocket.TryReceiveFrameBytes(out var blockHashBytes))
                         {
-                            var currentHeight = await _bitcoinWallet.GetCurrentBlockHeightAsync();
-                            var block = Block.Load(blockHashBytes, _network);
-                            await ProcessNewBlock(block, currentHeight);
+                            try
+                            {
+                                // One at a time
+                                await _newBlockSemaphore.WaitAsync(cancellationToken);
+                                var block = Block.Load(blockHashBytes, _network);
+                                var coinbaseHeight = block.GetCoinbaseHeight();
+                                if (!coinbaseHeight.HasValue)
+                                {
+                                    // Get the current height from the wallet
+                                    var currentHeight = await _bitcoinWallet.GetCurrentBlockHeightAsync();
+
+                                    // Get the block from the wallet
+                                    var blockAtHeight = await _bitcoinWallet.GetBlockAsync(currentHeight);
+                                    if (blockAtHeight is null)
+                                    {
+                                        _logger.LogError("Failed to retrieve block at height {Height}", currentHeight);
+                                        return;
+                                    }
+
+                                    coinbaseHeight = (int)currentHeight;
+                                }
+
+                                await ProcessNewBlock(block, (uint)coinbaseHeight);
+                            }
+                            finally
+                            {
+                                _newBlockSemaphore.Release();
+                            }
                         }
                     }
 
@@ -250,30 +282,26 @@ public class BlockchainMonitorService : IBlockchainMonitor
 
     private async Task ProcessPendingBlocksAsync(IUnitOfWork uow)
     {
-        await _semaphore.WaitAsync();
-
         try
         {
+            await _blockBacklogSemaphore.WaitAsync();
+
             while (_blocksToProcess.Count > 0)
             {
                 var blockKvp = _blocksToProcess.First();
-                if (blockKvp.Key < _lastProcessedBlockHeight)
-                {
-                    // TODO: Maybe we had a reorg?
-                    _logger.LogWarning("Possible reorg detected: Block {Height} is already processed", blockKvp.Key);
-                    _blocksToProcess.Remove(blockKvp.Key);
-                }
+                if (blockKvp.Key <= _lastProcessedBlockHeight)
+                    _logger.LogWarning("Possible reorg detected: Block {Height} is already processed.", blockKvp.Key);
 
                 ProcessBlock(blockKvp.Value, blockKvp.Key, uow);
             }
         }
         finally
         {
-            _semaphore.Release();
+            _blockBacklogSemaphore.Release();
         }
     }
 
-    private async Task AddMissingBlocksToProcessAsync(uint currentHeight, bool includeCurrentBlock = false)
+    private async Task AddMissingBlocksToProcessAsync(uint currentHeight)
     {
         var lastProcessedHeight = _lastProcessedBlockHeight + 1;
         if (currentHeight > lastProcessedHeight)
@@ -281,8 +309,7 @@ public class BlockchainMonitorService : IBlockchainMonitor
             _logger.LogWarning("Processing missed blocks from height {LastProcessedHeight} to {CurrentHeight}",
                                lastProcessedHeight, currentHeight);
 
-            var adjustedCurrentHeight = includeCurrentBlock ? currentHeight + 1 : currentHeight;
-            for (var height = lastProcessedHeight; height < adjustedCurrentHeight; height++)
+            for (var height = lastProcessedHeight; height < currentHeight; height++)
             {
                 if (_blocksToProcess.ContainsKey(height))
                     continue;
@@ -310,7 +337,7 @@ public class BlockchainMonitorService : IBlockchainMonitor
 
         try
         {
-            _logger.LogDebug("We have a new block at height {blockHeight}: {BlockHash}", currentHeight, blockHash);
+            _logger.LogDebug("Processing block at height {blockHeight}: {BlockHash}", currentHeight, blockHash);
 
             // Check for missed blocks first
             await AddMissingBlocksToProcessAsync(currentHeight);
@@ -357,8 +384,8 @@ public class BlockchainMonitorService : IBlockchainMonitor
             CheckWatchedTransactionsForBlock(block.Transactions, height, uow);
 
             // Update blockchain state
-            _blockchainState.UpdateState(blockHash.ToBytes());
-            uow.BlockchainStateDbRepository.AddOrUpdateAsync(_blockchainState);
+            _blockchainState.UpdateState(blockHash.ToBytes(), height);
+            uow.BlockchainStateDbRepository.Update(_blockchainState);
 
             _blocksToProcess.Remove(height);
 

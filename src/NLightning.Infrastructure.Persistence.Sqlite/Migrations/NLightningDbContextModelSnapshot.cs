@@ -40,10 +40,11 @@ namespace NLightning.Infrastructure.Persistence.Sqlite.Migrations
 
             modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Bitcoin.WatchedTransactionEntity", b =>
                 {
-                    b.Property<byte[]>("ChannelId")
+                    b.Property<byte[]>("TransactionId")
                         .HasColumnType("BLOB");
 
-                    b.Property<byte[]>("TransactionId")
+                    b.Property<byte[]>("ChannelId")
+                        .IsRequired()
                         .HasColumnType("BLOB");
 
                     b.Property<DateTime?>("CompletedAt")
@@ -61,7 +62,9 @@ namespace NLightning.Infrastructure.Persistence.Sqlite.Migrations
                     b.Property<ushort?>("TransactionIndex")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("ChannelId", "TransactionId");
+                    b.HasKey("TransactionId");
+
+                    b.HasIndex("ChannelId");
 
                     b.ToTable("WatchedTransactions");
                 });
@@ -151,6 +154,9 @@ namespace NLightning.Infrastructure.Persistence.Sqlite.Migrations
                     b.Property<ulong>("LocalRevocationNumber")
                         .HasColumnType("INTEGER");
 
+                    b.Property<byte[]>("PeerEntityNodeId")
+                        .HasColumnType("BLOB");
+
                     b.Property<decimal>("RemoteBalanceSatoshis")
                         .HasColumnType("TEXT");
 
@@ -171,6 +177,8 @@ namespace NLightning.Infrastructure.Persistence.Sqlite.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("ChannelId");
+
+                    b.HasIndex("PeerEntityNodeId");
 
                     b.ToTable("Channels");
                 });
@@ -263,6 +271,26 @@ namespace NLightning.Infrastructure.Persistence.Sqlite.Migrations
                     b.ToTable("Htlcs");
                 });
 
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Node.PeerEntity", b =>
+                {
+                    b.Property<byte[]>("NodeId")
+                        .HasColumnType("BLOB");
+
+                    b.Property<string>("Host")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastSeenAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<uint>("Port")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("NodeId");
+
+                    b.ToTable("Peers");
+                });
+
             modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Bitcoin.WatchedTransactionEntity", b =>
                 {
                     b.HasOne("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", null)
@@ -279,6 +307,13 @@ namespace NLightning.Infrastructure.Persistence.Sqlite.Migrations
                         .HasForeignKey("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelConfigEntity", "ChannelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", b =>
+                {
+                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.Node.PeerEntity", null)
+                        .WithMany("Channels")
+                        .HasForeignKey("PeerEntityNodeId");
                 });
 
             modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelKeySetEntity", b =>
@@ -308,6 +343,11 @@ namespace NLightning.Infrastructure.Persistence.Sqlite.Migrations
                     b.Navigation("KeySets");
 
                     b.Navigation("WatchedTransactions");
+                });
+
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Node.PeerEntity", b =>
+                {
+                    b.Navigation("Channels");
                 });
 #pragma warning restore 612, 618
         }

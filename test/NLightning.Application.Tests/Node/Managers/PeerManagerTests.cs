@@ -2,21 +2,25 @@ using System.Net.Sockets;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 using NBitcoin;
-using NLightning.Application.Node.Managers;
-using NLightning.Domain.Channels.Interfaces;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Exceptions;
-using NLightning.Domain.Node.Events;
-using NLightning.Domain.Node.Interfaces;
-using NLightning.Domain.Node.Options;
-using NLightning.Domain.Node.ValueObjects;
-using NLightning.Domain.Protocol.Constants;
-using NLightning.Domain.Protocol.Interfaces;
-using NLightning.Infrastructure.Node.ValueObjects;
-using NLightning.Infrastructure.Transport.Events;
-using NLightning.Infrastructure.Transport.Interfaces;
+using NLightning.Tests.Utils.Mocks;
 
 namespace NLightning.Application.Tests.Node.Managers;
+
+using Application.Node.Managers;
+using Domain.Channels.Interfaces;
+using Domain.Crypto.ValueObjects;
+using Domain.Exceptions;
+using Domain.Node.Events;
+using Domain.Node.Interfaces;
+using Domain.Node.Models;
+using Domain.Node.Options;
+using Domain.Node.ValueObjects;
+using Domain.Persistence.Interfaces;
+using Domain.Protocol.Constants;
+using Domain.Protocol.Interfaces;
+using Infrastructure.Node.ValueObjects;
+using Infrastructure.Transport.Events;
+using Infrastructure.Transport.Interfaces;
 
 // ReSharper disable AccessToDisposedClosure
 public class PeerManagerTests
@@ -28,17 +32,29 @@ public class PeerManagerTests
     private readonly Mock<ILogger<PeerManager>> _mockLogger = new();
     private readonly Mock<IPeerServiceFactory> _mockPeerServiceFactory = new();
     private readonly Mock<IPeerService> _mockPeerService = new();
+    private readonly PeerModel _mockPeerModel;
     private readonly Mock<ITcpService> _mockTcpService = new();
     private readonly Mock<IChannelMessage> _mockChannelMessage = new();
     private readonly Mock<IChannelMessage> _mockResponseMessage = new();
+    private readonly FakeServiceProvider _fakeServiceProvider = new();
+    private readonly Mock<IUnitOfWork> _mockUnitOfWork = new();
+    private readonly Mock<IPeerDbRepository> _mockPeerDbRepository = new();
 
-    private static readonly NodeOptions s_nodeOptions = new();
+    private const string ExpectedHost = "127.0.0.1";
+    private const int ExpectedPort = 9735;
 
     public PeerManagerTests()
     {
         // Set up the mock peer service
         _mockPeerService.SetupGet(p => p.PeerPubKey).Returns(_compactPubKey);
-        _mockPeerService.SetupGet(p => p.Features).Returns(new Domain.Node.Options.FeatureOptions());
+        _mockPeerService.SetupGet(p => p.Features).Returns(new FeatureOptions());
+
+        // Set up the mock peer model
+        _mockPeerModel = new PeerModel(_compactPubKey, ExpectedHost, ExpectedPort)
+        {
+            LastSeenAt = DateTime.UtcNow
+        };
+        _mockPeerModel.SetPeerService(_mockPeerService.Object);
 
         // Set up the mock channel message
         _mockChannelMessage.SetupGet(m => m.Type).Returns(MessageTypes.OpenChannel);
@@ -59,6 +75,14 @@ public class PeerManagerTests
                       It.IsAny<FeatureOptions>(),
                       It.IsAny<CompactPubKey>()))
            .ReturnsAsync(_mockResponseMessage.Object);
+
+        // Set up unit of work and repositories
+        _mockUnitOfWork.Setup(u => u.PeerDbRepository).Returns(_mockPeerDbRepository.Object);
+        _mockUnitOfWork.Setup(u => u.GetPeersForStartupAsync()).ReturnsAsync(() =>
+        {
+            return new List<PeerModel>();
+        });
+        _fakeServiceProvider.AddService(typeof(IUnitOfWork), _mockUnitOfWork.Object);
     }
 
     [Fact]
@@ -66,15 +90,19 @@ public class PeerManagerTests
     {
         // Given
         var peerManager = new PeerManager(_mockChannelManager.Object, _mockLogger.Object,
-                                          _mockPeerServiceFactory.Object, _mockTcpService.Object);
+                                          _mockPeerServiceFactory.Object, _mockTcpService.Object, _fakeServiceProvider);
 
         var peerAddressInfo = new PeerAddressInfo($"{_compactPubKey}@127.0.0.1:9735");
 
         // Mock the TCP service to return a connected peer
         var mockTcpClient = new Mock<TcpClient>();
-        var mockConnectedPeer = new ConnectedPeer(_compactPubKey, mockTcpClient.Object);
+        var mockConnectedPeer = new ConnectedPeer(_compactPubKey, ExpectedHost, ExpectedPort, mockTcpClient.Object);
         _mockTcpService.Setup(t => t.ConnectToPeerAsync(peerAddressInfo))
                        .ReturnsAsync(mockConnectedPeer);
+
+        // Setup PeerDbRepository.AddOrUpdateAsync to match the pattern
+        _mockPeerDbRepository.Setup(r => r.AddOrUpdateAsync(It.IsAny<PeerModel>()))
+                             .Returns(Task.CompletedTask);
 
         // When
         await peerManager.ConnectToPeerAsync(peerAddressInfo);
@@ -95,6 +123,10 @@ public class PeerManagerTests
                                    Times.Once);
         _mockPeerService.VerifyAdd(p => p.OnChannelMessageReceived += It.IsAny<EventHandler<ChannelMessageEventArgs>>(),
                                    Times.Once);
+
+        // Verify repository methods were called
+        _mockPeerDbRepository.Verify(r => r.AddOrUpdateAsync(It.IsAny<PeerModel>()), Times.Once);
+        _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
 
     [Fact]
@@ -102,7 +134,7 @@ public class PeerManagerTests
     {
         // Given
         var peerManager = new PeerManager(_mockChannelManager.Object, _mockLogger.Object,
-                                          _mockPeerServiceFactory.Object, _mockTcpService.Object);
+                                          _mockPeerServiceFactory.Object, _mockTcpService.Object, _fakeServiceProvider);
 
         var peerAddressInfo = new PeerAddressInfo($"{_compactPubKey}@127.0.0.1:9735");
         var expectedError =
@@ -127,8 +159,11 @@ public class PeerManagerTests
     {
         // Given
         var peerManager = new PeerManager(_mockChannelManager.Object, _mockLogger.Object,
-                                          _mockPeerServiceFactory.Object, _mockTcpService.Object);
-        var cancellationToken = new CancellationToken();
+                                          _mockPeerServiceFactory.Object, _mockTcpService.Object, _fakeServiceProvider);
+        var cancellationToken = CancellationToken.None;
+
+        // Setup for loading startup peers
+        _mockUnitOfWork.Setup(u => u.GetPeersForStartupAsync()).ReturnsAsync(new List<PeerModel>());
 
         // When
         await peerManager.StartAsync(cancellationToken);
@@ -137,6 +172,8 @@ public class PeerManagerTests
         _mockTcpService.Verify(t => t.StartListeningAsync(It.IsAny<CancellationToken>()), Times.Once);
         _mockTcpService.VerifyAdd(t => t.OnNewPeerConnected += It.IsAny<EventHandler<NewPeerConnectedEventArgs>>(),
                                   Times.Once);
+        _mockUnitOfWork.Verify(u => u.GetPeersForStartupAsync(), Times.Once);
+        _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
 
     [Fact]
@@ -144,16 +181,19 @@ public class PeerManagerTests
     {
         // Given
         var peerManager = new PeerManager(_mockChannelManager.Object, _mockLogger.Object,
-                                          _mockPeerServiceFactory.Object, _mockTcpService.Object);
+                                          _mockPeerServiceFactory.Object, _mockTcpService.Object, _fakeServiceProvider);
 
         var mockTcpClient = new Mock<TcpClient>();
-        var eventArgs = new NewPeerConnectedEventArgs(mockTcpClient.Object);
+        var eventArgs = new NewPeerConnectedEventArgs(ExpectedHost, ExpectedPort, mockTcpClient.Object);
 
         // When
         await peerManager.StartAsync(CancellationToken.None);
 
         // Simulate the TCP service raising the event
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+        // ReSharper disable once MethodHasAsyncOverload
         _mockTcpService.Raise(t => t.OnNewPeerConnected += null, null, eventArgs);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
         // Wait a bit for the async continuation to complete
         await Task.Delay(50);
@@ -172,11 +212,11 @@ public class PeerManagerTests
     {
         // Given
         var peerManager = new PeerManager(_mockChannelManager.Object, _mockLogger.Object,
-                                          _mockPeerServiceFactory.Object, _mockTcpService.Object);
+                                          _mockPeerServiceFactory.Object, _mockTcpService.Object, _fakeServiceProvider);
 
         // Manually add peer to the internal dictionary
         var peers = GetPeersFromManager(peerManager);
-        peers.Add(_compactPubKey, _mockPeerService.Object);
+        peers.Add(_compactPubKey, _mockPeerModel);
 
         // When
         peerManager.DisconnectPeer(_compactPubKey);
@@ -190,7 +230,7 @@ public class PeerManagerTests
     {
         // Given
         var peerManager = new PeerManager(_mockChannelManager.Object, _mockLogger.Object,
-                                          _mockPeerServiceFactory.Object, _mockTcpService.Object);
+                                          _mockPeerServiceFactory.Object, _mockTcpService.Object, _fakeServiceProvider);
 
         // When
         peerManager.DisconnectPeer(_compactPubKey);
@@ -211,11 +251,11 @@ public class PeerManagerTests
     {
         // Given
         var peerManager = new PeerManager(_mockChannelManager.Object, _mockLogger.Object,
-                                          _mockPeerServiceFactory.Object, _mockTcpService.Object);
+                                          _mockPeerServiceFactory.Object, _mockTcpService.Object, _fakeServiceProvider);
 
         // Add the peer to the manager
         var peers = GetPeersFromManager(peerManager);
-        peers.Add(_compactPubKey, _mockPeerService.Object);
+        peers.Add(_compactPubKey, _mockPeerModel);
 
         var handlePeerChannelMessageMethod =
             peerManager.GetType().GetMethod("HandlePeerChannelMessage", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -248,11 +288,11 @@ public class PeerManagerTests
     {
         // Given
         var peerManager = new PeerManager(_mockChannelManager.Object, _mockLogger.Object,
-                                          _mockPeerServiceFactory.Object, _mockTcpService.Object);
+                                          _mockPeerServiceFactory.Object, _mockTcpService.Object, _fakeServiceProvider);
 
         // Add the peer to the manager
         var peers = GetPeersFromManager(peerManager);
-        peers.Add(_compactPubKey, _mockPeerService.Object);
+        peers.Add(_compactPubKey, _mockPeerModel);
 
         var eventArgs = new ChannelMessageEventArgs(_mockChannelMessage.Object, _compactPubKey);
 
@@ -273,11 +313,11 @@ public class PeerManagerTests
     {
         // Given
         var peerManager = new PeerManager(_mockChannelManager.Object, _mockLogger.Object,
-                                          _mockPeerServiceFactory.Object, _mockTcpService.Object);
+                                          _mockPeerServiceFactory.Object, _mockTcpService.Object, _fakeServiceProvider);
 
         // Add the peer to the manager
         var peers = GetPeersFromManager(peerManager);
-        peers.Add(_compactPubKey, _mockPeerService.Object);
+        peers.Add(_compactPubKey, _mockPeerModel);
 
         var channelError = new ChannelErrorException("Test channel error", "Peer error message");
         _mockChannelManager
@@ -315,11 +355,11 @@ public class PeerManagerTests
     {
         // Given
         var peerManager = new PeerManager(_mockChannelManager.Object, _mockLogger.Object,
-                                          _mockPeerServiceFactory.Object, _mockTcpService.Object);
+                                          _mockPeerServiceFactory.Object, _mockTcpService.Object, _fakeServiceProvider);
 
         // Add the peer to the manager
         var peers = GetPeersFromManager(peerManager);
-        peers.Add(_compactPubKey, _mockPeerService.Object);
+        peers.Add(_compactPubKey, _mockPeerModel);
 
         var channelWarning = new ChannelWarningException("Test channel warning", "Peer warning message");
         _mockChannelManager
@@ -355,11 +395,11 @@ public class PeerManagerTests
     {
         // Given
         var peerManager = new PeerManager(_mockChannelManager.Object, _mockLogger.Object,
-                                          _mockPeerServiceFactory.Object, _mockTcpService.Object);
+                                          _mockPeerServiceFactory.Object, _mockTcpService.Object, _fakeServiceProvider);
 
         // Add the peer to the manager
         var peers = GetPeersFromManager(peerManager);
-        peers.Add(_compactPubKey, _mockPeerService.Object);
+        peers.Add(_compactPubKey, _mockPeerModel);
 
         // Get the handler method
         var handlePeerDisconnectionMethod =
@@ -386,19 +426,17 @@ public class PeerManagerTests
     public async Task Given_StopAsync_When_Called_Then_AllPeersAreDisconnectedAndServiceIsStopped()
     {
         // Given
-
         var peerManager = new PeerManager(_mockChannelManager.Object, _mockLogger.Object,
-                                          _mockPeerServiceFactory.Object, _mockTcpService.Object);
-
-        // Start the manager first
+                                          _mockPeerServiceFactory.Object, _mockTcpService.Object, _fakeServiceProvider);
         await peerManager.StartAsync(CancellationToken.None);
-
-        // Add a peer
         var peers = GetPeersFromManager(peerManager);
-        peers.Add(_compactPubKey, _mockPeerService.Object);
+        peers.Add(_compactPubKey, _mockPeerModel);
+        var taskCompletionSource = new TaskCompletionSource();
+        _mockPeerService.Setup(x => x.Disconnect()).Callback(taskCompletionSource.SetResult);
 
         // When
-        await peerManager.StopAsync();
+        _ = peerManager.StopAsync();
+        await taskCompletionSource.Task;
 
         // Then
         _mockPeerService.Verify(p => p.Disconnect(), Times.Once);
@@ -409,10 +447,10 @@ public class PeerManagerTests
     {
         // Given
         var peerManager = new PeerManager(_mockChannelManager.Object, _mockLogger.Object,
-                                          _mockPeerServiceFactory.Object, _mockTcpService.Object);
+                                          _mockPeerServiceFactory.Object, _mockTcpService.Object, _fakeServiceProvider);
 
         var mockTcpClient = new Mock<TcpClient>();
-        var eventArgs = new NewPeerConnectedEventArgs(mockTcpClient.Object);
+        var eventArgs = new NewPeerConnectedEventArgs(ExpectedHost, ExpectedPort, mockTcpClient.Object);
 
         _mockPeerServiceFactory
            .Setup(f => f.CreateConnectingPeerAsync(It.IsAny<TcpClient>()))
@@ -420,17 +458,20 @@ public class PeerManagerTests
 
         // When
         await peerManager.StartAsync(CancellationToken.None);
-        _mockTcpService.Raise(t => t.OnNewPeerConnected += null, null, eventArgs);
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+        // ReSharper disable once MethodHasAsyncOverload
+        _mockTcpService.Raise(t => t.OnNewPeerConnected += null, eventArgs);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
         // Wait for the async continuation to complete
-        await Task.Delay(100);
+        await Task.Delay(50);
 
         // Then
         _mockLogger.Verify(
             l => l.Log(
                 LogLevel.Error,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((o, t) => o.ToString()!.Contains("Error creating a connecting peer")),
+                It.Is<It.IsAnyType>((o, t) => o.ToString()!.Contains("Error handling new peer connection")),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
@@ -439,10 +480,10 @@ public class PeerManagerTests
     /// <summary>
     /// Helper method to access the private _peers field for testing
     /// </summary>
-    private Dictionary<CompactPubKey, IPeerService> GetPeersFromManager(PeerManager peerManager)
+    private Dictionary<CompactPubKey, PeerModel> GetPeersFromManager(PeerManager peerManager)
     {
         var field = peerManager.GetType().GetField("_peers", BindingFlags.NonPublic | BindingFlags.Instance);
-        return (Dictionary<CompactPubKey, IPeerService>)field!.GetValue(peerManager)!;
+        return (Dictionary<CompactPubKey, PeerModel>)field!.GetValue(peerManager)!;
     }
 }
 // ReSharper restore AccessToDisposedClosure

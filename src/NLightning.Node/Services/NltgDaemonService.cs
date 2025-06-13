@@ -15,7 +15,6 @@ using Domain.Protocol.Interfaces;
 public class NltgDaemonService : BackgroundService
 {
     private readonly IBlockchainMonitor _blockchainMonitor;
-    private readonly IChannelManager _channelManager;
     private readonly IConfiguration _configuration;
     private readonly IFeeService _feeService;
     private readonly ILogger<NltgDaemonService> _logger;
@@ -29,7 +28,6 @@ public class NltgDaemonService : BackgroundService
                              IPeerManager peerManager, ISecureKeyManager secureKeyManager)
     {
         _blockchainMonitor = blockchainMonitor;
-        _channelManager = channelManager;
         _configuration = configuration;
         _feeService = feeService;
         _logger = logger;
@@ -55,9 +53,6 @@ public class NltgDaemonService : BackgroundService
         {
             // Start the fee service
             await _feeService.StartAsync(stoppingToken);
-
-            // Initialize the Channel Manager
-            await _channelManager.InitializeAsync();
 
             // Start the peer manager service
             await _peerManager.StartAsync(stoppingToken);

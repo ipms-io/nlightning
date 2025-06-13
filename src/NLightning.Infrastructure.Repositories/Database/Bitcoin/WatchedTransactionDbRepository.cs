@@ -4,6 +4,7 @@ namespace NLightning.Infrastructure.Repositories.Database.Bitcoin;
 
 using Domain.Bitcoin.Interfaces;
 using Domain.Bitcoin.Transactions.Models;
+using Domain.Bitcoin.ValueObjects;
 using Persistence.Contexts;
 using Persistence.Entities.Bitcoin;
 
@@ -34,6 +35,12 @@ public class WatchedTransactionDbRepository(NLightningDbContext context)
                             .ToListAsync();
 
         return entities.Select(entity => MapEntityToDomain(entity));
+    }
+
+    public async Task<WatchedTransactionModel?> GetByTransactionIdAsync(TxId transactionId)
+    {
+        var entity = await GetByIdAsync(transactionId);
+        return entity == null ? null : MapEntityToDomain(entity);
     }
 
     private static WatchedTransactionEntity MapDomainToEntity(WatchedTransactionModel watchedTransactionModel)

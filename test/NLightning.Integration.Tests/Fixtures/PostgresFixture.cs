@@ -16,7 +16,7 @@ public class PostgresFixture : IDisposable
 
     public PostgresFixture()
     {
-        StartPostgres().Wait();
+        StartPostgres().GetAwaiter().GetResult();
     }
 
     public string? DbConnectionString { get; private set; }
@@ -26,7 +26,7 @@ public class PostgresFixture : IDisposable
         GC.SuppressFinalize(this);
 
         // Remove containers
-        RemoveContainer(ContainerName).Wait();
+        RemoveContainer(ContainerName).GetAwaiter().GetResult();
 
         _client.Dispose();
     }

@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 
 namespace NLightning.Application.Channels.Handlers;
 
-using Domain.Protocol.Interfaces;
 using Domain.Channels.Enums;
 using Domain.Channels.Interfaces;
 using Domain.Channels.Models;
@@ -12,6 +11,7 @@ using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Node.Options;
 using Domain.Persistence.Interfaces;
+using Domain.Protocol.Interfaces;
 using Domain.Protocol.Messages;
 using Interfaces;
 
@@ -45,7 +45,7 @@ public class ChannelReadyMessageHandler : IChannelMessageHandler<ChannelReadyMes
                                             "This channel is not ready to be opened");
 
         // Check if there's a channel for this peer
-        if (!_channelMemoryRepository.TryGetChannel(payload.ChannelId, out var channel) || channel is null)
+        if (!_channelMemoryRepository.TryGetChannel(payload.ChannelId, out var channel))
             throw new ChannelErrorException("Channel not found", payload.ChannelId,
                                             "This channel is not ready to be opened");
 

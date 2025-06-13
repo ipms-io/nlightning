@@ -105,7 +105,8 @@ public class TcpService : ITcpService
             await tcpClient.ConnectAsync(peerAddress.Host, peerAddress.Port,
                                          new CancellationTokenSource(_nodeOptions.NetworkTimeout).Token);
 
-            return new ConnectedPeer(peerAddress.PubKey, tcpClient);
+            return new ConnectedPeer(peerAddress.PubKey, peerAddress.Host.ToString(), (uint)peerAddress.Port,
+                                     tcpClient);
         }
         catch (OperationCanceledException)
         {
@@ -135,7 +136,19 @@ public class TcpService : ITcpService
                         {
                             _logger.LogInformation("New peer connection from {RemoteEndPoint}",
                                                    tcpClient.Client.RemoteEndPoint);
-                            OnNewPeerConnected?.Invoke(this, new NewPeerConnectedEventArgs(tcpClient));
+
+                            if (tcpClient.Client.RemoteEndPoint is not IPEndPoint ipEndPoint)
+                            {
+                                _logger.LogError("Failed to get remote endpoint for {RemoteEndPoint}",
+                                                 tcpClient.Client.RemoteEndPoint);
+                                return;
+                            }
+
+                            // Raise the event for a new peer connection
+                            OnNewPeerConnected?.Invoke(
+                                this,
+                                new NewPeerConnectedEventArgs(ipEndPoint.Address.ToString(), (uint)ipEndPoint.Port,
+                                                              tcpClient));
                         }
                         catch (Exception e)
                         {

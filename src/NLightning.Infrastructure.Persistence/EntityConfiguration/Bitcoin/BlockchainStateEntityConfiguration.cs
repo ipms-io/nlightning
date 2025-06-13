@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace NLightning.Infrastructure.Persistence.EntityConfiguration.Bitcoin;
 
 using Domain.Crypto.Constants;
-using ValueConverters;
 using Entities.Bitcoin;
 using Enums;
+using ValueConverters;
 
 public static class BlockchainStateEntityConfiguration
 {

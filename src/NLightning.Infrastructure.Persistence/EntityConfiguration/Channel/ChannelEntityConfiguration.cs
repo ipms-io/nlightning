@@ -31,15 +31,17 @@ public static class ChannelEntityConfiguration
             entity.Property(e => e.Version).IsRequired();
             entity.Property(e => e.LocalBalanceSatoshis).IsRequired();
             entity.Property(e => e.RemoteBalanceSatoshis).IsRequired();
-
-            // Required byte[] properties
             entity.Property(e => e.ChannelId)
                   .HasConversion<ChannelIdConverter>()
                   .IsRequired();
-            entity.Property(e => e.FundingTxId).IsRequired();
-            entity.Property(e => e.RemoteNodeId).IsRequired();
+            entity.Property(e => e.FundingTxId)
+                  .HasConversion<TxIdConverter>()
+                  .IsRequired();
+            entity.Property(e => e.RemoteNodeId)
+                  .HasConversion<CompactPubKeyConverter>()
+                  .IsRequired();
 
-            // Nullable byte[] properties
+            // Nullable properties
             entity.Property(e => e.LastSentSignature).IsRequired(false);
             entity.Property(e => e.LastReceivedSignature).IsRequired(false);
 

@@ -10,7 +10,6 @@ using Domain.Bitcoin.Interfaces;
 using Domain.Channels.Enums;
 using Domain.Channels.Interfaces;
 using Domain.Channels.Models;
-using Domain.Channels.ValueObjects;
 using Domain.Crypto.ValueObjects;
 using Domain.Exceptions;
 using Domain.Node.Options;
@@ -69,8 +68,7 @@ public class FundingCreatedMessageHandler : IChannelMessageHandler<FundingCreate
                                             "This channel is already being negotiated with peer");
 
         // Get the channel and set missing props
-        if (!_channelMemoryRepository.TryGetTemporaryChannel(peerPubKey, payload.ChannelId, out var channel)
-         || channel is null)
+        if (!_channelMemoryRepository.TryGetTemporaryChannel(peerPubKey, payload.ChannelId, out var channel))
             throw new ChannelErrorException("Temporary channel not found", payload.ChannelId);
 
         channel.FundingOutput.TransactionId = payload.FundingTxId;
@@ -81,15 +79,7 @@ public class FundingCreatedMessageHandler : IChannelMessageHandler<FundingCreate
         channel.UpdateChannelId(_channelIdFactory.CreateV1(payload.FundingTxId, payload.FundingOutputIndex));
 
         // Register the channel with the signer
-        var channelSigningInfo = new ChannelSigningInfo(
-            payload.FundingTxId,
-            payload.FundingOutputIndex,
-            channel.FundingOutput.Amount,
-            channel.LocalKeySet.FundingCompactPubKey,
-            channel.RemoteKeySet.FundingCompactPubKey,
-            channel.LocalKeySet.KeyIndex
-        );
-        _lightningSigner.RegisterChannel(channel.ChannelId, channelSigningInfo);
+        _lightningSigner.RegisterChannel(channel.ChannelId, channel.GetSigningInfo());
 
         // Generate the base commitment transactions
         var localCommitmentTransaction =

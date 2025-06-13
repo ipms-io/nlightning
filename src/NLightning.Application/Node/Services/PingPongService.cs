@@ -23,7 +23,10 @@ internal class PingPongService : IPingPongService
     private PingMessage _pingMessage;
 
     /// <inheritdoc />
-    public event EventHandler<IMessage>? PingMessageReadyEvent;
+    public event EventHandler<IMessage>? OnPingMessageReady;
+
+    /// <inheritdoc />
+    public event EventHandler? OnPongReceived;
 
     /// <inheritdoc />
     public event EventHandler<Exception>? DisconnectEvent;
@@ -45,7 +48,7 @@ internal class PingPongService : IPingPongService
         // Send the first ping message
         while (!cancellationToken.IsCancellationRequested)
         {
-            PingMessageReadyEvent?.Invoke(this, _pingMessage);
+            OnPingMessageReady?.Invoke(this, _pingMessage);
 
             using var pongTimeoutTokenSource = CancellationTokenSource
                .CreateLinkedTokenSource(cancellationToken,
@@ -87,5 +90,7 @@ internal class PingPongService : IPingPongService
         }
 
         _pongReceivedTaskSource.TrySetResult(true);
+
+        OnPongReceived?.Invoke(this, EventArgs.Empty);
     }
 }

@@ -4,8 +4,10 @@ namespace NLightning.Infrastructure.Persistence.Contexts;
 
 using Entities.Bitcoin;
 using Entities.Channel;
+using Entities.Node;
 using EntityConfiguration.Bitcoin;
 using EntityConfiguration.Channel;
+using EntityConfiguration.Node;
 using Enums;
 using Providers;
 
@@ -29,6 +31,9 @@ public class NLightningDbContext : DbContext
     public DbSet<ChannelKeySetEntity> ChannelKeySets { get; set; }
     public DbSet<HtlcEntity> Htlcs { get; set; }
 
+    // Node DbSets
+    public DbSet<PeerEntity> Peers { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -42,5 +47,8 @@ public class NLightningDbContext : DbContext
         modelBuilder.ConfigureChannelConfigEntity(_databaseType);
         modelBuilder.ConfigureChannelKeySetEntity(_databaseType);
         modelBuilder.ConfigureHtlcEntity(_databaseType);
+
+        // Node entities
+        modelBuilder.ConfigurePeerEntity(_databaseType);
     }
 }

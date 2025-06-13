@@ -20,9 +20,9 @@ public class BaseDbRepository<TEntity> where TEntity : class
     }
 
     protected IQueryable<TEntity> Get(Expression<Func<TEntity, bool>>? predicate = null,
-                                              Expression<Func<TEntity, object>>? include = null,
-                                              Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-                                              bool asNoTracking = true, int perPage = 0, int pageNumber = 1)
+                                      Expression<Func<TEntity, object>>? include = null,
+                                      Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+                                      bool asNoTracking = true, int perPage = 0, int pageNumber = 1)
     {
         var query = asNoTracking ? DbSet.AsNoTracking() : DbSet;
 
@@ -39,7 +39,7 @@ public class BaseDbRepository<TEntity> where TEntity : class
     }
 
     protected async Task<TEntity?> GetByIdAsync(object id, bool asNoTracking = true,
-                                                        Expression<Func<TEntity, object>>? include = null)
+                                                Expression<Func<TEntity, object>>? include = null)
     {
         var query = asNoTracking ? DbSet.AsNoTracking() : DbSet;
 
@@ -47,8 +47,8 @@ public class BaseDbRepository<TEntity> where TEntity : class
             query = query.Include(include);
 
         var lambdaPredicate = PrimaryKeyHelper.GetPrimaryKeyExpression<TEntity>(id, _context)
-            ?? throw new InvalidOperationException(
-                $"Entity {typeof(TEntity).Name} does not have a primary key defined.");
+                           ?? throw new InvalidOperationException(
+                                  $"Entity {typeof(TEntity).Name} does not have a primary key defined.");
 
         query = query.Where(lambdaPredicate);
 
@@ -71,7 +71,7 @@ public class BaseDbRepository<TEntity> where TEntity : class
     protected async Task DeleteByIdAsync(object id)
     {
         var entityToDelete = await GetByIdAsync(id, false)
-            ?? throw new InvalidOperationException($"Entity with id {id} not found.");
+                          ?? throw new InvalidOperationException($"Entity with id {id} not found.");
 
         Delete(entityToDelete);
     }
@@ -102,6 +102,18 @@ public class BaseDbRepository<TEntity> where TEntity : class
 
     protected void Update(TEntity entityToUpdate)
     {
-        DbSet.Update(entityToUpdate);
+        // Get the current state of the entity
+        var trackedEntity = DbSet.Local.FirstOrDefault(e => e.Equals(entityToUpdate));
+        if (trackedEntity is not null)
+        {
+            // If the entity is already tracked, update its state
+            var entry = DbSet.Entry(trackedEntity);
+            entry.CurrentValues.SetValues(entityToUpdate);
+        }
+        else
+        {
+            // If the entity is not tracked, attach it and set its state to modified
+            DbSet.Update(entityToUpdate);
+        }
     }
 }

@@ -21,14 +21,18 @@ public sealed class InitMessage : BaseMessage
 
     public NetworksTlv? NetworksTlv { get; }
 
-    public InitMessage(InitPayload payload, NetworksTlv? networksTlv = null) : base(MessageTypes.Init, payload)
+    public RemoteAddressTlv? RemoteAddressTlv { get; }
+
+    public InitMessage(InitPayload payload, NetworksTlv? networksTlv = null, RemoteAddressTlv? remoteAddressTlv = null)
+        : base(MessageTypes.Init, payload)
     {
         NetworksTlv = networksTlv;
+        RemoteAddressTlv = remoteAddressTlv;
 
-        if (networksTlv is not null)
+        if (networksTlv is not null || remoteAddressTlv is not null)
         {
             Extension = new TlvStream();
-            Extension.Add(networksTlv);
+            Extension.Add(networksTlv, remoteAddressTlv);
         }
     }
 }

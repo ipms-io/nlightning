@@ -116,4 +116,11 @@ public class ChannelModel
 
         ChannelId = newChannelId;
     }
+
+    public ChannelSigningInfo GetSigningInfo()
+    {
+        return new ChannelSigningInfo(FundingOutput.TransactionId!.Value, FundingOutput.Index!.Value,
+                                      FundingOutput.Amount, LocalKeySet.FundingCompactPubKey,
+                                      RemoteKeySet.FundingCompactPubKey, LocalKeySet.KeyIndex);
+    }
 }

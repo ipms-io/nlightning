@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.Extensions.Logging;
 
 namespace NLightning.Infrastructure.Node.Services;
@@ -9,10 +10,10 @@ using Domain.Node.Options;
 using Domain.Protocol.Constants;
 using Domain.Protocol.Interfaces;
 using Domain.Protocol.Messages;
-using Domain.Protocol.Tlv;
 
+// TODO: Eventually move this to the Application layer
 /// <summary>
-/// Application service for peer communication that orchestrates domain logic.
+/// Service for peer communication
 /// </summary>
 public sealed class PeerService : IPeerService
 {
@@ -29,6 +30,9 @@ public sealed class PeerService : IPeerService
 
     /// <inheritdoc/>
     public CompactPubKey PeerPubKey => _peerCommunicationService.PeerCompactPubKey;
+
+    public string? PreferredHost { get; private set; }
+    public ushort? PreferredPort { get; private set; }
 
     public FeatureOptions Features { get; private set; }
 
@@ -52,7 +56,7 @@ public sealed class PeerService : IPeerService
         _peerCommunicationService.DisconnectEvent += HandleDisconnection;
 
         // Initialize communication
-        _peerCommunicationService.InitializeAsync(networkTimeout).Wait();
+        _peerCommunicationService.InitializeAsync(networkTimeout).GetAwaiter().GetResult();
     }
 
     /// <summary>
@@ -124,18 +128,43 @@ public sealed class PeerService : IPeerService
             return;
         }
 
-        // Check if Chains are compatible
-        if (initMessage.Extension != null
-         && initMessage.Extension.TryGetTlv(TlvConstants.Networks, out var networksTlv))
+        // Check if ChainHash contained in networksTlv.ChainHashes exists in our ChainHashes
+        var networkChainHashes = initMessage.NetworksTlv?.ChainHashes;
+        if (networkChainHashes != null
+         && networkChainHashes.Any(chainHash => !Features.ChainHashes.Contains(chainHash)))
         {
-            // Check if ChainHash contained in networksTlv.ChainHashes exists in our ChainHashes
-            var networkChainHashes = ((NetworksTlv)networksTlv!).ChainHashes;
-            if (networkChainHashes is not null &&
-                networkChainHashes.Any(chainHash => !Features.ChainHashes.Contains(chainHash)))
+            _logger.LogError("Peer {peer} chain is not compatible", PeerPubKey);
+            Disconnect();
+            return;
+        }
+
+        if (initMessage.RemoteAddressTlv is not null)
+        {
+            switch (initMessage.RemoteAddressTlv.AddressType)
             {
-                _logger.LogError("Peer {peer} chain is not compatible", PeerPubKey);
-                Disconnect();
-                return;
+                case 1 or 2:
+                    {
+                        if (!IPAddress.TryParse(initMessage.RemoteAddressTlv.Address, out var ipAddress))
+                        {
+                            _logger.LogWarning("Peer {peer} has an invalid remote address: {address}",
+                                               PeerPubKey, initMessage.RemoteAddressTlv.Address);
+                        }
+                        else
+                        {
+                            PreferredHost = ipAddress.ToString();
+                            PreferredPort = initMessage.RemoteAddressTlv.Port;
+                        }
+
+                        break;
+                    }
+                case 5:
+                    PreferredHost = initMessage.RemoteAddressTlv.Address;
+                    PreferredPort = initMessage.RemoteAddressTlv.Port;
+                    break;
+                default:
+                    _logger.LogWarning("Peer {peer} has an unsupported remote address type: {addressType}",
+                                       PeerPubKey, initMessage.RemoteAddressTlv.AddressType);
+                    break;
             }
         }
 

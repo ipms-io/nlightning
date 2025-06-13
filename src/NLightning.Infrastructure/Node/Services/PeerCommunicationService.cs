@@ -1,11 +1,13 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLightning.Domain.Node.Interfaces;
+using NLightning.Domain.Persistence.Interfaces;
 
 namespace NLightning.Infrastructure.Node.Services;
 
 using Domain.Channels.ValueObjects;
 using Domain.Crypto.ValueObjects;
 using Domain.Exceptions;
+using Domain.Node.Interfaces;
 using Domain.Protocol.Constants;
 using Domain.Protocol.Interfaces;
 using Domain.Protocol.Messages;
@@ -20,6 +22,7 @@ public class PeerCommunicationService : IPeerCommunicationService
     private readonly ILogger<PeerCommunicationService> _logger;
     private readonly IMessageService _messageService;
     private readonly IPingPongService _pingPongService;
+    private readonly IServiceProvider _serviceProvider;
     private readonly IMessageFactory _messageFactory;
     private bool _isInitialized;
 
@@ -46,19 +49,21 @@ public class PeerCommunicationService : IPeerCommunicationService
     /// <param name="messageFactory">The message factory.</param>
     /// <param name="peerCompactPubKey">The peer's public key.</param>
     /// <param name="pingPongService">The ping pong service.</param>
+    /// <param name="serviceProvider">The service provider.</param>
     public PeerCommunicationService(ILogger<PeerCommunicationService> logger, IMessageService messageService,
                                     IMessageFactory messageFactory, CompactPubKey peerCompactPubKey,
-                                    IPingPongService pingPongService)
+                                    IPingPongService pingPongService, IServiceProvider serviceProvider)
     {
         _logger = logger;
         _messageService = messageService;
         _messageFactory = messageFactory;
         PeerCompactPubKey = peerCompactPubKey;
         _pingPongService = pingPongService;
+        _serviceProvider = serviceProvider;
 
-        _messageService.MessageReceived += OnMessageReceived;
-        _messageService.ExceptionRaised += OnExceptionRaised;
-        _pingPongService.DisconnectEvent += OnExceptionRaised;
+        _messageService.OnMessageReceived += HandleMessageReceived;
+        _messageService.OnExceptionRaised += HandleExceptionRaised;
+        _pingPongService.DisconnectEvent += HandleExceptionRaised;
     }
 
     /// <inheritdoc />
@@ -77,13 +82,14 @@ public class PeerCommunicationService : IPeerCommunicationService
         {
             if (!task.IsCanceled && !_isInitialized)
             {
-                RaiseException(new ConnectionException("Peer did not send init message after timeout"));
+                RaiseException(
+                    new ConnectionException($"Peer {PeerCompactPubKey} did not send init message after timeout"));
             }
         });
 
         if (!_messageService.IsConnected)
         {
-            throw new ConnectionException("Failed to connect to peer");
+            throw new ConnectionException($"Failed to connect to peer {PeerCompactPubKey}");
         }
 
         // Set up ping service to keep connection alive
@@ -115,37 +121,48 @@ public class PeerCommunicationService : IPeerCommunicationService
 
     private void SetupPingPongService()
     {
-        _pingPongService.PingMessageReadyEvent += async (_, pingMessage) =>
-        {
-            // We can only send ping messages if the peer is initialized
-            if (!_isInitialized)
-            {
-                return;
-            }
-
-            try
-            {
-                await _messageService.SendMessageAsync(pingMessage, _cancellationTokenSource.Token);
-            }
-            catch (Exception ex)
-            {
-                RaiseException(new ConnectionException("Failed to send ping message", ex));
-            }
-        };
+        _pingPongService.OnPingMessageReady += HandlePingMessageReady;
+        _pingPongService.OnPongReceived += HandlePongReceived;
 
         // Setup Ping to keep connection alive
         _ = _pingPongService.StartPingAsync(_cancellationTokenSource.Token).ContinueWith(task =>
         {
             if (task.IsFaulted)
             {
-                RaiseException(new ConnectionException("Failed to start ping service", task.Exception));
+                RaiseException(new ConnectionException($"Failed to start ping service for peer {PeerCompactPubKey}",
+                                                       task.Exception));
             }
         });
 
         _logger.LogInformation("Ping service started for peer {peer}", PeerCompactPubKey);
     }
 
-    private void OnMessageReceived(object? sender, IMessage? message)
+    private void HandlePongReceived(object? sender, EventArgs e)
+    {
+        using var scope = _serviceProvider.CreateScope();
+        using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+        uow.PeerDbRepository.UpdatePeerLastSeenAsync(PeerCompactPubKey).GetAwaiter().GetResult();
+        uow.SaveChanges();
+    }
+
+    private void HandlePingMessageReady(object? sender, IMessage pingMessage)
+    {
+        // We can only send ping messages if the peer is initialized
+        if (!_isInitialized)
+            return;
+
+        try
+        {
+            _messageService.SendMessageAsync(pingMessage, _cancellationTokenSource.Token).GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            RaiseException(new ConnectionException($"Failed to send ping message to peer {PeerCompactPubKey}", ex));
+        }
+    }
+
+    private void HandleMessageReceived(object? sender, IMessage? message)
     {
         if (message is null)
         {
@@ -177,7 +194,7 @@ public class PeerCommunicationService : IPeerCommunicationService
         await _messageService.SendMessageAsync(pongMessage);
     }
 
-    private void OnExceptionRaised(object? sender, Exception e)
+    private void HandleExceptionRaised(object? sender, Exception e)
     {
         RaiseException(e);
     }
@@ -215,7 +232,8 @@ public class PeerCommunicationService : IPeerCommunicationService
             _messageService.SendMessageAsync(new WarningMessage(new ErrorPayload(channelId, message)));
         }
 
-        _logger.LogError(exception, "Exception occurred with peer {peer}", PeerCompactPubKey);
+        _logger.LogError(exception, "Exception occurred with peer {peer}. {exceptionMessage}", PeerCompactPubKey,
+                         exception.Message);
 
         // Forward the exception to subscribers
         ExceptionRaised?.Invoke(this, exception);

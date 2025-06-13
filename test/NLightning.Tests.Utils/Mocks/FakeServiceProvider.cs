@@ -1,8 +1,15 @@
-namespace NLightning.Integration.Tests.Docker.Mock;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace NLightning.Tests.Utils.Mocks;
 
 public class FakeServiceProvider : IServiceProvider
 {
-    private readonly Dictionary<Type, object> _services = new();
+    private readonly Dictionary<Type, object> _services = [];
+
+    public FakeServiceProvider()
+    {
+        _services.Add(typeof(IServiceScopeFactory), new FakeServiceScopeFactory(this));
+    }
 
     public object? GetService(Type serviceType)
     {

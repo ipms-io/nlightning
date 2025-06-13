@@ -95,6 +95,21 @@ public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRe
                                               await MapEntityToDomain(entity, _messageSerializer, _sha256)));
     }
 
+    public async Task<IEnumerable<ChannelModel?>> GetByPeerIdAsync(CompactPubKey peerNodeId)
+    {
+        var channelEntities = await DbSet
+                                   .AsNoTracking()
+                                   .Include(c => c.Config)
+                                   .Include(c => c.KeySets)
+                                   .Include(c => c.Htlcs)
+                                   .Where(c => c.RemoteNodeId.Equals(peerNodeId))
+                                   .ToListAsync();
+
+        return await Task.WhenAll(
+                   channelEntities.Select(async entity =>
+                                              await MapEntityToDomain(entity, _messageSerializer, _sha256)));
+    }
+
     internal static async Task<ChannelEntity> MapDomainToEntity(ChannelModel channelModel,
                                                                 IMessageSerializer messageSerializer)
     {
@@ -222,7 +237,7 @@ public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRe
             new CommitmentNumber(localKeySet.PaymentCompactBasepoint, remoteKeySet.PaymentCompactBasepoint, sha256,
                                  channelEntity.LocalRevocationNumber + 1);
 
-        CompactPubKey remoteNodeId = channelEntity.RemoteNodeId;
+        var remoteNodeId = channelEntity.RemoteNodeId;
 
         CompactSignature? lastSentSig = null;
         if (channelEntity.LastSentSignature != null)

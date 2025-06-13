@@ -23,12 +23,14 @@ public class PeerServiceFactory : IPeerServiceFactory
     private readonly IPingPongServiceFactory _pingPongServiceFactory;
     private readonly ISecureKeyManager _secureKeyManager;
     private readonly ITransportServiceFactory _transportServiceFactory;
+    private readonly IServiceProvider _serviceProvider;
     private readonly NodeOptions _nodeOptions;
 
     public PeerServiceFactory(ILoggerFactory loggerFactory, IMessageFactory messageFactory,
                               IMessageServiceFactory messageServiceFactory,
                               IPingPongServiceFactory pingPongServiceFactory, ISecureKeyManager secureKeyManager,
-                              ITransportServiceFactory transportServiceFactory, IOptions<NodeOptions> nodeOptions)
+                              ITransportServiceFactory transportServiceFactory, IOptions<NodeOptions> nodeOptions,
+                              IServiceProvider serviceProvider)
     {
         _loggerFactory = loggerFactory;
         _messageFactory = messageFactory;
@@ -36,6 +38,7 @@ public class PeerServiceFactory : IPeerServiceFactory
         _pingPongServiceFactory = pingPongServiceFactory;
         _secureKeyManager = secureKeyManager;
         _transportServiceFactory = transportServiceFactory;
+        _serviceProvider = serviceProvider;
         _nodeOptions = nodeOptions.Value;
     }
 
@@ -51,6 +54,7 @@ public class PeerServiceFactory : IPeerServiceFactory
         var key = _secureKeyManager.GetNodeKeyPair();
         var transportService =
             _transportServiceFactory.CreateTransportService(true, key.PrivKey, peerPubKey, tcpClient);
+
         try
         {
             await transportService.InitializeAsync();
@@ -66,11 +70,12 @@ public class PeerServiceFactory : IPeerServiceFactory
         // Create the ping pong service
         var pingPongService = _pingPongServiceFactory.CreatePingPongService();
 
-        // Create the communication service (infrastructure layer)
+        // Create the communication service
         var communicationService =
-            new PeerCommunicationService(commLogger, messageService, _messageFactory, peerPubKey, pingPongService);
+            new PeerCommunicationService(commLogger, messageService, _messageFactory, peerPubKey, pingPongService,
+                                         _serviceProvider);
 
-        // Create the application service (application layer)
+        // Create the service
         return new PeerService(communicationService, _nodeOptions.Features, appLogger, _nodeOptions.NetworkTimeout);
     }
 
@@ -114,7 +119,7 @@ public class PeerServiceFactory : IPeerServiceFactory
         // Create the communication service (infrastructure layer)
         var communicationService = new PeerCommunicationService(commLogger, messageService, _messageFactory,
                                                                 transportService.RemoteStaticPublicKey.Value,
-                                                                pingPongService);
+                                                                pingPongService, _serviceProvider);
 
         // Create the application service (application layer)
         return new PeerService(communicationService, _nodeOptions.Features, appLogger, _nodeOptions.NetworkTimeout);

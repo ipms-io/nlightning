@@ -80,13 +80,13 @@ public static class NodeServiceExtensions
 
             // Add the Application services
             services.AddApplicationServices();
+
+            // Add the Infrastructure services
+            services.AddBitcoinInfrastructure();
             services.AddInfrastructureServices();
             services.AddPersistenceInfrastructureServices(configuration);
             services.AddRepositoriesInfrastructureServices();
             services.AddSerializationInfrastructureServices();
-
-            // Add the Infrastructure services
-            services.AddBitcoinInfrastructure();
 
             // Scoped services (one instance per scope)
 

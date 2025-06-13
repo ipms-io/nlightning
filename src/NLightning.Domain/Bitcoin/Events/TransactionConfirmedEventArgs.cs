@@ -4,8 +4,8 @@ using Transactions.Models;
 
 public class TransactionConfirmedEventArgs : EventArgs
 {
-    public WatchedTransactionModel WatchedTransaction { get; }
     public uint Height { get; }
+    public WatchedTransactionModel WatchedTransaction { get; }
 
     public TransactionConfirmedEventArgs(WatchedTransactionModel watchedTransaction, uint height)
     {

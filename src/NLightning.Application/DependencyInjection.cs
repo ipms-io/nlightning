@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NLightning.Application.Channels.Handlers;
 using NLightning.Infrastructure.Bitcoin.Wallet.Interfaces;
 
 namespace NLightning.Application;
@@ -44,6 +45,9 @@ public static class DependencyInjection
 
         // Automatically register all channel message handlers
         services.AddChannelMessageHandlers();
+
+        // Add scoped services
+        services.AddScoped<FundingConfirmedHandler>();
 
         return services;
     }

@@ -23,14 +23,10 @@ public class FeeRangeTlvConverter : ITlvConverter<FeeRangeTlv>
     public FeeRangeTlv ConvertFromBase(BaseTlv baseTlv)
     {
         if (baseTlv.Type != TlvConstants.FeeRange)
-        {
             throw new InvalidCastException("Invalid TLV type");
-        }
 
         if (baseTlv.Length != sizeof(ulong) * 2) // 2 long (128 bits) is 16 bytes
-        {
             throw new InvalidCastException("Invalid length");
-        }
 
         var minFeeAmount = LightningMoney
            .FromUnit(EndianBitConverter.ToUInt64BigEndian(baseTlv.Value[..sizeof(ulong)]), LightningMoneyUnit.Satoshi);

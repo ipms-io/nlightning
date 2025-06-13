@@ -19,12 +19,12 @@ public interface IMessageService : IDisposable
     /// <summary>
     /// Event that is raised when a message is received.
     /// </summary>
-    event EventHandler<IMessage?>? MessageReceived;
+    event EventHandler<IMessage?>? OnMessageReceived;
 
     /// <summary>
     /// Event that is raised when an exception is raised.
     /// </summary>
-    event EventHandler<Exception>? ExceptionRaised;
+    event EventHandler<Exception>? OnExceptionRaised;
 
     /// <summary>
     /// Gets a value indicating whether the transport service is connected.

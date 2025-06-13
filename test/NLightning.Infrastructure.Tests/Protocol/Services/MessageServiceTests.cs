@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Infrastructure.Tests.Protocol.Services;
@@ -19,8 +20,10 @@ public class MessageServiceTests
     public async Task Given_Message_When_SendMessageAsync_IsCalled_Then_TransportServiceWritesMessage()
     {
         // Given
+        var loggerMock = new Mock<ILogger<MessageService>>();
         var transportServiceMock = new Mock<ITransportService>();
-        var messageService = new MessageService(_messageSerializerMock.Object, transportServiceMock.Object);
+        var messageService =
+            new MessageService(loggerMock.Object, _messageSerializerMock.Object, transportServiceMock.Object);
         var messageMock = new Mock<IMessage>();
 
         // When
@@ -35,18 +38,20 @@ public class MessageServiceTests
     public void Given_ReceivedMessage_When_ReceiveMessageAsync_IsInvoked_Then_MessageReceivedEventIsRaised()
     {
         // Given
+        var loggerMock = new Mock<ILogger<MessageService>>();
         var transportServiceMock = new Mock<ITransportService>();
         var messageMock = new Mock<IMessage>();
         _messageSerializerMock.Setup(m => m.DeserializeMessageAsync(It.IsAny<Stream>()))
                               .ReturnsAsync(messageMock.Object);
 
-        var messageService = new MessageService(_messageSerializerMock.Object, transportServiceMock.Object);
+        var messageService =
+            new MessageService(loggerMock.Object, _messageSerializerMock.Object, transportServiceMock.Object);
         var stream = new MemoryStream();
 
         // When & Then
         var receivedMessage = Assert.RaisesAny<IMessage?>(
-            h => messageService.MessageReceived += h,
-            h => messageService.MessageReceived -= h,
+            h => messageService.OnMessageReceived += h,
+            h => messageService.OnMessageReceived -= h,
             () =>
             {
                 // Simulate transport service receiving a message
@@ -61,9 +66,11 @@ public class MessageServiceTests
     public void Given_TransportServiceConnectionState_When_CheckingIsConnected_Then_ReturnsCorrectValue()
     {
         // Given
+        var loggerMock = new Mock<ILogger<MessageService>>();
         var transportServiceMock = new Mock<ITransportService>();
         transportServiceMock.Setup(t => t.IsConnected).Returns(true);
-        var messageService = new MessageService(_messageSerializerMock.Object, transportServiceMock.Object);
+        var messageService =
+            new MessageService(loggerMock.Object, _messageSerializerMock.Object, transportServiceMock.Object);
 
         // When & Then
         Assert.True(messageService.IsConnected);
@@ -73,8 +80,10 @@ public class MessageServiceTests
     public void Given_MessageService_When_Dispose_IsCalled_Then_TransportServiceIsDisposed()
     {
         // Given
+        var loggerMock = new Mock<ILogger<MessageService>>();
         var transportServiceMock = new Mock<ITransportService>();
-        var messageService = new MessageService(_messageSerializerMock.Object, transportServiceMock.Object);
+        var messageService =
+            new MessageService(loggerMock.Object, _messageSerializerMock.Object, transportServiceMock.Object);
 
         // When
         messageService.Dispose();
@@ -86,9 +95,11 @@ public class MessageServiceTests
     [Fact]
     public async Task Given_DisposedMessageService_When_SendMessageAsync_IsCalled_Then_ThrowsInvalidOperationException()
     {
-        // Given
+        // Givenv
+        var loggerMock = new Mock<ILogger<MessageService>>();
         var transportServiceMock = new Mock<ITransportService>();
-        var messageService = new MessageService(_messageSerializerMock.Object, transportServiceMock.Object);
+        var messageService =
+            new MessageService(loggerMock.Object, _messageSerializerMock.Object, transportServiceMock.Object);
         var messageMock = new Mock<IMessage>();
 
         // When

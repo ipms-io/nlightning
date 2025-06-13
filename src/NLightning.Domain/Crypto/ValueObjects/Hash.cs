@@ -1,7 +1,7 @@
 namespace NLightning.Domain.Crypto.ValueObjects;
 
-using Utils.Extensions;
 using Constants;
+using Utils.Extensions;
 
 public readonly struct Hash : IEquatable<Hash>
 {

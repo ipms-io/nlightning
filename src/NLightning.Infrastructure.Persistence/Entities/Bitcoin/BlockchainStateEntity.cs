@@ -13,4 +13,19 @@ public class BlockchainStateEntity
     internal BlockchainStateEntity()
     {
     }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is BlockchainStateEntity other && Equals(other);
+    }
+
+    public bool Equals(BlockchainStateEntity other)
+    {
+        return Id.Equals(other.Id);
+    }
+
+    public override int GetHashCode()
+    {
+        return Id.GetHashCode();
+    }
 }

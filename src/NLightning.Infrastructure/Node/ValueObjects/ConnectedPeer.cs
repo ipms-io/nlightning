@@ -12,6 +12,16 @@ public readonly record struct ConnectedPeer
     public CompactPubKey CompactPubKey { get; }
 
     /// <summary>
+    /// The host address of the connected peer.
+    /// </summary>
+    public string Host { get; }
+
+    /// <summary>
+    /// The port used by the peer to establish the connection.
+    /// </summary>
+    public uint Port { get; }
+
+    /// <summary>
     /// The TCP client representing the connection to the peer.
     /// </summary>
     public TcpClient TcpClient { get; }
@@ -21,9 +31,11 @@ public readonly record struct ConnectedPeer
     /// </summary>
     /// <param name="compactPubKey">The compact public key of the peer.</param>
     /// <param name="tcpClient">The TCP client representing the connection to the peer.</param>
-    public ConnectedPeer(CompactPubKey compactPubKey, TcpClient tcpClient)
+    public ConnectedPeer(CompactPubKey compactPubKey, string host, uint port, TcpClient tcpClient)
     {
         CompactPubKey = compactPubKey;
+        Host = host;
+        Port = port;
         TcpClient = tcpClient;
     }
 }

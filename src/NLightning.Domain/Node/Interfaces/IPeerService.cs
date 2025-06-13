@@ -30,6 +30,9 @@ public interface IPeerService
     /// </summary>
     event EventHandler<ChannelMessageEventArgs> OnChannelMessageReceived;
 
+    public string? PreferredHost { get; }
+    public ushort? PreferredPort { get; }
+
     /// <summary>
     /// Disconnects from the peer.
     /// </summary>

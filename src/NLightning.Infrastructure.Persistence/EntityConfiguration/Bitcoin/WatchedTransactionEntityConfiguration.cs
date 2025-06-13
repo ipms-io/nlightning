@@ -16,14 +16,14 @@ public static class WatchedTransactionEntityConfiguration
         modelBuilder.Entity<WatchedTransactionEntity>(entity =>
         {
             // Set PrimaryKey
-            entity.HasKey(e => new { e.ChannelId, e.TransactionId });
+            entity.HasKey(e => new { e.TransactionId });
 
             // Set required props
-            entity.Property(e => e.ChannelId)
-                  .HasConversion<ChannelIdConverter>()
-                  .IsRequired();
             entity.Property(e => e.TransactionId)
                   .HasConversion<TxIdConverter>()
+                  .IsRequired();
+            entity.Property(e => e.ChannelId)
+                  .HasConversion<ChannelIdConverter>()
                   .IsRequired();
             entity.Property(e => e.RequiredDepth).IsRequired();
             entity.Property(e => e.CreatedAt).IsRequired();

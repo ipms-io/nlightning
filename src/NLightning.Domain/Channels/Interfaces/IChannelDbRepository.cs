@@ -1,3 +1,5 @@
+using NLightning.Domain.Crypto.ValueObjects;
+
 namespace NLightning.Domain.Channels.Interfaces;
 
 using Models;
@@ -10,4 +12,5 @@ public interface IChannelDbRepository
     Task<ChannelModel?> GetByIdAsync(ChannelId channelId);
     Task<IEnumerable<ChannelModel>> GetAllAsync();
     Task<IEnumerable<ChannelModel>> GetReadyChannelsAsync();
+    Task<IEnumerable<ChannelModel?>> GetByPeerIdAsync(CompactPubKey peerNodeId);
 }

@@ -50,13 +50,14 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
 
             modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Bitcoin.WatchedTransactionEntity", b =>
                 {
-                    b.Property<byte[]>("ChannelId")
-                        .HasColumnType("bytea")
-                        .HasColumnName("channel_id");
-
                     b.Property<byte[]>("TransactionId")
                         .HasColumnType("bytea")
                         .HasColumnName("transaction_id");
+
+                    b.Property<byte[]>("ChannelId")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("channel_id");
 
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("timestamp with time zone")
@@ -78,8 +79,11 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("transaction_index");
 
-                    b.HasKey("ChannelId", "TransactionId")
+                    b.HasKey("TransactionId")
                         .HasName("pk_watched_transactions");
+
+                    b.HasIndex("ChannelId")
+                        .HasDatabaseName("ix_watched_transactions_channel_id");
 
                     b.ToTable("watched_transactions", (string)null);
                 });
@@ -195,6 +199,10 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                         .HasColumnType("numeric(20,0)")
                         .HasColumnName("local_revocation_number");
 
+                    b.Property<byte[]>("PeerEntityNodeId")
+                        .HasColumnType("bytea")
+                        .HasColumnName("peer_entity_node_id");
+
                     b.Property<decimal>("RemoteBalanceSatoshis")
                         .HasColumnType("numeric")
                         .HasColumnName("remote_balance_satoshis");
@@ -222,6 +230,9 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
 
                     b.HasKey("ChannelId")
                         .HasName("pk_channels");
+
+                    b.HasIndex("PeerEntityNodeId")
+                        .HasDatabaseName("ix_channels_peer_entity_node_id");
 
                     b.ToTable("channels", (string)null);
                 });
@@ -338,6 +349,31 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                     b.ToTable("htlcs", (string)null);
                 });
 
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Node.PeerEntity", b =>
+                {
+                    b.Property<byte[]>("NodeId")
+                        .HasColumnType("bytea")
+                        .HasColumnName("node_id");
+
+                    b.Property<string>("Host")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("host");
+
+                    b.Property<DateTime>("LastSeenAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_seen_at");
+
+                    b.Property<long>("Port")
+                        .HasColumnType("bigint")
+                        .HasColumnName("port");
+
+                    b.HasKey("NodeId")
+                        .HasName("pk_peers");
+
+                    b.ToTable("peers", (string)null);
+                });
+
             modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Bitcoin.WatchedTransactionEntity", b =>
                 {
                     b.HasOne("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", null)
@@ -356,6 +392,14 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_channel_configs_channels_channel_id");
+                });
+
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelEntity", b =>
+                {
+                    b.HasOne("NLightning.Infrastructure.Persistence.Entities.Node.PeerEntity", null)
+                        .WithMany("Channels")
+                        .HasForeignKey("PeerEntityNodeId")
+                        .HasConstraintName("fk_channels_peers_peer_entity_node_id");
                 });
 
             modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Channel.ChannelKeySetEntity", b =>
@@ -387,6 +431,11 @@ namespace NLightning.Infrastructure.Persistence.Postgres.Migrations
                     b.Navigation("KeySets");
 
                     b.Navigation("WatchedTransactions");
+                });
+
+            modelBuilder.Entity("NLightning.Infrastructure.Persistence.Entities.Node.PeerEntity", b =>
+                {
+                    b.Navigation("Channels");
                 });
 #pragma warning restore 612, 618
         }

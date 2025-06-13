@@ -13,7 +13,7 @@ public static class DatabaseExtensions
     /// <summary>
     /// Runs database migrations if configured to do so
     /// </summary>
-    public static async Task<IHost> MigrateDatabaseIfConfiguredAsync(this IHost host)
+    public static async Task MigrateDatabaseIfConfiguredAsync(this IHost host)
     {
         using var scope = host.Services.CreateScope();
         var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
@@ -25,7 +25,7 @@ public static class DatabaseExtensions
         if (!runMigrations)
         {
             logger.LogInformation("Database migrations are disabled in configuration");
-            return host;
+            return;
         }
 
         try
@@ -51,7 +51,5 @@ public static class DatabaseExtensions
             logger.LogError(ex, "An error occurred while applying database migrations");
             throw;
         }
-
-        return host;
     }
 }

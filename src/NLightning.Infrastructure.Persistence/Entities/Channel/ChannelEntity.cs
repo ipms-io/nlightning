@@ -1,9 +1,11 @@
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
 
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Infrastructure.Persistence.Entities.Bitcoin;
-
 namespace NLightning.Infrastructure.Persistence.Entities.Channel;
+
+using Bitcoin;
+using Domain.Bitcoin.ValueObjects;
+using Domain.Channels.ValueObjects;
+using Domain.Crypto.ValueObjects;
 
 /// <summary>
 /// Represents a Lightning Network payment channel entity in the persistence layer.
@@ -24,7 +26,7 @@ public class ChannelEntity
     /// <summary>
     /// The transaction ID of the funding transaction that established this channel.
     /// </summary>
-    public required byte[] FundingTxId { get; set; }
+    public required TxId FundingTxId { get; set; }
 
     /// <summary>
     /// The output index in the funding transaction that contains the channel funding.
@@ -44,7 +46,7 @@ public class ChannelEntity
     /// <summary>
     /// The public key of the channel counterparty.
     /// </summary>
-    public required byte[] RemoteNodeId { get; set; }
+    public required CompactPubKey RemoteNodeId { get; set; }
 
     /// <summary>
     /// The next HTLC ID to be used by the local node.
