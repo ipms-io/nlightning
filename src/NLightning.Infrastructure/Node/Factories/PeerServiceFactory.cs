@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -20,22 +21,19 @@ public class PeerServiceFactory : IPeerServiceFactory
     private readonly ILoggerFactory _loggerFactory;
     private readonly IMessageFactory _messageFactory;
     private readonly IMessageServiceFactory _messageServiceFactory;
-    private readonly IPingPongServiceFactory _pingPongServiceFactory;
     private readonly ISecureKeyManager _secureKeyManager;
     private readonly ITransportServiceFactory _transportServiceFactory;
     private readonly IServiceProvider _serviceProvider;
     private readonly NodeOptions _nodeOptions;
 
     public PeerServiceFactory(ILoggerFactory loggerFactory, IMessageFactory messageFactory,
-                              IMessageServiceFactory messageServiceFactory,
-                              IPingPongServiceFactory pingPongServiceFactory, ISecureKeyManager secureKeyManager,
+                              IMessageServiceFactory messageServiceFactory, ISecureKeyManager secureKeyManager,
                               ITransportServiceFactory transportServiceFactory, IOptions<NodeOptions> nodeOptions,
                               IServiceProvider serviceProvider)
     {
         _loggerFactory = loggerFactory;
         _messageFactory = messageFactory;
         _messageServiceFactory = messageServiceFactory;
-        _pingPongServiceFactory = pingPongServiceFactory;
         _secureKeyManager = secureKeyManager;
         _transportServiceFactory = transportServiceFactory;
         _serviceProvider = serviceProvider;
@@ -68,7 +66,7 @@ public class PeerServiceFactory : IPeerServiceFactory
         var messageService = _messageServiceFactory.CreateMessageService(transportService);
 
         // Create the ping pong service
-        var pingPongService = _pingPongServiceFactory.CreatePingPongService();
+        var pingPongService = _serviceProvider.GetRequiredService<IPingPongService>();
 
         // Create the communication service
         var communicationService =
@@ -114,7 +112,7 @@ public class PeerServiceFactory : IPeerServiceFactory
         var messageService = _messageServiceFactory.CreateMessageService(transportService);
 
         // Create the ping pong service
-        var pingPongService = _pingPongServiceFactory.CreatePingPongService();
+        var pingPongService = _serviceProvider.GetRequiredService<IPingPongService>();
 
         // Create the communication service (infrastructure layer)
         var communicationService = new PeerCommunicationService(commLogger, messageService, _messageFactory,

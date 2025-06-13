@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 
-namespace NLightning.Application.Node.Services;
+namespace NLightning.Infrastructure.Protocol.Services;
 
 using Domain.Exceptions;
 using Domain.Node.Options;
@@ -67,6 +67,7 @@ internal class PingPongService : IPingPongService
                 continue;
             }
 
+            // ReSharper disable once PossiblyMistakenUseOfCancellationToken
             await Task.Delay(_random.Next(30_000, 300_000), cancellationToken);
 
             _pongReceivedTaskSource = new TaskCompletionSource<bool>();

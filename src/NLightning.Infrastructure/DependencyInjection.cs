@@ -8,6 +8,7 @@ using Domain.Node.Interfaces;
 using Domain.Protocol.Interfaces;
 using Node.Factories;
 using Protocol.Factories;
+using Protocol.Services;
 using Transport.Factories;
 using Transport.Interfaces;
 using Transport.Services;
@@ -23,6 +24,9 @@ public static class DependencyInjection
         services.AddSingleton<ITcpService, TcpService>();
         services.AddSingleton<ISha256, Sha256>();
         services.AddSingleton<ITransportServiceFactory, TransportServiceFactory>();
+
+        // Transient services (new instance each time requested)
+        services.AddTransient<IPingPongService, PingPongService>();
 
         return services;
     }

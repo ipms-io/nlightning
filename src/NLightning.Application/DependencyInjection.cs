@@ -1,19 +1,18 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NLightning.Application.Channels.Handlers;
-using NLightning.Infrastructure.Bitcoin.Wallet.Interfaces;
 
 namespace NLightning.Application;
 
+using Channels.Handlers;
 using Channels.Handlers.Interfaces;
 using Channels.Managers;
 using Domain.Bitcoin.Interfaces;
 using Domain.Channels.Interfaces;
 using Domain.Node.Interfaces;
 using Domain.Protocol.Interfaces;
+using Infrastructure.Bitcoin.Wallet.Interfaces;
 using Node.Managers;
-using Node.Services;
 using Protocol.Factories;
 
 /// <summary>
@@ -40,8 +39,6 @@ public static class DependencyInjection
         });
         services.AddSingleton<IMessageFactory, MessageFactory>();
         services.AddSingleton<IPeerManager, PeerManager>();
-        services.AddSingleton<IPingPongService, PingPongService>();
-        services.AddSingleton<IPingPongServiceFactory, PingPongServiceFactory>();
 
         // Automatically register all channel message handlers
         services.AddChannelMessageHandlers();
