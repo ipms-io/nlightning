@@ -1,4 +1,4 @@
-namespace NLightning.Domain.Protocol.ValueObjects;
+namespace NLightning.Domain.Protocol.Models;
 
 using Bitcoin.ValueObjects;
 using Crypto.Hashes;
@@ -7,7 +7,7 @@ using Crypto.ValueObjects;
 /// <summary>
 /// Manages Lightning Network commitment numbers and their obscuring as defined in BOLT3.
 /// </summary>
-public record struct CommitmentNumber
+public class CommitmentNumber
 {
     /// <summary>
     /// Gets the commitment number value.

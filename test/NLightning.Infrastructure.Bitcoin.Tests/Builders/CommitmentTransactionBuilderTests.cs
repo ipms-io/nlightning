@@ -2,6 +2,7 @@ using Microsoft.Extensions.Options;
 using NBitcoin;
 using NLightning.Domain.Bitcoin.Transactions.Models;
 using NLightning.Domain.Bitcoin.Transactions.Outputs;
+using NLightning.Domain.Protocol.Models;
 using NLightning.Tests.Utils.Mocks;
 using NLightning.Tests.Utils.Vectors;
 
@@ -9,7 +10,6 @@ namespace NLightning.Infrastructure.Bitcoin.Tests.Builders;
 
 using Domain.Money;
 using Domain.Node.Options;
-using Domain.Protocol.ValueObjects;
 using Infrastructure.Bitcoin.Builders;
 
 public class CommitmentTransactionBuilderTests

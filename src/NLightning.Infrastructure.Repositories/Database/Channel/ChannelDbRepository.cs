@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Microsoft.EntityFrameworkCore;
+using NLightning.Domain.Protocol.Models;
 
 namespace NLightning.Infrastructure.Repositories.Database.Channel;
 
@@ -12,7 +13,6 @@ using Domain.Crypto.Constants;
 using Domain.Crypto.Hashes;
 using Domain.Crypto.ValueObjects;
 using Domain.Money;
-using Domain.Protocol.ValueObjects;
 using Domain.Serialization.Interfaces;
 using Persistence.Contexts;
 using Persistence.Entities.Channel;
@@ -254,7 +254,7 @@ public class ChannelDbRepository : BaseDbRepository<ChannelEntity>, IChannelDbRe
                                 LightningMoney.Satoshis(channelEntity.RemoteBalanceSatoshis), remoteKeySet,
                                 channelEntity.RemoteNextHtlcId, remoteNodeId, channelEntity.RemoteRevocationNumber,
                                 (ChannelState)channelEntity.State, (ChannelVersion)channelEntity.Version,
-                                localOfferedHtlcs, localFulfilledHtlcs, localOldHtlcs, remoteOfferedHtlcs,
+                                localOfferedHtlcs, localFulfilledHtlcs, localOldHtlcs, null, remoteOfferedHtlcs,
                                 remoteFulfilledHtlcs, remoteOldHtlcs)
         {
             FundingCreatedAtBlockHeight = channelEntity.FundingCreatedAtBlockHeight

@@ -2,7 +2,7 @@ using NLightning.Domain.Bitcoin.Transactions.Interfaces;
 using NLightning.Domain.Bitcoin.Transactions.Outputs;
 using NLightning.Domain.Bitcoin.ValueObjects;
 using NLightning.Domain.Money;
-using NLightning.Domain.Protocol.ValueObjects;
+using NLightning.Domain.Protocol.Models;
 
 namespace NLightning.Domain.Bitcoin.Transactions.Models;
 

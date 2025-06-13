@@ -1,3 +1,5 @@
+using NLightning.Domain.Protocol.Models;
+
 namespace NLightning.Domain.Channels.Models;
 
 using Bitcoin.Transactions.Outputs;
@@ -5,7 +7,6 @@ using Bitcoin.ValueObjects;
 using Crypto.ValueObjects;
 using Enums;
 using Money;
-using Protocol.ValueObjects;
 using ValueObjects;
 
 public class ChannelModel
@@ -63,13 +64,14 @@ public class ChannelModel
     public ChannelModel(ChannelConfig channelConfig, ChannelId channelId, CommitmentNumber commitmentNumber,
                         FundingOutputInfo fundingOutput, bool isInitiator, CompactSignature? lastSentSignature,
                         CompactSignature? lastReceivedSignature, LightningMoney localBalance,
-                        ChannelKeySetModel localKeySet,
-                        ulong localNextHtlcId, ulong localRevocationNumber, LightningMoney remoteBalance,
-                        ChannelKeySetModel remoteKeySet, ulong remoteNextHtlcId, CompactPubKey remoteNodeId,
-                        ulong remoteRevocationNumber, ChannelState state, ChannelVersion version,
-                        ICollection<Htlc>? localOfferedHtlcs = null, ICollection<Htlc>? localFulfilledHtlcs = null,
-                        ICollection<Htlc>? localOldHtlcs = null, ICollection<Htlc>? remoteOfferedHtlcs = null,
-                        ICollection<Htlc>? remoteFulfilledHtlcs = null, ICollection<Htlc>? remoteOldHtlcs = null)
+                        ChannelKeySetModel localKeySet, ulong localNextHtlcId, ulong localRevocationNumber,
+                        LightningMoney remoteBalance, ChannelKeySetModel remoteKeySet, ulong remoteNextHtlcId,
+                        CompactPubKey remoteNodeId, ulong remoteRevocationNumber, ChannelState state,
+                        ChannelVersion version, ICollection<Htlc>? localOfferedHtlcs = null,
+                        ICollection<Htlc>? localFulfilledHtlcs = null, ICollection<Htlc>? localOldHtlcs = null,
+                        BitcoinScript? localUpfrontShutdownScript = null, ICollection<Htlc>? remoteOfferedHtlcs = null,
+                        ICollection<Htlc>? remoteFulfilledHtlcs = null, ICollection<Htlc>? remoteOldHtlcs = null,
+                        BitcoinScript? remoteUpfrontShutdownScript = null)
     {
         ChannelConfig = channelConfig;
         ChannelId = channelId;
@@ -95,6 +97,8 @@ public class ChannelModel
         RemoteOfferedHtlcs = remoteOfferedHtlcs ?? new List<Htlc>();
         RemoteFulfilledHtlcs = remoteFulfilledHtlcs ?? new List<Htlc>();
         RemoteOldHtlcs = remoteOldHtlcs ?? new List<Htlc>();
+        LocalUpfrontShutdownScript = localUpfrontShutdownScript;
+        RemoteUpfrontShutdownScript = remoteUpfrontShutdownScript;
     }
 
     public void UpdateState(ChannelState newState)

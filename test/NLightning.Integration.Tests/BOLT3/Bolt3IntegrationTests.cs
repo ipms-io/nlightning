@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NLightning.Domain.Protocol.Models;
 using NLightning.Tests.Utils.Vectors;
 
 namespace NLightning.Integration.Tests.BOLT3;
@@ -14,7 +15,6 @@ using Domain.Crypto.ValueObjects;
 using Domain.Enums;
 using Domain.Money;
 using Domain.Node.Options;
-using Domain.Protocol.ValueObjects;
 using Infrastructure.Bitcoin.Builders;
 using Infrastructure.Bitcoin.Services;
 using Infrastructure.Bitcoin.Signers;
@@ -662,7 +662,7 @@ public class Bolt3IntegrationTests
                                 Bolt3AppendixCVectors.Tx0ToLocalMsat, localKeySet, 1, 0,
                                 Bolt3AppendixCVectors.ToRemoteMsat, remoteKeySet, 1,
                                 Bolt3AppendixBVectors.RemotePubKey.ToBytes(), 0, ChannelState.V1Opening,
-                                ChannelVersion.V1, offeredHtlcs, null, null, receivedHtlcs);
+                                ChannelVersion.V1, offeredHtlcs, null, null, null, receivedHtlcs);
     }
 
     #endregion
