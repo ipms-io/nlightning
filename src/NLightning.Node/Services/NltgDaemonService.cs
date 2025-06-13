@@ -2,8 +2,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLightning.Domain.Channels.Interfaces;
-using NLightning.Infrastructure.Bitcoin.Wallet.Interfaces;
 
 namespace NLightning.Node.Services;
 
@@ -11,6 +9,7 @@ using Domain.Bitcoin.Interfaces;
 using Domain.Node.Interfaces;
 using Domain.Node.Options;
 using Domain.Protocol.Interfaces;
+using Infrastructure.Bitcoin.Wallet.Interfaces;
 
 public class NltgDaemonService : BackgroundService
 {
@@ -22,8 +21,7 @@ public class NltgDaemonService : BackgroundService
     private readonly NodeOptions _nodeOptions;
     private readonly ISecureKeyManager _secureKeyManager;
 
-    public NltgDaemonService(IBlockchainMonitor blockchainMonitor, IChannelManager channelManager,
-                             IConfiguration configuration, IFeeService feeService,
+    public NltgDaemonService(IBlockchainMonitor blockchainMonitor, IConfiguration configuration, IFeeService feeService,
                              ILogger<NltgDaemonService> logger, IOptions<NodeOptions> nodeOptions,
                              IPeerManager peerManager, ISecureKeyManager secureKeyManager)
     {
