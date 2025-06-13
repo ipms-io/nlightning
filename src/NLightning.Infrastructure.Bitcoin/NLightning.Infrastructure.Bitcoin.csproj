@@ -38,8 +38,4 @@
     <ProjectReference Include="..\NLightning.Infrastructure\NLightning.Infrastructure.csproj"/>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\"/>
-  </ItemGroup>
-
 </Project>
