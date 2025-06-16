@@ -62,6 +62,22 @@
     <PackageReference Include="Microsoft.JSInterop" Version="8.0.8"/>
   </ItemGroup>
 
+  <!-- NPM/Vite Integration -->
+  <Target Name="InstallNpmPackages" Condition="('$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))) And !Exists('./Crypto/Providers/JS/node_modules')">
+    <Exec Command="npm ci" WorkingDirectory="./Crypto/Providers/JS"/>
+  </Target>
+
+  <Target Name="BuildClientAssets" BeforeTargets="Build" DependsOnTargets="InstallNpmPackages" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
+    <Exec Command="npm run build" WorkingDirectory="./Crypto/Providers/JS"/>
+  </Target>
+
+  <Target Name="CleanClientAssets" BeforeTargets="Clean" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
+    <ItemGroup>
+      <FilesToDelete Include="$(ProjectDir)/wwwroot/js/blazorSodium.bundle.*"/>
+    </ItemGroup>
+    <Delete Files="@(FilesToDelete)"/>
+  </Target>
+
   <!-- Check if this is being used in AOT projects -->
   <PropertyGroup Condition="'$(PublishAot)' == 'true' Or $(Configuration.Contains('.Native'))">
     <DefineConstants>CRYPTO_NATIVE;$(DefineConstants)</DefineConstants>
@@ -104,6 +120,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NLightning.Domain\NLightning.Domain.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\"/>
   </ItemGroup>
 
   <!--  Import regular sdk if the configuration calls for it  -->
