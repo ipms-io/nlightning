@@ -576,6 +576,7 @@ public class MessageFactory : IMessageFactory
     /// <param name="delayedPaymentBasepoint">The delayed payment pubkey.</param>
     /// <param name="htlcBasepoint">The htlc pubkey.</param>
     /// <param name="firstPerCommitmentPoint">The first per-commitment pubkey.</param>
+    /// <param name="maxHtlcValueInFlight">Maximum HTLC value that can be in flight.</param>
     /// <param name="shutdownScriptPubkey">The shutdown script to be used when closing the channel.</param>
     /// <param name="channelType">The type of the channel.</param>
     /// <param name="requireConfirmedInputs">If we want confirmed inputs to open the channel.</param>

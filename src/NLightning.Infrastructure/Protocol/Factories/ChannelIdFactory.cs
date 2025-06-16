@@ -11,7 +11,7 @@ public class ChannelIdFactory : IChannelIdFactory
     public ChannelId CreateV1(TxId fundingTxId, ushort fundingOutputIndex)
     {
         Span<byte> channelId = stackalloc byte[32];
-        fundingTxId.Hash.CopyTo(channelId);
+        ((ReadOnlySpan<byte>)fundingTxId).CopyTo(channelId);
 
         // XOR the last 2 bytes with the funding_output_index
         channelId[30] ^= (byte)(fundingOutputIndex >> 8);

@@ -4,12 +4,15 @@ using Microsoft.Extensions.Logging;
 
 namespace NLightning.Application;
 
+using Channels.Handlers;
 using Channels.Handlers.Interfaces;
 using Channels.Managers;
 using Domain.Bitcoin.Interfaces;
 using Domain.Channels.Interfaces;
+using Domain.Node.Interfaces;
 using Domain.Protocol.Interfaces;
-using Node.Services;
+using Infrastructure.Bitcoin.Wallet.Interfaces;
+using Node.Managers;
 using Protocol.Factories;
 
 /// <summary>
@@ -27,17 +30,21 @@ public static class DependencyInjection
         // Singleton services (one instance throughout the application)
         services.AddSingleton<IChannelManager>(sp =>
         {
+            var blockchainMonitor = sp.GetRequiredService<IBlockchainMonitor>();
             var channelMemoryRepository = sp.GetRequiredService<IChannelMemoryRepository>();
             var lightningSigner = sp.GetRequiredService<ILightningSigner>();
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-            return new ChannelManager(channelMemoryRepository, loggerFactory.CreateLogger<ChannelManager>(),
-                                      lightningSigner, sp);
+            return new ChannelManager(blockchainMonitor, channelMemoryRepository,
+                                      loggerFactory.CreateLogger<ChannelManager>(), lightningSigner, sp);
         });
         services.AddSingleton<IMessageFactory, MessageFactory>();
-        services.AddSingleton<IPingPongService, PingPongService>();
+        services.AddSingleton<IPeerManager, PeerManager>();
 
         // Automatically register all channel message handlers
         services.AddChannelMessageHandlers();
+
+        // Add scoped services
+        services.AddScoped<FundingConfirmedHandler>();
 
         return services;
     }

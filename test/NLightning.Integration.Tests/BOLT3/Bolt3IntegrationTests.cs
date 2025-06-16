@@ -1,10 +1,13 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NBitcoin.Policy;
+using NLightning.Domain.Protocol.Models;
 using NLightning.Tests.Utils.Vectors;
 
 namespace NLightning.Integration.Tests.BOLT3;
 
+using Domain.Bitcoin.Transactions.Enums;
+using Domain.Bitcoin.Transactions.Factories;
+using Domain.Bitcoin.Transactions.Outputs;
 using Domain.Channels.Enums;
 using Domain.Channels.Models;
 using Domain.Channels.ValueObjects;
@@ -12,10 +15,6 @@ using Domain.Crypto.ValueObjects;
 using Domain.Enums;
 using Domain.Money;
 using Domain.Node.Options;
-using Domain.Protocol.ValueObjects;
-using Domain.Transactions.Enums;
-using Domain.Transactions.Factories;
-using Domain.Transactions.Outputs;
 using Infrastructure.Bitcoin.Builders;
 using Infrastructure.Bitcoin.Services;
 using Infrastructure.Bitcoin.Signers;
@@ -48,13 +47,6 @@ public class Bolt3IntegrationTests
         TransactionId = Bolt3AppendixBVectors.ExpectedTxId.ToBytes(),
         Index = 0
     };
-
-    private readonly StandardTransactionPolicy _dontCheckFeePolicy = new()
-    {
-        CheckFee = false
-    };
-
-    private readonly LightningMoney _anchorAmount = LightningMoney.Satoshis(330);
 
     private Htlc? _offeredHtlc2;
     private Htlc? _offeredHtlc3;
@@ -670,7 +662,7 @@ public class Bolt3IntegrationTests
                                 Bolt3AppendixCVectors.Tx0ToLocalMsat, localKeySet, 1, 0,
                                 Bolt3AppendixCVectors.ToRemoteMsat, remoteKeySet, 1,
                                 Bolt3AppendixBVectors.RemotePubKey.ToBytes(), 0, ChannelState.V1Opening,
-                                ChannelVersion.V1, offeredHtlcs, null, null, receivedHtlcs);
+                                ChannelVersion.V1, offeredHtlcs, null, null, null, receivedHtlcs);
     }
 
     #endregion

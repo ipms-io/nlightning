@@ -8,7 +8,7 @@ using ValueObjects;
 /// Networks TLV.
 /// </summary>
 /// <remarks>
-/// The networks TLV is used in the InitMessage to communicate the networks that the node supports.
+/// The "Networks TLV" is used in the InitMessage to communicate the networks that the node supports.
 /// </remarks>
 public class NetworksTlv : BaseTlv
 {

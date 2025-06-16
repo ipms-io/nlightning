@@ -9,13 +9,13 @@ using Crypto.ValueObjects;
 public record struct ChannelSigningInfo
 {
     public TxId FundingTxId { get; init; }
-    public uint FundingOutputIndex { get; init; }
+    public ushort FundingOutputIndex { get; init; }
     public ulong FundingSatoshis { get; init; }
     public CompactPubKey LocalFundingPubKey { get; init; }
     public CompactPubKey RemoteFundingPubKey { get; init; }
     public uint ChannelKeyIndex { get; init; } // For deterministic key derivation
 
-    public ChannelSigningInfo(TxId fundingTxId, uint fundingOutputIndex, ulong fundingSatoshis,
+    public ChannelSigningInfo(TxId fundingTxId, ushort fundingOutputIndex, ulong fundingSatoshis,
                               CompactPubKey localFundingPubKey, CompactPubKey remoteFundingPubKey,
                               uint channelKeyIndex)
     {

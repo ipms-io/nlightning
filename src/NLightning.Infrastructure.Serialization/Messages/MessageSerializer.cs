@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Domain.Serialization.Interfaces;
 
@@ -9,10 +10,13 @@ using Exceptions;
 
 public class MessageSerializer : IMessageSerializer
 {
+    private readonly ILogger<MessageSerializer> _logger;
     private readonly IMessageTypeSerializerFactory _messageTypeSerializerFactory;
 
-    public MessageSerializer(IMessageTypeSerializerFactory messageTypeSerializerFactory)
+    public MessageSerializer(ILogger<MessageSerializer> logger,
+                             IMessageTypeSerializerFactory messageTypeSerializerFactory)
     {
+        _logger = logger;
         _messageTypeSerializerFactory = messageTypeSerializerFactory;
     }
 
@@ -63,9 +67,10 @@ public class MessageSerializer : IMessageSerializer
             return await messageTypeSerializer.DeserializeAsync(stream);
 
         // If the type is unknown and even, throw an exception
-        if (type % 2 == 0)
-            throw new InvalidMessageException($"Unknown message type {type}");
+        if (type % 2 != 0)
+            return null;
 
-        return null;
+        _logger.LogError("Unknown message type {type}", type);
+        throw new InvalidMessageException($"Unknown message type {type}");
     }
 }

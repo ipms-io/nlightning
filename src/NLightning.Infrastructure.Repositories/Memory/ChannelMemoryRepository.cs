@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NLightning.Infrastructure.Repositories.Memory;
 
@@ -15,7 +16,7 @@ public class ChannelMemoryRepository : IChannelMemoryRepository
     private readonly ConcurrentDictionary<(CompactPubKey, ChannelId), ChannelModel> _temporaryChannels = [];
     private readonly ConcurrentDictionary<(CompactPubKey, ChannelId), ChannelState> _temporaryChannelStates = [];
 
-    public bool TryGetChannel(ChannelId channelId, out ChannelModel? channel)
+    public bool TryGetChannel(ChannelId channelId, [MaybeNullWhen(false)] out ChannelModel channel)
     {
         return _channels.TryGetValue(channelId, out channel);
     }
@@ -62,7 +63,8 @@ public class ChannelMemoryRepository : IChannelMemoryRepository
         _channelStates.TryRemove(channelId, out _);
     }
 
-    public bool TryGetTemporaryChannel(CompactPubKey compactPubKey, ChannelId channelId, out ChannelModel? channel)
+    public bool TryGetTemporaryChannel(CompactPubKey compactPubKey, ChannelId channelId,
+                                       [MaybeNullWhen(false)] out ChannelModel channel)
     {
         return _temporaryChannels.TryGetValue((compactPubKey, channelId), out channel);
     }

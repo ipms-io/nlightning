@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using NBitcoin;
 using NBitcoin.Crypto;
+using NLightning.Domain.Bitcoin.Transactions.Outputs;
 
 namespace NLightning.Infrastructure.Bitcoin.Signers;
 
@@ -14,7 +15,6 @@ using Domain.Crypto.ValueObjects;
 using Domain.Exceptions;
 using Domain.Node.Options;
 using Domain.Protocol.Interfaces;
-using Domain.Transactions.Outputs;
 
 public class LocalLightningSigner : ILightningSigner
 {
@@ -268,9 +268,9 @@ public class LocalLightningSigner : ILightningSigner
                 throw new SignerException("Signature is not low S", channelId,
                                           "Signature is malleable");
         }
-        catch (Exception ex)
+        catch (Exception e)
         {
-            throw new SignerException("Failed to parse DER signature", channelId,
+            throw new SignerException("Failed to parse DER signature", channelId, e,
                                       "Signature format error");
         }
 

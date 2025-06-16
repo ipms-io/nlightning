@@ -5,13 +5,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NLightning.Application;
 using NLightning.Domain.Bitcoin.Interfaces;
+using NLightning.Domain.Bitcoin.Transactions.Factories;
+using NLightning.Domain.Bitcoin.Transactions.Interfaces;
 using NLightning.Domain.Channels.Factories;
 using NLightning.Domain.Channels.Interfaces;
 using NLightning.Domain.Crypto.Hashes;
 using NLightning.Domain.Protocol.Interfaces;
 using NLightning.Domain.Protocol.ValueObjects;
-using NLightning.Domain.Transactions.Factories;
-using NLightning.Domain.Transactions.Interfaces;
 using NLightning.Infrastructure;
 using NLightning.Infrastructure.Bitcoin;
 using NLightning.Infrastructure.Bitcoin.Builders;
@@ -80,19 +80,20 @@ public static class NodeServiceExtensions
 
             // Add the Application services
             services.AddApplicationServices();
+
+            // Add the Infrastructure services
+            services.AddBitcoinInfrastructure();
             services.AddInfrastructureServices();
             services.AddPersistenceInfrastructureServices(configuration);
             services.AddRepositoriesInfrastructureServices();
             services.AddSerializationInfrastructureServices();
-
-            // Add the Infrastructure services
-            services.AddBitcoinInfrastructure();
 
             // Scoped services (one instance per scope)
 
             // Transient services (new instance each time)
 
             // Register options with values from configuration
+            services.AddOptions<BitcoinOptions>().BindConfiguration("Bitcoin").ValidateOnStart();
             services.AddOptions<FeeEstimationOptions>().BindConfiguration("FeeEstimation").ValidateOnStart();
             services.AddOptions<NodeOptions>()
                     .BindConfiguration("Node")

@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace NLightning.Infrastructure.Protocol.Services;
 
 using Domain.Protocol.Interfaces;
@@ -17,15 +19,16 @@ using Exceptions;
 /// <seealso cref="IMessageService" />
 internal sealed class MessageService : IMessageService
 {
+    private readonly ILogger<IMessageService> _logger;
     private readonly IMessageSerializer _messageSerializer;
     private readonly ITransportService? _transportService;
 
     private bool _disposed;
 
     /// <inheritdoc />
-    public event EventHandler<IMessage?>? MessageReceived;
+    public event EventHandler<IMessage?>? OnMessageReceived;
 
-    public event EventHandler<Exception>? ExceptionRaised;
+    public event EventHandler<Exception>? OnExceptionRaised;
 
     /// <inheritdoc />
     public bool IsConnected => _transportService?.IsConnected ?? false;
@@ -33,10 +36,13 @@ internal sealed class MessageService : IMessageService
     /// <summary>
     /// Initializes a new <see cref="MessageService"/> class.
     /// </summary>
+    /// <param name="logger">The logger.</param>
     /// <param name="messageSerializer">The message serializer.</param>
     /// <param name="transportService">The transport service.</param>
-    public MessageService(IMessageSerializer messageSerializer, ITransportService transportService)
+    public MessageService(ILogger<IMessageService> logger, IMessageSerializer messageSerializer,
+                          ITransportService transportService)
     {
+        _logger = logger;
         _messageSerializer = messageSerializer;
         _transportService = transportService;
 
@@ -63,10 +69,10 @@ internal sealed class MessageService : IMessageService
     {
         try
         {
-            var message = _messageSerializer.DeserializeMessageAsync(stream).Result;
+            var message = _messageSerializer.DeserializeMessageAsync(stream).GetAwaiter().GetResult();
             if (message is not null)
             {
-                MessageReceived?.Invoke(this, message);
+                OnMessageReceived?.Invoke(this, message);
             }
         }
         catch (MessageSerializationException mse)
@@ -84,18 +90,20 @@ internal sealed class MessageService : IMessageService
                 message = mse.InnerException.Message;
             }
 
-            SendMessageAsync(new ErrorMessage(new ErrorPayload(message))).Wait();
+            _logger.LogError(mse, "Failed to deserialize message: {Message}", message);
+            SendMessageAsync(new ErrorMessage(new ErrorPayload(message))).GetAwaiter().GetResult();
             RaiseException(this, mse);
         }
         catch (Exception e)
         {
+            _logger.LogError(e, "Failed to receive message");
             RaiseException(this, e);
         }
     }
 
     private void RaiseException(object? sender, Exception e)
     {
-        ExceptionRaised?.Invoke(sender, e);
+        OnExceptionRaised?.Invoke(sender, e);
     }
 
     #region Dispose Pattern

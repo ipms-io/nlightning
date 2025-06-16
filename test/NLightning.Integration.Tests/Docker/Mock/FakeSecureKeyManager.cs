@@ -1,36 +1,40 @@
-// using NBitcoin;
-// using NLightning.Domain.Protocol.Interfaces;
-//
-// namespace NLightning.Integration.Tests.Docker.Mock;
-//
-// public class FakeSecureKeyManager : ISecureKeyManager
-// {
-//     private readonly ExtKey _nodeKey;
-//     private uint _index = 0;
-//
-//     public FakeSecureKeyManager()
-//     {
-//         _nodeKey = new ExtKey(new Key(), Network.RegTest.GenesisHash.ToBytes());
-//     }
-//
-//     public ExtKey GetNextKey(out uint index)
-//     {
-//         index = _index++;
-//         return _nodeKey.Derive(new KeyPath($"m/0/{index}"));
-//     }
-//
-//     public Key GetNodeKey()
-//     {
-//         return _nodeKey.PrivateKey;
-//     }
-//
-//     public PubKey GetNodePubKey()
-//     {
-//         return _nodeKey.PrivateKey.PubKey;
-//     }
-//
-//     public void SaveToFile(string filePath, string password)
-//     {
-//         throw new NotImplementedException();
-//     }
-// }
+using NBitcoin;
+
+namespace NLightning.Integration.Tests.Docker.Mock;
+
+using Domain.Bitcoin.ValueObjects;
+using Domain.Crypto.ValueObjects;
+using Domain.Protocol.Interfaces;
+
+public class FakeSecureKeyManager : ISecureKeyManager
+{
+    private readonly ExtKey _nodeKey;
+
+    public BitcoinKeyPath KeyPath => new BitcoinKeyPath([]);
+
+    public FakeSecureKeyManager()
+    {
+        _nodeKey = new ExtKey(new Key(), Network.RegTest.GenesisHash.ToBytes());
+    }
+
+    public ExtPrivKey GetNextKey(out uint index)
+    {
+        index = 0;
+        return _nodeKey.ToBytes();
+    }
+
+    public ExtPrivKey GetKeyAtIndex(uint index)
+    {
+        return _nodeKey.ToBytes();
+    }
+
+    public CryptoKeyPair GetNodeKeyPair()
+    {
+        return new CryptoKeyPair(_nodeKey.PrivateKey.ToBytes(), _nodeKey.PrivateKey.PubKey.ToBytes());
+    }
+
+    public CompactPubKey GetNodePubKey()
+    {
+        return _nodeKey.PrivateKey.PubKey.ToBytes();
+    }
+}

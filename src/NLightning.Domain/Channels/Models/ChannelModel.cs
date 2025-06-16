@@ -1,11 +1,12 @@
+using NLightning.Domain.Protocol.Models;
+
 namespace NLightning.Domain.Channels.Models;
 
+using Bitcoin.Transactions.Outputs;
 using Bitcoin.ValueObjects;
 using Crypto.ValueObjects;
 using Enums;
 using Money;
-using Protocol.ValueObjects;
-using Transactions.Outputs;
 using ValueObjects;
 
 public class ChannelModel
@@ -14,6 +15,7 @@ public class ChannelModel
 
     public ChannelConfig ChannelConfig { get; }
     public ChannelId ChannelId { get; private set; }
+    public ShortChannelId ShortChannelId { get; set; }
     public CommitmentNumber CommitmentNumber { get; }
     public uint FundingCreatedAtBlockHeight { get; set; }
     public FundingOutputInfo FundingOutput { get; }
@@ -33,11 +35,12 @@ public class ChannelModel
 
     #region Local Information
 
+    public ICollection<ShortChannelId>? LocalAliases { get; set; }
     public LightningMoney LocalBalance { get; }
     public ChannelKeySetModel LocalKeySet { get; }
     public ulong LocalNextHtlcId { get; }
     public ICollection<Htlc>? LocalOfferedHtlcs { get; }
-    public ICollection<Htlc>? LocalFullfiledHtlcs { get; }
+    public ICollection<Htlc>? LocalFulfilledHtlcs { get; }
     public ICollection<Htlc>? LocalOldHtlcs { get; }
     public ulong LocalRevocationNumber { get; }
     public BitcoinScript? LocalUpfrontShutdownScript { get; }
@@ -61,13 +64,14 @@ public class ChannelModel
     public ChannelModel(ChannelConfig channelConfig, ChannelId channelId, CommitmentNumber commitmentNumber,
                         FundingOutputInfo fundingOutput, bool isInitiator, CompactSignature? lastSentSignature,
                         CompactSignature? lastReceivedSignature, LightningMoney localBalance,
-                        ChannelKeySetModel localKeySet,
-                        ulong localNextHtlcId, ulong localRevocationNumber, LightningMoney remoteBalance,
-                        ChannelKeySetModel remoteKeySet, ulong remoteNextHtlcId, CompactPubKey remoteNodeId,
-                        ulong remoteRevocationNumber, ChannelState state, ChannelVersion version,
-                        ICollection<Htlc>? localOfferedHtlcs = null, ICollection<Htlc>? localFulffiledHtlcs = null,
-                        ICollection<Htlc>? localOldHtlcs = null, ICollection<Htlc>? remoteOfferedHtlcs = null,
-                        ICollection<Htlc>? remoteFullfiledHtlcs = null, ICollection<Htlc>? remoteOldHtlcs = null)
+                        ChannelKeySetModel localKeySet, ulong localNextHtlcId, ulong localRevocationNumber,
+                        LightningMoney remoteBalance, ChannelKeySetModel remoteKeySet, ulong remoteNextHtlcId,
+                        CompactPubKey remoteNodeId, ulong remoteRevocationNumber, ChannelState state,
+                        ChannelVersion version, ICollection<Htlc>? localOfferedHtlcs = null,
+                        ICollection<Htlc>? localFulfilledHtlcs = null, ICollection<Htlc>? localOldHtlcs = null,
+                        BitcoinScript? localUpfrontShutdownScript = null, ICollection<Htlc>? remoteOfferedHtlcs = null,
+                        ICollection<Htlc>? remoteFulfilledHtlcs = null, ICollection<Htlc>? remoteOldHtlcs = null,
+                        BitcoinScript? remoteUpfrontShutdownScript = null)
     {
         ChannelConfig = channelConfig;
         ChannelId = channelId;
@@ -88,11 +92,13 @@ public class ChannelModel
         Version = version;
         RemoteNodeId = remoteNodeId;
         LocalOfferedHtlcs = localOfferedHtlcs ?? new List<Htlc>();
-        LocalFullfiledHtlcs = localFulffiledHtlcs ?? new List<Htlc>();
+        LocalFulfilledHtlcs = localFulfilledHtlcs ?? new List<Htlc>();
         LocalOldHtlcs = localOldHtlcs ?? new List<Htlc>();
         RemoteOfferedHtlcs = remoteOfferedHtlcs ?? new List<Htlc>();
-        RemoteFulfilledHtlcs = remoteFullfiledHtlcs ?? new List<Htlc>();
+        RemoteFulfilledHtlcs = remoteFulfilledHtlcs ?? new List<Htlc>();
         RemoteOldHtlcs = remoteOldHtlcs ?? new List<Htlc>();
+        LocalUpfrontShutdownScript = localUpfrontShutdownScript;
+        RemoteUpfrontShutdownScript = remoteUpfrontShutdownScript;
     }
 
     public void UpdateState(ChannelState newState)
@@ -113,5 +119,12 @@ public class ChannelModel
             throw new ArgumentException("New channel ID cannot be empty.", nameof(newChannelId));
 
         ChannelId = newChannelId;
+    }
+
+    public ChannelSigningInfo GetSigningInfo()
+    {
+        return new ChannelSigningInfo(FundingOutput.TransactionId!.Value, FundingOutput.Index!.Value,
+                                      FundingOutput.Amount, LocalKeySet.FundingCompactPubKey,
+                                      RemoteKeySet.FundingCompactPubKey, LocalKeySet.KeyIndex);
     }
 }

@@ -11,7 +11,7 @@ public class LightningRegtestNetworkFixture : IDisposable
 
     public LightningRegtestNetworkFixture()
     {
-        SetupNetwork().Wait();
+        SetupNetwork().GetAwaiter().GetResult();
     }
 
     public LNUnitBuilder? Builder { get; private set; }
@@ -21,10 +21,10 @@ public class LightningRegtestNetworkFixture : IDisposable
         GC.SuppressFinalize(this);
 
         // Remove containers
-        RemoveContainer("miner").Wait();
-        RemoveContainer("alice").Wait();
-        RemoveContainer("bob").Wait();
-        RemoveContainer("carol").Wait();
+        RemoveContainer("miner").GetAwaiter().GetResult();
+        RemoveContainer("alice").GetAwaiter().GetResult();
+        RemoveContainer("bob").GetAwaiter().GetResult();
+        RemoveContainer("carol").GetAwaiter().GetResult();
 
         Builder?.Destroy();
         _client.Dispose();
@@ -84,7 +84,8 @@ public class LightningRegtestNetworkFixture : IDisposable
     {
         try
         {
-            await _client.Containers.RemoveContainerAsync(name, new ContainerRemoveParameters { Force = true, RemoveVolumes = true });
+            await _client.Containers.RemoveContainerAsync(
+                name, new ContainerRemoveParameters { Force = true, RemoveVolumes = true });
         }
         catch
         {

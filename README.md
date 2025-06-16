@@ -44,11 +44,12 @@ You can check our documentation page [here](https://nlightning.ipms.io/)
 ## Quick Start
 
 This section will guide you through getting a copy of NLightning up and running on your local machine for development
-and testing purposes. 
+and testing purposes.
 
 ### Prerequisites
 
 Before you begin, ensure you have the following installed on your system:
+
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or later
 - Git (for cloning the repository)
 
@@ -84,10 +85,12 @@ documentation, your contributions are invaluable to making NLightning fully oper
 
 To start contributing:
 
-- Explore the [Issues](https://github.com/ipms-io/nlightning/issues) section on GitHub to find out what needs to be worked on.
-- Review our [Contributing Guidelines](CONTRIBUTING.md) for details on making contributions, such as how to create pull requests.
+- Explore the [Issues](https://github.com/ipms-io/nlightning/issues) section on GitHub to find out what needs to be
+  worked on.
+- Review our [Contributing Guidelines](CONTRIBUTING.md) for details on making contributions, such as how to create pull
+  requests.
 - If you have a new idea or feature you'd like to work on, don't hesitate to open a new issue to discuss it with the
-- project maintainers.
+  project maintainers.
 
 We encourage you to dive into the codebase, familiarize yourself with the project structure, and see where your skills
 and interests can help drive NLightning forward.
@@ -102,10 +105,10 @@ dotnet test
 
 #### MacOS Users
 
-To run the containerized tests we need to connect directly to the docker containers, but if you're using macOS you won't
-be able to, thanks to the way Docker for Mac is implemented.
+To run the containerized tests, we need to connect directly to the docker containers, but if you're using macOS, you
+won't be able to, thanks to the way Docker for Mac is implemented.
 
-We're using [Docker Mac Net Connect](https://github.com/chipmk/docker-mac-net-connect) due to its simplicity. Just run:
+We're using [Docker Mac Net Connect](https://github.com/chipmk/docker-mac-net-connect) due to its simplicity. Run:
 
 ```sh
 # Install via Homebrew
@@ -123,7 +126,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 As we venture into the development of NLightning, our mission is to create a high-performance, secure, and easy-to-use
 Lightning Network implementation in C#. This project not only aims to contribute to the scalability and adoption of
-Bitcoin also seeks to provide developers with a reliable toolset for building innovative applications on top of the
+Bitcoin but also seeks to provide developers with a reliable toolset for building innovative applications on top of the
 Lightning Network.
 
 However, this journey is not without its challenges. Development, testing, and maintenance require significant resources
@@ -134,7 +137,7 @@ technology, we also recognize the power of community support in achieving these 
 
 Your donations will directly contribute to:
 
-- Accelerating the development process by allowing us to dedicate more time to the project.
+- Speeding up the development process by allowing us to dedicate more time to the project.
 - Improving documentation and tutorials, making the technology accessible to more developers.
 - Expanding our testing frameworks to ensure reliability and security.
 - Supporting the infrastructure needed for development and testing.

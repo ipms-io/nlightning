@@ -1,6 +1,5 @@
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
-using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Application.Channels.Handlers;
 
@@ -12,6 +11,7 @@ using Domain.Enums;
 using Domain.Exceptions;
 using Domain.Node.Options;
 using Domain.Persistence.Interfaces;
+using Domain.Protocol.Interfaces;
 using Domain.Protocol.Messages;
 using Interfaces;
 
@@ -45,7 +45,7 @@ public class ChannelReadyMessageHandler : IChannelMessageHandler<ChannelReadyMes
                                             "This channel is not ready to be opened");
 
         // Check if there's a channel for this peer
-        if (!_channelMemoryRepository.TryGetChannel(payload.ChannelId, out var channel) || channel is null)
+        if (!_channelMemoryRepository.TryGetChannel(payload.ChannelId, out var channel))
             throw new ChannelErrorException("Channel not found", payload.ChannelId,
                                             "This channel is not ready to be opened");
 
@@ -110,7 +110,7 @@ public class ChannelReadyMessageHandler : IChannelMessageHandler<ChannelReadyMes
                 "Received ChannelReady message for channel {ChannelId} in invalid state {CurrentState} (we are initiator). Expected: ReadyForUs",
                 payload.ChannelId, currentState);
 
-            throw new ChannelErrorException($"Unexpected ChannelReady message in state {currentState}",
+            throw new ChannelErrorException($"Unexpected ChannelReady message in state {Enum.GetName(currentState)}",
                                             payload.ChannelId,
                                             "Protocol violation: unexpected ChannelReady message");
         }
@@ -134,7 +134,7 @@ public class ChannelReadyMessageHandler : IChannelMessageHandler<ChannelReadyMes
             "Received ChannelReady message for channel {ChannelId} in invalid state {CurrentState} (we are not initiator). Expected: V1FundingSigned or ReadyForThem",
             payload.ChannelId, currentState);
 
-        throw new ChannelErrorException($"Unexpected ChannelReady message in state {currentState}",
+        throw new ChannelErrorException($"Unexpected ChannelReady message in state {Enum.GetName(currentState)}",
                                         payload.ChannelId,
                                         "Protocol violation: unexpected ChannelReady message");
     }
