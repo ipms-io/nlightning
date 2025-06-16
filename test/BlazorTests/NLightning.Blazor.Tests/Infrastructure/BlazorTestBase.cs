@@ -43,26 +43,8 @@ public class BlazorTestBase : IAsyncLifetime
         {
             var directoryPaths = StaticAssetsHelper.GetRootLevelEntries(assetsFilePath);
 
-            Console.WriteLine("=== BLAZOR TEST BASE DEBUG ===");
-            Console.WriteLine($"Static assets file found: {assetsFilePath}");
-            Console.WriteLine($"Directory paths count: {directoryPaths.Count}");
-
             foreach (var path in directoryPaths)
             {
-                Console.WriteLine($"Path: {path.RelativePath} -> {path.ContentRoot}");
-
-                // Check if the ContentRoot directory exists
-                if (Directory.Exists(path.ContentRoot))
-                {
-                    Console.WriteLine($"  Directory exists: {path.ContentRoot}");
-                    var files = Directory.GetFiles(path.ContentRoot, "*.*", SearchOption.AllDirectories);
-                    Console.WriteLine($"  Files count: {files.Length}");
-                }
-                else
-                {
-                    Console.WriteLine($"  Directory NOT found: {path.ContentRoot}");
-                }
-
                 _server.UseFileServer(new FileServerOptions
                 {
                     FileProvider = new PhysicalFileProvider(path.ContentRoot),
@@ -91,19 +73,9 @@ public class BlazorTestBase : IAsyncLifetime
                     }
                 });
             }
-
-            Console.WriteLine("=== END DEBUG ===");
         }
         else
         {
-            Console.WriteLine($"=== BLAZOR TEST BASE ERROR ===");
-            Console.WriteLine($"Static assets file NOT found: {assetsFilePath}");
-            Console.WriteLine($"Current directory: {Directory.GetCurrentDirectory()}");
-            Console.WriteLine("Files in current directory:");
-            foreach (var file in Directory.GetFiles(".", "*.*", SearchOption.TopDirectoryOnly))
-                Console.WriteLine($"  {file}");
-            Console.WriteLine("=== END ERROR ===");
-
             throw new FileNotFoundException("Could not find test assets file.");
         }
 
