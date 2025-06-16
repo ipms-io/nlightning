@@ -8,8 +8,8 @@ public class BlazorCryptoProviderInitializer : BlazorTestBase
     {
         // Arrange
         Assert.NotNull(Page);
-        await Page.GotoAsync("about:blank",
-                             new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle }); // Make sure page is fresh
+        // Make sure the page is fresh
+        await Page.GotoAsync("about:blank", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
         // Act
         await Page.GotoAsync(RootUri, new PageGotoOptions
