@@ -38,10 +38,10 @@ public class BlazorTestBase : IAsyncLifetime
         }
 
         const string assetsFilePath = "NLightning.BlazorTestApp.staticwebassets.runtime.json";
-        var directoryPaths = StaticAssetsHelper.GetRootLevelEntries(assetsFilePath);
 
         if (File.Exists(assetsFilePath))
         {
+            var directoryPaths = StaticAssetsHelper.GetRootLevelEntries(assetsFilePath);
             foreach (var path in directoryPaths)
             {
                 _server.UseFileServer(new FileServerOptions

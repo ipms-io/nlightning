@@ -10,7 +10,10 @@ public class BlazorCryptoProviderInitializer : BlazorTestBase
         Assert.NotNull(Page);
         // Enable console logging to see what's happening
         var consoleMessages = new List<string>();
-        Page.Console += (_, message) => consoleMessages.Add($"{message.Type}: {message.Text}");
+        Page.Console += (_, message) =>
+        {
+            if (message.Type == "error") consoleMessages.Add($"{message.Type}: {message.Text}");
+        };
 
         // Make sure the page is fresh
         await Page.GotoAsync("about:blank", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });

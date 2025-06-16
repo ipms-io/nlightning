@@ -45,6 +45,8 @@
 
   <ItemGroup>
     <Content Remove="wwwroot\*.js"/>
+    <Content Remove="Crypto\Providers\JS\*.js"/>
+    <Content Remove="Crypto\Providers\JS\*.json"/>
     <StaticWebAsset Remove="wwwroot\*.js"/>
   </ItemGroup>
 
@@ -69,6 +71,17 @@
 
   <Target Name="BuildClientAssets" BeforeTargets="Build" DependsOnTargets="InstallNpmPackages" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
     <Exec Command="npm run build" WorkingDirectory="./Crypto/Providers/JS"/>
+
+    <!-- Debug: List what files were created -->
+    <ItemGroup>
+      <GeneratedFiles Include="wwwroot\**\*.*"/>
+    </ItemGroup>
+    <Message Text="=== Generated files in wwwroot ===" Importance="high"/>
+    <Message Text="%(GeneratedFiles.Identity)" Importance="high"/>
+    <Message Text="=== End generated files ===" Importance="high"/>
+
+    <!-- Verify the specific file exists -->
+    <Message Text="blazorSodium.bundle.js exists: $([System.IO.File]::Exists('$(MSBuildProjectDirectory)\wwwroot\blazorSodium.bundle.js'))" Importance="high"/>
   </Target>
 
   <Target Name="CleanClientAssets" BeforeTargets="Clean" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
@@ -120,10 +133,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NLightning.Domain\NLightning.Domain.csproj"/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\"/>
   </ItemGroup>
 
   <!--  Import regular sdk if the configuration calls for it  -->
