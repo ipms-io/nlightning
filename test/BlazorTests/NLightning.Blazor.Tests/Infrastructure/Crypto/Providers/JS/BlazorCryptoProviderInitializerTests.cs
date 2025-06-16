@@ -1,15 +1,27 @@
+using Xunit.Abstractions;
+
 namespace NLightning.Blazor.Tests.Infrastructure.Crypto.Providers.JS;
 
-[Collection("Blazor Test Collection")]
+using TestCollections;
+
+[Collection(BlazorTestCollection.Name)]
 public class BlazorCryptoProviderInitializer : BlazorTestBase
 {
+    private readonly ITestOutputHelper _testOutputHelper;
+
+    public BlazorCryptoProviderInitializer(ITestOutputHelper testOutputHelper)
+    {
+        _testOutputHelper = testOutputHelper;
+    }
+
     [Fact]
     public async Task GivenHomepage_WhenItLoads_ThenContentIsDisplayedCorrectly()
     {
         // Arrange
         Assert.NotNull(Page);
-        await Page.GotoAsync("about:blank",
-                             new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle }); // Make sure page is fresh
+
+        // Make sure the page is fresh
+        await Page.GotoAsync("about:blank", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
         // Act
         await Page.GotoAsync(RootUri, new PageGotoOptions
@@ -17,6 +29,10 @@ public class BlazorCryptoProviderInitializer : BlazorTestBase
             WaitUntil = WaitUntilState.NetworkIdle,
             Timeout = 5000
         });
+
+        // Check if the page loaded at all
+        var pageTitle = await Page.TitleAsync();
+        Assert.NotNull(pageTitle);
 
         await Page.WaitForSelectorAsync("h1", new PageWaitForSelectorOptions
         {

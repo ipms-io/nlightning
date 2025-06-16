@@ -510,3 +510,7 @@ log/
 
 # Fee Cache File
 fee_estimation_cache.bin
+
+# Node modules and generated files
+**/node_modules/
+**/wwwroot/blazorSodium.bundle.*

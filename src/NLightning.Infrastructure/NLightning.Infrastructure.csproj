@@ -45,6 +45,8 @@
 
   <ItemGroup>
     <Content Remove="wwwroot\*.js"/>
+    <Content Remove="Crypto\Providers\JS\*.js"/>
+    <Content Remove="Crypto\Providers\JS\*.json"/>
     <StaticWebAsset Remove="wwwroot\*.js"/>
   </ItemGroup>
 
@@ -58,9 +60,30 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
-    <Content Include="wwwroot\*.js" LinkBase="wwwroot" CopyToOutputDirectory="PreserveNewest"/>
     <PackageReference Include="Microsoft.JSInterop" Version="8.0.8"/>
   </ItemGroup>
+
+  <!--   NPM/Vite Integration -->
+  <Target Name="InstallNpmPackages" Condition="('$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))) And !Exists('./Crypto/Providers/JS/node_modules')">
+    <Exec Command="npm install" WorkingDirectory="./Crypto/Providers/JS"/>
+  </Target>
+
+  <Target Name="BuildClientAssets" BeforeTargets="BeforeBuild" DependsOnTargets="InstallNpmPackages" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
+    <Exec Command="npm run build" WorkingDirectory="./Crypto/Providers/JS"/>
+  </Target>
+
+  <Target Name="IncludeGeneratedJsFiles" AfterTargets="BuildClientAssets" BeforeTargets="BeforeBuild" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
+    <ItemGroup>
+      <Content Include="wwwroot\*.js" LinkBase="wwwroot" CopyToOutputDirectory="PreserveNewest"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CleanClientAssets" BeforeTargets="Clean" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
+    <ItemGroup>
+      <FilesToDelete Include="$(ProjectDir)/wwwroot/js/blazorSodium.bundle.*"/>
+    </ItemGroup>
+    <Delete Files="@(FilesToDelete)"/>
+  </Target>
 
   <!-- Check if this is being used in AOT projects -->
   <PropertyGroup Condition="'$(PublishAot)' == 'true' Or $(Configuration.Contains('.Native'))">

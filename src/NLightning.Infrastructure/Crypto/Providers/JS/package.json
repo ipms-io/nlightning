@@ -1,0 +1,24 @@
+{
+  "name": "nlightning-blazor-sodium",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "path": "0.12.7",
+    "vite": "6.3.5",
+    "@esbuild/linux-x64": "0.25.5",
+    "@rollup/rollup-linux-x64-gnu": "4.43.0"
+  },
+  "dependencies": {
+    "buffer": "6.0.3",
+    "crypto-browserify": "3.12.1",
+    "events": "3.3.0",
+    "libsodium-wrappers-sumo": "0.7.15",
+    "stream-browserify": "3.0.0",
+    "vm-browserify": "1.1.2"
+  }
+}
