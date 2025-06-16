@@ -1,10 +1,12 @@
 using Newtonsoft.Json;
-using NLightning.Blazor.Tests.Helpers;
 using NLightning.Tests.Utils.Vectors;
 
 namespace NLightning.Blazor.Tests.Infrastructure.Crypto.Providers.JS;
 
-[Collection("Blazor Test Collection")]
+using Helpers;
+using TestCollections;
+
+[Collection(BlazorTestCollection.Name)]
 public class SodiumJsCryptoProviderTests : BlazorTestBase
 {
     [Fact]

@@ -1,13 +1,28 @@
+using Xunit.Abstractions;
+
 namespace NLightning.Blazor.Tests.Infrastructure.Crypto.Providers.JS;
 
-[Collection("Blazor Test Collection")]
+using TestCollections;
+
+[Collection(BlazorTestCollection.Name)]
 public class BlazorCryptoProviderInitializer : BlazorTestBase
 {
+    private readonly ITestOutputHelper _testOutputHelper;
+
+    public BlazorCryptoProviderInitializer(ITestOutputHelper testOutputHelper)
+    {
+        _testOutputHelper = testOutputHelper;
+    }
+
     [Fact]
     public async Task GivenHomepage_WhenItLoads_ThenContentIsDisplayedCorrectly()
     {
         // Arrange
         Assert.NotNull(Page);
+
+        _testOutputHelper.WriteLine("=== BASE CONSTRUCTOR MESSAGES ===");
+        _testOutputHelper.WriteLine(ConsoleOutput.GetStringBuilder().ToString());
+        _testOutputHelper.WriteLine("=== END BASE CONSTRUCTOR MESSAGES ===");
 
         // Enable console logging to see what's happening
         var consoleMessages = new List<string>();
@@ -52,17 +67,17 @@ public class BlazorCryptoProviderInitializer : BlazorTestBase
         catch (Exception ex)
         {
             // Log everything for debugging
-            Console.WriteLine("=== TEST FAILURE DEBUG ===");
+            _testOutputHelper.WriteLine("=== TEST FAILURE DEBUG ===");
 
-            Console.WriteLine("Console messages:");
+            _testOutputHelper.WriteLine("Console messages:");
             foreach (var msg in consoleMessages)
-                Console.WriteLine($"  {msg}");
+                _testOutputHelper.WriteLine($"  {msg}");
 
-            Console.WriteLine("Network requests:");
+            _testOutputHelper.WriteLine("Network requests:");
             foreach (var req in networkRequests)
-                Console.WriteLine($"  {req}");
+                _testOutputHelper.WriteLine($"  {req}");
 
-            Console.WriteLine("=== END DEBUG ===");
+            _testOutputHelper.WriteLine("=== END DEBUG ===");
 
             // Log console messages and page content for debugging
             throw new Exception(
