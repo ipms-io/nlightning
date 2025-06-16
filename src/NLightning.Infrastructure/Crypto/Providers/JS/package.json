@@ -9,7 +9,8 @@
   },
   "devDependencies": {
     "path": "0.12.7",
-    "vite": "6.3.5"
+    "vite": "6.3.5",
+    "@rollup/rollup-linux-x64-gnu": "4.43.0"
   },
   "dependencies": {
     "libsodium-wrappers-sumo": "0.7.15"
