@@ -64,7 +64,7 @@
 
   <!-- NPM/Vite Integration -->
   <Target Name="InstallNpmPackages" Condition="('$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))) And !Exists('./Crypto/Providers/JS/node_modules')">
-    <Exec Command="npm ci" WorkingDirectory="./Crypto/Providers/JS"/>
+    <Exec Command="npm install" WorkingDirectory="./Crypto/Providers/JS"/>
   </Target>
 
   <Target Name="BuildClientAssets" BeforeTargets="Build" DependsOnTargets="InstallNpmPackages" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
