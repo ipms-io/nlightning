@@ -33,8 +33,10 @@ public class BlazorCryptoProviderInitializer : BlazorTestBase
 
         // Track network requests
         var networkRequests = new List<string>();
-        Page.Request += (_, request) => networkRequests.Add($"REQUEST: {request.Method} {request.Url}");
-        Page.Response += (_, response) => networkRequests.Add($"RESPONSE: {response.Status} {response.Url}");
+        Page.Response += (_, response) =>
+        {
+            if (response.Status == 404) networkRequests.Add($"RESPONSE: {response.Status} {response.Url}");
+        };
 
         // Make sure the page is fresh
         await Page.GotoAsync("about:blank", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });

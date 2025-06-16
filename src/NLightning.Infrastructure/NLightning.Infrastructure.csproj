@@ -60,17 +60,22 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
-    <Content Include="wwwroot\*.js" LinkBase="wwwroot" CopyToOutputDirectory="PreserveNewest"/>
     <PackageReference Include="Microsoft.JSInterop" Version="8.0.8"/>
   </ItemGroup>
 
-  <!-- NPM/Vite Integration -->
+  <!--   NPM/Vite Integration -->
   <Target Name="InstallNpmPackages" Condition="('$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))) And !Exists('./Crypto/Providers/JS/node_modules')">
     <Exec Command="npm install" WorkingDirectory="./Crypto/Providers/JS"/>
   </Target>
 
-  <Target Name="BuildClientAssets" BeforeTargets="Build" DependsOnTargets="InstallNpmPackages" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
+  <Target Name="BuildClientAssets" BeforeTargets="BeforeBuild" DependsOnTargets="InstallNpmPackages" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
     <Exec Command="npm run build" WorkingDirectory="./Crypto/Providers/JS"/>
+  </Target>
+
+  <Target Name="IncludeGeneratedJsFiles" AfterTargets="BuildClientAssets" BeforeTargets="BeforeBuild" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
+    <ItemGroup>
+      <Content Include="wwwroot\*.js" LinkBase="wwwroot" CopyToOutputDirectory="PreserveNewest"/>
+    </ItemGroup>
   </Target>
 
   <Target Name="CleanClientAssets" BeforeTargets="Clean" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">

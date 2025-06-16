@@ -57,10 +57,6 @@ public class BlazorTestBase : IAsyncLifetime
                     Console.WriteLine($"  Directory exists: {path.ContentRoot}");
                     var files = Directory.GetFiles(path.ContentRoot, "*.*", SearchOption.AllDirectories);
                     Console.WriteLine($"  Files count: {files.Length}");
-                    foreach (var file in files)
-                    {
-                        Console.WriteLine($"    File: {file}");
-                    }
                 }
                 else
                 {
