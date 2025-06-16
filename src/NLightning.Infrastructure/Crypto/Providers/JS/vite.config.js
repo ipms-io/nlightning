@@ -13,5 +13,12 @@ export default defineConfig({
         outDir: '../../../wwwroot',
         sourcemap: false,
         emptyOutDir: true
+    },
+    resolve: {
+        alias: {
+            buffer: 'buffer/',
+            crypto: 'crypto-browserify/',
+            stream: 'stream-browserify/'
+        }
     }
 });
