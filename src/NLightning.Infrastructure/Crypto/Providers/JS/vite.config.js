@@ -18,7 +18,9 @@ export default defineConfig({
         alias: {
             buffer: 'buffer/',
             crypto: 'crypto-browserify/',
-            stream: 'stream-browserify/'
+            events: 'events/',
+            stream: 'stream-browserify/',
+            vm: 'vm-browserify/'
         }
     }
 });
