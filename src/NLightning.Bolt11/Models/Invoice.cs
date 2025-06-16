@@ -537,6 +537,8 @@ public partial class Invoice
             var invoice = new Invoice(invoiceString, hrp, network, amount, timestamp, taggedFields,
                                       new CompactSignature(signature[^1], signature[..^1]));
 
+            invoice.ValidateRequiredFields();
+
             // Get pubkey from tagged fields
             if (taggedFields.TryGet(TaggedFieldTypes.PayeePubKey, out PayeePubKeyTaggedField? pubkeyTaggedField))
             {
@@ -553,6 +555,38 @@ public partial class Invoice
         }
     }
     #endregion
+
+    private void ValidateRequiredFields()
+    {
+        if (PaymentHash == uint256.Zero)
+        {
+            throw new ArgumentException("Invalid payment_hash.");
+        }
+
+        if (PaymentSecret == uint256.Zero)
+        {
+            throw new ArgumentException("Invalid payment_secret.");
+        }
+
+        var hasDescription = !string.IsNullOrWhiteSpace(Description);
+        var hasDescriptionHash = DescriptionHash != null && DescriptionHash != uint256.Zero;
+
+        if (!hasDescription && !hasDescriptionHash)
+        {
+            throw new ArgumentException("Missing description or description_hash.");
+        }
+
+        if (hasDescription && hasDescriptionHash)
+        {
+            throw new ArgumentException("Only one of description or description_hash is allowed.");
+        }
+
+        if (hasDescription && Encoding.UTF8.GetByteCount(Description!) > 639)
+        {
+            throw new ArgumentException("Description length must not exceed 639 bytes.");
+        }
+
+    }
 
     /// <summary>
     /// Encodes the current invoice into a lightning-compatible invoice format as a string.
