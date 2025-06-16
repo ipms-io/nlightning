@@ -13,6 +13,7 @@
     "@rollup/rollup-linux-x64-gnu": "4.43.0"
   },
   "dependencies": {
+    "crypto-browserify": "3.12.1",
     "libsodium-wrappers-sumo": "0.7.15"
   }
 }

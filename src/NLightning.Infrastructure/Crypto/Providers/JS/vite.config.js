@@ -11,6 +11,7 @@ export default defineConfig({
             fileName: 'blazorSodium.bundle'
         },
         outDir: '../../../wwwroot',
-        sourcemap: false
+        sourcemap: false,
+        emptyOutDir: true
     }
 });
