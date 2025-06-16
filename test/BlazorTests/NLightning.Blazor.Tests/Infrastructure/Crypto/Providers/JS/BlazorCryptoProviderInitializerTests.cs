@@ -8,12 +8,18 @@ public class BlazorCryptoProviderInitializer : BlazorTestBase
     {
         // Arrange
         Assert.NotNull(Page);
+
         // Enable console logging to see what's happening
         var consoleMessages = new List<string>();
         Page.Console += (_, message) =>
         {
             if (message.Type == "error") consoleMessages.Add($"{message.Type}: {message.Text}");
         };
+
+        // Track network requests
+        var networkRequests = new List<string>();
+        Page.Request += (_, request) => networkRequests.Add($"REQUEST: {request.Method} {request.Url}");
+        Page.Response += (_, response) => networkRequests.Add($"RESPONSE: {response.Status} {response.Url}");
 
         // Make sure the page is fresh
         await Page.GotoAsync("about:blank", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
@@ -45,10 +51,22 @@ public class BlazorCryptoProviderInitializer : BlazorTestBase
         }
         catch (Exception ex)
         {
+            // Log everything for debugging
+            Console.WriteLine("=== TEST FAILURE DEBUG ===");
+
+            Console.WriteLine("Console messages:");
+            foreach (var msg in consoleMessages)
+                Console.WriteLine($"  {msg}");
+
+            Console.WriteLine("Network requests:");
+            foreach (var req in networkRequests)
+                Console.WriteLine($"  {req}");
+
+            Console.WriteLine("=== END DEBUG ===");
+
             // Log console messages and page content for debugging
-            var pageContent = await Page.ContentAsync();
             throw new Exception(
-                $"Test failed. Console messages: {string.Join(", ", consoleMessages)}. Page content: {pageContent}",
+                $"Test failed. Console messages: {string.Join(", ", consoleMessages)}. Network requests: {string.Join(", ", networkRequests)}",
                 ex);
         }
     }

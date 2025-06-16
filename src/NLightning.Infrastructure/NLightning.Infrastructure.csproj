@@ -71,17 +71,6 @@
 
   <Target Name="BuildClientAssets" BeforeTargets="Build" DependsOnTargets="InstallNpmPackages" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
     <Exec Command="npm run build" WorkingDirectory="./Crypto/Providers/JS"/>
-
-    <!-- Debug: List what files were created -->
-    <ItemGroup>
-      <GeneratedFiles Include="wwwroot\**\*.*"/>
-    </ItemGroup>
-    <Message Text="=== Generated files in wwwroot ===" Importance="high"/>
-    <Message Text="%(GeneratedFiles.Identity)" Importance="high"/>
-    <Message Text="=== End generated files ===" Importance="high"/>
-
-    <!-- Verify the specific file exists -->
-    <Message Text="blazorSodium.bundle.js exists: $([System.IO.File]::Exists('$(MSBuildProjectDirectory)\wwwroot\blazorSodium.bundle.js'))" Importance="high"/>
   </Target>
 
   <Target Name="CleanClientAssets" BeforeTargets="Clean" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))">
