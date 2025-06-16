@@ -40,35 +40,42 @@ public class BlazorTestBase : IAsyncLifetime
         const string assetsFilePath = "NLightning.BlazorTestApp.staticwebassets.runtime.json";
         var directoryPaths = StaticAssetsHelper.GetRootLevelEntries(assetsFilePath);
 
-        foreach (var path in directoryPaths)
+        if (File.Exists(assetsFilePath))
         {
-            _server.UseFileServer(new FileServerOptions
+            foreach (var path in directoryPaths)
             {
-                FileProvider = new PhysicalFileProvider(path.ContentRoot),
-                RequestPath = path.RelativePath,
-                StaticFileOptions =
+                _server.UseFileServer(new FileServerOptions
                 {
-                    ServeUnknownFileTypes = true,
-                    OnPrepareResponse = ctx =>
+                    FileProvider = new PhysicalFileProvider(path.ContentRoot),
+                    RequestPath = path.RelativePath,
+                    StaticFileOptions =
                     {
-                        if (!IsBlazorFile(ctx.File.Name))
+                        ServeUnknownFileTypes = true,
+                        OnPrepareResponse = ctx =>
                         {
-                            return;
-                        }
-
-                        // Set no-cache headers for Blazor-specific files
-                        ctx.Context.Response.GetTypedHeaders().CacheControl =
-                            new Microsoft.Net.Http.Headers.CacheControlHeaderValue
+                            if (!IsBlazorFile(ctx.File.Name))
                             {
-                                Public = true,
-                                MaxAge = TimeSpan.FromDays(0)
-                            };
+                                return;
+                            }
 
-                        ctx.Context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Pragma] = "no-cache";
-                        ctx.Context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Expires] = "0";
+                            // Set no-cache headers for Blazor-specific files
+                            ctx.Context.Response.GetTypedHeaders().CacheControl =
+                                new Microsoft.Net.Http.Headers.CacheControlHeaderValue
+                                {
+                                    Public = true,
+                                    MaxAge = TimeSpan.FromDays(0)
+                                };
+
+                            ctx.Context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Pragma] = "no-cache";
+                            ctx.Context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Expires] = "0";
+                        }
                     }
-                }
-            });
+                });
+            }
+        }
+        else
+        {
+            throw new FileNotFoundException("Could not find test assets file.");
         }
 
         _server.RunAsync();

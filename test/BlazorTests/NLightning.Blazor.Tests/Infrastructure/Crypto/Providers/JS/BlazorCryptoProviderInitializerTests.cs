@@ -8,27 +8,46 @@ public class BlazorCryptoProviderInitializer : BlazorTestBase
     {
         // Arrange
         Assert.NotNull(Page);
+        // Enable console logging to see what's happening
+        var consoleMessages = new List<string>();
+        Page.Console += (_, message) => consoleMessages.Add($"{message.Type}: {message.Text}");
+
         // Make sure the page is fresh
         await Page.GotoAsync("about:blank", new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
         // Act
-        await Page.GotoAsync(RootUri, new PageGotoOptions
+        try
         {
-            WaitUntil = WaitUntilState.NetworkIdle,
-            Timeout = 5000
-        });
+            await Page.GotoAsync(RootUri, new PageGotoOptions
+            {
+                WaitUntil = WaitUntilState.NetworkIdle,
+                Timeout = 5000
+            });
 
-        await Page.WaitForSelectorAsync("h1", new PageWaitForSelectorOptions
+            // Check if the page loaded at all
+            var pageTitle = await Page.TitleAsync();
+            Assert.NotNull(pageTitle);
+
+            await Page.WaitForSelectorAsync("h1", new PageWaitForSelectorOptions
+            {
+                State = WaitForSelectorState.Visible,
+                Timeout = 5000
+            });
+
+            // Assert
+            var heading = await Page.QuerySelectorAsync("h1");
+            Assert.NotNull(heading);
+            var text = await heading.InnerTextAsync();
+            Assert.Equal("Blazor Test App", text);
+        }
+        catch (Exception ex)
         {
-            State = WaitForSelectorState.Visible,
-            Timeout = 5000
-        });
-
-        // Assert
-        var heading = await Page.QuerySelectorAsync("h1");
-        Assert.NotNull(heading);
-        var text = await heading.InnerTextAsync();
-        Assert.Equal("Blazor Test App", text);
+            // Log console messages and page content for debugging
+            var pageContent = await Page.ContentAsync();
+            throw new Exception(
+                $"Test failed. Console messages: {string.Join(", ", consoleMessages)}. Page content: {pageContent}",
+                ex);
+        }
     }
 
     [Fact]
