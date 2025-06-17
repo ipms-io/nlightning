@@ -123,7 +123,8 @@ internal class TaggedFieldList : List<ITaggedField>
     /// <param name="taggedFieldList">A list containing the tagged fields</param>
     /// <typeparam name="T">The type of the tagged field</typeparam>
     /// <returns>True if the tagged fields were found, false otherwise</returns>
-    internal bool TryGetAll<T>(TaggedFieldTypes taggedFieldType, out List<T> taggedFieldList) where T : ITaggedField
+    internal bool TryGetAll<T>(TaggedFieldTypes taggedFieldType, [MaybeNullWhen(false)] out List<T> taggedFieldList)
+        where T : ITaggedField
     {
         var value = GetAll<T>(taggedFieldType);
         if (value != null)
@@ -132,7 +133,7 @@ internal class TaggedFieldList : List<ITaggedField>
             return true;
         }
 
-        taggedFieldList = [];
+        taggedFieldList = null;
         return false;
     }
 

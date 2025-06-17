@@ -94,7 +94,8 @@ internal sealed class DescriptionTaggedField : ITaggedField
         {
             case < 0:
                 throw new ArgumentException(
-                    "Invalid length for DescriptionTaggedField. Length must be greater or equal to 0", nameof(length));
+                    $"Invalid length for {nameof(DescriptionTaggedField)}. Length must be greater or equal to 0",
+                    nameof(length));
             case 0:
                 return new DescriptionTaggedField(string.Empty);
         }

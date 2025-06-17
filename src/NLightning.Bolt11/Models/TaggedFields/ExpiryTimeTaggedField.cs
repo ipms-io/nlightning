@@ -26,8 +26,8 @@ public sealed class ExpiryTimeTaggedField : ITaggedField
     internal ExpiryTimeTaggedField(int value)
     {
         Value = value;
-        // Calculate the length of the field by getting the number of bits needed to represent the value plus 1
-        // then add 4 to round up to the next multiple of 5 and divide by 5 to get the number of bytes
+        // Calculate the length of the field by getting the number of bits needed to represent the value
+        // plus 1, then add 4 to round up to the next multiple of 5 and divide by 5 to get the number of bytes
         Length = (short)((BitOperations.Log2((uint)Value) + 1 + 4) / 5);
     }
 
@@ -55,8 +55,9 @@ public sealed class ExpiryTimeTaggedField : ITaggedField
     {
         if (length <= 0)
         {
-            throw new ArgumentException("Invalid length for ExpiryTimeTaggedField. Length must be greater than 0",
-                                        nameof(length));
+            throw new ArgumentException(
+                $"Invalid length for {nameof(ExpiryTimeTaggedField)}. Length must be greater than 0",
+                nameof(length));
         }
 
         // Read the data from the BitReader

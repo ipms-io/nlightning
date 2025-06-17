@@ -13,7 +13,8 @@ using Interfaces;
 /// </summary>
 /// <remarks>
 /// The routing information is a collection of routing information entries.
-/// Each entry contains the public key of the node, the short channel id, the base fee in msat, the fee proportional millionths and the cltv expiry delta.
+/// Each entry contains the public key of the node, the short channel id, the base fee in msat, the fee proportional
+/// millionths and the cltv expiry delta.
 /// </remarks>
 /// <seealso cref="ITaggedField"/>
 internal sealed class RoutingInfoTaggedField : ITaggedField

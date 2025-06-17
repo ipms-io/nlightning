@@ -10,7 +10,7 @@ using Interfaces;
 /// Tagged field for the minimum final cltv expiry
 /// </summary>
 /// <remarks>
-/// The minimum final cltv expiry is a 4 byte field that specifies the minimum number of blocks that the receiver should wait to claim the payment
+/// The minimum final cltv expiry is a 4-byte field that specifies the minimum number of blocks that the receiver should wait to claim the payment
 /// </remarks>
 /// <seealso cref="ITaggedField"/>
 internal sealed class MinFinalCltvExpiryTaggedField : ITaggedField
@@ -26,7 +26,7 @@ internal sealed class MinFinalCltvExpiryTaggedField : ITaggedField
     internal MinFinalCltvExpiryTaggedField(ushort value)
     {
         Value = value;
-        // Calculate the length of the field by getting the number of bits needed to represent the value plus 1
+        // Calculate the length of the field by getting the number of bits needed to represent the value plus 1,
         // then add 4 to round up to the next multiple of 5 and divide by 5 to get the number of bytes
         Length = (short)((BitOperations.Log2(Value) + 1 + 4) / 5);
     }
@@ -55,7 +55,8 @@ internal sealed class MinFinalCltvExpiryTaggedField : ITaggedField
     {
         if (length <= 0)
             throw new ArgumentException(
-                "Invalid length for MinFinalCltvExpiryTaggedField. Length must be greater than 0", nameof(length));
+                $"Invalid length for {nameof(MinFinalCltvExpiryTaggedField)}. Length must be greater than 0",
+                nameof(length));
 
         // Read the data from the BitReader
         var value = bitReader.ReadUInt16FromBits(length * 5);

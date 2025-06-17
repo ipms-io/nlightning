@@ -11,7 +11,7 @@ using Interfaces;
 /// Tagged field for the description hash
 /// </summary>
 /// <remarks>
-/// The description hash is a 32 byte hash that is used to identify a description
+/// The description hash is a 32-byte hash used to identify a description
 /// </remarks>
 /// <seealso cref="ITaggedField"/>
 internal sealed class DescriptionHashTaggedField : ITaggedField
@@ -59,7 +59,7 @@ internal sealed class DescriptionHashTaggedField : ITaggedField
     {
         if (length != TaggedFieldConstants.HashLength)
             throw new ArgumentException(
-                $"Invalid length for DescriptionHashTaggedField. Expected {TaggedFieldConstants.HashLength}, but got {length}");
+                $"Invalid length for {nameof(DescriptionHashTaggedField)}. Expected {TaggedFieldConstants.HashLength}, but got {length}");
 
         // Read the data from the BitReader
         var data = new byte[(TaggedFieldConstants.HashLength * 5 + 7) / 8];

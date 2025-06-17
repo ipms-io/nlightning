@@ -11,7 +11,7 @@ using Interfaces;
 /// Tagged field for the payment hash
 /// </summary>
 /// <remarks>
-/// The payment hash is a 32 byte hash that is used to identify a payment
+/// The payment hash is a 32-byte hash used to identify a payment
 /// </remarks>
 /// <seealso cref="ITaggedField"/>
 internal sealed class PaymentHashTaggedField : ITaggedField
@@ -57,7 +57,7 @@ internal sealed class PaymentHashTaggedField : ITaggedField
     {
         if (length != TaggedFieldConstants.HashLength)
             throw new ArgumentException(
-                $"Invalid length for PaymentHashTaggedField. Expected {TaggedFieldConstants.HashLength}, but got {length}");
+                $"Invalid length for {nameof(PaymentHashTaggedField)}. Expected {TaggedFieldConstants.HashLength}, but got {length}");
 
         // Read the data from the BitReader
         var data = new byte[(TaggedFieldConstants.HashLength * 5 + 7) / 8];

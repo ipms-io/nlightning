@@ -53,8 +53,9 @@ internal sealed class FeaturesTaggedField : ITaggedField
     internal static FeaturesTaggedField FromBitReader(BitReader bitReader, short length)
     {
         if (length <= 0)
-            throw new ArgumentException("Invalid length for FeaturesTaggedField. Length must be greater than 0",
-                                        nameof(length));
+            throw new ArgumentException(
+                $"Invalid length for {nameof(FeaturesTaggedField)}. Length must be greater than 0",
+                nameof(length));
 
         var shouldPad = length * 5 / 8 == (length * 5 - 7) / 8;
         var features = FeatureSet.DeserializeFromBitReader(bitReader, length * 5, shouldPad);
