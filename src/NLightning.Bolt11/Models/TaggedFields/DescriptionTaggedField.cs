@@ -15,6 +15,7 @@ using Interfaces;
 /// <seealso cref="ITaggedField"/>
 internal sealed class DescriptionTaggedField : ITaggedField
 {
+    private const int MaxDescriptionBytes = 639;
     private readonly byte[] _data;
 
     public TaggedFieldTypes Type => TaggedFieldTypes.Description;
@@ -38,6 +39,13 @@ internal sealed class DescriptionTaggedField : ITaggedField
         {
             // Add Padding if needed
             var data = Encoding.UTF8.GetBytes(Value);
+            if (data.Length > MaxDescriptionBytes)
+            {
+                throw new ArgumentException(
+                    $"Description exceeds maximum length of {MaxDescriptionBytes} UTF-8 bytes. Current: {data.Length} bytes",
+                    nameof(value));
+            }
+
             var bitLength = data.Length * 8;
             var totalBits = bitLength + (5 - bitLength % 5) % 5;
             if (totalBits != bitLength)
@@ -69,7 +77,12 @@ internal sealed class DescriptionTaggedField : ITaggedField
     /// <inheritdoc/>
     public bool IsValid()
     {
-        return true;
+        // Field-level validation
+        if (string.IsNullOrEmpty(Value))
+            return true; // Empty description is valid
+
+        var utf8Bytes = Encoding.UTF8.GetBytes(Value);
+        return utf8Bytes.Length <= MaxDescriptionBytes;
     }
 
     /// <summary>

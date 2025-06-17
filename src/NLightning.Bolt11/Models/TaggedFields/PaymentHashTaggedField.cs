@@ -45,7 +45,7 @@ internal sealed class PaymentHashTaggedField : ITaggedField
     /// <inheritdoc/>
     public bool IsValid()
     {
-        return Value != uint256.Zero;
+        return Value != uint256.Zero && Value != uint256.One;
     }
 
     /// <summary>
@@ -69,9 +69,7 @@ internal sealed class PaymentHashTaggedField : ITaggedField
         data = data[..^1];
 
         if (BitConverter.IsLittleEndian)
-        {
             Array.Reverse(data);
-        }
 
         return new PaymentHashTaggedField(new uint256(data));
     }

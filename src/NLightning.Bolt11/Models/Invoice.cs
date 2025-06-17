@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.RegularExpressions;
 using NBitcoin;
@@ -18,6 +19,7 @@ using Enums;
 using Exceptions;
 using Infrastructure.Bitcoin.Encoders;
 using Infrastructure.Crypto.Hashes;
+using Services;
 using TaggedFields;
 
 /// <summary>
@@ -29,6 +31,9 @@ using TaggedFields;
 public partial class Invoice
 {
     #region Private Fields
+
+    private static readonly InvoiceValidationService s_invoiceValidationService = new();
+
     private static readonly Dictionary<string, BitcoinNetwork> s_supportedNetworks = new()
     {
         { InvoiceConstants.PrefixMainet, BitcoinNetwork.Mainnet },
@@ -49,9 +54,11 @@ public partial class Invoice
     private TaggedFieldList TaggedFields { get; } = [];
 
     private string? _invoiceString;
+
     #endregion
 
     #region Public Properties
+
     /// <summary>
     /// The network the invoice is created for
     /// </summary>
@@ -79,26 +86,32 @@ public partial class Invoice
     /// The human-readable part of the invoice
     /// </summary>
     public string HumanReadablePart { get; }
+
     #endregion
 
     #region Public Properties from Tagged Fields
+
     /// <summary>
     /// The payment hash of the invoice
     /// </summary>
     /// <remarks>
-    /// The payment hash is a 32 byte hash that is used to identify a payment
+    /// The payment hash is a 32-byte hash used to identify a payment
     /// </remarks>
     /// <seealso cref="NBitcoin.uint256"/>
-    public uint256 PaymentHash
+    [DisallowNull]
+    public uint256? PaymentHash
     {
         get
         {
-            return TaggedFields.TryGet(TaggedFieldTypes.PaymentHash, out PaymentHashTaggedField? paymentHash)
-                ? paymentHash!.Value
-                : new uint256();
+            return TaggedFields.TryGet<PaymentHashTaggedField>(TaggedFieldTypes.PaymentHash, out var paymentHash)
+                       ? paymentHash.Value
+                       : null;
         }
         internal set
         {
+            if (value == uint256.Zero || value == uint256.One)
+                throw new ArgumentException("Payment hash must be a valid 32-byte hash.", nameof(value));
+
             TaggedFields.Add(new PaymentHashTaggedField(value));
         }
     }
@@ -111,21 +124,19 @@ public partial class Invoice
     /// </remarks>
     /// <seealso cref="RoutingInfoCollection"/>
     /// <seealso cref="RoutingInfo"/>
+    [DisallowNull]
     public RoutingInfoCollection? RoutingInfos
     {
         get
         {
-            return TaggedFields.TryGet(TaggedFieldTypes.RoutingInfo, out RoutingInfoTaggedField? routingInfo)
-                ? routingInfo!.Value
-                : null;
+            return TaggedFields.TryGet<RoutingInfoTaggedField>(TaggedFieldTypes.RoutingInfo, out var routingInfo)
+                       ? routingInfo.Value
+                       : null;
         }
         set
         {
-            if (value != null)
-            {
-                TaggedFields.Add(new RoutingInfoTaggedField(value));
-                value.Changed += OnTaggedFieldsChanged;
-            }
+            TaggedFields.Add(new RoutingInfoTaggedField(value));
+            value.Changed += OnTaggedFieldsChanged;
         }
     }
 
@@ -136,21 +147,19 @@ public partial class Invoice
     /// The features are used to specify the features the payer should support
     /// </remarks>
     /// <seealso cref="FeatureSet"/>
+    [DisallowNull]
     public FeatureSet? Features
     {
         get
         {
-            return TaggedFields.TryGet(TaggedFieldTypes.Features, out FeaturesTaggedField? features)
-                ? features!.Value
-                : null;
+            return TaggedFields.TryGet<FeaturesTaggedField>(TaggedFieldTypes.Features, out var features)
+                       ? features.Value
+                       : null;
         }
         set
         {
-            if (value != null)
-            {
-                TaggedFields.Add(new FeaturesTaggedField(value));
-                value.Changed += OnTaggedFieldsChanged;
-            }
+            TaggedFields.Add(new FeaturesTaggedField(value));
+            value.Changed += OnTaggedFieldsChanged;
         }
     }
 
@@ -165,9 +174,9 @@ public partial class Invoice
     {
         get
         {
-            return TaggedFields.TryGet(TaggedFieldTypes.ExpiryTime, out ExpiryTimeTaggedField? expireIn)
-                ? DateTimeOffset.FromUnixTimeSeconds(Timestamp + expireIn!.Value)
-                : DateTimeOffset.FromUnixTimeSeconds(Timestamp + InvoiceConstants.DefaultExpirationSeconds);
+            return TaggedFields.TryGet<ExpiryTimeTaggedField>(TaggedFieldTypes.ExpiryTime, out var expireIn)
+                       ? DateTimeOffset.FromUnixTimeSeconds(Timestamp + expireIn.Value)
+                       : DateTimeOffset.FromUnixTimeSeconds(Timestamp + InvoiceConstants.DefaultExpirationSeconds);
         }
         set
         {
@@ -183,21 +192,19 @@ public partial class Invoice
     /// The fallback addresses are used to specify the fallback addresses the payer can use
     /// </remarks>
     /// <seealso cref="BitcoinAddress"/>
+    [DisallowNull]
     public List<BitcoinAddress>? FallbackAddresses
     {
         get
         {
             return TaggedFields
-                .TryGetAll(TaggedFieldTypes.FallbackAddress, out List<FallbackAddressTaggedField> fallbackAddress)
-                    ? fallbackAddress.Select(x => x.Value).ToList()
-                    : null;
+                      .TryGetAll(TaggedFieldTypes.FallbackAddress, out List<FallbackAddressTaggedField> fallbackAddress)
+                       ? fallbackAddress.Select(x => x.Value).ToList()
+                       : null;
         }
         set
         {
-            if (value != null)
-            {
-                TaggedFields.AddRange(value.Select(x => new FallbackAddressTaggedField(x)));
-            }
+            TaggedFields.AddRange(value.Select(x => new FallbackAddressTaggedField(x)));
         }
     }
 
@@ -211,15 +218,19 @@ public partial class Invoice
     {
         get
         {
-            return TaggedFields.TryGet(TaggedFieldTypes.Description, out DescriptionTaggedField? description)
-                ? description!.Value
-                : null;
+            return TaggedFields.TryGet<DescriptionTaggedField>(TaggedFieldTypes.Description, out var description)
+                       ? description.Value
+                       : null;
         }
         internal set
         {
             if (value != null)
             {
                 TaggedFields.Add(new DescriptionTaggedField(value));
+            }
+            else
+            {
+                TaggedFields.RemoveAll(t => t.Type.Equals(TaggedFieldTypes.Description));
             }
         }
     }
@@ -228,16 +239,17 @@ public partial class Invoice
     /// The payment secret of the invoice
     /// </summary>
     /// <remarks>
-    /// The payment secret is a 32 byte secret that is used to identify a payment
+    /// The payment secret is a 32-byte secret used to identify a payment
     /// </remarks>
     /// <seealso cref="uint256"/>
-    public uint256 PaymentSecret
+    [DisallowNull]
+    public uint256? PaymentSecret
     {
         get
         {
-            return TaggedFields.TryGet(TaggedFieldTypes.PaymentSecret, out PaymentSecretTaggedField? paymentSecret)
-                ? paymentSecret!.Value
-                : new uint256();
+            return TaggedFields.TryGet<PaymentSecretTaggedField>(TaggedFieldTypes.PaymentSecret, out var paymentSecret)
+                       ? paymentSecret.Value
+                       : null;
         }
         internal set
         {
@@ -252,20 +264,18 @@ public partial class Invoice
     /// The payee pubkey is the pubkey of the payee
     /// </remarks>
     /// <seealso cref="PubKey"/>
+    [DisallowNull]
     public PubKey? PayeePubKey
     {
         get
         {
-            return TaggedFields.TryGet(TaggedFieldTypes.PayeePubKey, out PayeePubKeyTaggedField? payeePubKey)
-                ? payeePubKey!.Value
-                : null;
+            return TaggedFields.TryGet<PayeePubKeyTaggedField>(TaggedFieldTypes.PayeePubKey, out var payeePubKey)
+                       ? payeePubKey.Value
+                       : null;
         }
         set
         {
-            if (value != null)
-            {
-                TaggedFields.Add(new PayeePubKeyTaggedField(value));
-            }
+            TaggedFields.Add(new PayeePubKeyTaggedField(value));
         }
     }
 
@@ -273,7 +283,7 @@ public partial class Invoice
     /// The description hash of the invoice
     /// </summary>
     /// <remarks>
-    /// The description hash is a 32 byte hash of the description
+    /// The description hash is a 32-byte hash of the description
     /// </remarks>
     /// <seealso cref="uint256"/>
     public uint256? DescriptionHash
@@ -281,15 +291,20 @@ public partial class Invoice
         get
         {
             return TaggedFields
-                .TryGet(TaggedFieldTypes.DescriptionHash, out DescriptionHashTaggedField? descriptionHash)
-                    ? descriptionHash!.Value
-                    : null;
+                      .TryGet<DescriptionHashTaggedField>(TaggedFieldTypes.DescriptionHash, out var descriptionHash)
+                       ? descriptionHash.Value
+                       : null;
         }
         internal set
         {
             if (value != null)
             {
                 TaggedFields.Add(new DescriptionHashTaggedField(value));
+            }
+            else
+            {
+                // If the description hash is set to null, remove it from the tagged fields
+                TaggedFields.RemoveAll(x => x.Type.Equals(TaggedFieldTypes.DescriptionHash));
             }
         }
     }
@@ -300,21 +315,19 @@ public partial class Invoice
     /// <remarks>
     /// The min final cltv expiry is the minimum final cltv expiry the payer should use
     /// </remarks>
+    [DisallowNull]
     public ushort? MinFinalCltvExpiry
     {
         get
         {
-            return TaggedFields
-                .TryGet(TaggedFieldTypes.MinFinalCltvExpiry, out MinFinalCltvExpiryTaggedField? minFinalCltvExpiry)
-                    ? minFinalCltvExpiry!.Value
-                    : null;
+            return TaggedFields.TryGet<MinFinalCltvExpiryTaggedField>(TaggedFieldTypes.MinFinalCltvExpiry,
+                                                                      out var minFinalCltvExpiry)
+                       ? minFinalCltvExpiry.Value
+                       : null;
         }
         set
         {
-            if (value.HasValue)
-            {
-                TaggedFields.Add(new MinFinalCltvExpiryTaggedField(value.Value));
-            }
+            TaggedFields.Add(new MinFinalCltvExpiryTaggedField(value.Value));
         }
     }
 
@@ -328,9 +341,9 @@ public partial class Invoice
     {
         get
         {
-            return TaggedFields.TryGet(TaggedFieldTypes.Metadata, out MetadataTaggedField? metadata)
-                ? metadata!.Value
-                : null;
+            return TaggedFields.TryGet<MetadataTaggedField>(TaggedFieldTypes.Metadata, out var metadata)
+                       ? metadata.Value
+                       : null;
         }
         set
         {
@@ -338,8 +351,13 @@ public partial class Invoice
             {
                 TaggedFields.Add(new MetadataTaggedField(value));
             }
+            else
+            {
+                TaggedFields.RemoveAll(x => x.Type.Equals(TaggedFieldTypes.Metadata));
+            }
         }
     }
+
     #endregion
 
     #region Constructors
@@ -446,7 +464,8 @@ public partial class Invoice
     /// timestamp and tagged fields.
     /// </remarks>
     /// <seealso cref="BitcoinNetwork"/>
-    private Invoice(string invoiceString, string humanReadablePart, BitcoinNetwork bitcoinNetwork, LightningMoney amount,
+    private Invoice(string invoiceString, string humanReadablePart, BitcoinNetwork bitcoinNetwork,
+                    LightningMoney amount,
                     long timestamp, TaggedFieldList taggedFields, CompactSignature signature)
     {
         _invoiceString = invoiceString;
@@ -460,6 +479,7 @@ public partial class Invoice
 
         TaggedFields.Changed += OnTaggedFieldsChanged;
     }
+
     #endregion
 
     #region Static Constructors
@@ -480,7 +500,8 @@ public partial class Invoice
     public static Invoice InSatoshis(ulong amountSats, string description, uint256 paymentHash, uint256 paymentSecret,
                                      BitcoinNetwork bitcoinNetwork)
     {
-        return new Invoice(LightningMoney.Satoshis(amountSats), description, paymentHash, paymentSecret, bitcoinNetwork);
+        return new Invoice(LightningMoney.Satoshis(amountSats), description, paymentHash, paymentSecret,
+                           bitcoinNetwork);
     }
 
     /// <summary>
@@ -499,7 +520,8 @@ public partial class Invoice
     public static Invoice InSatoshis(ulong amountSats, uint256 descriptionHash, uint256 paymentHash,
                                      uint256 paymentSecret, BitcoinNetwork bitcoinNetwork)
     {
-        return new Invoice(LightningMoney.Satoshis(amountSats), descriptionHash, paymentHash, paymentSecret, bitcoinNetwork);
+        return new Invoice(LightningMoney.Satoshis(amountSats), descriptionHash, paymentHash, paymentSecret,
+                           bitcoinNetwork);
     }
 
     /// <summary>
@@ -518,10 +540,8 @@ public partial class Invoice
             Bech32Encoder.DecodeLightningInvoice(invoiceString, out var data, out var signature, out var hrp);
 
             var network = GetNetwork(invoiceString);
-            if (expectedNetwork != null && network != expectedNetwork)
-            {
+            if (expectedNetwork is not null && network != expectedNetwork)
                 throw new InvoiceSerializationException("Expected network does not match");
-            }
 
             var amount = ConvertHumanReadableToMilliSatoshis(hrp);
 
@@ -537,13 +557,10 @@ public partial class Invoice
             var invoice = new Invoice(invoiceString, hrp, network, amount, timestamp, taggedFields,
                                       new CompactSignature(signature[^1], signature[..^1]));
 
-            invoice.ValidateRequiredFields();
+            var validationResult = s_invoiceValidationService.ValidateInvoice(invoice);
+            if (!validationResult.IsValid)
+                throw new InvoiceSerializationException(string.Join(", ", validationResult.Errors));
 
-            // Get pubkey from tagged fields
-            if (taggedFields.TryGet(TaggedFieldTypes.PayeePubKey, out PayeePubKeyTaggedField? pubkeyTaggedField))
-            {
-                invoice.PayeePubKey = pubkeyTaggedField?.Value;
-            }
             // Check Signature
             invoice.CheckSignature(data);
 
@@ -554,39 +571,8 @@ public partial class Invoice
             throw new InvoiceSerializationException("Error decoding invoice", e);
         }
     }
+
     #endregion
-
-    private void ValidateRequiredFields()
-    {
-        if (PaymentHash == uint256.Zero)
-        {
-            throw new ArgumentException("Invalid payment_hash.");
-        }
-
-        if (PaymentSecret == uint256.Zero)
-        {
-            throw new ArgumentException("Invalid payment_secret.");
-        }
-
-        var hasDescription = !string.IsNullOrWhiteSpace(Description);
-        var hasDescriptionHash = DescriptionHash != null && DescriptionHash != uint256.Zero;
-
-        if (!hasDescription && !hasDescriptionHash)
-        {
-            throw new ArgumentException("Missing description or description_hash.");
-        }
-
-        if (hasDescription && hasDescriptionHash)
-        {
-            throw new ArgumentException("Only one of description or description_hash is allowed.");
-        }
-
-        if (hasDescription && Encoding.UTF8.GetByteCount(Description!) > 639)
-        {
-            throw new ArgumentException("Description length must not exceed 639 bytes.");
-        }
-
-    }
 
     /// <summary>
     /// Encodes the current invoice into a lightning-compatible invoice format as a string.
@@ -644,6 +630,7 @@ public partial class Invoice
     }
 
     #region Overrides
+
     public override string ToString()
     {
         return string.IsNullOrWhiteSpace(_invoiceString) ? Encode() : _invoiceString;
@@ -665,17 +652,18 @@ public partial class Invoice
     {
         return string.IsNullOrWhiteSpace(_invoiceString) ? Encode(nodeKey) : _invoiceString;
     }
+
     #endregion
 
     #region Private Methods
+
     private string BuildHumanReadablePart()
     {
         StringBuilder sb = new(InvoiceConstants.Prefix);
         sb.Append(GetPrefix(BitcoinNetwork));
         if (!Amount.IsZero)
-        {
             ConvertAmountToHumanReadable(Amount, sb);
-        }
+
         return sb.ToString();
     }
 
@@ -750,22 +738,16 @@ public partial class Invoice
     {
         var match = AmountRegex().Match(humanReadablePart);
         if (!match.Success)
-        {
             throw new ArgumentException("Invalid amount format in invoice", nameof(humanReadablePart));
-        }
 
         var amountString = match.Groups[2].Value;
         var multiplier = match.Groups[3].Value;
         var millisatoshis = 0ul;
         if (!ulong.TryParse(amountString, out var amount))
-        {
             return millisatoshis;
-        }
 
         if (multiplier == "p" && amount % 10 != 0)
-        {
             throw new ArgumentException("Invalid pico amount in invoice", nameof(humanReadablePart));
-        }
 
         // Calculate the millisatoshis
         millisatoshis = multiplier switch
@@ -796,17 +778,15 @@ public partial class Invoice
         var nBitcoinHash = new uint256(hash);
 
         // Check if recovery is necessary
-        if (PayeePubKey == null)
+        if (PayeePubKey is null)
         {
             PayeePubKey = PubKey.RecoverCompact(nBitcoinHash, Signature);
             return;
         }
 
         if (NBitcoin.Crypto.ECDSASignature.TryParseFromCompact(Signature.Signature, out var ecdsa)
-            && PayeePubKey.Verify(nBitcoinHash, ecdsa))
-        {
+         && PayeePubKey.Verify(nBitcoinHash, ecdsa))
             return;
-        }
 
         throw new ArgumentException("Invalid signature in invoice");
     }
@@ -835,11 +815,9 @@ public partial class Invoice
         ArgumentException.ThrowIfNullOrWhiteSpace(invoiceString);
 
         if (!s_supportedNetworks.TryGetValue(invoiceString.Substring(2, 4), out var network)
-            && !s_supportedNetworks.TryGetValue(invoiceString.Substring(2, 3), out network)
-            && !s_supportedNetworks.TryGetValue(invoiceString.Substring(2, 2), out network))
-        {
+         && !s_supportedNetworks.TryGetValue(invoiceString.Substring(2, 3), out network)
+         && !s_supportedNetworks.TryGetValue(invoiceString.Substring(2, 2), out network))
             throw new ArgumentException("Unsupported prefix in invoice", nameof(invoiceString));
-        }
 
         return network;
     }
@@ -848,5 +826,6 @@ public partial class Invoice
     {
         _invoiceString = null;
     }
+
     #endregion
 }

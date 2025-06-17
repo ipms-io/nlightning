@@ -13,7 +13,7 @@ output directory on publish.
 
 ## v3.0.0
 
-Moved all needed classes to `NLightning.Bolt11` project.
+Moved all necessary classes to `NLightning.Bolt11` project.
 
 ### Added
 
@@ -22,7 +22,7 @@ Moved all needed classes to `NLightning.Bolt11` project.
 
 ### Breaking Changes
 
-- All namespaces have been changed to conform to new project structure;
+- All namespaces have been changed to conform to the new project structure;
 
 ## v2.0.0
 
@@ -84,7 +84,8 @@ Fix Invoice.TaggedFields' Collection item update behavior
 
 ### Added
 
-- Added `EventHandler` on `TaggedFieldList`, `RoutingInfoCollection`, and `Features` to inform subscribers upon changes in the collection;
+- Added `EventHandler` on `TaggedFieldList`, `RoutingInfoCollection`, and `Features` to inform subscribers upon changes
+  in the collection;
 
 ### Changed
 
@@ -126,7 +127,7 @@ Add WebAssembly capabilities
 ### Deprecated
 
 - Deprecated InvoiceProxy `NLightning.Bolt11.Invoice` in favor of using `NLightning.Bolts.BOLT11.Invoice` directly.
-This class will be removed on version `v1.x.x`;
+  This class will be removed on version `v1.x.x`;
 
 ## v0.1.0
 
