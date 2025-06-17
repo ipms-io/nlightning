@@ -45,7 +45,7 @@ internal sealed class DescriptionHashTaggedField : ITaggedField
     /// <inheritdoc/>
     public bool IsValid()
     {
-        return Value != uint256.Zero;
+        return Value != uint256.Zero && Value != uint256.One;
     }
 
     /// <summary>
@@ -58,10 +58,8 @@ internal sealed class DescriptionHashTaggedField : ITaggedField
     internal static DescriptionHashTaggedField FromBitReader(BitReader bitReader, short length)
     {
         if (length != TaggedFieldConstants.HashLength)
-        {
             throw new ArgumentException(
                 $"Invalid length for DescriptionHashTaggedField. Expected {TaggedFieldConstants.HashLength}, but got {length}");
-        }
 
         // Read the data from the BitReader
         var data = new byte[(TaggedFieldConstants.HashLength * 5 + 7) / 8];
@@ -69,9 +67,7 @@ internal sealed class DescriptionHashTaggedField : ITaggedField
         data = data[..^1];
 
         if (BitConverter.IsLittleEndian)
-        {
             Array.Reverse(data);
-        }
 
         return new DescriptionHashTaggedField(new uint256(data));
     }

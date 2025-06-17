@@ -50,10 +50,8 @@ internal sealed class MetadataTaggedField : ITaggedField
     internal static MetadataTaggedField FromBitReader(BitReader bitReader, short length)
     {
         if (length <= 0)
-        {
             throw new ArgumentException("Invalid length for MetadataTaggedField. Length must be greater than 0",
                                         nameof(length));
-        }
 
         // Read the data from the BitReader
         var data = new byte[(length * 5 + 7) / 8];

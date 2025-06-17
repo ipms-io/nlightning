@@ -5,25 +5,35 @@
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Version>0.0.1</Version>
     <Configurations>Debug;Release;Debug.Native;Debug.Wasm;Release.Native;Release.Wasm</Configurations>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug.Native' ">
-    <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
-    <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
+  <PropertyGroup>
+    <Authors>Nickolas Goline</Authors>
+    <Description>Bitcoin Infrastructure Library for NLightning</Description>
+    <Copyright>Copyright © Níckolas Goline 2024-2025</Copyright>
+    <RepositoryUrl>https://github.com/ipms-io/nlightning</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <AssemblyVersion>0.0.1</AssemblyVersion>
+    <FileVersion>0.0.1</FileVersion>
+    <NeutralLanguage>en</NeutralLanguage>
+    <Icon>logo.png</Icon>
+    <PackageTags>lightning-network,bitcoin,crypto,infrastructure,dotnet,cryptography,cross-platform,libsodium,blazor,webassembly,aot</PackageTags>
+    <PackageProjectUrl>https://nlightning.ipms.io/api/NLightning.Infrastructure.html</PackageProjectUrl>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageId>NLightning.Infrastructure.Bitcoin</PackageId>
+    <PackageReleaseNotes>Initial release of the NLightning.Infrastructure.Bitcoin library.</PackageReleaseNotes>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug.Wasm' ">
-    <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
-    <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
+  <PropertyGroup Condition="$(Configuration.Contains('Debug'))">
+    <DefineConstants>DEBUG;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release.Native' ">
-    <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release.Wasm' ">
+  <PropertyGroup Condition="$(Configuration.Contains('Release'))">
     <Optimize Condition=" '$(Optimize)' == '' ">true</Optimize>
   </PropertyGroup>
 
@@ -32,6 +42,21 @@
     <PackageReference Include="NBitcoin" Version="8.0.13"/>
     <PackageReference Include="NBitcoin.Secp256k1" Version="3.1.6"/>
     <PackageReference Include="NetMQ" Version="4.0.1.16"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\images\logo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

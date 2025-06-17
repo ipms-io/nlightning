@@ -7,11 +7,11 @@
 
   <PropertyGroup>
     <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
-    <LangVersion>default</LangVersion>
+    <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>0.0.2</Version>
+    <Version>1.0.0</Version>
     <Configurations>Debug;Release;Debug.Native;Debug.Wasm;Release.Native;Release.Wasm</Configurations>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
@@ -22,8 +22,8 @@
     <Copyright>Copyright © Níckolas Goline 2024-2025</Copyright>
     <RepositoryUrl>https://github.com/ipms-io/nlightning</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>0.0.2</AssemblyVersion>
-    <FileVersion>0.0.2</FileVersion>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <Icon>logo.png</Icon>
     <PackageTags>lightning-network,bitcoin,crypto,infrastructure,dotnet,cryptography,cross-platform,libsodium,blazor,webassembly,aot</PackageTags>
@@ -32,7 +32,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageId>NLightning.Infrastructure</PackageId>
-    <PackageReleaseNotes>Disabled the `Build Compression` for the `*.Wasm` target.</PackageReleaseNotes>
+    <PackageReleaseNotes>This version introduces a comprehensive refactoring of the `NLightning.Infrastructure` layer, focusing on enhancing peer-to-peer networking, TCP transport capabilities, and cryptographic services. Key changes include the introduction of new services, significant API modifications, and updates to dependencies, aiming for improved modularity and robustness.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))">

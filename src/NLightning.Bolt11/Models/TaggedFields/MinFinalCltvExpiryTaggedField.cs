@@ -54,10 +54,8 @@ internal sealed class MinFinalCltvExpiryTaggedField : ITaggedField
     internal static MinFinalCltvExpiryTaggedField FromBitReader(BitReader bitReader, short length)
     {
         if (length <= 0)
-        {
             throw new ArgumentException(
                 "Invalid length for MinFinalCltvExpiryTaggedField. Length must be greater than 0", nameof(length));
-        }
 
         // Read the data from the BitReader
         var value = bitReader.ReadUInt16FromBits(length * 5);

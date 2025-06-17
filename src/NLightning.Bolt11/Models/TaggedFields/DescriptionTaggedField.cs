@@ -40,11 +40,9 @@ internal sealed class DescriptionTaggedField : ITaggedField
             // Add Padding if needed
             var data = Encoding.UTF8.GetBytes(Value);
             if (data.Length > MaxDescriptionBytes)
-            {
                 throw new ArgumentException(
                     $"Description exceeds maximum length of {MaxDescriptionBytes} UTF-8 bytes. Current: {data.Length} bytes",
                     nameof(value));
-            }
 
             var bitLength = data.Length * 8;
             var totalBits = bitLength + (5 - bitLength % 5) % 5;
@@ -66,9 +64,7 @@ internal sealed class DescriptionTaggedField : ITaggedField
     public void WriteToBitWriter(BitWriter bitWriter)
     {
         if (Length == 0)
-        {
             return;
-        }
 
         // Write data
         bitWriter.WriteBits(_data, Length * 5);

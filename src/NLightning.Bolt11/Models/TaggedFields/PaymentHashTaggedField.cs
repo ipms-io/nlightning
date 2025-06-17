@@ -34,9 +34,7 @@ internal sealed class PaymentHashTaggedField : ITaggedField
     {
         var data = Value.ToBytes();
         if (BitConverter.IsLittleEndian)
-        {
             Array.Reverse(data);
-        }
 
         // Write data
         bitWriter.WriteBits(data, Length * 5);
@@ -58,10 +56,8 @@ internal sealed class PaymentHashTaggedField : ITaggedField
     internal static PaymentHashTaggedField FromBitReader(BitReader bitReader, short length)
     {
         if (length != TaggedFieldConstants.HashLength)
-        {
             throw new ArgumentException(
                 $"Invalid length for PaymentHashTaggedField. Expected {TaggedFieldConstants.HashLength}, but got {length}");
-        }
 
         // Read the data from the BitReader
         var data = new byte[(TaggedFieldConstants.HashLength * 5 + 7) / 8];

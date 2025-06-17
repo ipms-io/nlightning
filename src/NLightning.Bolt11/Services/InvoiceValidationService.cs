@@ -21,14 +21,17 @@ public class InvoiceValidationService : IInvoiceValidationService
     {
         var errors = new List<string>();
 
-        // Payment hash is required
+        // Payment hash is required (p field)
         if (invoice.PaymentHash is null)
             errors.Add($"{nameof(invoice.PaymentHash)} is required");
 
-        // Either description or description hash is required
+        // Payment secret is required (s field)
+        if (invoice.PaymentSecret is null)
+            errors.Add($"{nameof(invoice.PaymentSecret)} is required");
+
+        // Either description or description hash is required (d or h field)
         var hasDescription = invoice.Description is not null;
         var hasDescriptionHash = invoice.DescriptionHash is not null;
-
         if (!hasDescription && !hasDescriptionHash)
             errors.Add($"Either {nameof(invoice.Description)} or {nameof(invoice.DescriptionHash)} is required");
 
@@ -42,15 +45,8 @@ public class InvoiceValidationService : IInvoiceValidationService
         // Description and description hash are mutually exclusive
         var hasDescription = invoice.Description is not null;
         var hasDescriptionHash = invoice.DescriptionHash is not null;
-
         if (hasDescription && hasDescriptionHash)
-        {
             errors.Add($"{nameof(invoice.Description)} and {nameof(invoice.DescriptionHash)} cannot both be present");
-        }
-
-        // Validate expiry if present
-        if (invoice.ExpiryDate.ToUnixTimeSeconds() == invoice.Timestamp)
-            errors.Add("Expiry must be greater than zero");
 
         return new ValidationResult(errors.Count == 0, errors);
     }

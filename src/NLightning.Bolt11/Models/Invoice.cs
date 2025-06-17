@@ -109,9 +109,6 @@ public partial class Invoice
         }
         internal set
         {
-            if (value == uint256.Zero || value == uint256.One)
-                throw new ArgumentException("Payment hash must be a valid 32-byte hash.", nameof(value));
-
             TaggedFields.Add(new PaymentHashTaggedField(value));
         }
     }

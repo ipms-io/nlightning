@@ -98,9 +98,7 @@ internal sealed class FallbackAddressTaggedField : ITaggedField
         bitReader.ReadBits(data.AsSpan(), newLength * 5);
 
         if (newLength * 5 % 8 != 0 && data[^1] == 0)
-        {
             data = data[..^1];
-        }
 
         var network = Network.GetNetwork(bitcoinNetwork) ??
                       throw new ArgumentException("Network is unknown or invalid.", nameof(bitcoinNetwork));

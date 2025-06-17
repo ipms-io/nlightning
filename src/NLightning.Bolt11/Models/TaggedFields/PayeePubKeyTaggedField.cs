@@ -52,10 +52,8 @@ internal sealed class PayeePubKeyTaggedField : ITaggedField
     internal static PayeePubKeyTaggedField FromBitReader(BitReader bitReader, short length)
     {
         if (length != TaggedFieldConstants.PayeePubkeyLength)
-        {
             throw new ArgumentException(
                 $"Invalid length for DescriptionHashTaggedField. Expected {TaggedFieldConstants.PayeePubkeyLength}, but got {length}");
-        }
 
         // Read the data from the BitReader
         var data = new byte[33];
