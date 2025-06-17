@@ -53,7 +53,7 @@ internal sealed class PayeePubKeyTaggedField : ITaggedField
     {
         if (length != TaggedFieldConstants.PayeePubkeyLength)
             throw new ArgumentException(
-                $"Invalid length for {nameof(DescriptionHashTaggedField)}. Expected {TaggedFieldConstants.PayeePubkeyLength}, but got {length}");
+                $"Invalid length for {nameof(PayeePubKeyTaggedField)}. Expected {TaggedFieldConstants.PayeePubkeyLength}, but got {length}");
 
         // Read the data from the BitReader
         var data = new byte[33];
