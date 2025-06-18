@@ -13,7 +13,8 @@ using Interfaces;
 /// </summary>
 /// <remarks>
 /// The routing information is a collection of routing information entries.
-/// Each entry contains the public key of the node, the short channel id, the base fee in msat, the fee proportional millionths and the cltv expiry delta.
+/// Each entry contains the public key of the node, the short channel id, the base fee in msat, the fee proportional
+/// millionths and the cltv expiry delta.
 /// </remarks>
 /// <seealso cref="ITaggedField"/>
 internal sealed class RoutingInfoTaggedField : ITaggedField
@@ -48,9 +49,7 @@ internal sealed class RoutingInfoTaggedField : ITaggedField
         }
 
         for (var i = 0; i < Value.Count * 2; i++)
-        {
             bitWriter.WriteBit(false);
-        }
     }
 
     /// <inheritdoc/>
@@ -59,19 +58,13 @@ internal sealed class RoutingInfoTaggedField : ITaggedField
         foreach (var routingInfo in Value)
         {
             if (routingInfo.FeeBaseMsat < 0)
-            {
                 return false;
-            }
 
             if (routingInfo.FeeProportionalMillionths < 0)
-            {
                 return false;
-            }
 
             if (routingInfo.CltvExpiryDelta < 0)
-            {
                 return false;
-            }
         }
 
         return true;
@@ -118,9 +111,7 @@ internal sealed class RoutingInfoTaggedField : ITaggedField
         // Skip any extra bits since padding is expected
         var extraBitsToSkip = l - bitsReadAcc;
         if (extraBitsToSkip > 0)
-        {
             bitReader.SkipBits(extraBitsToSkip);
-        }
 
         return new RoutingInfoTaggedField(routingInfos);
     }

@@ -1,7 +1,7 @@
 using NBitcoin;
 using NLightning.Tests.Utils.Vectors;
 
-namespace NLightning.Bolt11.Tests;
+namespace NLightning.Bolt11.Tests.Models;
 
 using Bolt11.Models;
 using Domain.Channels.ValueObjects;
@@ -215,7 +215,9 @@ public class InvoiceTests
     public void Given_NewInvoice_When_EncodeCalled_Then_ReturnsNonEmptyString()
     {
         // Given
-        var invoice = new Invoice(LightningMoney.Satoshis(1_000), "TestDesc", uint256.One, uint256.Zero,
+        var invoice = new Invoice(LightningMoney.Satoshis(1_000), "TestDesc",
+                                  uint256.Parse("ed06856213fbdf7a60d0e679f0b8502125468ae268dc353475d019762aaa2c41"),
+                                  uint256.Parse("e39ea727045763c32f60a262e3b2ec358b29183697edcaf4689e6b8a49df1cdf"),
                                   BitcoinNetwork.Mainnet)
         {
             PayeePubKey = new PubKey("020202020202020202020202020202020202020202020202020202020202020202")

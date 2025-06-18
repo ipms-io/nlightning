@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NLightning.Bolt11.Models;
 
@@ -23,30 +24,30 @@ internal class TaggedFieldList : List<ITaggedField>
     /// <exception cref="ArgumentException">If the tagged field is not unique</exception>
     internal new void Add(ITaggedField taggedField)
     {
+        // Individual field validation
+        if (!taggedField.IsValid())
+            throw new ArgumentException($"Invalid {taggedField.Type} field: field validation failed");
+
         // Check for uniqueness
         if (this.Any(x => x.Type.Equals(taggedField.Type)) && taggedField.Type != TaggedFieldTypes.FallbackAddress)
-        {
             throw new ArgumentException(
                 $"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
-        }
 
-        switch (taggedField.Type)
-        {
-            case TaggedFieldTypes.Description when this.Any(x => x.Type.Equals(TaggedFieldTypes.DescriptionHash)):
-                throw new ArgumentException(
-                    $"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
-            case TaggedFieldTypes.DescriptionHash when this.Any(x => x.Type.Equals(TaggedFieldTypes.Description)):
-                throw new ArgumentException(
-                    $"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
-            default:
-                base.Add(taggedField);
-                if (_shouldInvokeChangedEvent)
-                {
-                    OnChanged();
-                }
+        // Mutual exclusivity validation
+        if (taggedField.Type == TaggedFieldTypes.Description
+         && this.Any(x => x.Type.Equals(TaggedFieldTypes.DescriptionHash)))
+            throw new ArgumentException(
+                $"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
 
-                break;
-        }
+        if (taggedField.Type == TaggedFieldTypes.DescriptionHash
+         && this.Any(x => x.Type.Equals(TaggedFieldTypes.Description)))
+            throw new ArgumentException(
+                $"TaggedFieldDictionary already contains a tagged field of type {taggedField.Type}");
+
+        // Add the tagged field
+        base.Add(taggedField);
+        if (_shouldInvokeChangedEvent)
+            OnChanged();
     }
 
     /// <summary>
@@ -58,9 +59,7 @@ internal class TaggedFieldList : List<ITaggedField>
         _shouldInvokeChangedEvent = false;
 
         foreach (var taggedField in taggedFields)
-        {
             Add(taggedField);
-        }
 
         _shouldInvokeChangedEvent = true;
         OnChanged();
@@ -69,9 +68,7 @@ internal class TaggedFieldList : List<ITaggedField>
     internal new bool Remove(ITaggedField item)
     {
         if (!base.Remove(item))
-        {
             return false;
-        }
 
         OnChanged();
         return true;
@@ -87,9 +84,7 @@ internal class TaggedFieldList : List<ITaggedField>
     {
         var removed = base.RemoveAll(match);
         if (removed > 0)
-        {
             OnChanged();
-        }
 
         return removed;
     }
@@ -101,13 +96,14 @@ internal class TaggedFieldList : List<ITaggedField>
     }
 
     /// <summary>
-    /// Try to get a tagged field of a specific type
+    /// Attempts to retrieve a tagged field of the specified type from the list.
     /// </summary>
-    /// <param name="taggedFieldType">The type of the tagged field</param>
-    /// <param name="taggedField">The tagged field</param>
-    /// <typeparam name="T">The type of the tagged field</typeparam>
-    /// <returns>True if the tagged field was found, false otherwise</returns>
-    internal bool TryGet<T>(TaggedFieldTypes taggedFieldType, out T? taggedField) where T : ITaggedField
+    /// <typeparam name="T">The type of the tagged field to retrieve.</typeparam>
+    /// <param name="taggedFieldType">The type of the tagged field being searched for.</param>
+    /// <param name="taggedField">The output parameter to hold the retrieved tagged field if found; otherwise, the default value for the type.</param>
+    /// <returns>True if the tagged field of the specified type is found; otherwise, false.</returns>
+    internal bool TryGet<T>(TaggedFieldTypes taggedFieldType, [MaybeNullWhen(false)] out T taggedField)
+        where T : ITaggedField
     {
         var value = Get<T>(taggedFieldType);
         if (value != null)
@@ -116,7 +112,7 @@ internal class TaggedFieldList : List<ITaggedField>
             return true;
         }
 
-        taggedField = default!;
+        taggedField = default;
         return false;
     }
 
@@ -127,7 +123,8 @@ internal class TaggedFieldList : List<ITaggedField>
     /// <param name="taggedFieldList">A list containing the tagged fields</param>
     /// <typeparam name="T">The type of the tagged field</typeparam>
     /// <returns>True if the tagged fields were found, false otherwise</returns>
-    internal bool TryGetAll<T>(TaggedFieldTypes taggedFieldType, out List<T> taggedFieldList) where T : ITaggedField
+    internal bool TryGetAll<T>(TaggedFieldTypes taggedFieldType, [MaybeNullWhen(false)] out List<T> taggedFieldList)
+        where T : ITaggedField
     {
         var value = GetAll<T>(taggedFieldType);
         if (value != null)
@@ -136,7 +133,7 @@ internal class TaggedFieldList : List<ITaggedField>
             return true;
         }
 
-        taggedFieldList = default!;
+        taggedFieldList = null;
         return false;
     }
 
@@ -154,9 +151,7 @@ internal class TaggedFieldList : List<ITaggedField>
             var type = (TaggedFieldTypes)bitReader.ReadByteFromBits(5);
             var length = bitReader.ReadInt16FromBits(10);
             if (length == 0 || !bitReader.HasMoreBits(length * 5))
-            {
                 continue;
-            }
 
             if (!Enum.IsDefined(typeof(TaggedFieldTypes), type))
             {
@@ -168,17 +163,15 @@ internal class TaggedFieldList : List<ITaggedField>
                 {
                     var taggedField =
                         TaggedFieldFactory.CreateTaggedFieldFromBitReader(type, bitReader, length, bitcoinNetwork);
-                    if (taggedField.IsValid())
+
+                    try
                     {
-                        try
-                        {
-                            taggedFields.Add(taggedField);
-                        }
-                        catch (Exception e)
-                        {
-                            Debug.WriteLine(e.Message);
-                            // Skip for now, log latter
-                        }
+                        taggedFields.Add(taggedField);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.WriteLine(e.Message);
+                        // Skip for now, log latter
                     }
                 }
                 catch (Exception e)

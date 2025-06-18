@@ -11,7 +11,7 @@ using Interfaces;
 /// Tagged field for the payee public key
 /// </summary>
 /// <remarks>
-/// The payee public key is a 33 byte public key that is used to identify the payee
+/// The payee public key is a 33-byte public key used to identify the payee
 /// </remarks>
 /// <seealso cref="ITaggedField"/>
 internal sealed class PayeePubKeyTaggedField : ITaggedField
@@ -52,10 +52,8 @@ internal sealed class PayeePubKeyTaggedField : ITaggedField
     internal static PayeePubKeyTaggedField FromBitReader(BitReader bitReader, short length)
     {
         if (length != TaggedFieldConstants.PayeePubkeyLength)
-        {
             throw new ArgumentException(
-                $"Invalid length for DescriptionHashTaggedField. Expected {TaggedFieldConstants.PayeePubkeyLength}, but got {length}");
-        }
+                $"Invalid length for {nameof(PayeePubKeyTaggedField)}. Expected {TaggedFieldConstants.PayeePubkeyLength}, but got {length}");
 
         // Read the data from the BitReader
         var data = new byte[33];

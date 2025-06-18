@@ -1,3 +1,4 @@
+using NLightning.Bolt11.Models.TaggedFields;
 using NLightning.Domain.Protocol.ValueObjects;
 using NLightning.Domain.Utils;
 
@@ -219,7 +220,7 @@ public class TaggedFieldListTests
         list.Add(field);
 
         // When
-        var found = list.TryGet(TaggedFieldTypes.Description, out MockTaggedField? result);
+        var found = list.TryGet<MockTaggedField>(TaggedFieldTypes.Description, out var result);
 
         // Then
         Assert.True(found);
@@ -234,7 +235,7 @@ public class TaggedFieldListTests
         var list = new TaggedFieldList();
 
         // When
-        var found = list.TryGet(TaggedFieldTypes.Description, out MockTaggedField? result);
+        var found = list.TryGet<MockTaggedField>(TaggedFieldTypes.Description, out var result);
 
         // Then
         Assert.False(found);
@@ -252,7 +253,7 @@ public class TaggedFieldListTests
         list.Add(field2);
 
         // When
-        var found = list.TryGetAll(TaggedFieldTypes.FallbackAddress, out List<MockTaggedField> items);
+        var found = list.TryGetAll<MockTaggedField>(TaggedFieldTypes.FallbackAddress, out var items);
 
         // Then
         Assert.True(found);
@@ -269,7 +270,7 @@ public class TaggedFieldListTests
         var list = new TaggedFieldList();
 
         // When
-        var found = list.TryGetAll(TaggedFieldTypes.FallbackAddress, out List<MockTaggedField> items);
+        var found = list.TryGetAll<FallbackAddressTaggedField>(TaggedFieldTypes.FallbackAddress, out var items);
 
         // Then
         Assert.False(found);

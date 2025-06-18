@@ -5,7 +5,7 @@
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>0.0.1</Version>
+    <Version>1.0.0</Version>
     <Configurations>Debug;Release;Debug.Native;Debug.Wasm;Release.Native;Release.Wasm</Configurations>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
@@ -16,8 +16,8 @@
     <Copyright>Copyright © Níckolas Goline 2024-2025</Copyright>
     <RepositoryUrl>https://github.com/ipms-io/nlightning</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>0.0.1</AssemblyVersion>
-    <FileVersion>0.0.1</FileVersion>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <Icon>logo.png</Icon>
     <PackageTags>lightning-network,bitcoin,crypto,infrastructure,dotnet,cryptography,cross-platform,libsodium,blazor,webassembly,aot</PackageTags>
@@ -26,7 +26,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageId>NLightning.Domain</PackageId>
-    <PackageReleaseNotes>Initial release of NLightning.Domain library.</PackageReleaseNotes>
+    <PackageReleaseNotes>This version's focus has been on enhancing Bitcoin integration, refining channel management, standardizing protocol message handling, and improving core domain primitives. These changes aim to solidify the domain logic and provide a richer, more robust foundation for building Lightning Network features.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))">
