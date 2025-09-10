@@ -14,6 +14,12 @@ try
                 .WriteTo.Console()
                 .CreateBootstrapLogger();
 
+    AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+    {
+        var exception = (Exception)e.ExceptionObject;
+        Log.Logger.Error("An unhandled exception occurred: {exception}", exception);
+    };
+
     // Get network for the PID file path
     var network = CommandLineHelper.GetNetwork(args);
     var pidFilePath = DaemonUtils.GetPidFilePath(network);

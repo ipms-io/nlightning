@@ -2,12 +2,12 @@ using Microsoft.Extensions.Logging;
 
 namespace NLightning.Infrastructure.Protocol.Services;
 
+using Domain.Exceptions;
 using Domain.Protocol.Interfaces;
 using Domain.Protocol.Messages;
 using Domain.Protocol.Payloads;
 using Domain.Serialization.Interfaces;
 using Domain.Transport;
-using Domain.Utils;
 using Exceptions;
 
 /// <summary>
@@ -23,7 +23,8 @@ internal sealed class MessageService : IMessageService
     private readonly IMessageSerializer _messageSerializer;
     private readonly ITransportService? _transportService;
 
-    private bool _disposed;
+    private volatile bool _disposed;
+    private readonly object _disposeLock = new();
 
     /// <inheritdoc />
     public event EventHandler<IMessage?>? OnMessageReceived;
@@ -52,27 +53,62 @@ internal sealed class MessageService : IMessageService
 
     /// <inheritdoc />
     /// <exception cref="ObjectDisposedException">Thrown when the object is disposed.</exception>
-    public async Task SendMessageAsync(IMessage message, CancellationToken cancellationToken = default)
+    public async Task SendMessageAsync(IMessage message, bool throwOnException = false,
+                                       CancellationToken cancellationToken = default)
     {
-        ExceptionUtils.ThrowIfDisposed(_disposed, nameof(MessageService));
+        lock (_disposeLock)
+            if (_disposed)
+            {
+                var connectionException = new ConnectionException($"{nameof(MessageService)} was disposed.",
+                                                                  new ObjectDisposedException(nameof(MessageService)));
+                if (throwOnException)
+                    throw connectionException;
 
-        if (cancellationToken.IsCancellationRequested)
-            return;
+                RaiseException(this, connectionException);
+                return;
+            }
 
-        if (_transportService == null)
-            throw new InvalidOperationException($"{nameof(MessageService)} is not initialized");
+        try
+        {
+            if (cancellationToken.IsCancellationRequested)
+                return;
 
-        await _transportService.WriteMessageAsync(message, cancellationToken);
+            if (_transportService == null)
+            {
+                var connectionException = new ConnectionException($"{nameof(MessageService)} is not initialized");
+                if (throwOnException)
+                    throw connectionException;
+
+                RaiseException(this, connectionException);
+                return;
+            }
+
+            await _transportService.WriteMessageAsync(message, cancellationToken);
+        }
+        catch (Exception e)
+        {
+            var connectionException = new ConnectionException("Failed to send message", e);
+            if (throwOnException)
+                throw connectionException;
+
+            RaiseException(this, connectionException);
+        }
     }
 
     private void ReceiveMessage(object? _, MemoryStream stream)
     {
         try
         {
-            var message = _messageSerializer.DeserializeMessageAsync(stream).GetAwaiter().GetResult();
-            if (message is not null)
+            lock (_disposeLock)
             {
-                OnMessageReceived?.Invoke(this, message);
+                if (_disposed)
+                    return;
+
+                var message = _messageSerializer.DeserializeMessageAsync(stream).GetAwaiter().GetResult();
+                if (message is not null)
+                {
+                    OnMessageReceived?.Invoke(this, message);
+                }
             }
         }
         catch (MessageSerializationException mse)
@@ -80,10 +116,7 @@ internal sealed class MessageService : IMessageService
             var message = mse.Message;
             if (mse.InnerException is PayloadSerializationException pse)
             {
-                if (pse.InnerException is not null)
-                    message = pse.InnerException.Message;
-                else
-                    message = pse.Message;
+                message = pse.InnerException is not null ? pse.InnerException.Message : pse.Message;
             }
             else if (mse.InnerException is not null)
             {
@@ -103,7 +136,7 @@ internal sealed class MessageService : IMessageService
 
     private void RaiseException(object? sender, Exception e)
     {
-        OnExceptionRaised?.Invoke(sender, e);
+        OnExceptionRaised?.Invoke(sender, new ConnectionException("Error received from transportService", e));
     }
 
     #region Dispose Pattern
@@ -120,15 +153,20 @@ internal sealed class MessageService : IMessageService
 
     private void Dispose(bool disposing)
     {
-        if (_disposed)
-            return;
-
-        if (disposing)
+        lock (_disposeLock)
         {
-            _transportService?.Dispose();
-        }
+            if (_disposed)
+                return;
 
-        _disposed = true;
+            if (disposing && _transportService is not null)
+            {
+                _transportService.MessageReceived -= ReceiveMessage;
+                _transportService.ExceptionRaised -= RaiseException;
+                _transportService.Dispose();
+            }
+
+            _disposed = true;
+        }
     }
 
     ~MessageService()

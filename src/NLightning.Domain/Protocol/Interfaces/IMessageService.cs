@@ -12,9 +12,11 @@ public interface IMessageService : IDisposable
     /// Sends a message.
     /// </summary>
     /// <param name="message">The message to send.</param>
+    /// <param name="throwOnException">If true, exceptions will be thrown instead of being raised via the OnExceptionRaised event.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    Task SendMessageAsync(IMessage message, CancellationToken cancellationToken = default);
+    Task SendMessageAsync(IMessage message, bool throwOnException = false,
+                          CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Event that is raised when a message is received.

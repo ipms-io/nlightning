@@ -59,6 +59,7 @@ public class PeerServiceFactory : IPeerServiceFactory
         }
         catch (Exception ex)
         {
+            transportService.Dispose();
             throw new ConnectionException($"Error connecting to peer {peerPubKey}", ex);
         }
 
@@ -100,6 +101,7 @@ public class PeerServiceFactory : IPeerServiceFactory
         }
         catch (Exception ex)
         {
+            transportService.Dispose();
             throw new ConnectionException($"Error establishing connection to peer {ipAddress}:{port}", ex);
         }
 
