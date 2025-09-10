@@ -236,7 +236,10 @@ public class PeerCommunicationService : IPeerCommunicationService
             {
                 _logger.LogTrace("Sending error message to peer {peer}. ChannelId: {channelId}, Message: {message}",
                                  PeerCompactPubKey, channelId, message);
-                _messageService.SendMessageAsync(new ErrorMessage(new ErrorPayload(channelId, message)));
+
+                _ = Task.Run(() => _messageService.SendMessageAsync(
+                                 new ErrorMessage(new ErrorPayload(channelId, message))));
+
                 return;
             }
         }
@@ -254,7 +257,9 @@ public class PeerCommunicationService : IPeerCommunicationService
 
             _logger.LogTrace("Sending warning message to peer {peer}. ChannelId: {channelId}, Message: {message}",
                              PeerCompactPubKey, channelId, message);
-            _messageService.SendMessageAsync(new WarningMessage(new ErrorPayload(channelId, message)));
+
+            _ = Task.Run(() => _messageService.SendMessageAsync(
+                             new WarningMessage(new ErrorPayload(channelId, message))));
         }
 
         // Forward the exception to subscribers

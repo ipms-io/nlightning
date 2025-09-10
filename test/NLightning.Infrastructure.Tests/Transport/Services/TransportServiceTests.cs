@@ -171,7 +171,7 @@ public class TransportServiceTests
             await acceptTask;
 
             // Assert
-            Assert.Equal("Timeout while reading Handhsake's Act 2", exception.Message);
+            Assert.Contains("Timeout while reading Handshake's Act 2 from host", exception.Message);
         }
         finally
         {

@@ -1,8 +1,9 @@
 using Microsoft.Extensions.Logging;
-using NLightning.Domain.Protocol.Interfaces;
 
 namespace NLightning.Infrastructure.Tests.Protocol.Services;
 
+using Domain.Exceptions;
+using Domain.Protocol.Interfaces;
 using Domain.Serialization.Interfaces;
 using Domain.Transport;
 using Infrastructure.Protocol.Services;
@@ -93,9 +94,9 @@ public class MessageServiceTests
     }
 
     [Fact]
-    public async Task Given_DisposedMessageService_When_SendMessageAsync_IsCalled_Then_ThrowsInvalidOperationException()
+    public async Task Given_DisposedMessageService_When_SendMessageAsync_IsCalled_Then_ThrowsConnectionException()
     {
-        // Givenv
+        // Given
         var loggerMock = new Mock<ILogger<MessageService>>();
         var transportServiceMock = new Mock<ITransportService>();
         var messageService =
@@ -106,6 +107,8 @@ public class MessageServiceTests
         messageService.Dispose();
 
         // Then
-        await Assert.ThrowsAsync<ObjectDisposedException>(() => messageService.SendMessageAsync(messageMock.Object));
+        var exception = await Assert.ThrowsAsync<ConnectionException>(() => messageService.SendMessageAsync(
+                                                                          messageMock.Object, true));
+        Assert.IsType<ObjectDisposedException>(exception.InnerException);
     }
 }

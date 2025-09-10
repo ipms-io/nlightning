@@ -231,13 +231,8 @@ internal sealed class TransportService : ITransportService
             if (_tcpClient.Client.Connected)
             {
                 // This is how you can determine if a socket is still connected.
-                if ((_tcpClient.Client.Poll(1, SelectMode.SelectRead) && _tcpClient.Client.Available == 0) ||
-                    !_tcpClient.Client.Connected)
-                {
-                    return false;
-                }
-
-                return true;
+                return _tcpClient.Client.Connected &&
+                       (!_tcpClient.Client.Poll(1, SelectMode.SelectRead) || _tcpClient.Client.Available != 0);
             }
 
             return false;

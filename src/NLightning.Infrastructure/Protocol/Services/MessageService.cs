@@ -65,6 +65,7 @@ internal sealed class MessageService : IMessageService
                     throw connectionException;
 
                 RaiseException(this, connectionException);
+                return;
             }
 
         try
