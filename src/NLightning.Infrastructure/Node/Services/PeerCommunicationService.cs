@@ -18,13 +18,16 @@ using Domain.Protocol.Payloads;
 /// </summary>
 public class PeerCommunicationService : IPeerCommunicationService
 {
-    private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private readonly CancellationTokenSource _cts = new();
     private readonly ILogger<PeerCommunicationService> _logger;
     private readonly IMessageService _messageService;
     private readonly IPingPongService _pingPongService;
     private readonly IServiceProvider _serviceProvider;
     private readonly IMessageFactory _messageFactory;
+    private readonly TaskCompletionSource<bool> _pingPongTcs = new();
+
     private bool _isInitialized;
+    private CancellationTokenSource? _initWaitCancellationTokenSource;
 
     /// <inheritdoc />
     public event EventHandler<IMessage?>? MessageReceived;
@@ -69,16 +72,11 @@ public class PeerCommunicationService : IPeerCommunicationService
     /// <inheritdoc />
     public async Task InitializeAsync(TimeSpan networkTimeout)
     {
-        // Always send an init message upon connection
-        _logger.LogTrace("Sending init message to peer {peer}", PeerCompactPubKey);
-        var initMessage = _messageFactory.CreateInitMessage();
-        await _messageService.SendMessageAsync(initMessage, _cancellationTokenSource.Token);
-
-        // Wait for an init message
         _logger.LogTrace("Waiting for init message from peer {peer}", PeerCompactPubKey);
 
         // Set timeout to close connection if the other peer doesn't send an init message
-        _ = Task.Delay(networkTimeout, _cancellationTokenSource.Token).ContinueWith(task =>
+        _initWaitCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
+        _ = Task.Delay(networkTimeout, _initWaitCancellationTokenSource.Token).ContinueWith(task =>
         {
             if (!task.IsCanceled && !_isInitialized)
             {
@@ -87,13 +85,27 @@ public class PeerCommunicationService : IPeerCommunicationService
             }
         });
 
-        if (!_messageService.IsConnected)
+        // Always send an init message upon connection
+        _logger.LogTrace("Sending init message to peer {peer}", PeerCompactPubKey);
+        var initMessage = _messageFactory.CreateInitMessage();
+        try
         {
-            throw new ConnectionException($"Failed to connect to peer {PeerCompactPubKey}");
+            await _messageService.SendMessageAsync(initMessage, true, _cts.Token);
+        }
+        catch (Exception e)
+        {
+            _pingPongTcs.TrySetResult(true);
+            throw new ConnectionException($"Failed to send init message to peer {PeerCompactPubKey}", e);
         }
 
         // Set up ping service to keep connection alive
-        SetupPingPongService();
+        if (!_cts.IsCancellationRequested)
+        {
+            if (!_messageService.IsConnected)
+                throw new ConnectionException($"Failed to connect to peer {PeerCompactPubKey}");
+
+            SetupPingPongService();
+        }
     }
 
     /// <inheritdoc />
@@ -101,7 +113,7 @@ public class PeerCommunicationService : IPeerCommunicationService
     {
         try
         {
-            await _messageService.SendMessageAsync(message, cancellationToken);
+            await _messageService.SendMessageAsync(message, cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {
@@ -112,11 +124,18 @@ public class PeerCommunicationService : IPeerCommunicationService
     /// <inheritdoc />
     public void Disconnect()
     {
-        _logger.LogInformation("Disconnecting peer {peer}", PeerCompactPubKey);
-        _cancellationTokenSource.Cancel();
-        _messageService.Dispose();
-
-        DisconnectEvent?.Invoke(this, EventArgs.Empty);
+        try
+        {
+            _ = _cts.CancelAsync();
+            _logger.LogTrace("Waiting for ping service to stop for peer {peer}", PeerCompactPubKey);
+            _pingPongTcs.Task.Wait(TimeSpan.FromSeconds(5));
+            _logger.LogTrace("Ping service stopped for peer {peer}", PeerCompactPubKey);
+        }
+        finally
+        {
+            _messageService.Dispose();
+            DisconnectEvent?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     private void SetupPingPongService()
@@ -125,13 +144,10 @@ public class PeerCommunicationService : IPeerCommunicationService
         _pingPongService.OnPongReceived += HandlePongReceived;
 
         // Setup Ping to keep connection alive
-        _ = _pingPongService.StartPingAsync(_cancellationTokenSource.Token).ContinueWith(task =>
+        _ = _pingPongService.StartPingAsync(_cts.Token).ContinueWith(_ =>
         {
-            if (task.IsFaulted)
-            {
-                RaiseException(new ConnectionException($"Failed to start ping service for peer {PeerCompactPubKey}",
-                                                       task.Exception));
-            }
+            _logger.LogTrace("Ping service stopped for peer {peer}, setting result", PeerCompactPubKey);
+            _pingPongTcs.TrySetResult(true);
         });
 
         _logger.LogInformation("Ping service started for peer {peer}", PeerCompactPubKey);
@@ -154,7 +170,7 @@ public class PeerCommunicationService : IPeerCommunicationService
 
         try
         {
-            _messageService.SendMessageAsync(pingMessage, _cancellationTokenSource.Token).GetAwaiter().GetResult();
+            _messageService.SendMessageAsync(pingMessage, cancellationToken: _cts.Token).GetAwaiter().GetResult();
         }
         catch (Exception ex)
         {
@@ -172,6 +188,7 @@ public class PeerCommunicationService : IPeerCommunicationService
         if (!_isInitialized && message.Type == MessageTypes.Init)
         {
             _isInitialized = true;
+            _initWaitCancellationTokenSource?.Cancel();
         }
 
         // Forward the message to subscribers
@@ -206,6 +223,7 @@ public class PeerCommunicationService : IPeerCommunicationService
         {
             ChannelId? channelId = null;
             var message = errorException.Message;
+            mustDisconnect = true;
 
             if (errorException is ChannelErrorException channelErrorException)
             {
@@ -214,8 +232,13 @@ public class PeerCommunicationService : IPeerCommunicationService
                     message = channelErrorException.PeerMessage;
             }
 
-            _messageService.SendMessageAsync(new ErrorMessage(new ErrorPayload(channelId, message)));
-            mustDisconnect = true;
+            if (errorException is not ConnectionException)
+            {
+                _logger.LogTrace("Sending error message to peer {peer}. ChannelId: {channelId}, Message: {message}",
+                                 PeerCompactPubKey, channelId, message);
+                _messageService.SendMessageAsync(new ErrorMessage(new ErrorPayload(channelId, message)));
+                return;
+            }
         }
         else if (exception is WarningException warningException)
         {
@@ -229,17 +252,23 @@ public class PeerCommunicationService : IPeerCommunicationService
                     message = channelWarningException.PeerMessage;
             }
 
+            _logger.LogTrace("Sending warning message to peer {peer}. ChannelId: {channelId}, Message: {message}",
+                             PeerCompactPubKey, channelId, message);
             _messageService.SendMessageAsync(new WarningMessage(new ErrorPayload(channelId, message)));
         }
-
-        _logger.LogError(exception, "Exception occurred with peer {peer}. {exceptionMessage}", PeerCompactPubKey,
-                         exception.Message);
 
         // Forward the exception to subscribers
         ExceptionRaised?.Invoke(this, exception);
 
         // Disconnect if not already disconnecting
-        if (mustDisconnect && !_cancellationTokenSource.IsCancellationRequested)
+        if (mustDisconnect && !_cts.IsCancellationRequested)
+        {
+            _messageService.OnMessageReceived -= HandleMessageReceived;
+            _messageService.OnExceptionRaised -= HandleExceptionRaised;
+            _pingPongService.DisconnectEvent -= HandleExceptionRaised;
+
+            _logger.LogWarning(exception, "We're disconnecting peer {peer} because of an exception", PeerCompactPubKey);
             Disconnect();
+        }
     }
 }

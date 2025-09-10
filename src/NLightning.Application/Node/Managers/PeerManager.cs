@@ -89,7 +89,14 @@ public sealed class PeerManager : IPeerManager
             throw new InvalidOperationException($"{nameof(PeerManager)} is not running");
 
         foreach (var peerKey in _peers.Keys)
-            DisconnectPeer(peerKey);
+            try
+            {
+                DisconnectPeer(peerKey);
+            }
+            catch (Exception e)
+            {
+                _logger.LogWarning(e, "Error disconnecting peer {Peer}", peerKey);
+            }
 
         try
         {
@@ -174,9 +181,10 @@ public sealed class PeerManager : IPeerManager
         {
             // Create the peer
             var peerService = _peerServiceFactory.CreateConnectingPeerAsync(args.TcpClient).GetAwaiter().GetResult();
-
             peerService.OnDisconnect += HandlePeerDisconnection;
             peerService.OnChannelMessageReceived += HandlePeerChannelMessage;
+
+            _logger.LogTrace("PeerService created for peer {PeerPubKey}", peerService.PeerPubKey);
 
             var peer = new PeerModel(peerService.PeerPubKey, args.Host, args.Port)
             {
@@ -192,12 +200,23 @@ public sealed class PeerManager : IPeerManager
         }
     }
 
-    private void HandlePeerDisconnection(object? _, PeerDisconnectedEventArgs args)
+    private void HandlePeerDisconnection(object? sender, PeerDisconnectedEventArgs args)
     {
         ArgumentNullException.ThrowIfNull(args);
 
         _peers.Remove(args.PeerPubKey);
         _logger.LogInformation("Peer {Peer} disconnected", args.PeerPubKey);
+
+        if (sender is IPeerService peerService)
+        {
+            peerService.OnDisconnect -= HandlePeerDisconnection;
+            peerService.OnChannelMessageReceived -= HandlePeerChannelMessage;
+        }
+        else
+        {
+            _logger.LogWarning("Peer {Peer} disconnected, but we were unable to detach event handlers",
+                               args.PeerPubKey);
+        }
     }
 
     private void HandlePeerChannelMessage(object? _, ChannelMessageEventArgs args)

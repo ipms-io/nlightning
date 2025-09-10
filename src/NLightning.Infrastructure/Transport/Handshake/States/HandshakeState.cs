@@ -100,7 +100,7 @@ internal sealed class HandshakeState : IHandshakeState
         var next = _messagePatterns.Dequeue();
         var messageBufferLength = messageBuffer.Length;
 
-        // write version to message buffer
+        // write the version to the message buffer
         messageBuffer[0] = HandshakeVersion;
 
         foreach (var token in next.Tokens)

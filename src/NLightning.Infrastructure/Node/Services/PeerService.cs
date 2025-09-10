@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 namespace NLightning.Infrastructure.Node.Services;
 
 using Domain.Crypto.ValueObjects;
+using Domain.Exceptions;
 using Domain.Node.Events;
 using Domain.Node.Interfaces;
 using Domain.Node.Options;
@@ -56,7 +57,18 @@ public sealed class PeerService : IPeerService
         _peerCommunicationService.DisconnectEvent += HandleDisconnection;
 
         // Initialize communication
-        _peerCommunicationService.InitializeAsync(networkTimeout).GetAwaiter().GetResult();
+        try
+        {
+            _peerCommunicationService.InitializeAsync(networkTimeout).GetAwaiter().GetResult();
+        }
+        catch (Exception e)
+        {
+            _peerCommunicationService.MessageReceived -= HandleMessage;
+            _peerCommunicationService.ExceptionRaised -= HandleException;
+            _peerCommunicationService.DisconnectEvent -= HandleDisconnection;
+
+            throw new ErrorException("Error initializing peer communication", e);
+        }
     }
 
     /// <summary>
@@ -83,7 +95,6 @@ public sealed class PeerService : IPeerService
 
         if (!_isInitialized)
         {
-            _logger.LogTrace("Received message from peer {peer} but was not initialized", PeerPubKey);
             HandleInitialization(message);
         }
         else if (message is IChannelMessage channelMessage)
@@ -103,6 +114,7 @@ public sealed class PeerService : IPeerService
 
     private void HandleDisconnection(object? sender, EventArgs e)
     {
+        _logger.LogTrace("Handling disconnection for peer {Peer}", PeerPubKey);
         OnDisconnect?.Invoke(this, new PeerDisconnectedEventArgs(PeerPubKey));
     }
 
