@@ -29,21 +29,27 @@ public readonly struct BitcoinNetwork : IEquatable<BitcoinNetwork>
                 NetworkConstants.Regtest => ChainConstants.Regtest,
                 _ => CustomChainHashes.TryGetValue(Name.ToLowerInvariant(), out var hash)
                          ? hash
-                         : throw new Exception($"Chain not supported: {Name}")
+                         : throw new InvalidOperationException($"Chain not supported: {Name}")
             };
         }
     }
 
+    public override string ToString() => Name;
+
     /// <summary>
     /// Register a custom network mapping
     /// </summary>
-    public override string ToString() => Name;
-
     public void Register(string name, ChainHash chainHash)
     {
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
 
-        CustomChainHashes.TryAdd(name.ToLowerInvariant(), chainHash);
+        if (!CustomChainHashes.TryAdd(name.ToLowerInvariant(), chainHash))
+        {
+            if (CustomChainHashes.ContainsKey(name.ToLowerInvariant()))
+                throw new InvalidOperationException($"Chain hash already registered: {name}");
+
+            throw new InvalidOperationException($"Failed to register chain hash: {name}");
+        }
     }
 
     /// <summary>
