@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.1.0
+
+This version introduces the ability to register and manage custom Bitcoin-like networks at runtime, enhancing the
+flexibility and extensibility of the `BitcoinNetwork` class. This allows developers to define and work with networks
+beyond the standard `mainnet`, `testnet`, and `regtest`, making the library more adaptable to various use cases and
+testing scenarios.
+
+### Added
+
+- **Extensible Custom Bitcoin Networks:**  
+  `BitcoinNetwork` now supports registration and management of custom network names and corresponding `ChainHash` values
+  at runtime.
+    - Implementers can register any custom Bitcoin-like network and have it fully supported throughout the domain layer.
+    - Provides methods to register and unregister custom networks and retrieve their `ChainHash` from name, with all
+      conversions and equality logic preserved.
+    - Built-in networks (`mainnet`, `testnet`, `regtest`) remain unchanged.
+
 ## v1.0.0
 
 This version's focus has been on enhancing Bitcoin integration, refining channel management, standardizing protocol
