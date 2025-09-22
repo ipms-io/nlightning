@@ -4,6 +4,8 @@ using Constants;
 
 public readonly struct BitcoinNetwork : IEquatable<BitcoinNetwork>
 {
+    private static Dictionary<string, ChainHash> CustomChainHashes { get; } = new();
+
     public static readonly BitcoinNetwork Mainnet = new(NetworkConstants.Mainnet);
     public static readonly BitcoinNetwork Testnet = new(NetworkConstants.Testnet);
     public static readonly BitcoinNetwork Regtest = new(NetworkConstants.Regtest);
@@ -25,19 +27,49 @@ public readonly struct BitcoinNetwork : IEquatable<BitcoinNetwork>
                 NetworkConstants.Mainnet => ChainConstants.Main,
                 NetworkConstants.Testnet => ChainConstants.Testnet,
                 NetworkConstants.Regtest => ChainConstants.Regtest,
-                _ => throw new Exception("Chain not supported.")
+                _ => CustomChainHashes.TryGetValue(Name.ToLowerInvariant(), out var hash)
+                         ? hash
+                         : throw new InvalidOperationException($"Chain not supported: {Name}")
             };
         }
     }
 
     public override string ToString() => Name;
 
+    /// <summary>
+    /// Register a custom network mapping
+    /// </summary>
+    public void Register(string name, ChainHash chainHash)
+    {
+        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
+
+        if (!CustomChainHashes.TryAdd(name.ToLowerInvariant(), chainHash))
+        {
+            if (CustomChainHashes.ContainsKey(name.ToLowerInvariant()))
+                throw new InvalidOperationException($"Chain hash already registered: {name}");
+
+            throw new InvalidOperationException($"Failed to register chain hash: {name}");
+        }
+    }
+
+    /// <summary>
+    /// Unregister a custom network mapping
+    /// </summary>
+    public static void Unregister(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
+        CustomChainHashes.Remove(name.ToLowerInvariant());
+    }
+
     #region Implicit Conversions
+
     public static implicit operator string(BitcoinNetwork bitcoinNetwork) => bitcoinNetwork.Name.ToLowerInvariant();
     public static implicit operator BitcoinNetwork(string value) => new(value.ToLowerInvariant());
+
     #endregion
 
     #region Equality
+
     public override bool Equals(object? obj)
     {
         return obj is BitcoinNetwork network && ChainHash.Equals(network.ChainHash);
@@ -62,5 +94,6 @@ public readonly struct BitcoinNetwork : IEquatable<BitcoinNetwork>
     {
         return !(left == right);
     }
+
     #endregion
 }

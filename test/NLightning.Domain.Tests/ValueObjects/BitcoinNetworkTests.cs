@@ -1,8 +1,7 @@
-using NLightning.Domain.Protocol.ValueObjects;
-
 namespace NLightning.Domain.Tests.ValueObjects;
 
 using Domain.Protocol.Constants;
+using Domain.Protocol.ValueObjects;
 
 public class BitcoinNetworkTests
 {
@@ -60,7 +59,7 @@ public class BitcoinNetworkTests
             NetworkConstants.Mainnet => ChainConstants.Main,
             NetworkConstants.Testnet => ChainConstants.Testnet,
             NetworkConstants.Regtest => ChainConstants.Regtest,
-            _ => throw new Exception("Chain not supported.")
+            _ => throw new InvalidOperationException("Chain not supported.")
         };
 
         // When
@@ -77,7 +76,7 @@ public class BitcoinNetworkTests
         var network = new BitcoinNetwork("unsupported");
 
         // When & Then
-        Assert.Throws<Exception>(() => network.ChainHash);
+        Assert.Throws<InvalidOperationException>(() => network.ChainHash);
     }
 
     [Fact]
@@ -119,5 +118,133 @@ public class BitcoinNetworkTests
         Assert.True(network1 != network2);
         Assert.False(network1.Equals(network2));
         Assert.False(network2.Equals(network1));
+    }
+
+    [Fact]
+    public void Builtin_Networks_ChainHash_Matches()
+    {
+        Assert.Equal(ChainConstants.Main, BitcoinNetwork.Mainnet.ChainHash);
+        Assert.Equal(ChainConstants.Testnet, BitcoinNetwork.Testnet.ChainHash);
+        Assert.Equal(ChainConstants.Regtest, BitcoinNetwork.Regtest.ChainHash);
+    }
+
+    [Fact]
+    public void Unregistered_CustomNetwork_Throws()
+    {
+        var net = new BitcoinNetwork("mycustomnet");
+        Assert.Throws<InvalidOperationException>(() =>
+        {
+            var _ = net.ChainHash;
+        });
+    }
+
+    [Fact]
+    public void RegisterCustomNetwork_ReturnsExpectedChainHash()
+    {
+        var customChainHash = DummyChainHash(0x42);
+        // Register
+        var tmpNet = new BitcoinNetwork("mycustomnet");
+        tmpNet.Register("mycustomnet", customChainHash);
+
+        var net = new BitcoinNetwork("mycustomnet");
+        Assert.Equal(customChainHash, net.ChainHash);
+    }
+
+    [Fact]
+    public void Register_IsCaseInsensitive()
+    {
+        var customChainHash = DummyChainHash(0xDD);
+        var lower = "lowercase";
+        var upper = "LOWERCASE";
+
+        var tmpNet = new BitcoinNetwork(lower);
+        tmpNet.Register(upper, customChainHash);
+
+        var net1 = new BitcoinNetwork(lower);
+        var net2 = new BitcoinNetwork(upper);
+        Assert.Equal(customChainHash, net1.ChainHash);
+        Assert.Equal(customChainHash, net2.ChainHash);
+    }
+
+    [Fact]
+    public void Unregister_RemovesChainHash()
+    {
+        var customChainHash = DummyChainHash(0xAB);
+        var name = "toRemove";
+        var net = new BitcoinNetwork(name);
+        net.Register(name, customChainHash);
+
+        var useNet = new BitcoinNetwork(name);
+        Assert.Equal(customChainHash, useNet.ChainHash);
+
+        BitcoinNetwork.Unregister(name);
+
+        var afterRemove = new BitcoinNetwork(name);
+        Assert.Throws<InvalidOperationException>(() =>
+        {
+            var _ = afterRemove.ChainHash;
+        });
+    }
+
+    [Fact]
+    public void ToString_And_Conversions_Work_For_Custom()
+    {
+        var customChainHash = DummyChainHash(0x5A);
+        var name = "foo_bar";
+        var bnet = new BitcoinNetwork(name);
+        bnet.Register(name, customChainHash);
+
+        Assert.Equal(name, bnet.ToString());
+
+        string str = bnet;
+        Assert.Equal(name.ToLowerInvariant(), str);
+
+        BitcoinNetwork net2 = name;
+        Assert.Equal(name, net2.Name);
+        Assert.Equal(customChainHash, net2.ChainHash);
+    }
+
+    [Fact]
+    public void Register_Throws_For_AlreadyExistingCustomNetwork()
+    {
+        var chainHash1 = DummyChainHash(0x13);
+        var chainHash2 = DummyChainHash(0x53);
+        var name = "networkdup";
+
+        // Ensure clean slate
+        BitcoinNetwork.Unregister(name);
+
+        var net = new BitcoinNetwork(name);
+        net.Register(name, chainHash1);
+
+        // Attempting to add again (any value) must throw
+        var ex = Assert.Throws<InvalidOperationException>(() => net.Register(name, chainHash2));
+        Assert.Contains("already registered", ex.Message, StringComparison.OrdinalIgnoreCase);
+
+        // Clean up for other tests
+        BitcoinNetwork.Unregister(name);
+    }
+
+    [Fact]
+    public void Register_Throws_For_Null_Or_Whitespace_Name()
+    {
+        var net = new BitcoinNetwork("foo");
+        var ch = DummyChainHash(0x77);
+
+        Assert.Throws<ArgumentNullException>(() => net.Register(null, ch));
+        Assert.Throws<ArgumentNullException>(() => net.Register("", ch));
+        Assert.Throws<ArgumentNullException>(() => net.Register("   ", ch));
+    }
+
+    private static ChainHash DummyChainHash(byte fill)
+    {
+        // Create a 32-byte chainhash with a pattern to differentiate
+        return new ChainHash(new[]
+        {
+            fill, fill, fill, fill, fill, fill, fill, fill, fill, fill, fill, fill, fill, fill,
+            fill, fill,
+            fill, fill, fill, fill, fill, fill, fill, fill, fill, fill, fill, fill, fill, fill,
+            fill, fill
+        });
     }
 }
