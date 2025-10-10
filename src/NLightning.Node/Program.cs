@@ -110,7 +110,7 @@ try
         }
         catch (Exception e)
         {
-            Log.Logger.Error(e, "An error occured while creating new key.");
+            Log.Logger.Error(e, "An error occurred while creating new key.");
             return 1;
         }
     }
