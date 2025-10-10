@@ -11,4 +11,6 @@ public class KeyFileData
     [JsonPropertyName("lastUsedIndex")] public uint LastUsedIndex { get; set; }
 
     [JsonPropertyName("encryptedExtKey")] public string EncryptedExtKey { get; set; } = string.Empty;
+
+    [JsonPropertyName("heightOfBirth")] public uint HeightOfBirth { get; set; }
 }

@@ -56,7 +56,7 @@ public class NltgDaemonService : BackgroundService
             await _peerManager.StartAsync(stoppingToken);
 
             // Start the blockchain monitor service
-            await _blockchainMonitor.StartAsync(stoppingToken);
+            await _blockchainMonitor.StartAsync(_secureKeyManager.HeightOfBirth, stoppingToken);
 
             while (!stoppingToken.IsCancellationRequested)
                 await Task.Delay(1000, stoppingToken);
