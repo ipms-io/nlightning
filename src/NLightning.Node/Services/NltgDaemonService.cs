@@ -45,7 +45,7 @@ public class NltgDaemonService : BackgroundService
         _logger.LogDebug("Running in daemon mode: {IsDaemon}", isDaemon);
 
         var pubKey = _secureKeyManager.GetNodePubKey();
-        _logger.LogDebug("lncli connect {pubKey}@docker.for.mac.host.internal:9735", pubKey.ToString());
+        _logger.LogDebug("lightning-cli connect {pubKey}@docker.for.mac.host.internal:9735", pubKey.ToString());
 
         try
         {
@@ -56,7 +56,7 @@ public class NltgDaemonService : BackgroundService
             await _peerManager.StartAsync(stoppingToken);
 
             // Start the blockchain monitor service
-            await _blockchainMonitor.StartAsync(stoppingToken);
+            await _blockchainMonitor.StartAsync(_secureKeyManager.HeightOfBirth, stoppingToken);
 
             while (!stoppingToken.IsCancellationRequested)
                 await Task.Delay(1000, stoppingToken);

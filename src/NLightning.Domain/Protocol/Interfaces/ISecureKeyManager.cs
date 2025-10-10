@@ -6,6 +6,7 @@ using Crypto.ValueObjects;
 public interface ISecureKeyManager
 {
     BitcoinKeyPath KeyPath { get; }
+    uint HeightOfBirth { get; }
 
     ExtPrivKey GetNextKey(out uint index);
     ExtPrivKey GetKeyAtIndex(uint index);
