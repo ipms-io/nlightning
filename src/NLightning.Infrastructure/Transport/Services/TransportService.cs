@@ -66,7 +66,7 @@ internal sealed class TransportService : ITransportService
             throw new InvalidOperationException("TcpClient is not connected");
 
         var writeBuffer = ArrayPool<byte>.Shared.Rent(66);
-        var readBuffer = ArrayPool<byte>.Shared.Rent(50);
+        var readBuffer = ArrayPool<byte>.Shared.Rent(66);
         var stream = _tcpClient.GetStream();
 
         CancellationTokenSource networkTimeoutCancellationTokenSource = new();

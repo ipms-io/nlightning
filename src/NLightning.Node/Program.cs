@@ -1,7 +1,13 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NBitcoin;
+using NLightning.Domain.Node.Options;
 using NLightning.Domain.Protocol.ValueObjects;
 using NLightning.Infrastructure.Bitcoin.Managers;
+using NLightning.Infrastructure.Bitcoin.Options;
+using NLightning.Infrastructure.Bitcoin.Wallet;
 using NLightning.Node.Extensions;
 using NLightning.Node.Helpers;
 using NLightning.Node.Utilities;
@@ -73,11 +79,40 @@ try
     var keyFilePath = SecureKeyManager.GetKeyFilePath(network);
     if (!File.Exists(keyFilePath))
     {
-        // Creates new key
-        var key = new Key();
-        keyManager = new SecureKeyManager(key.ToBytes(), new BitcoinNetwork(network), keyFilePath);
-        keyManager.SaveToFile(password);
-        Console.WriteLine($"New key created and saved to {keyFilePath}");
+        // Get current Block Height for key birth
+        try
+        {
+            // Create logger for the wallet service using Serilog
+            var loggerFactory = LoggerFactory.Create(b => b.AddSerilog(Log.Logger, dispose: false));
+            var walletLogger = loggerFactory.CreateLogger<BitcoinWalletService>();
+
+            // Bind options from initialConfig
+            var bitcoinOptions = initialConfig.GetSection("Bitcoin").Get<BitcoinOptions>()
+                              ?? throw new InvalidOperationException(
+                                     "Bitcoin configuration section is missing or invalid.");
+            var nodeOptions = initialConfig.GetSection("Node").Get<NodeOptions>()
+                           ?? throw new InvalidOperationException("Node configuration section is missing or invalid.");
+
+            // Instantiate the service
+            var bitcoinWalletService = new BitcoinWalletService(
+                Options.Create(bitcoinOptions),
+                walletLogger,
+                Options.Create(nodeOptions)
+            );
+
+            var heightOfBirth = await bitcoinWalletService.GetCurrentBlockHeightAsync();
+
+            // Creates new key
+            var key = new Key();
+            keyManager = new SecureKeyManager(key.ToBytes(), new BitcoinNetwork(network), keyFilePath, heightOfBirth);
+            keyManager.SaveToFile(password);
+            Console.WriteLine($"New key created and saved to {keyFilePath}");
+        }
+        catch (Exception e)
+        {
+            Log.Logger.Error(e, "An error occured while creating new key.");
+            return 1;
+        }
     }
     else
     {

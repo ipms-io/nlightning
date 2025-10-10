@@ -126,7 +126,7 @@ public class MessageTypeSerializerFactory : IMessageTypeSerializerFactory
         _messageTypeDictionary.Add(MessageTypes.OpenChannel, typeof(OpenChannel1Message));
         _messageTypeDictionary.Add(MessageTypes.OpenChannel2, typeof(OpenChannel2Message));
         _messageTypeDictionary.Add(MessageTypes.Ping, typeof(PingMessage));
-        _messageTypeDictionary.Add(MessageTypes.Pong, typeof(PingMessage));
+        _messageTypeDictionary.Add(MessageTypes.Pong, typeof(PongMessage));
         _messageTypeDictionary.Add(MessageTypes.RevokeAndAck, typeof(RevokeAndAckMessage));
         _messageTypeDictionary.Add(MessageTypes.Shutdown, typeof(ShutdownMessage));
         _messageTypeDictionary.Add(MessageTypes.Stfu, typeof(StfuMessage));

@@ -42,6 +42,8 @@ public class SecureKeyManager : ISecureKeyManager, IDisposable
 
     public string OutputDescriptor { get; init; }
 
+    public uint HeightOfBirth { get; init; }
+
     /// <summary>
     /// Manages secure key operations for generating and managing cryptographic keys.
     /// Provides functionality to safely store, load, and derive secure keys protected in memory.
@@ -49,7 +51,8 @@ public class SecureKeyManager : ISecureKeyManager, IDisposable
     /// <param name="privateKey">The private key to be managed.</param>
     /// <param name="network">The network associated with the private key.</param>
     /// <param name="filePath">The file path for storing the key data.</param>
-    public SecureKeyManager(byte[] privateKey, BitcoinNetwork network, string filePath)
+    /// <param name="heightOfBirth">Block Height when the wallet was created</param>
+    public SecureKeyManager(byte[] privateKey, BitcoinNetwork network, string filePath, uint heightOfBirth)
     {
         _privateKeyLength = (ulong)privateKey.Length;
 
@@ -78,6 +81,7 @@ public class SecureKeyManager : ISecureKeyManager, IDisposable
         cryptoProvider.MemoryZero(Marshal.UnsafeAddrOfPinnedArrayElement(privateKey, 0), _privateKeyLength);
 
         _filePath = filePath;
+        HeightOfBirth = heightOfBirth;
     }
 
     public ExtPrivKey GetNextKey(out uint index)
@@ -157,7 +161,8 @@ public class SecureKeyManager : ISecureKeyManager, IDisposable
                 Network = _network.ToString(),
                 LastUsedIndex = _lastUsedIndex,
                 Descriptor = OutputDescriptor,
-                EncryptedExtKey = Convert.ToBase64String(cipherText)
+                EncryptedExtKey = Convert.ToBase64String(cipherText),
+                HeightOfBirth = HeightOfBirth
             };
             var json = JsonSerializer.Serialize(data);
             File.WriteAllText(_filePath, json);
@@ -165,14 +170,14 @@ public class SecureKeyManager : ISecureKeyManager, IDisposable
     }
 
     public static SecureKeyManager FromMnemonic(string mnemonic, string passphrase, BitcoinNetwork network,
-                                                string? filePath = null)
+                                                string? filePath = null, uint currentHeight = 0)
     {
         if (string.IsNullOrWhiteSpace(filePath))
             filePath = GetKeyFilePath(network);
 
         var mnemonicObj = new Mnemonic(mnemonic, Wordlist.English);
         var extKey = mnemonicObj.DeriveExtKey(passphrase);
-        return new SecureKeyManager(extKey.PrivateKey.ToBytes(), network, filePath);
+        return new SecureKeyManager(extKey.PrivateKey.ToBytes(), network, filePath, currentHeight);
     }
 
     public static SecureKeyManager FromFilePath(string filePath, BitcoinNetwork expectedNetwork, string password)
@@ -201,7 +206,7 @@ public class SecureKeyManager : ISecureKeyManager, IDisposable
         var extKeyStr = Encoding.UTF8.GetString(extKeyBytes);
         var extKey = ExtKey.Parse(extKeyStr, network);
 
-        return new SecureKeyManager(extKey.PrivateKey.ToBytes(), expectedNetwork, filePath)
+        return new SecureKeyManager(extKey.PrivateKey.ToBytes(), expectedNetwork, filePath, data.HeightOfBirth)
         {
             _lastUsedIndex = data.LastUsedIndex,
             OutputDescriptor = data.Descriptor

@@ -56,7 +56,7 @@ public class BlockchainMonitorService : IBlockchainMonitor
         _network = Network.GetNetwork(nodeOptions.Value.BitcoinNetwork) ?? Network.Main;
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(uint heightOfBirth, CancellationToken cancellationToken)
     {
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
@@ -70,10 +70,10 @@ public class BlockchainMonitorService : IBlockchainMonitor
         var currentBlockchainState = await uow.BlockchainStateDbRepository.GetStateAsync();
         if (currentBlockchainState is null)
         {
-            var lastProcessedHeight = await _bitcoinWallet.GetCurrentBlockHeightAsync();
-            _logger.LogInformation("No blockchain state found, starting from height {Height}", lastProcessedHeight);
+            _logger.LogInformation("No blockchain state found, starting from height {Height}", heightOfBirth);
 
-            _blockchainState = new BlockchainState(0, Hash.Empty, DateTime.UtcNow);
+            _lastProcessedBlockHeight = heightOfBirth;
+            _blockchainState = new BlockchainState(_lastProcessedBlockHeight, Hash.Empty, DateTime.UtcNow);
             uow.BlockchainStateDbRepository.Add(_blockchainState);
         }
         else

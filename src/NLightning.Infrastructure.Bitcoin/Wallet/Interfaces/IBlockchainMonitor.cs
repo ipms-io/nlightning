@@ -1,8 +1,8 @@
-using NLightning.Domain.Bitcoin.Events;
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Channels.ValueObjects;
-
 namespace NLightning.Infrastructure.Bitcoin.Wallet.Interfaces;
+
+using Domain.Bitcoin.Events;
+using Domain.Bitcoin.ValueObjects;
+using Domain.Channels.ValueObjects;
 
 public interface IBlockchainMonitor
 {
@@ -13,9 +13,10 @@ public interface IBlockchainMonitor
     /// <summary>
     /// Starts a background task to periodically refresh the fee rate
     /// </summary>
+    /// <param name="heightOfBirth">Wallet's height of birth to avoid processing old blocks</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task StartAsync(CancellationToken cancellationToken = default);
+    Task StartAsync(uint heightOfBirth, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Stops the background task and cancels any ongoing operations within the service.
