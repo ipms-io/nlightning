@@ -92,7 +92,7 @@ public class BlockchainMonitorServiceTests
                           .ReturnsAsync(new Block());
 
         // Act
-        await _service.StartAsync(CancellationToken.None);
+        await _service.StartAsync(0, CancellationToken.None);
 
         // Assert
         _mockBlockchainStateRepository.Verify(x => x.GetStateAsync(), Times.Once);
@@ -119,7 +119,7 @@ public class BlockchainMonitorServiceTests
                           .ReturnsAsync(new Block());
 
         // Act
-        await _service.StartAsync(CancellationToken.None);
+        await _service.StartAsync(0, CancellationToken.None);
 
         // Assert
         _mockBlockchainStateRepository.Verify(x => x.Add(It.IsAny<BlockchainState>()), Times.Once);
@@ -169,7 +169,7 @@ public class BlockchainMonitorServiceTests
         _mockBitcoinWallet.Setup(x => x.GetBlockAsync(It.IsAny<uint>()))
                           .ReturnsAsync(block);
 
-        await _service.StartAsync(CancellationToken.None);
+        await _service.StartAsync(0, CancellationToken.None);
 
         // Setup for tracking new block events
         var newBlockEventCalled = false;
@@ -194,7 +194,7 @@ public class BlockchainMonitorServiceTests
     public async Task StopAsync_CancelsTasksAndCleansUp()
     {
         // Arrange
-        await _service.StartAsync(CancellationToken.None);
+        await _service.StartAsync(0, CancellationToken.None);
 
         // Act
         await _service.StopAsync();
@@ -297,5 +297,139 @@ public class BlockchainMonitorServiceTests
         {
             Assert.True(watchedTx.IsCompleted);
         }
+    }
+
+    [Fact]
+    public async Task StartAsync_WithHeightOfBirth_CreatesStateAtSpecifiedHeight()
+    {
+        // Arrange
+        const uint heightOfBirth = 50;
+        uint? capturedStateHeight = null;
+
+        _mockBlockchainStateRepository.Setup(x => x.GetStateAsync())
+                                      .ReturnsAsync((BlockchainState)null!);
+
+        _mockBlockchainStateRepository.Setup(x => x.Add(It.IsAny<BlockchainState>()))
+                                      .Callback<BlockchainState>(state => capturedStateHeight =
+                                                                              state.LastProcessedHeight);
+
+        _mockWatchedTransactionRepository.Setup(x => x.GetAllPendingAsync())
+                                         .ReturnsAsync(
+                                              new List<WatchedTransactionModel>());
+
+        _mockBitcoinWallet.Setup(x => x.GetCurrentBlockHeightAsync())
+                          .ReturnsAsync(100u);
+
+        _mockBitcoinWallet.Setup(x => x.GetBlockAsync(It.IsAny<uint>()))
+                          .ReturnsAsync(new Block());
+
+        // Act
+        await _service.StartAsync(heightOfBirth, CancellationToken.None);
+        await _service.StopAsync();
+
+        // Assert
+        Assert.NotNull(capturedStateHeight);
+        Assert.Equal(heightOfBirth, capturedStateHeight);
+    }
+
+    [Fact]
+    public async Task StartAsync_WithExistingStateAndHeightOfBirth_UsesExistingState()
+    {
+        // Arrange
+        const uint heightOfBirth = 50;
+        const uint existingHeight = 100;
+        var state = new BlockchainState(existingHeight, new byte[32], DateTime.UtcNow);
+
+        _mockBlockchainStateRepository.Setup(x => x.GetStateAsync())
+                                      .ReturnsAsync(state);
+
+        _mockWatchedTransactionRepository.Setup(x => x.GetAllPendingAsync())
+                                         .ReturnsAsync(
+                                              new List<WatchedTransactionModel>());
+
+        _mockBitcoinWallet.Setup(x => x.GetCurrentBlockHeightAsync())
+                          .ReturnsAsync(110u);
+
+        _mockBitcoinWallet.Setup(x => x.GetBlockAsync(It.IsAny<uint>()))
+                          .ReturnsAsync(new Block());
+
+        // Act
+        await _service.StartAsync(heightOfBirth, CancellationToken.None);
+
+        // Assert
+        // Should not create a new state since one already exists
+        _mockBlockchainStateRepository.Verify(
+            x => x.Add(It.IsAny<BlockchainState>()),
+            Times.Never);
+
+        // Should use the existing height, not the height of birth
+        _mockBitcoinWallet.Verify(x => x.GetBlockAsync(existingHeight), Times.Once);
+        _mockBitcoinWallet.Verify(x => x.GetBlockAsync(heightOfBirth), Times.Never);
+    }
+
+    [Fact]
+    public async Task StartAsync_WithHigherHeightOfBirth_ProcessesMissingBlocks()
+    {
+        // Arrange
+        const uint heightOfBirth = 50;
+
+        _mockBlockchainStateRepository.Setup(x => x.GetStateAsync())
+                                      .ReturnsAsync((BlockchainState)null!);
+
+        _mockWatchedTransactionRepository.Setup(x => x.GetAllPendingAsync())
+                                         .ReturnsAsync(
+                                              new List<WatchedTransactionModel>());
+
+        _mockBitcoinWallet.Setup(x => x.GetCurrentBlockHeightAsync())
+                          .ReturnsAsync(55u); // The current height is higher than the height of birth
+
+        _mockBitcoinWallet.Setup(x => x.GetBlockAsync(It.IsAny<uint>()))
+                          .ReturnsAsync(new Block());
+
+        // Act
+        await _service.StartAsync(heightOfBirth, CancellationToken.None);
+
+        // Assert
+        // Should fetch blocks from heightOfBirth to current height
+        _mockBitcoinWallet.Verify(x => x.GetBlockAsync(heightOfBirth), Times.Once);
+        _mockBitcoinWallet.Verify(x => x.GetBlockAsync(51), Times.Once);
+        _mockBitcoinWallet.Verify(x => x.GetBlockAsync(52), Times.Once);
+        _mockBitcoinWallet.Verify(x => x.GetBlockAsync(53), Times.Once);
+        _mockBitcoinWallet.Verify(x => x.GetBlockAsync(54), Times.Once);
+    }
+
+    [Fact]
+    public async Task StartAsync_WithHeightOfBirthZero_StartsFromGenesis()
+    {
+        // Arrange
+        const uint heightOfBirth = 0;
+        uint? capturedStateHeight = null;
+
+        _mockBlockchainStateRepository.Setup(x => x.GetStateAsync())
+                                      .ReturnsAsync((BlockchainState)null!);
+
+        _mockBlockchainStateRepository.Setup(x => x.Add(It.IsAny<BlockchainState>()))
+                                      .Callback<BlockchainState>(state => capturedStateHeight =
+                                                                              state.LastProcessedHeight);
+
+        _mockWatchedTransactionRepository.Setup(x => x.GetAllPendingAsync())
+                                         .ReturnsAsync(
+                                              new List<WatchedTransactionModel>());
+
+        _mockBitcoinWallet.Setup(x => x.GetCurrentBlockHeightAsync())
+                          .ReturnsAsync(5u);
+
+        _mockBitcoinWallet.Setup(x => x.GetBlockAsync(It.IsAny<uint>()))
+                          .ReturnsAsync(new Block());
+
+        // Act
+        await _service.StartAsync(heightOfBirth, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(capturedStateHeight);
+        Assert.Equal(heightOfBirth, capturedStateHeight);
+
+        // Should fetch blocks from genesis (0) onwards
+        _mockBitcoinWallet.Verify(x => x.GetBlockAsync(0), Times.Once);
     }
 }
