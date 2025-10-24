@@ -16,7 +16,7 @@ public sealed class NodeInfoIpcResponse
     [Key(1)] public Hash BestBlockHash { get; init; }
     [Key(2)] public long BestBlockHeight { get; init; }
     [Key(3)] public DateTimeOffset? BestBlockTime { get; init; }
-    [Key(4)] public string? Implementation { get; init; } = "NLightning";
+    [Key(4)] public string? Implementation { get; set; } = "NLightning";
     [Key(5)] public string? Version { get; init; }
 
     public NodeInfoResponse ToContractResponse()
