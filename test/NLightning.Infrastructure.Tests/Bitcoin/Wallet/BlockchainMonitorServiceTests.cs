@@ -17,7 +17,7 @@ namespace NLightning.Infrastructure.Tests.Bitcoin.Wallet;
 public class BlockchainMonitorServiceTests
 {
     private readonly Mock<IOptions<BitcoinOptions>> _mockBitcoinOptions;
-    private readonly Mock<IBitcoinWallet> _mockBitcoinWallet;
+    private readonly Mock<IBitcoinChainService> _mockBitcoinWallet;
     private readonly Mock<ILogger<BlockchainMonitorService>> _mockLogger;
     private readonly Mock<IOptions<Domain.Node.Options.NodeOptions>> _mockNodeOptions;
     private readonly FakeServiceProvider _fakeServiceProvider;
@@ -41,7 +41,7 @@ public class BlockchainMonitorServiceTests
             ZmqTxPort = 28333
         });
 
-        _mockBitcoinWallet = new Mock<IBitcoinWallet>();
+        _mockBitcoinWallet = new Mock<IBitcoinChainService>();
         _mockLogger = new Mock<ILogger<BlockchainMonitorService>>();
 
         _mockNodeOptions = new Mock<IOptions<Domain.Node.Options.NodeOptions>>();
