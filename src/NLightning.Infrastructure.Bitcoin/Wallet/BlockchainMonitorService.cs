@@ -5,13 +5,15 @@ using Microsoft.Extensions.Options;
 using NBitcoin;
 using NetMQ;
 using NetMQ.Sockets;
-using NLightning.Domain.Bitcoin.Addresses.Models;
+using NLightning.Domain.Bitcoin.Interfaces;
+using NLightning.Domain.Money;
 
 namespace NLightning.Infrastructure.Bitcoin.Wallet;
 
 using Domain.Bitcoin.Events;
 using Domain.Bitcoin.Transactions.Models;
 using Domain.Bitcoin.ValueObjects;
+using Domain.Bitcoin.Wallet.Models;
 using Domain.Channels.ValueObjects;
 using Domain.Crypto.ValueObjects;
 using Domain.Node.Options;
@@ -73,6 +75,9 @@ public class BlockchainMonitorService : IBlockchainMonitor
         // Load existing addresses
         LoadBitcoinAddresses(uow);
 
+        // Load UtxoSet
+        await LoadUtxoSetAsync(uow);
+
         // Get the current state or create a new one if it doesn't exist
         var currentBlockchainState = await uow.BlockchainStateDbRepository.GetStateAsync();
         if (currentBlockchainState is null)
@@ -94,14 +99,17 @@ public class BlockchainMonitorService : IBlockchainMonitor
         // Get the current block height from the wallet
         var currentBlockHeight = await _bitcoinChainService.GetCurrentBlockHeightAsync();
 
-        // Add the current block to the processing queue
-        var currentBlock = await _bitcoinChainService.GetBlockAsync(_lastProcessedBlockHeight);
-        if (currentBlock is not null)
-            _blocksToProcess[_lastProcessedBlockHeight] = currentBlock;
+        if (currentBlockHeight > _lastProcessedBlockHeight)
+        {
+            // Add the current block to the processing queue
+            var currentBlock = await _bitcoinChainService.GetBlockAsync(_lastProcessedBlockHeight);
+            if (currentBlock is not null)
+                _blocksToProcess[_lastProcessedBlockHeight] = currentBlock;
 
-        // Add missing blocks to the processing queue and process any pending blocks
-        await AddMissingBlocksToProcessAsync(currentBlockHeight);
-        await ProcessPendingBlocksAsync(uow);
+            // Add missing blocks to the processing queue and process any pending blocks
+            await AddMissingBlocksToProcessAsync(currentBlockHeight);
+            await ProcessPendingBlocksAsync(uow);
+        }
 
         await uow.SaveChangesAsync();
 
@@ -500,6 +508,9 @@ public class BlockchainMonitorService : IBlockchainMonitor
                 uow.WalletAddressesDbRepository.UpdateAsync(watchedAddress);
 
                 // Save Utxo to the database
+                var utxo = new UtxoModel(txId.ToBytes(), (uint)i, LightningMoney.Satoshis(output.Value.Satoshi),
+                                         blockHeight);
+                uow.AddUtxo(utxo);
 
                 if (!_watchedAddresses.TryRemove(destinationAddress.ToString(), out _))
                     _logger.LogError("Unable to remove watched address {DestinationAddress} from the list",
@@ -544,6 +555,18 @@ public class BlockchainMonitorService : IBlockchainMonitor
         foreach (var bitcoinAddress in bitcoinAddresses)
         {
             _watchedAddresses[bitcoinAddress.Address] = bitcoinAddress;
+        }
+    }
+
+    private async Task LoadUtxoSetAsync(IUnitOfWork uow)
+    {
+        _logger.LogInformation("Loading Utxo set");
+
+        var utxoSet = (await uow.UtxoDbRepository.GetAllAsync()).ToList();
+        if (utxoSet.Count > 0)
+        {
+            var utxoMemoryRepository = _serviceProvider.GetService<IUtxoMemoryRepository>();
+            utxoMemoryRepository.Load(utxoSet);
         }
     }
 }
