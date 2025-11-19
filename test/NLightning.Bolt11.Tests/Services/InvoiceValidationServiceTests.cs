@@ -147,6 +147,25 @@ public class InvoiceValidationServiceTests
         Assert.Empty(result.Errors);
     }
 
+    [Fact]
+    public void Given_InvoiceWithEmptyDescription_When_ValidateRequiredFields_Then_ResultIsValid()
+    {
+        // Given
+        var invoice = new Invoice(BitcoinNetwork.Mainnet)
+        {
+            PaymentHash = _invoiceHash,
+            PaymentSecret = _invoiceSecret,
+            Description = string.Empty
+        };
+
+        // When
+        var result = _validator.ValidateRequiredFields(invoice);
+
+        // Then
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+
     #endregion
 
     #region ValidateFieldCombinations Tests
