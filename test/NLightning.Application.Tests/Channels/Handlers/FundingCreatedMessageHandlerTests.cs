@@ -1,30 +1,31 @@
 using Microsoft.Extensions.Logging;
-using NLightning.Application.Channels.Handlers;
-using NLightning.Domain.Bitcoin.Interfaces;
-using NLightning.Domain.Bitcoin.Transactions.Enums;
-using NLightning.Domain.Bitcoin.Transactions.Interfaces;
-using NLightning.Domain.Bitcoin.Transactions.Models;
-using NLightning.Domain.Bitcoin.Transactions.Outputs;
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Channels.Enums;
-using NLightning.Domain.Channels.Interfaces;
-using NLightning.Domain.Channels.Models;
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Crypto.ValueObjects;
-using NLightning.Domain.Enums;
-using NLightning.Domain.Exceptions;
-using NLightning.Domain.Money;
-using NLightning.Domain.Node.Options;
-using NLightning.Domain.Persistence.Interfaces;
-using NLightning.Domain.Protocol.Interfaces;
-using NLightning.Domain.Protocol.Messages;
-using NLightning.Domain.Protocol.Models;
-using NLightning.Domain.Protocol.Payloads;
-using NLightning.Infrastructure.Bitcoin.Builders.Interfaces;
-using NLightning.Infrastructure.Bitcoin.Wallet.Interfaces;
 using NLightning.Tests.Utils.Mocks;
 
 namespace NLightning.Application.Tests.Channels.Handlers;
+
+using Application.Channels.Handlers;
+using Domain.Bitcoin.Interfaces;
+using Domain.Bitcoin.Transactions.Enums;
+using Domain.Bitcoin.Transactions.Interfaces;
+using Domain.Bitcoin.Transactions.Models;
+using Domain.Bitcoin.Transactions.Outputs;
+using Domain.Bitcoin.ValueObjects;
+using Domain.Channels.Enums;
+using Domain.Channels.Interfaces;
+using Domain.Channels.Models;
+using Domain.Channels.ValueObjects;
+using Domain.Crypto.ValueObjects;
+using Domain.Enums;
+using Domain.Exceptions;
+using Domain.Money;
+using Domain.Node.Options;
+using Domain.Persistence.Interfaces;
+using Domain.Protocol.Interfaces;
+using Domain.Protocol.Messages;
+using Domain.Protocol.Models;
+using Domain.Protocol.Payloads;
+using Infrastructure.Bitcoin.Builders.Interfaces;
+using Infrastructure.Bitcoin.Wallet.Interfaces;
 
 public class FundingCreatedMessageHandlerTests
 {
@@ -149,12 +150,12 @@ public class FundingCreatedMessageHandlerTests
 
         // Setup LightningSigner
         _mockLightningSigner
-           .Setup(x => x.SignTransaction(It.IsAny<ChannelId>(), It.IsAny<SignedTransaction>()))
+           .Setup(x => x.SignChannelTransaction(It.IsAny<ChannelId>(), It.IsAny<SignedTransaction>()))
            .Returns(_localSignature);
 
         // Setup MessageFactory
         _mockMessageFactory
-           .Setup(x => x.CreatedFundingSignedMessage(It.IsAny<ChannelId>(), It.IsAny<CompactSignature>()))
+           .Setup(x => x.CreateFundingSignedMessage(It.IsAny<ChannelId>(), It.IsAny<CompactSignature>()))
            .Returns(new FundingSignedMessage(new FundingSignedPayload(_newChannelId, _localSignature)));
 
         // Setup ChannelDbRepository
@@ -211,7 +212,7 @@ public class FundingCreatedMessageHandlerTests
 
         // Verify our signature was generated
         _mockLightningSigner.Verify(
-            x => x.SignTransaction(_newChannelId, It.IsAny<SignedTransaction>()),
+            x => x.SignChannelTransaction(_newChannelId, It.IsAny<SignedTransaction>()),
             Times.Once);
 
         // Verify channel state was updated
