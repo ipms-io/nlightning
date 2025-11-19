@@ -22,8 +22,7 @@ You can check our documentation page [here](https://nlightning.ipms.io/)
 
 ## Features
 
-- **BOLT Compatibility:** We follow the Basis of Lightning Technology (BOLT) specifications to maintain compatibility
-- with other Lightning Network implementations.
+- **BOLT Compatibility:** We follow the Basis of Lightning Technology (BOLT) specifications to maintain compatibility with other Lightning Network implementations.
 - **Modular Design:** The implementation is designed with modularity in mind, making it easy to extend and customize.
 - **Efficiency:** We strive for efficient and optimized code to ensure fast and reliable performance.
 - **Community Support:** We welcome contributions and feedback from the community to improve and enhance the project.
