@@ -336,6 +336,7 @@ public class TaggedFieldListTests
         var invoiceBytes =
             "0D2489F0610D3FBE49A85F7812CB54B0AF846773D3C98833C40E77F2E53CAFA2A025ED0A9C1581A006002140C020A8C0403416AF7A05CB1F56AF5FE32CCF964A84116DF32E3F3CF0A8303F84AF40110EED260280C101208000";
         var bitReader = new BitReader(Convert.FromHexString(invoiceBytes));
+        bitReader.SkipBits(35);
 
         // When
         var list = TaggedFieldList.FromBitReader(bitReader, BitcoinNetwork.Mainnet);
