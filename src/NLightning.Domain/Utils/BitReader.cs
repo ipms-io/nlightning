@@ -36,21 +36,39 @@ public class BitReader(byte[] buffer) : IBitReader
 
         value[valueOffset..(valueOffset + bytesNeeded)].Clear();
 
-        for (var bitIndex = 0; bitIndex < bitLength; bitIndex++)
+        var byteOffset = _bitOffset / 8;
+        var shift = (int)((uint)_bitOffset % 8);
+
+        if (shift == 0)
         {
-            var sourceBit = _bitOffset + bitIndex;
-            var sourceByteIndex = sourceBit / 8;
-            var sourceBitIndex = sourceBit % 8;
+            // copy bytes to value 
+            _buffer.AsSpan(byteOffset, bitLength / 8 + (bitLength % 8 == 0 ? 0 : 1)).CopyTo(value[valueOffset..]);
 
-            var bit = (_buffer[sourceByteIndex] >> (7 - sourceBitIndex)) & 1;
-            if (bit == 0)
-                continue;
+            // mask extra bits 
+            if (bitLength % 8 != 0)
+                value[valueOffset + bitLength / 8] &= (byte)(0xFF << (8 - bitLength % 8));
+        }
+        else
+        {
+            var bytesToRead = bitLength / 8 + (shift > 0 ? 0 : -1);
+            var maxBytesToRead = value.Length - 1 - valueOffset;
+            if (bytesToRead > maxBytesToRead)
+                bytesToRead = maxBytesToRead;
 
-            var destBitIndex = valueOffset * 8 + bitIndex;
-            var destByteIndex = destBitIndex / 8;
-            var destBitPosition = destBitIndex % 8;
+            for (var i = 0; i <= bytesToRead; i++)
+            {
+                var left = (byte)(_buffer[byteOffset + i] << shift);
+                var right = 0;
 
-            value[destByteIndex] |= (byte)(1 << (7 - destBitPosition));
+                if (byteOffset + i + 1 < _buffer.Length)
+                    right = (byte)((_buffer[byteOffset + i + 1]
+                                  & (i == bytesToRead + 1
+                                         ? 0xFF << (8 - bitLength % 8)
+                                         : 0xFF)
+                                   ) >> (8 - shift));
+
+                value[valueOffset + i] = (byte)(left | right);
+            }
         }
 
         _bitOffset += bitLength;
