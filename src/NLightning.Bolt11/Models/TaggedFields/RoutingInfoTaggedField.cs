@@ -75,7 +75,10 @@ internal sealed class RoutingInfoTaggedField : ITaggedField
     /// </summary>
     /// <param name="bitReader">The bit reader to read from</param>
     /// <param name="length">The length of the tagged field</param>
-    /// <returns>A new instance of the <see cref="RoutingInfoTaggedField"/></returns>
+    /// <returns>
+    /// A new instance of the <see cref="RoutingInfoTaggedField"/> if routing information is present;
+    /// otherwise, <c>null</c>.
+    /// </returns>
     internal static RoutingInfoTaggedField? FromBitReader(BitReader bitReader, short length)
     {
         var l = length * 5;
