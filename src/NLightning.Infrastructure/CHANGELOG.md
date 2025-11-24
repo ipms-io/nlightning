@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.0.1
+
+Bump version to use latest `NLightning.Domain`.
+
 ## v1.0.0
 
 This version introduces a comprehensive refactoring of the `NLightning.Infrastructure` layer, focusing on enhancing

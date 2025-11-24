@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## v4.0.2
+
+Bump version to use latest `NLightning.Infrastructure`
+
 ## v4.0.1
 
 Fixed `TaggedFieldList` logic to accept zero length description on an invoice.
