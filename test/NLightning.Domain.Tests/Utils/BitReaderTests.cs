@@ -184,4 +184,37 @@ public class BitReaderTests
         // When / Then
         Assert.Throws<InvalidOperationException>(() => reader.ReadBit());
     }
+
+    [Fact]
+    public void Given_UnalignedReadNearEnd_When_ReadInt16FromBits_Then_DoesNotAccessBeyondBuffer()
+    {
+        // Given
+        var reader = new BitReader([0xFF, 0x00]);
+        reader.SkipBits(6);
+
+        // When
+        var value = reader.ReadInt16FromBits(10, bigEndian: true);
+
+        // Then
+        Assert.Equal(768, (int)value); // 0b1100000000
+        Assert.False(reader.HasMoreBits(1));
+    }
+
+    [Fact]
+    public void Given_MixedReadsNearBufferEnd_When_ReadingAcrossByteBoundaries_Then_ValuesAreCorrect()
+    {
+        // Given
+        var reader = new BitReader([0xF0, 0xAA, 0x55, 0xC3]);
+        reader.SkipBits(17);
+
+        // When
+        Assert.True(reader.HasMoreBits(15));
+        var firstChunk = reader.ReadByteFromBits(5);
+        var secondChunk = reader.ReadInt16FromBits(10, bigEndian: true);
+
+        // Then
+        Assert.Equal(0b10101, firstChunk);
+        Assert.Equal(451, (int)secondChunk); // 0b0111000011
+        Assert.False(reader.HasMoreBits(1));
+    }
 }

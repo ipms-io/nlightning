@@ -163,6 +163,8 @@ internal class TaggedFieldList : List<ITaggedField>
                 {
                     var taggedField =
                         TaggedFieldFactory.CreateTaggedFieldFromBitReader(type, bitReader, length, bitcoinNetwork);
+                    if (taggedField is null)
+                        continue;
 
                     try
                     {
