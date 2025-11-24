@@ -18,10 +18,12 @@ internal static class TaggedFieldFactory
     /// <param name="bitReader">The bit reader to read the tagged field from.</param>
     /// <param name="length">The length of the tagged field.</param>
     /// <param name="bitcoinNetwork"> The network context for the tagged field, used for address parsing.</param>
-    /// <returns>The tagged field.</returns>
+    /// <returns>
+    /// The tagged field, or <c>null</c> if the field type does not contain actual data (e.g., when a routing info field has no routing information).
+    /// </returns>
     /// <exception cref="ArgumentException">Thrown when the tagged field type is unknown.</exception>
-    internal static ITaggedField CreateTaggedFieldFromBitReader(TaggedFieldTypes type, BitReader bitReader,
-                                                                short length, BitcoinNetwork bitcoinNetwork)
+    internal static ITaggedField? CreateTaggedFieldFromBitReader(TaggedFieldTypes type, BitReader bitReader,
+                                                                 short length, BitcoinNetwork bitcoinNetwork)
     {
         return type switch
         {

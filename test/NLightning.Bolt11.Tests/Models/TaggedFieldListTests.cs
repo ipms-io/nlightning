@@ -41,9 +41,8 @@ public class TaggedFieldListTests
         var list = new TaggedFieldList { new MockTaggedField { Type = TaggedFieldTypes.Description } };
 
         // When / Then
-        var ex = Assert.Throws<ArgumentException>(() =>
-                                                      list.Add(new MockTaggedField
-                                                      { Type = TaggedFieldTypes.Description })
+        var ex = Assert.Throws<ArgumentException>(() => list.Add(new MockTaggedField
+        { Type = TaggedFieldTypes.Description })
         );
 
         Assert.Contains("already contains a tagged field of type Description", ex.Message);
@@ -328,5 +327,23 @@ public class TaggedFieldListTests
 
         // Then
         Assert.Empty(list);
+    }
+
+    [Fact]
+    public void Given_InvoiceWithEmptyDescription_When_FromBitReaderCalled_Then_DescriptionIsEmpty()
+    {
+        // Given
+        var invoiceBytes =
+            "0D2489F0610D3FBE49A85F7812CB54B0AF846773D3C98833C40E77F2E53CAFA2A025ED0A9C1581A006002140C020A8C0403416AF7A05CB1F56AF5FE32CCF964A84116DF32E3F3CF0A8303F84AF40110EED260280C101208000";
+        var bitReader = new BitReader(Convert.FromHexString(invoiceBytes));
+        bitReader.SkipBits(35);
+
+        // When
+        var list = TaggedFieldList.FromBitReader(bitReader, BitcoinNetwork.Mainnet);
+
+        // Then
+        Assert.True(list.TryGet<DescriptionTaggedField>(TaggedFieldTypes.Description, out var description));
+        Assert.NotNull(description);
+        Assert.Equal(string.Empty, description.Value);
     }
 }

@@ -150,7 +150,7 @@ internal class TaggedFieldList : List<ITaggedField>
         {
             var type = (TaggedFieldTypes)bitReader.ReadByteFromBits(5);
             var length = bitReader.ReadInt16FromBits(10);
-            if (length == 0 || !bitReader.HasMoreBits(length * 5))
+            if (length != 0 && !bitReader.HasMoreBits(length * 5))
                 continue;
 
             if (!Enum.IsDefined(typeof(TaggedFieldTypes), type))
@@ -163,6 +163,8 @@ internal class TaggedFieldList : List<ITaggedField>
                 {
                     var taggedField =
                         TaggedFieldFactory.CreateTaggedFieldFromBitReader(type, bitReader, length, bitcoinNetwork);
+                    if (taggedField is null)
+                        continue;
 
                     try
                     {
