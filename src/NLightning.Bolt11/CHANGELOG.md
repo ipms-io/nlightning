@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v4.0.1
+
+Fixed `TaggedFieldList` logic to accept zero length description on an invoice.
+
+### Fixed
+
+- Fixed`TaggedFieldList.FromBitReader` logic to remove the check for zero length;
+
 ## v4.0.0
 
 Introduced a dedicated validation service and stricter field checks to improve invoice robustness, along with API

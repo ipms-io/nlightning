@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.1.1
+
+This version fixes a behavior on `BitReader` where reading unaligned bits near the end of the buffer would result in exception;
+
+### Fixed
+
+- Fixed `BitReader` behavior where reading unaligned bits near the end of the buffer would result in exception;
+
 ## v1.1.0
 
 This version introduces the ability to register and manage custom Bitcoin-like networks at runtime, enhancing the
