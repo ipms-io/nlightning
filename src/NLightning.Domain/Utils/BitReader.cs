@@ -30,12 +30,6 @@ public class BitReader(byte[] buffer) : IBitReader
         if (bitLength == 0)
             return 0;
 
-        var bytesNeeded = (bitLength + 7) / 8;
-        if (valueOffset + bytesNeeded > value.Length)
-            throw new ArgumentException("Destination span is too small for the requested bit length.", nameof(value));
-
-        value[valueOffset..(valueOffset + bytesNeeded)].Clear();
-
         var byteOffset = _bitOffset / 8;
         var shift = (int)((uint)_bitOffset % 8);
 
