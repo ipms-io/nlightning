@@ -2,9 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.0.2
+
+Bump version to use `NLightning.Domain@v1.1.2`.
+
 ## v1.0.1
 
-Bump version to use latest `NLightning.Domain`.
+Bump version to use `NLightning.Domain@v1.1.1`.
 
 ## v1.0.0
 

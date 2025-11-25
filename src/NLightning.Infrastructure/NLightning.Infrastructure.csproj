@@ -6,33 +6,19 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk.Razor" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))"/>
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
-    <LangVersion>latest</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Configurations>Debug;Release;Debug.Native;Debug.Wasm;Release.Native;Release.Wasm</Configurations>
-    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Authors>Nickolas Goline</Authors>
     <Description>Infrastructure Library for NLightning</Description>
-    <Copyright>Copyright © Níckolas Goline 2024-2025</Copyright>
-    <RepositoryUrl>https://github.com/ipms-io/nlightning</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>1.0.1</AssemblyVersion>
-    <FileVersion>1.0.1</FileVersion>
-    <NeutralLanguage>en</NeutralLanguage>
-    <Icon>logo.png</Icon>
+    <AssemblyVersion>1.0.2</AssemblyVersion>
+    <FileVersion>1.0.2</FileVersion>
     <PackageTags>lightning-network,bitcoin,crypto,infrastructure,dotnet,cryptography,cross-platform,libsodium,blazor,webassembly,aot</PackageTags>
     <PackageProjectUrl>https://nlightning.ipms.io/api/NLightning.Infrastructure.html</PackageProjectUrl>
-    <PackageIcon>logo.png</PackageIcon>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageId>NLightning.Infrastructure</PackageId>
-    <PackageReleaseNotes>Bump version to use latest NLightning.Domain.</PackageReleaseNotes>
+    <PackageReleaseNotes>Bump version to use `NLightning.Domain@v1.1.2`.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))">

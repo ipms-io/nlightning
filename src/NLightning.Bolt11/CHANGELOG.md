@@ -2,17 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## v4.0.4
+
+Bump version to use `NLightning.Infrastructure@v1.0.2`.
+
 ## v4.0.3
 
-Fixed an error where decoding `PayeePubKeyTaggedField` resulted in error.
-
-### Removed
-
-- Removed Span size check from `BitReader.ReadBits`.
+Wrongful release that should bump `NLightning.Infrastructure` to fix an error when decoding `PayeePubKeyTaggedField`.
 
 ## v4.0.2
 
-Bump version to use latest `NLightning.Infrastructure`
+Bump version to use `NLightning.Infrastructure@v1.0.1`
 
 ## v4.0.1
 

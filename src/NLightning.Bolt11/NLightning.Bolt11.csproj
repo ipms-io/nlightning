@@ -6,33 +6,19 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk.Razor" Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' Or $(Configuration.Contains('.Wasm'))"/>
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
-    <LangVersion>default</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>4.0.3</Version>
+    <Version>4.0.4</Version>
     <Configurations>Debug;Debug.Native;Debug.Wasm;Release;Release.Native;Release.Wasm</Configurations>
-    <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Authors>Nickolas Goline</Authors>
     <Description>A Bitcoin Lightning Invoice Decoder/Encoder implemented in C#</Description>
-    <Copyright>Copyright © Níckolas Goline 2024-2025</Copyright>
-    <RepositoryUrl>https://github.com/ipms-io/nlightning</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>4.0.3</AssemblyVersion>
-    <FileVersion>4.0.3</FileVersion>
-    <NeutralLanguage>en</NeutralLanguage>
-    <Icon>logo.png</Icon>
+    <AssemblyVersion>4.0.4</AssemblyVersion>
+    <FileVersion>4.0.4</FileVersion>
     <PackageTags>lightning,invoice,bolt11,encoder,decoder</PackageTags>
     <PackageProjectUrl>https://nlightning.ipms.io/api/NLightning.Bolt11.Models.Invoice.html</PackageProjectUrl>
-    <PackageIcon>logo.png</PackageIcon>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageId>NLightning.Bolt11</PackageId>
-    <PackageReleaseNotes>Fixed an error where decoding `PayeePubKeyTaggedField` resulted in error.</PackageReleaseNotes>
+    <PackageReleaseNotes>Bump version to use `NLightning.Infrastructure@v1.0.2`</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))">
