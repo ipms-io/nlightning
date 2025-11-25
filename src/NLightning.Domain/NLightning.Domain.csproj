@@ -5,7 +5,7 @@
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
     <Configurations>Debug;Release;Debug.Native;Debug.Wasm;Release.Native;Release.Wasm</Configurations>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
@@ -16,8 +16,8 @@
     <Copyright>Copyright © Níckolas Goline 2024-2025</Copyright>
     <RepositoryUrl>https://github.com/ipms-io/nlightning</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>1.1.1</AssemblyVersion>
-    <FileVersion>1.1.1</FileVersion>
+    <AssemblyVersion>1.1.2</AssemblyVersion>
+    <FileVersion>1.1.2</FileVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <Icon>logo.png</Icon>
     <PackageTags>lightning-network,bitcoin,crypto,infrastructure,dotnet,cryptography,cross-platform,libsodium,blazor,webassembly,aot</PackageTags>
@@ -26,7 +26,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageId>NLightning.Domain</PackageId>
-    <PackageReleaseNotes>This version fixes a behavior on `BitReader` where reading unaligned bits near the end of the buffer would result in exception.</PackageReleaseNotes>
+    <PackageReleaseNotes>This version removes a Span size check from `BitReader` since the calculations are complex and should be done by the caller.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))">

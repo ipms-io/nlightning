@@ -11,7 +11,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>4.0.3</Version>
+    <Version>4.0.4</Version>
     <Configurations>Debug;Debug.Native;Debug.Wasm;Release;Release.Native;Release.Wasm</Configurations>
     <Platforms>AnyCPU</Platforms>
   </PropertyGroup>
@@ -22,8 +22,8 @@
     <Copyright>Copyright © Níckolas Goline 2024-2025</Copyright>
     <RepositoryUrl>https://github.com/ipms-io/nlightning</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>4.0.3</AssemblyVersion>
-    <FileVersion>4.0.3</FileVersion>
+    <AssemblyVersion>4.0.4</AssemblyVersion>
+    <FileVersion>4.0.4</FileVersion>
     <NeutralLanguage>en</NeutralLanguage>
     <Icon>logo.png</Icon>
     <PackageTags>lightning,invoice,bolt11,encoder,decoder</PackageTags>
@@ -32,7 +32,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageId>NLightning.Bolt11</PackageId>
-    <PackageReleaseNotes>Fixed an error where decoding `PayeePubKeyTaggedField` resulted in error.</PackageReleaseNotes>
+    <PackageReleaseNotes>Bump version to use `NLightning.Infrastructure@v1.0.2`</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))">

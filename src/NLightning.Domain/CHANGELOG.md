@@ -2,9 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.1.2
+
+This version removes a Span size check from `BitReader` since the calculations are complex and should be done by the
+caller.
+
+### Removed
+
+- Removed the Span size check from `BitReader` since it was breaking the expected flow.
+
 ## v1.1.1
 
-This version fixes a behavior on `BitReader` where reading unaligned bits near the end of the buffer would result in exception;
+This version fixes a behavior on `BitReader` where reading unaligned bits near the end of the buffer would result in
+exception;
 
 ### Fixed
 
