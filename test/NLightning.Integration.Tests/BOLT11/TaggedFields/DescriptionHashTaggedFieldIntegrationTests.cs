@@ -21,7 +21,7 @@ public class DescriptionHashTaggedFieldIntegrationTests
 
     private static (byte[] Buffer, int FieldOffsetBits) BuildBuffer(int prePadBits, int postPadBits)
     {
-        var fieldBits = TaggedFieldConstants.HashLength * 5; // 52 groups of 5 bits = 260 bits
+        const int fieldBits = TaggedFieldConstants.HashLength * 5; // 52 groups of 5 bits = 260 bits
         var totalBits = prePadBits + fieldBits + postPadBits;
 
         using var writer = new BitWriter(totalBits);
@@ -45,7 +45,7 @@ public class DescriptionHashTaggedFieldIntegrationTests
     public void FromBitReader_Reads_From_Beginning_Of_Buffer()
     {
         // Arrange: no pre-pad, some post-pad to ensure buffer can have extra bits
-        var (buffer, fieldOffsetBits) = BuildBuffer(prePadBits: 0, postPadBits: 7);
+        var (buffer, _) = BuildBuffer(prePadBits: 0, postPadBits: 7);
         var reader = new BitReader(buffer);
 
         // Act
@@ -58,7 +58,7 @@ public class DescriptionHashTaggedFieldIntegrationTests
     [Fact]
     public void FromBitReader_Reads_From_Middle_Of_Buffer()
     {
-        // Arrange: start field at a non-byte-aligned offset to stress bit shifting
+        // Arrange: start the field at a non-byte-aligned offset to stress bit shifting
         var (buffer, fieldOffsetBits) = BuildBuffer(prePadBits: 13, postPadBits: 11);
         var reader = new BitReader(buffer);
         reader.SkipBits(fieldOffsetBits);
@@ -73,7 +73,7 @@ public class DescriptionHashTaggedFieldIntegrationTests
     [Fact]
     public void FromBitReader_Reads_From_Middle_Of_Buffer_Aligned()
     {
-        // Arrange: start field at a byte-aligned offset in the middle of the buffer
+        // Arrange: start the field at a byte-aligned offset in the middle of the buffer
         var (buffer, fieldOffsetBits) = BuildBuffer(prePadBits: 16, postPadBits: 11);
         var reader = new BitReader(buffer);
         reader.SkipBits(fieldOffsetBits);
