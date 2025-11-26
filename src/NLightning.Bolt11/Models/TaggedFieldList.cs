@@ -153,7 +153,7 @@ internal class TaggedFieldList : List<ITaggedField>
             if (length != 0 && !bitReader.HasMoreBits(length * 5))
                 continue;
 
-            if (!Enum.IsDefined(typeof(TaggedFieldTypes), type))
+            if (!Enum.IsDefined(type))
             {
                 bitReader.SkipBits(length * 5);
             }
