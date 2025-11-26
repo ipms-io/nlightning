@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using NBitcoin;
-using Xunit.Abstractions;
 
 namespace NLightning.Integration.Tests.BOLT11.TaggedFields;
 
