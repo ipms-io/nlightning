@@ -1,8 +1,8 @@
 namespace NLightning.Integration.Tests.BOLT11.TaggedFields;
 
 using Bolt11.Models.TaggedFields;
-using Domain.Node;
 using Domain.Enums;
+using Domain.Node;
 using Domain.Utils;
 
 public class FeaturesTaggedFieldIntegrationTests

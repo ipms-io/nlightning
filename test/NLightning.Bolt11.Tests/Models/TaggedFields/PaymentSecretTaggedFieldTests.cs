@@ -2,8 +2,8 @@ using NBitcoin;
 
 namespace NLightning.Bolt11.Tests.Models.TaggedFields;
 
-using Constants;
 using Bolt11.Models.TaggedFields;
+using Constants;
 using Domain.Utils;
 using Enums;
 
