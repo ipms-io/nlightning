@@ -3,7 +3,7 @@ namespace NLightning.Domain.Bitcoin.Transactions.Models;
 using NLightning.Domain.Bitcoin.ValueObjects;
 using NLightning.Domain.Channels.ValueObjects;
 
-public class WatchedTransactionModel
+public sealed class WatchedTransactionModel
 {
     public ChannelId ChannelId { get; }
     public TxId TransactionId { get; }
