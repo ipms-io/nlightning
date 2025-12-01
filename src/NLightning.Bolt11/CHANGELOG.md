@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v4.0.5
+
+Fixed an error when decoding `PayeePubKeyTaggedField`.
+
+### Fixed
+
+- Fixed `PayeePubKeyTaggedField.FromBitReader` logic to send the correct-sized array to `BitReader`.
+
 ## v4.0.4
 
 Bump version to use `NLightning.Infrastructure@v1.0.2`.

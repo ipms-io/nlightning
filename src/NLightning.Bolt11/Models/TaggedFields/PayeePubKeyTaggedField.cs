@@ -56,8 +56,12 @@ internal sealed class PayeePubKeyTaggedField : ITaggedField
                 $"Invalid length for {nameof(PayeePubKeyTaggedField)}. Expected {TaggedFieldConstants.PayeePubkeyLength}, but got {length}");
 
         // Read the data from the BitReader
-        var data = new byte[33];
+        // For 53 groups of 5 bits = 265 bits, we need 34 bytes to read, with one padding byte
+        var data = new byte[(length * 5 + 7) / 8];
         bitReader.ReadBits(data, length * 5);
+
+        // Remove the padding byte
+        data = data[..^1];
 
         return new PayeePubKeyTaggedField(new PubKey(data));
     }

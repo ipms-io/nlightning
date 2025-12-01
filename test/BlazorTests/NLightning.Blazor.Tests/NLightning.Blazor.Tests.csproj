@@ -41,6 +41,13 @@
     <ProjectReference Include="..\NLightning.BlazorTestApp\NLightning.BlazorTestApp.csproj"/>
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\..\NLightning.Infrastructure.Tests\Crypto\Vectors\SHA256LongMsg.rsp">
+      <Link>SHA256LongMsg.rsp</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
   <Target Name="CopyDepsJsonToOutput" AfterTargets="Build">
     <Copy SourceFiles="$(OutputPath)Microsoft.Playwright.deps.json" DestinationFolder="$(TargetDir)"/>
   </Target>
