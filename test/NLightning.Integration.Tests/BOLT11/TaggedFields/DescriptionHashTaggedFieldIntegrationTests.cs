@@ -86,7 +86,7 @@ public class DescriptionHashTaggedFieldIntegrationTests
     }
 
     [Fact]
-    public void FromBitReader_Reads_Near_End_Of_Buffer()
+    public void FromBitReader_Reads_Near_End_Of_Buffer_Unaligned()
     {
         // Arrange: leave a few bits after the field
         var (buffer, fieldOffsetBits) = BuildBuffer(prePadBits: 5, postPadBits: 3);
