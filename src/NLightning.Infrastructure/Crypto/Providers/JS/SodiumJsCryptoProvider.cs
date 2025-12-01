@@ -37,7 +37,7 @@ internal sealed class SodiumJsCryptoProvider : ICryptoProvider
         // Call the JS function
         LibsodiumJsWrapper.crypto_hash_sha256_final(state, resultPtr);
         // Get the content of the result
-        var resultArray = LibsodiumJsWrapper.HEAPU8_subarray(resultPtr, result.Length);
+        var resultArray = LibsodiumJsWrapper.HEAPU8_subarray(resultPtr, (long)resultPtr + result.Length);
         // Copy the final hash into the result span
         resultArray.CopyTo(result);
         // Free result buffer

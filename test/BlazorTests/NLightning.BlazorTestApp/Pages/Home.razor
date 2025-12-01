@@ -1,4 +1,7 @@
 ﻿@page "/"
+@using NLightning.Bolt11.Models
+@using NLightning.Domain.Crypto.Constants
+@using NLightning.Infrastructure.Crypto.Hashes
 @using NLightning.Infrastructure.Crypto.Providers.JS
 @using NLightning.Tests.Utils.Vectors
 
@@ -8,13 +11,27 @@
 
 <p>Welcome to our test app.</p>
 <br/>
-<button data-testid="encodeAeadChacha20Poly1305Ietf" @onclick="EncodeAeadChacha20Poly1305Ietf">Encode AeadChacha20Poly1305Ietf</button>
+<button data-testid="encodeAeadChacha20Poly1305Ietf" @onclick="EncodeAeadChacha20Poly1305Ietf">
+    EncodeAeadChacha20Poly1305Ietf
+</button>
 <br/>
-<button data-testid="decodeAeadChacha20Poly1305Ietf" @onclick="DecodeAeadChacha20Poly1305Ietf">Decode AeadChacha20Poly1305Ietf</button>
+<button data-testid="decodeAeadChacha20Poly1305Ietf" @onclick="DecodeAeadChacha20Poly1305Ietf">
+    DecodeAeadChacha20Poly1305Ietf
+</button>
 <br/>
-<button data-testid="encodeAeadXChacha20Poly1305Ietf" @onclick="EncodeAeadXChacha20Poly1305Ietf">Encode AeadXChacha20Poly1305Ietf</button>
+<button data-testid="encodeAeadXChacha20Poly1305Ietf" @onclick="EncodeAeadXChacha20Poly1305Ietf">
+    EncodeAeadXChacha20Poly1305Ietf
+</button>
 <br/>
-<button data-testid="decodeAeadXChacha20Poly1305Ietf" @onclick="DecodeAeadXChacha20Poly1305Ietf">Decode AeadXChacha20Poly1305Ietf</button>
+<button data-testid="decodeAeadXChacha20Poly1305Ietf" @onclick="DecodeAeadXChacha20Poly1305Ietf">
+    DecodeAeadXChacha20Poly1305Ietf
+</button>
+<br/>
+<input data-testid="sha256MsgHex" @bind="_sha256MsgHex" placeholder="Hex message for SHA-256" style="width: 80%"/>
+<br/>
+<button data-testid="sha256Hash" @onclick="Sha256Hash">Sha256Hash</button>
+<br/>
+<button data-testid="decodeExampleInvoice" @onclick="DecodeExampleInvoice">Decode Example Invoice</button>
 <br/>
 @if (_hasAeadChacha20Poly1305IetfResult)
 {
@@ -24,17 +41,35 @@
 {
     <p data-testid="aeadXChacha20Poly1305IetfResult">@_aeadXChacha20Poly1305IetfResult</p>
 }
+@if (_hasSha256HashResult)
+{
+    <p data-testid="sha256HashResult">@_sha256HashResult</p>
+}
+@if (!string.IsNullOrWhiteSpace(_sha256HashError))
+{
+    <p data-testid="sha256HashError">@_sha256HashError</p>
+}
+@if (_hasInvoiceDecodingResult)
+{
+    <p data-testid="decodeInvoiceResult">@_decodeInvoiceResult</p>
+}
 
 @code {
     bool _hasAeadChacha20Poly1305IetfResult;
     bool _hasAeadXChacha20Poly1305IetfResult;
+    bool _hasSha256HashResult;
+    bool _hasInvoiceDecodingResult;
     string? _aeadChacha20Poly1305IetfResult;
     string? _aeadXChacha20Poly1305IetfResult;
+    string? _sha256HashResult;
+    string? _decodeInvoiceResult;
+    string? _sha256MsgHex;
+    string? _sha256HashError;
 
     void EncodeAeadChacha20Poly1305Ietf()
     {
         // Arrange
-        var cryptoProvider = new SodiumJsCryptoProvider();
+        using var cryptoProvider = new SodiumJsCryptoProvider();
         Span<byte> cipher = new byte[AeadChacha20Poly1305IetfVector.Message.Length + 16];
 
         // Act
@@ -56,7 +91,7 @@
     void EncodeAeadXChacha20Poly1305Ietf()
     {
         // Arrange
-        var cryptoProvider = new SodiumJsCryptoProvider();
+        using var cryptoProvider = new SodiumJsCryptoProvider();
         Span<byte> cipher = new byte[AeadXChacha20Poly1305IetfVector.Message.Length + 16];
 
         // Act
@@ -73,6 +108,47 @@
     void DecodeAeadXChacha20Poly1305Ietf()
     {
         throw new NotImplementedException();
+    }
+
+    void Sha256Hash()
+    {
+        _sha256HashError = null;
+        _hasSha256HashResult = false;
+        try
+        {
+            if (string.IsNullOrWhiteSpace(_sha256MsgHex))
+            {
+                throw new InvalidOperationException("Input is empty. Provide hex-encoded message.");
+            }
+
+            var message = Convert.FromHexString(_sha256MsgHex.Trim());
+            Span<byte> hash = stackalloc byte[CryptoConstants.Sha256HashLen];
+            using var sha256 = new Sha256();
+            sha256.AppendData(message);
+            sha256.GetHashAndReset(hash);
+
+            _sha256HashResult = Convert.ToHexString(hash);
+            _hasSha256HashResult = true;
+        }
+        catch (Exception ex)
+        {
+            _sha256HashError = ex.Message;
+        }
+    }
+
+    void DecodeExampleInvoice()
+    {
+        try
+        {
+            var invoice = Invoice.Decode("lnbc1520n1p5jv65xpp5xt0eh83g5ggz9gl7njd7rl46kd7sqq4tskdjndmc7jr2w2gf4z7qsp5x4d6xgvh0d5l5jdsfg0tytpgsy3fq57tzxrt293pf70d2q7c57vqxq9z0rgqnp4qvyndeaqzman7h898jxm98dzkm0mlrsx36s93smrur7h0azyyuxc5rzjq25carzepgd4vqsyn44jrk85ezrpju92xyrk9apw4cdjh6yrwt5jgqqqqrt49lmtcqqqqqqqqqqq86qq9qcqzpghp5yd5ryspyr6m0pp60palqtt2cflru2826rsg3xgcul0p0cya0j7rq9qyyssqc6zdeu6rp2m038ug68hdtnf3xxjselq6ngphhd60c0w9js4xxejk6rc70zldgzwncv30ykwzwr8k29syw2q4yemm2v8dtg59lsn4vuqpg09pwx");
+            _decodeInvoiceResult = $"{{\"Result\":{{\"Amount\":{invoice.Amount.MilliSatoshi}}}}}";
+        }
+        catch (Exception e)
+        {
+            _decodeInvoiceResult = $"{{\"Result\":{{\"Error\":{e.Message}}}}}";
+        }
+
+        _hasInvoiceDecodingResult = true;
     }
 
 }

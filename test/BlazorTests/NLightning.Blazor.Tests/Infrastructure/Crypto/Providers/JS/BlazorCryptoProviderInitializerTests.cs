@@ -5,11 +5,11 @@ namespace NLightning.Blazor.Tests.Infrastructure.Crypto.Providers.JS;
 using TestCollections;
 
 [Collection(BlazorTestCollection.Name)]
-public class BlazorCryptoProviderInitializer : BlazorTestBase
+public class BlazorCryptoProviderInitializerTests : BlazorTestBase
 {
     private readonly ITestOutputHelper _testOutputHelper;
 
-    public BlazorCryptoProviderInitializer(ITestOutputHelper testOutputHelper)
+    public BlazorCryptoProviderInitializerTests(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
     }

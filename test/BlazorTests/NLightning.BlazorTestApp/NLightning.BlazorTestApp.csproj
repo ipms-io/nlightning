@@ -33,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\NLightning.Bolt11\NLightning.Bolt11.csproj"/>
     <ProjectReference Include="..\..\..\src\NLightning.Infrastructure\NLightning.Infrastructure.csproj"/>
   </ItemGroup>
 
