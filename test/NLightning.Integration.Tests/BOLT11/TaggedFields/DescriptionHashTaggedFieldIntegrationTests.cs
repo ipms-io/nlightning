@@ -56,7 +56,7 @@ public class DescriptionHashTaggedFieldIntegrationTests
     }
 
     [Fact]
-    public void FromBitReader_Reads_From_Middle_Of_Buffer()
+    public void FromBitReader_Reads_From_Middle_Of_Buffer_Unaligned()
     {
         // Arrange: start the field at a non-byte-aligned offset to stress bit shifting
         var (buffer, fieldOffsetBits) = BuildBuffer(prePadBits: 13, postPadBits: 11);
