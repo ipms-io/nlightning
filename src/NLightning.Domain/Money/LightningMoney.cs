@@ -411,6 +411,7 @@ public class LightningMoney
 
     public override int GetHashCode()
     {
+        // ReSharper disable once NonReadonlyMemberInGetHashCode
         return _milliSatoshi.GetHashCode();
     }
 

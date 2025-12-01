@@ -196,7 +196,7 @@ public class BitReaderTests
         var value = reader.ReadInt16FromBits(10, bigEndian: true);
 
         // Then
-        Assert.Equal(768, (int)value); // 0b1100000000
+        Assert.Equal(768, value); // 0b1100000000
         Assert.False(reader.HasMoreBits(1));
     }
 
@@ -214,7 +214,7 @@ public class BitReaderTests
 
         // Then
         Assert.Equal(0b10101, firstChunk);
-        Assert.Equal(451, (int)secondChunk); // 0b0111000011
+        Assert.Equal(451, secondChunk); // 0b0111000011
         Assert.False(reader.HasMoreBits(1));
     }
 }

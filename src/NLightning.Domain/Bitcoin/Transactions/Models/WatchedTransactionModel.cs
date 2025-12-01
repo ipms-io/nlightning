@@ -1,7 +1,7 @@
 namespace NLightning.Domain.Bitcoin.Transactions.Models;
 
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Channels.ValueObjects;
+using Channels.ValueObjects;
+using ValueObjects;
 
 public class WatchedTransactionModel
 {

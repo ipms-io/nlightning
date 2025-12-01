@@ -1,7 +1,7 @@
 namespace NLightning.Infrastructure.Serialization.Tests.Helpers;
 
+using Factories;
 using Protocol.Factories;
-using Serialization.Factories;
 using Serialization.Node;
 using Serialization.Tlv;
 

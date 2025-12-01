@@ -2,25 +2,22 @@ using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NBitcoin;
-using NLightning.Domain.Bitcoin.Interfaces;
-using NLightning.Domain.Bitcoin.Transactions.Models;
-using NLightning.Domain.Bitcoin.ValueObjects;
-using NLightning.Domain.Channels.ValueObjects;
-using NLightning.Domain.Persistence.Interfaces;
-using NLightning.Infrastructure.Bitcoin.Options;
-using NLightning.Infrastructure.Bitcoin.Wallet;
-using NLightning.Infrastructure.Bitcoin.Wallet.Interfaces;
 using NLightning.Tests.Utils.Mocks;
 
 namespace NLightning.Infrastructure.Tests.Bitcoin.Wallet;
 
+using Domain.Bitcoin.Interfaces;
+using Domain.Bitcoin.Transactions.Models;
+using Domain.Bitcoin.ValueObjects;
+using Domain.Channels.ValueObjects;
+using Domain.Persistence.Interfaces;
+using Infrastructure.Bitcoin.Options;
+using Infrastructure.Bitcoin.Wallet;
+using Infrastructure.Bitcoin.Wallet.Interfaces;
+
 public class BlockchainMonitorServiceTests
 {
-    private readonly Mock<IOptions<BitcoinOptions>> _mockBitcoinOptions;
     private readonly Mock<IBitcoinWallet> _mockBitcoinWallet;
-    private readonly Mock<ILogger<BlockchainMonitorService>> _mockLogger;
-    private readonly Mock<IOptions<Domain.Node.Options.NodeOptions>> _mockNodeOptions;
-    private readonly FakeServiceProvider _fakeServiceProvider;
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly Mock<IBlockchainStateDbRepository> _mockBlockchainStateRepository;
     private readonly Mock<IWatchedTransactionDbRepository> _mockWatchedTransactionRepository;
@@ -29,9 +26,10 @@ public class BlockchainMonitorServiceTests
 
     public BlockchainMonitorServiceTests()
     {
-        // Set up mock dependencies
-        _mockBitcoinOptions = new Mock<IOptions<BitcoinOptions>>();
-        _mockBitcoinOptions.Setup(x => x.Value).Returns(new BitcoinOptions
+        var mockBitcoinOptions =
+            // Set up mock dependencies
+            new Mock<IOptions<BitcoinOptions>>();
+        mockBitcoinOptions.Setup(x => x.Value).Returns(new BitcoinOptions
         {
             RpcEndpoint = "",
             RpcUser = "",
@@ -42,17 +40,17 @@ public class BlockchainMonitorServiceTests
         });
 
         _mockBitcoinWallet = new Mock<IBitcoinWallet>();
-        _mockLogger = new Mock<ILogger<BlockchainMonitorService>>();
+        var mockLogger = new Mock<ILogger<BlockchainMonitorService>>();
 
-        _mockNodeOptions = new Mock<IOptions<Domain.Node.Options.NodeOptions>>();
-        _mockNodeOptions.Setup(x => x.Value).Returns(new Domain.Node.Options.NodeOptions
+        var mockNodeOptions = new Mock<IOptions<Domain.Node.Options.NodeOptions>>();
+        mockNodeOptions.Setup(x => x.Value).Returns(new Domain.Node.Options.NodeOptions
         {
             BitcoinNetwork = "regtest"
         });
 
         _mockUnitOfWork = new Mock<IUnitOfWork>();
-        _fakeServiceProvider = new FakeServiceProvider();
-        _fakeServiceProvider.AddService(typeof(IUnitOfWork), _mockUnitOfWork.Object);
+        var fakeServiceProvider = new FakeServiceProvider();
+        fakeServiceProvider.AddService(typeof(IUnitOfWork), _mockUnitOfWork.Object);
         _mockBlockchainStateRepository = new Mock<IBlockchainStateDbRepository>();
         _mockWatchedTransactionRepository = new Mock<IWatchedTransactionDbRepository>();
 
@@ -62,11 +60,11 @@ public class BlockchainMonitorServiceTests
 
         // Create the service
         _service = new BlockchainMonitorService(
-            _mockBitcoinOptions.Object,
+            mockBitcoinOptions.Object,
             _mockBitcoinWallet.Object,
-            _mockLogger.Object,
-            _mockNodeOptions.Object,
-            _fakeServiceProvider);
+            mockLogger.Object,
+            mockNodeOptions.Object,
+            fakeServiceProvider);
     }
 
     [Fact]
@@ -74,7 +72,7 @@ public class BlockchainMonitorServiceTests
     {
         // Arrange
         var state = new BlockchainState(100, new byte[32], DateTime.UtcNow);
-        var pendingTransactions = new List<Domain.Bitcoin.Transactions.Models.WatchedTransactionModel>
+        var pendingTransactions = new List<WatchedTransactionModel>
         {
             new(new ChannelId(new byte[32]), new TxId(new byte[32]), 6)
         };
@@ -89,7 +87,7 @@ public class BlockchainMonitorServiceTests
                           .ReturnsAsync(110u);
 
         _mockBitcoinWallet.Setup(x => x.GetBlockAsync(It.IsAny<uint>()))
-                          .ReturnsAsync(new Block());
+                          .ReturnsAsync(Consensus.Main.ConsensusFactory.CreateBlock());
 
         // Act
         await _service.StartAsync(0, CancellationToken.None);
@@ -106,17 +104,17 @@ public class BlockchainMonitorServiceTests
     {
         // Arrange
         _mockBlockchainStateRepository.Setup(x => x.GetStateAsync())
-                                      .ReturnsAsync((BlockchainState)null);
+                                      .ReturnsAsync((BlockchainState)null!);
 
         _mockWatchedTransactionRepository.Setup(x => x.GetAllPendingAsync())
                                          .ReturnsAsync(
-                                              new List<Domain.Bitcoin.Transactions.Models.WatchedTransactionModel>());
+                                              new List<WatchedTransactionModel>());
 
         _mockBitcoinWallet.Setup(x => x.GetCurrentBlockHeightAsync())
                           .ReturnsAsync(100u);
 
         _mockBitcoinWallet.Setup(x => x.GetBlockAsync(It.IsAny<uint>()))
-                          .ReturnsAsync(new Block());
+                          .ReturnsAsync(Consensus.Main.ConsensusFactory.CreateBlock());
 
         // Act
         await _service.StartAsync(0, CancellationToken.None);
@@ -139,9 +137,9 @@ public class BlockchainMonitorServiceTests
         // Assert
         _mockWatchedTransactionRepository.Verify(
             x => x.Add(
-                It.Is<Domain.Bitcoin.Transactions.Models.WatchedTransactionModel>(t => t.ChannelId.Equals(channelId) &&
-                        t.TransactionId.Equals(txId) &&
-                        t.RequiredDepth == requiredDepth)),
+                It.Is<WatchedTransactionModel>(t => t.ChannelId.Equals(channelId) &&
+                                                    t.TransactionId.Equals(txId) &&
+                                                    t.RequiredDepth == requiredDepth)),
             Times.Once);
 
         _mockUnitOfWork.Verify(x => x.SaveChangesAsync(), Times.Once);
@@ -152,7 +150,7 @@ public class BlockchainMonitorServiceTests
     {
         // Arrange
         var currentBlockHeight = 110u;
-        var block = new Block();
+        var block = Consensus.Main.ConsensusFactory.CreateBlock();
 
         // Setup to simulate blockchain state at height 100
         var state = new BlockchainState(100, new byte[32], DateTime.UtcNow);
@@ -161,7 +159,7 @@ public class BlockchainMonitorServiceTests
 
         _mockWatchedTransactionRepository.Setup(x => x.GetAllPendingAsync())
                                          .ReturnsAsync(
-                                              new List<Domain.Bitcoin.Transactions.Models.WatchedTransactionModel>());
+                                              new List<WatchedTransactionModel>());
 
         _mockBitcoinWallet.Setup(x => x.GetCurrentBlockHeightAsync())
                           .ReturnsAsync(currentBlockHeight);
@@ -179,10 +177,12 @@ public class BlockchainMonitorServiceTests
         var processNewBlockMethod = typeof(BlockchainMonitorService).GetMethod("ProcessNewBlock",
                                                                                System.Reflection.BindingFlags
                                                                                   .NonPublic |
-                                                                               System.Reflection.BindingFlags.Instance);
+                                                                               System.Reflection.BindingFlags.Instance)
+                                 ?? throw new InvalidCastException("Can't find ProcessNewBlock method");
 
         // Act
-        await (Task)processNewBlockMethod.Invoke(_service, new object[] { block, currentBlockHeight });
+        await (processNewBlockMethod.Invoke(_service, [block, currentBlockHeight]) as Task ??
+               throw new InvalidCastException("Can't box ProcessNewBlock method as Task"));
 
         // Assert
         Assert.True(newBlockEventCalled, "New block event should have been raised");
@@ -210,7 +210,7 @@ public class BlockchainMonitorServiceTests
         var txId = new TxId(new byte[32]);
         const uint requiredDepth = 1;
 
-        var watchedTx = new Domain.Bitcoin.Transactions.Models.WatchedTransactionModel(channelId, txId, requiredDepth);
+        var watchedTx = new WatchedTransactionModel(channelId, txId, requiredDepth);
         watchedTx.SetHeightAndIndex(100, 1);
 
         var transactionConfirmedCalled = false;
@@ -222,32 +222,40 @@ public class BlockchainMonitorServiceTests
 
         // Use reflection to access private methods/fields for testing
         var checkWatchedTransactionsDepthMethod = typeof(BlockchainMonitorService).GetMethod(
-            "CheckWatchedTransactionsDepth",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                                                      "CheckWatchedTransactionsDepth",
+                                                      System.Reflection.BindingFlags.NonPublic |
+                                                      System.Reflection.BindingFlags.Instance) ??
+                                                  throw new NullReferenceException(
+                                                      "Can't find CheckWatchedTransactionsDepth method");
 
         var watchedTransactionsField = typeof(BlockchainMonitorService).GetField("_watchedTransactions",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                                           System.Reflection.BindingFlags.NonPublic |
+                                           System.Reflection.BindingFlags.Instance) ??
+                                       throw new NullReferenceException("Can't find watchedTransactions field");
 
         var lastProcessedBlockHeightField = typeof(BlockchainMonitorService).GetField("_lastProcessedBlockHeight",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                                                System.Reflection.BindingFlags.NonPublic |
+                                                System.Reflection.BindingFlags.Instance)
+                                         ?? throw new NullReferenceException(
+                                                "Can't find lastProcessedBlockHeight field");
 
         // Set the private fields
         var watchedTransactions =
-            (ConcurrentDictionary<uint256, Domain.Bitcoin.Transactions.Models.WatchedTransactionModel>)
-            watchedTransactionsField.GetValue(_service);
+            watchedTransactionsField.GetValue(_service) as ConcurrentDictionary<uint256, WatchedTransactionModel> ??
+            throw new InvalidCastException("Can't get watchedTransactions field");
         watchedTransactions[new uint256(txId)] = watchedTx;
 
         lastProcessedBlockHeightField.SetValue(_service, 101u); // Setting block height to 101 to trigger confirmation
 
         // Act
-        checkWatchedTransactionsDepthMethod.Invoke(_service, new object[] { _mockUnitOfWork.Object });
+        checkWatchedTransactionsDepthMethod.Invoke(_service, [_mockUnitOfWork.Object]);
 
         // Assert
         Assert.True(transactionConfirmedCalled, "Transaction confirmed event should have been raised");
         _mockWatchedTransactionRepository.Verify(
             x => x.Update(
-                It.Is<Domain.Bitcoin.Transactions.Models.WatchedTransactionModel>(t => t.ChannelId.Equals(channelId) &&
-                        t.IsCompleted)), Times.Once);
+                It.Is<WatchedTransactionModel>(t => t.ChannelId.Equals(channelId) &&
+                                                    t.IsCompleted)), Times.Once);
     }
 
     [Fact]
@@ -270,21 +278,26 @@ public class BlockchainMonitorServiceTests
 
         // Use reflection to access private methods/fields
         var checkWatchedTransactionsForBlockMethod = typeof(BlockchainMonitorService).GetMethod(
-            "CheckWatchedTransactionsForBlock",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                                                         "CheckWatchedTransactionsForBlock",
+                                                         System.Reflection.BindingFlags.NonPublic |
+                                                         System.Reflection.BindingFlags.Instance)
+                                                  ?? throw new NullReferenceException(
+                                                         "Can't find CheckWatchedTransactionsForBlock method");
 
         var watchedTransactionsField = typeof(BlockchainMonitorService).GetField("_watchedTransactions",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                                           System.Reflection.BindingFlags.NonPublic |
+                                           System.Reflection.BindingFlags.Instance) ??
+                                       throw new NullReferenceException("Can't find watchedTransactions field");
 
         // Set the watched transactions field
         var watchedTransactions =
-            (ConcurrentDictionary<uint256, Domain.Bitcoin.Transactions.Models.WatchedTransactionModel>)
-            watchedTransactionsField.GetValue(_service);
+            watchedTransactionsField.GetValue(_service) as ConcurrentDictionary<uint256, WatchedTransactionModel> ??
+            throw new InvalidCastException("Can't get watchedTransactions field");
         watchedTransactions[txHash] = watchedTx;
 
         // Act
         checkWatchedTransactionsForBlockMethod.Invoke(
-            _service, new object[] { blockTransactions, blockHeight, _mockUnitOfWork.Object });
+            _service, [blockTransactions, blockHeight, _mockUnitOfWork.Object]);
 
         // Assert
         _mockWatchedTransactionRepository.Verify(
@@ -321,7 +334,7 @@ public class BlockchainMonitorServiceTests
                           .ReturnsAsync(100u);
 
         _mockBitcoinWallet.Setup(x => x.GetBlockAsync(It.IsAny<uint>()))
-                          .ReturnsAsync(new Block());
+                          .ReturnsAsync(Consensus.Main.ConsensusFactory.CreateBlock());
 
         // Act
         await _service.StartAsync(heightOfBirth, CancellationToken.None);
@@ -351,7 +364,7 @@ public class BlockchainMonitorServiceTests
                           .ReturnsAsync(110u);
 
         _mockBitcoinWallet.Setup(x => x.GetBlockAsync(It.IsAny<uint>()))
-                          .ReturnsAsync(new Block());
+                          .ReturnsAsync(Consensus.Main.ConsensusFactory.CreateBlock());
 
         // Act
         await _service.StartAsync(heightOfBirth, CancellationToken.None);
@@ -384,7 +397,7 @@ public class BlockchainMonitorServiceTests
                           .ReturnsAsync(55u); // The current height is higher than the height of birth
 
         _mockBitcoinWallet.Setup(x => x.GetBlockAsync(It.IsAny<uint>()))
-                          .ReturnsAsync(new Block());
+                          .ReturnsAsync(Consensus.Main.ConsensusFactory.CreateBlock());
 
         // Act
         await _service.StartAsync(heightOfBirth, CancellationToken.None);
@@ -420,7 +433,7 @@ public class BlockchainMonitorServiceTests
                           .ReturnsAsync(5u);
 
         _mockBitcoinWallet.Setup(x => x.GetBlockAsync(It.IsAny<uint>()))
-                          .ReturnsAsync(new Block());
+                          .ReturnsAsync(Consensus.Main.ConsensusFactory.CreateBlock());
 
         // Act
         await _service.StartAsync(heightOfBirth, CancellationToken.None);

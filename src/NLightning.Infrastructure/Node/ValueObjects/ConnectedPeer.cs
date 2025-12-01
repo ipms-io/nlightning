@@ -30,6 +30,8 @@ public readonly record struct ConnectedPeer
     /// Represents a connected peer in the network, consisting of a compact public key and a TCP client.
     /// </summary>
     /// <param name="compactPubKey">The compact public key of the peer.</param>
+    /// <param name="host">The host address of the connected peer.</param>
+    /// <param name="port">The port used by the peer to establish the connection.</param>
     /// <param name="tcpClient">The TCP client representing the connection to the peer.</param>
     public ConnectedPeer(CompactPubKey compactPubKey, string host, uint port, TcpClient tcpClient)
     {

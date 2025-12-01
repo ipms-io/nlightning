@@ -19,13 +19,14 @@ public class BlockchainStateEntity
         return obj is BlockchainStateEntity other && Equals(other);
     }
 
-    public bool Equals(BlockchainStateEntity other)
+    private bool Equals(BlockchainStateEntity other)
     {
         return Id.Equals(other.Id);
     }
 
     public override int GetHashCode()
     {
+        // ReSharper disable once NonReadonlyMemberInGetHashCode
         return Id.GetHashCode();
     }
 }

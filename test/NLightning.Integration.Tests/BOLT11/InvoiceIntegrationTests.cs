@@ -143,12 +143,12 @@ public class InvoiceIntegrationTests
                 switch (taggedField.Key)
                 {
                     case TaggedFieldTypes.PaymentSecret:
-                        invoice.PaymentSecret = taggedField.Value as uint256 ??
-                                                throw new InvalidCastException("Unable to cast taggedField to uint256");
+                        invoice.PaymentSecret = taggedField.Value as uint256
+                                             ?? throw new InvalidCastException("Unable to cast taggedField to uint256");
                         break;
                     case TaggedFieldTypes.PaymentHash:
-                        invoice.PaymentHash = taggedField.Value as uint256 ??
-                                              throw new InvalidCastException("Unable to cast taggedField to uint256");
+                        invoice.PaymentHash = taggedField.Value as uint256
+                                           ?? throw new InvalidCastException("Unable to cast taggedField to uint256");
                         break;
                     case TaggedFieldTypes.DescriptionHash:
                         invoice.DescriptionHash = taggedField.Value as uint256;
@@ -156,32 +156,38 @@ public class InvoiceIntegrationTests
                     case TaggedFieldTypes.FallbackAddress:
                         invoice.FallbackAddresses =
                         [
-                            taggedField.Value as BitcoinAddress ??
-                            throw new InvalidCastException("Unable to cast taggedField to BitcoinAddress")
+                            taggedField.Value as BitcoinAddress
+                         ?? throw new InvalidCastException("Unable to cast taggedField to BitcoinAddress")
                         ];
                         break;
                     case TaggedFieldTypes.Description:
                         invoice.Description = taggedField.Value as string;
                         break;
                     case TaggedFieldTypes.ExpiryTime:
-                        invoice.ExpiryDate = taggedField.Value as DateTimeOffset? ??
-                                             throw new InvalidCastException(
+                        invoice.ExpiryDate = taggedField.Value as DateTimeOffset?
+                                          ?? throw new InvalidCastException(
                                                  "Unable to cast taggedField to DateTimeOffset");
                         break;
                     case TaggedFieldTypes.RoutingInfo:
-                        invoice.RoutingInfos = taggedField.Value as RoutingInfoCollection;
+                        invoice.RoutingInfos = taggedField.Value as RoutingInfoCollection ??
+                                               throw new InvalidCastException(
+                                                   "Unable to cast taggedField to RoutingInfoCollection");
                         break;
                     case TaggedFieldTypes.Features:
-                        invoice.Features = taggedField.Value as FeatureSet;
+                        invoice.Features = taggedField.Value as FeatureSet
+                                        ?? throw new InvalidCastException("Unable to cast taggedField to FeatureSet");
                         break;
                     case TaggedFieldTypes.Metadata:
                         invoice.Metadata = taggedField.Value as byte[];
                         break;
                     case TaggedFieldTypes.MinFinalCltvExpiry:
-                        invoice.MinFinalCltvExpiry = taggedField.Value as ushort?;
+                        invoice.MinFinalCltvExpiry = taggedField.Value as ushort?
+                                                  ?? throw new InvalidCastException(
+                                                         "Unable to cast taggedField to ushort");
                         break;
                     case TaggedFieldTypes.PayeePubKey:
-                        invoice.PayeePubKey = taggedField.Value as PubKey;
+                        invoice.PayeePubKey = taggedField.Value as PubKey
+                                           ?? throw new InvalidCastException("Unable to cast taggedField to PubKey");
                         break;
                     default:
                         continue;

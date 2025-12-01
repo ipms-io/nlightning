@@ -9,7 +9,7 @@ public static class ByteArrayExtensions
 
         unchecked
         {
-            return bytes.Aggregate(24, (current, t) => current = (current * 69) ^ t);
+            return bytes.Aggregate(24, (current, t) => (current * 69) ^ t);
         }
     }
 }

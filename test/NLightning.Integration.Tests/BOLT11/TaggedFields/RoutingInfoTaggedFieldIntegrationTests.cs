@@ -92,7 +92,7 @@ public class RoutingInfoTaggedFieldIntegrationTests
         var parsed = RoutingInfoTaggedField.FromBitReader(reader, length);
 
         Assert.NotNull(parsed);
-        AssertRoutingInfosEqual(expected, parsed!.Value);
+        AssertRoutingInfosEqual(expected, parsed.Value);
     }
 
     [Fact]
@@ -106,7 +106,7 @@ public class RoutingInfoTaggedFieldIntegrationTests
         var parsed = RoutingInfoTaggedField.FromBitReader(reader, length);
 
         Assert.NotNull(parsed);
-        AssertRoutingInfosEqual(expected, parsed!.Value);
+        AssertRoutingInfosEqual(expected, parsed.Value);
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public class RoutingInfoTaggedFieldIntegrationTests
         var parsed = RoutingInfoTaggedField.FromBitReader(reader, length);
 
         Assert.NotNull(parsed);
-        AssertRoutingInfosEqual(expected, parsed!.Value);
+        AssertRoutingInfosEqual(expected, parsed.Value);
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public class RoutingInfoTaggedFieldIntegrationTests
         var parsed = RoutingInfoTaggedField.FromBitReader(reader, length);
 
         Assert.NotNull(parsed);
-        AssertRoutingInfosEqual(expected, parsed!.Value);
+        AssertRoutingInfosEqual(expected, parsed.Value);
     }
 
     [Fact]
@@ -148,7 +148,7 @@ public class RoutingInfoTaggedFieldIntegrationTests
         var parsed = RoutingInfoTaggedField.FromBitReader(reader, length);
 
         Assert.NotNull(parsed);
-        AssertRoutingInfosEqual(expected, parsed!.Value);
+        AssertRoutingInfosEqual(expected, parsed.Value);
     }
 
     [Fact]
@@ -162,7 +162,7 @@ public class RoutingInfoTaggedFieldIntegrationTests
         var parsed = RoutingInfoTaggedField.FromBitReader(reader, length);
 
         Assert.NotNull(parsed);
-        AssertRoutingInfosEqual(expected, parsed!.Value);
+        AssertRoutingInfosEqual(expected, parsed.Value);
     }
 
     [Fact]
@@ -176,6 +176,6 @@ public class RoutingInfoTaggedFieldIntegrationTests
         var parsed = RoutingInfoTaggedField.FromBitReader(reader, length);
 
         Assert.NotNull(parsed);
-        AssertRoutingInfosEqual(expected, parsed!.Value);
+        AssertRoutingInfosEqual(expected, parsed.Value);
     }
 }
