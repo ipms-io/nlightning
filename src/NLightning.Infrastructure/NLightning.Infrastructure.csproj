@@ -7,18 +7,18 @@
 
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Configurations>Debug;Release;Debug.Native;Debug.Wasm;Release.Native;Release.Wasm</Configurations>
   </PropertyGroup>
 
   <PropertyGroup>
     <Description>Infrastructure Library for NLightning</Description>
-    <AssemblyVersion>1.0.2</AssemblyVersion>
-    <FileVersion>1.0.2</FileVersion>
+    <AssemblyVersion>1.0.3</AssemblyVersion>
+    <FileVersion>1.0.3</FileVersion>
     <PackageTags>lightning-network,bitcoin,crypto,infrastructure,dotnet,cryptography,cross-platform,libsodium,blazor,webassembly,aot</PackageTags>
     <PackageProjectUrl>https://nlightning.ipms.io/api/NLightning.Infrastructure.html</PackageProjectUrl>
     <PackageId>NLightning.Infrastructure</PackageId>
-    <PackageReleaseNotes>Bump version to use `NLightning.Domain@v1.1.2`.</PackageReleaseNotes>
+    <PackageReleaseNotes>Fixed an error on `SodiumJsCryptoProvider` where Blazor apps whould be unable to call `Sha256.GetHashAndReset`.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))">

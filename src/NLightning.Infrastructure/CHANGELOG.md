@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.0.3
+
+Fixed an error on `SodiumJsCryptoProvider` where Blazor apps whould be unable to call `Sha256.GetHashAndReset`.
+
+### Fixed
+
+- Fixed `SodiumJsCryptoProvider.Sha256Final` to pass the arguments as `begin`, `end` to
+  `LibsodiumJsWrapper.HEAPU8_subarray` instead of `begin`, `length`;
+- Fixed `LibsodiumJsWrapper.HEAPU8_subarray` argument name so it's clear it expects `begin` and `end` instead of `begin`
+  and `lenght`.
+
 ## v1.0.2
 
 Bump version to use `NLightning.Domain@v1.1.2`.

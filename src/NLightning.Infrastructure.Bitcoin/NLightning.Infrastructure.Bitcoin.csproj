@@ -1,18 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.0.3</Version>
+    <Version>0.0.4</Version>
     <Configurations>Debug;Release;Debug.Native;Debug.Wasm;Release.Native;Release.Wasm</Configurations>
   </PropertyGroup>
 
   <PropertyGroup>
     <Description>Bitcoin Infrastructure Library for NLightning</Description>
-    <AssemblyVersion>0.0.3</AssemblyVersion>
-    <FileVersion>0.0.3</FileVersion>
+    <AssemblyVersion>0.0.4</AssemblyVersion>
+    <FileVersion>0.0.4</FileVersion>
     <PackageTags>lightning-network,bitcoin,crypto,infrastructure,dotnet,cryptography,cross-platform,libsodium,blazor,webassembly,aot</PackageTags>
     <PackageProjectUrl>https://nlightning.ipms.io/api/NLightning.Infrastructure.Bitcoin.html</PackageProjectUrl>
     <PackageId>NLightning.Infrastructure.Bitcoin</PackageId>
-    <PackageReleaseNotes>Bump version to use `NLightning.Infrastructure@v1.0.2`.</PackageReleaseNotes>
+    <PackageReleaseNotes>Bump version to use `NLightning.Infrastructure@v1.0.3`.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))">

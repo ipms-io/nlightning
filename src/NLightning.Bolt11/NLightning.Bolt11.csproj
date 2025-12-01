@@ -7,18 +7,18 @@
 
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>4.0.4</Version>
+    <Version>4.0.5</Version>
     <Configurations>Debug;Debug.Native;Debug.Wasm;Release;Release.Native;Release.Wasm</Configurations>
   </PropertyGroup>
 
   <PropertyGroup>
     <Description>A Bitcoin Lightning Invoice Decoder/Encoder implemented in C#</Description>
-    <AssemblyVersion>4.0.4</AssemblyVersion>
-    <FileVersion>4.0.4</FileVersion>
+    <AssemblyVersion>4.0.5</AssemblyVersion>
+    <FileVersion>4.0.5</FileVersion>
     <PackageTags>lightning,invoice,bolt11,encoder,decoder</PackageTags>
     <PackageProjectUrl>https://nlightning.ipms.io/api/NLightning.Bolt11.Models.Invoice.html</PackageProjectUrl>
     <PackageId>NLightning.Bolt11</PackageId>
-    <PackageReleaseNotes>Bump version to use `NLightning.Infrastructure@v1.0.2`</PackageReleaseNotes>
+    <PackageReleaseNotes>Fixed an error when decoding `PayeePubKeyTaggedField`.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(Configuration.Contains('Debug'))">
