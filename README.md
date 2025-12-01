@@ -6,7 +6,7 @@
 &nbsp;
 [![MIT License](https://img.shields.io/github/license/ipms-io/nlightning)](LICENSE)
 &nbsp;
-![.NET 8.0](https://img.shields.io/badge/Version-.NET%208.0-informational?style=flat&logo=dotnet)
+![.NET 9.0](https://img.shields.io/badge/Version-.NET%209.0-informational?style=flat&logo=dotnet)
 
 Welcome to the C# implementation of the Lightning Network!
 
@@ -49,8 +49,13 @@ and testing purposes.
 
 Before you begin, ensure you have the following installed on your system:
 
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or later
+- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0) or any later 9.x version
 - Git (for cloning the repository)
+
+This project uses a global.json file to pin the .NET SDK to version 9.0.0, but with rollForward:
+"latestMinor" it will accept any newer 9.x release (e.g., 9.1.x, 9.2.x).
+You must have .NET SDK 9.0.0 or later within the 9.x line installed.
+SDK versions outside the 9.x line (e.g., 8.x or 10.x) are not supported.
 
 ### Installation
 
