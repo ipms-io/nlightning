@@ -41,7 +41,9 @@ public class Sha256Tests : BlazorTestBase
             // Wait for the result element to be visible (first time) and then to match the expected value
             await Page.WaitForSelectorAsync("[data-testid='sha256HashResult']",
                                             new PageWaitForSelectorOptions
-                                                { State = WaitForSelectorState.Visible, Timeout = 10000 });
+                                            {
+                                                State = WaitForSelectorState.Visible, Timeout = 10000
+                                            });
 
             var expectedHex = Convert.ToHexString(v.Md!);
 
