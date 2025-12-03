@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using NLightning.Domain.Protocol.Models;
 using NLightning.Tests.Utils.Vectors;
 
 namespace NLightning.Integration.Tests.BOLT3;
@@ -15,6 +14,7 @@ using Domain.Crypto.ValueObjects;
 using Domain.Enums;
 using Domain.Money;
 using Domain.Node.Options;
+using Domain.Protocol.Models;
 using Infrastructure.Bitcoin.Builders;
 using Infrastructure.Bitcoin.Services;
 using Infrastructure.Bitcoin.Signers;
@@ -116,7 +116,7 @@ public class Bolt3IntegrationTests
         var exception = Record.Exception(() => testLightningSigner.ValidateSignature(
                                              ChannelId.Zero, Bolt3AppendixCVectors.NodeBSignature0.ToCompact(),
                                              unsignedTransaction));
-        var signature = testLightningSigner.SignTransaction(ChannelId.Zero, unsignedTransaction);
+        var signature = testLightningSigner.SignChannelTransaction(ChannelId.Zero, unsignedTransaction);
 
         // Then
         Assert.Null(exception);
@@ -148,7 +148,7 @@ public class Bolt3IntegrationTests
         var exception = Record.Exception(() => testLightningSigner.ValidateSignature(
                                              ChannelId.Zero, Bolt3AppendixCVectors.NodeBSignature1.ToCompact(),
                                              unsignedTransaction));
-        var signature = testLightningSigner.SignTransaction(ChannelId.Zero, unsignedTransaction);
+        var signature = testLightningSigner.SignChannelTransaction(ChannelId.Zero, unsignedTransaction);
 
         // Then
         Assert.Null(exception);
@@ -180,7 +180,7 @@ public class Bolt3IntegrationTests
         var exception = Record.Exception(() => testLightningSigner.ValidateSignature(
                                              ChannelId.Zero, Bolt3AppendixCVectors.NodeBSignature2.ToCompact(),
                                              unsignedTransaction));
-        var signature = testLightningSigner.SignTransaction(ChannelId.Zero, unsignedTransaction);
+        var signature = testLightningSigner.SignChannelTransaction(ChannelId.Zero, unsignedTransaction);
 
         // Then
         Assert.Null(exception);
@@ -213,7 +213,7 @@ public class Bolt3IntegrationTests
         var exception = Record.Exception(() => testLightningSigner.ValidateSignature(
                                              ChannelId.Zero, Bolt3AppendixCVectors.NodeBSignature3.ToCompact(),
                                              unsignedTransaction));
-        var signature = testLightningSigner.SignTransaction(ChannelId.Zero, unsignedTransaction);
+        var signature = testLightningSigner.SignChannelTransaction(ChannelId.Zero, unsignedTransaction);
 
         // Then
         Assert.Null(exception);
@@ -246,7 +246,7 @@ public class Bolt3IntegrationTests
         var exception = Record.Exception(() => testLightningSigner.ValidateSignature(
                                              ChannelId.Zero, Bolt3AppendixCVectors.NodeBSignature4.ToCompact(),
                                              unsignedTransaction));
-        var signature = testLightningSigner.SignTransaction(ChannelId.Zero, unsignedTransaction);
+        var signature = testLightningSigner.SignChannelTransaction(ChannelId.Zero, unsignedTransaction);
 
         // Then
         Assert.Null(exception);
@@ -279,7 +279,7 @@ public class Bolt3IntegrationTests
         var exception = Record.Exception(() => testLightningSigner.ValidateSignature(
                                              ChannelId.Zero, Bolt3AppendixCVectors.NodeBSignature5.ToCompact(),
                                              unsignedTransaction));
-        var signature = testLightningSigner.SignTransaction(ChannelId.Zero, unsignedTransaction);
+        var signature = testLightningSigner.SignChannelTransaction(ChannelId.Zero, unsignedTransaction);
 
         // Then
         Assert.Null(exception);
@@ -312,7 +312,7 @@ public class Bolt3IntegrationTests
         var exception = Record.Exception(() => testLightningSigner.ValidateSignature(
                                              ChannelId.Zero, Bolt3AppendixCVectors.NodeBSignature6.ToCompact(),
                                              unsignedTransaction));
-        var signature = testLightningSigner.SignTransaction(ChannelId.Zero, unsignedTransaction);
+        var signature = testLightningSigner.SignChannelTransaction(ChannelId.Zero, unsignedTransaction);
 
         // Then
         Assert.Null(exception);
@@ -345,7 +345,7 @@ public class Bolt3IntegrationTests
         var exception = Record.Exception(() => testLightningSigner.ValidateSignature(
                                              ChannelId.Zero, Bolt3AppendixCVectors.NodeBSignature7.ToCompact(),
                                              unsignedTransaction));
-        var signature = testLightningSigner.SignTransaction(ChannelId.Zero, unsignedTransaction);
+        var signature = testLightningSigner.SignChannelTransaction(ChannelId.Zero, unsignedTransaction);
 
         // Then
         Assert.Null(exception);
@@ -378,7 +378,7 @@ public class Bolt3IntegrationTests
         var exception = Record.Exception(() => testLightningSigner.ValidateSignature(
                                              ChannelId.Zero, Bolt3AppendixCVectors.NodeBSignature8.ToCompact(),
                                              unsignedTransaction));
-        var signature = testLightningSigner.SignTransaction(ChannelId.Zero, unsignedTransaction);
+        var signature = testLightningSigner.SignChannelTransaction(ChannelId.Zero, unsignedTransaction);
 
         // Then
         Assert.Null(exception);
@@ -411,7 +411,7 @@ public class Bolt3IntegrationTests
         var exception = Record.Exception(() => testLightningSigner.ValidateSignature(
                                              ChannelId.Zero, Bolt3AppendixCVectors.NodeBSignature9.ToCompact(),
                                              unsignedTransaction));
-        var signature = testLightningSigner.SignTransaction(ChannelId.Zero, unsignedTransaction);
+        var signature = testLightningSigner.SignChannelTransaction(ChannelId.Zero, unsignedTransaction);
 
         // Then
         Assert.Null(exception);
@@ -444,7 +444,7 @@ public class Bolt3IntegrationTests
         var exception = Record.Exception(() => testLightningSigner.ValidateSignature(
                                              ChannelId.Zero, Bolt3AppendixCVectors.NodeBSignature10.ToCompact(),
                                              unsignedTransaction));
-        var signature = testLightningSigner.SignTransaction(ChannelId.Zero, unsignedTransaction);
+        var signature = testLightningSigner.SignChannelTransaction(ChannelId.Zero, unsignedTransaction);
 
         // Then
         Assert.Null(exception);
@@ -477,7 +477,7 @@ public class Bolt3IntegrationTests
         var exception = Record.Exception(() => testLightningSigner.ValidateSignature(
                                              ChannelId.Zero, Bolt3AppendixCVectors.NodeBSignature11.ToCompact(),
                                              unsignedTransaction));
-        var signature = testLightningSigner.SignTransaction(ChannelId.Zero, unsignedTransaction);
+        var signature = testLightningSigner.SignChannelTransaction(ChannelId.Zero, unsignedTransaction);
 
         // Then
         Assert.Null(exception);
@@ -510,7 +510,7 @@ public class Bolt3IntegrationTests
         var exception = Record.Exception(() => testLightningSigner.ValidateSignature(
                                              ChannelId.Zero, Bolt3AppendixCVectors.NodeBSignature12.ToCompact(),
                                              unsignedTransaction));
-        var signature = testLightningSigner.SignTransaction(ChannelId.Zero, unsignedTransaction);
+        var signature = testLightningSigner.SignChannelTransaction(ChannelId.Zero, unsignedTransaction);
 
         // Then
         Assert.Null(exception);
@@ -543,7 +543,7 @@ public class Bolt3IntegrationTests
         var exception = Record.Exception(() => testLightningSigner.ValidateSignature(
                                              ChannelId.Zero, Bolt3AppendixCVectors.NodeBSignature13.ToCompact(),
                                              unsignedTransaction));
-        var signature = testLightningSigner.SignTransaction(ChannelId.Zero, unsignedTransaction);
+        var signature = testLightningSigner.SignChannelTransaction(ChannelId.Zero, unsignedTransaction);
 
         // Then
         Assert.Null(exception);
@@ -576,7 +576,7 @@ public class Bolt3IntegrationTests
         var exception = Record.Exception(() => testLightningSigner.ValidateSignature(
                                              ChannelId.Zero, Bolt3AppendixCVectors.NodeBSignature14.ToCompact(),
                                              unsignedTransaction));
-        var signature = testLightningSigner.SignTransaction(ChannelId.Zero, unsignedTransaction);
+        var signature = testLightningSigner.SignChannelTransaction(ChannelId.Zero, unsignedTransaction);
 
         // Then
         Assert.Null(exception);
@@ -612,7 +612,7 @@ public class Bolt3IntegrationTests
         var exception = Record.Exception(() => testLightningSigner.ValidateSignature(
                                              ChannelId.Zero, Bolt3AppendixCVectors.NodeBSignature15.ToCompact(),
                                              unsignedTransaction));
-        var signature = testLightningSigner.SignTransaction(ChannelId.Zero, unsignedTransaction);
+        var signature = testLightningSigner.SignChannelTransaction(ChannelId.Zero, unsignedTransaction);
 
         // Then
         Assert.Null(exception);

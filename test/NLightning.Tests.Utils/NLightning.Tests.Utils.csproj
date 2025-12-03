@@ -30,7 +30,7 @@
 
   <ItemGroup>
     <PackageReference Include="Docker.DotNet" Version="3.125.15"/>
-    <PackageReference Include="LNUnit" Version="1.7.7"/>
+    <PackageReference Include="LNUnit" Version="2.0.1"/>
     <PackageReference Include="xunit.extensibility.core" Version="2.9.3"/>
   </ItemGroup>
 

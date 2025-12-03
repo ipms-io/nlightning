@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Runtime.Serialization;
 using System.Text;
-using NLightning.Domain.Utils.Interfaces;
 
 namespace NLightning.Domain.Node;
 
+using Domain.Utils.Interfaces;
 using Enums;
 
 /// <summary>
@@ -275,6 +275,17 @@ public class FeatureSet
     /// We don't care if the feature is compulsory or optional.
     /// </remarks>
     public bool HasFeature(Feature feature) => IsFeatureSet(feature, false) || IsFeatureSet(feature, true);
+
+    public byte[]? GetBytes()
+    {
+        var lastIndexOfOne = GetLastIndexOfOne(FeatureFlags);
+        if (lastIndexOfOne == -1)
+            return null;
+
+        var bytes = new byte[lastIndexOfOne];
+        FeatureFlags.CopyTo(bytes, 0);
+        return bytes;
+    }
 
     /// <summary>
     /// Deserializes the features from a byte array.

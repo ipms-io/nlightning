@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MessagePack" Version="3.1.4"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NLightning.Daemon.Contracts\NLightning.Daemon.Contracts.csproj"/>
+    <ProjectReference Include="..\NLightning.Domain\NLightning.Domain.csproj"/>
+  </ItemGroup>
+
+</Project>

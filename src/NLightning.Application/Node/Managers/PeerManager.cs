@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -8,6 +9,7 @@ using Domain.Channels.Events;
 using Domain.Channels.Interfaces;
 using Domain.Crypto.ValueObjects;
 using Domain.Exceptions;
+using Domain.Node.Constants;
 using Domain.Node.Events;
 using Domain.Node.Interfaces;
 using Domain.Node.Models;
@@ -15,6 +17,7 @@ using Domain.Node.ValueObjects;
 using Domain.Persistence.Interfaces;
 using Domain.Protocol.Constants;
 using Domain.Protocol.Interfaces;
+using Infrastructure.Protocol.Models;
 using Infrastructure.Transport.Events;
 using Infrastructure.Transport.Interfaces;
 
@@ -60,22 +63,33 @@ public sealed class PeerManager : IPeerManager
         var peers = await uow.GetPeersForStartupAsync();
         foreach (var peer in peers)
         {
-            await ConnectToPeerAsync(peer.PeerAddressInfo, uow);
-            if (!_peers.TryGetValue(peer.NodeId, out _))
+            try
+            {
+                _ = await ConnectToPeerAsync(peer.PeerAddressInfo, uow);
+                if (!_peers.TryGetValue(peer.NodeId, out _))
+                {
+                    _logger.LogWarning("Unable to connect to peer {PeerId} on startup", peer.NodeId);
+                    // TODO: Handle this case, maybe retry or log more details
+                    continue;
+                }
+
+                // Register channels with peer
+                if (peer.Channels is not { Count: > 0 })
+                    continue;
+
+                // Only register channels that are not closed or stale
+                foreach (var channel in peer.Channels.Where(c => c.State != ChannelState.Closed))
+                    // We don't care about the result here, as we just want to register the existing channels
+                    _ = _channelManager.RegisterExistingChannelAsync(channel);
+            }
+            catch (ConnectionException)
             {
                 _logger.LogWarning("Unable to connect to peer {PeerId} on startup", peer.NodeId);
-                // TODO: Handle this case, maybe retry or log more details
-                continue;
             }
-
-            // Register channels with peer
-            if (peer.Channels is not { Count: > 0 })
-                continue;
-
-            // Only register channels that are not closed or stale
-            foreach (var channel in peer.Channels.Where(c => c.State != ChannelState.Closed))
-                // We don't care about the result here, as we just want to register the existing channels
-                _ = _channelManager.RegisterExistingChannelAsync(channel);
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error connecting to peer {PeerId} on startup", peer.NodeId);
+            }
         }
 
         await uow.SaveChangesAsync();
@@ -115,14 +129,17 @@ public sealed class PeerManager : IPeerManager
 
     /// <inheritdoc />
     /// <exception cref="ConnectionException">Thrown when the connection to the peer fails.</exception>
-    public async Task ConnectToPeerAsync(PeerAddressInfo peerAddressInfo)
+    /// <exception cref="InvalidOperationException">Thrown when the connection to the peer already exists.</exception>
+    public async Task<PeerModel> ConnectToPeerAsync(PeerAddressInfo peerAddressInfo)
     {
         using var scope = _serviceProvider.CreateScope();
         using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-        await ConnectToPeerAsync(peerAddressInfo, uow);
+        var peer = await ConnectToPeerAsync(peerAddressInfo, uow);
 
         await uow.SaveChangesAsync();
+
+        return peer;
     }
 
     /// <inheritdoc />
@@ -145,26 +162,47 @@ public sealed class PeerManager : IPeerManager
         }
     }
 
-    private async Task ConnectToPeerAsync(PeerAddressInfo peerAddressInfo, IUnitOfWork uow)
+    public List<PeerModel> ListPeers()
     {
+        return _peers.Values.ToList();
+    }
+
+    public PeerModel? GetPeer(CompactPubKey peerId)
+    {
+        return _peers.GetValueOrDefault(peerId);
+    }
+
+    private async Task<PeerModel> ConnectToPeerAsync(PeerAddressInfo peerAddressInfo, IUnitOfWork uow)
+    {
+        // Convert and validate the address
+        var peerAddress = new PeerAddress(peerAddressInfo.Address);
+
+        // Check if we're already connected to the peer
+        if (_peers.ContainsKey(peerAddress.PubKey))
+        {
+            throw new InvalidOperationException($"Already connected to peer {peerAddress.PubKey}");
+        }
+
         // Connect to the peer
-        var connectedPeer = await _tcpService.ConnectToPeerAsync(peerAddressInfo);
+        var connectedPeer = await _tcpService.ConnectToPeerAsync(peerAddress);
 
         var peerService = await _peerServiceFactory.CreateConnectedPeerAsync(connectedPeer.CompactPubKey,
                                                                              connectedPeer.TcpClient);
         peerService.OnDisconnect += HandlePeerDisconnection;
         peerService.OnChannelMessageReceived += HandlePeerChannelMessage;
 
-        // Check if the peer wants us to use a different host and port
-        var host = connectedPeer.Host;
-        var port = connectedPeer.Port; // Default port for Lightning Network
-        if (peerService.PreferredHost is not null && peerService.PreferredPort.HasValue)
-        {
-            host = peerService.PreferredHost;
-            port = peerService.PreferredPort.Value;
-        }
+        var preferredHost = connectedPeer.Host;
+        var preferredPort = connectedPeer.Port;
 
-        var peer = new PeerModel(connectedPeer.CompactPubKey, host, port)
+        // Check if the node has set it's preferred address
+        if (peerService.PreferredHost is not null)
+            preferredHost = peerService.PreferredHost;
+
+        if (peerService.PreferredPort is not null)
+            preferredPort = peerService.PreferredPort.Value;
+
+        var peer = new PeerModel(connectedPeer.CompactPubKey, preferredHost, preferredPort,
+                                 connectedPeer.TcpClient.Client.ProtocolType == ProtocolType.IPv6 ? "IPv6" : "IPv4")
         {
             LastSeenAt = DateTime.UtcNow
         };
@@ -172,7 +210,9 @@ public sealed class PeerManager : IPeerManager
 
         _peers.Add(connectedPeer.CompactPubKey, peer);
 
-        uow.PeerDbRepository.AddOrUpdateAsync(peer).GetAwaiter().GetResult();
+        await uow.PeerDbRepository.AddOrUpdateAsync(peer);
+
+        return peer;
     }
 
     private void HandleNewPeerConnected(object? _, NewPeerConnectedEventArgs args)
@@ -186,11 +226,32 @@ public sealed class PeerManager : IPeerManager
 
             _logger.LogTrace("PeerService created for peer {PeerPubKey}", peerService.PeerPubKey);
 
-            var peer = new PeerModel(peerService.PeerPubKey, args.Host, args.Port)
+            var preferredHost = args.Host;
+            var preferredPort = NodeConstants.DefaultPort;
+
+            // Check if the node has set it's preferred address
+            if (peerService.PreferredHost is not null)
+                preferredHost = peerService.PreferredHost;
+
+            if (peerService.PreferredPort is not null)
+                preferredPort = peerService.PreferredPort.Value;
+
+            var peer = new PeerModel(peerService.PeerPubKey, preferredHost, preferredPort,
+                                     args.TcpClient.Client.ProtocolType == ProtocolType.IPv6 ? "IPv6" : "IPv4")
             {
                 LastSeenAt = DateTime.UtcNow
             };
             peer.SetPeerService(peerService);
+
+            if (preferredHost != "127.0.0.1")
+            {
+                // Get a context to save the peer to the database
+                using var scope = _serviceProvider.CreateScope();
+                using var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+                uow.PeerDbRepository.AddOrUpdateAsync(peer);
+                uow.SaveChanges();
+            }
 
             _peers.Add(peerService.PeerPubKey, peer);
         }
