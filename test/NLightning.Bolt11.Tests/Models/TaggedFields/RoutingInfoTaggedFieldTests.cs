@@ -1,7 +1,7 @@
 namespace NLightning.Bolt11.Tests.Models.TaggedFields;
 
-using Bolt11.Constants;
 using Bolt11.Models.TaggedFields;
+using Constants;
 using Domain.Channels.ValueObjects;
 using Domain.Crypto.ValueObjects;
 using Domain.Models;
@@ -79,7 +79,7 @@ public class RoutingInfoTaggedFieldTests
 
         // Assert
         Assert.NotNull(parsed);
-        Assert.Equal(expected.Count, parsed!.Value.Count);
+        Assert.Equal(expected.Count, parsed.Value.Count);
         Assert.Equal(expected[0].CompactPubKey, parsed.Value[0].CompactPubKey);
         Assert.Equal(expected[0].ShortChannelId, parsed.Value[0].ShortChannelId);
         Assert.Equal(expected[0].FeeBaseMsat, parsed.Value[0].FeeBaseMsat);
@@ -102,7 +102,7 @@ public class RoutingInfoTaggedFieldTests
 
         // Assert
         Assert.NotNull(parsed);
-        Assert.Equal(expected.Count, parsed!.Value.Count);
+        Assert.Equal(expected.Count, parsed.Value.Count);
         for (var i = 0; i < expected.Count; i++)
         {
             Assert.Equal(expected[i].CompactPubKey, parsed.Value[i].CompactPubKey);
@@ -121,7 +121,7 @@ public class RoutingInfoTaggedFieldTests
         var reader = new BitReader(buffer);
 
         // Act
-        var parsed = RoutingInfoTaggedField.FromBitReader(reader, (short)(400 / 5));
+        var parsed = RoutingInfoTaggedField.FromBitReader(reader, 400 / 5);
 
         // Assert
         Assert.Null(parsed);

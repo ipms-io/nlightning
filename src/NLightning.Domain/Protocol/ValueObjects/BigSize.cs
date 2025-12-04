@@ -5,7 +5,7 @@ using Domain.Interfaces;
 /// <summary>
 /// Represents a variable length integer.
 /// </summary>
-/// <param name="value">The value of the big size.</param>
+/// <param name="Value">The value of the big size.</param>
 /// <remarks>
 /// Initializes a new instance of the <see cref="BigSize"/> struct.
 /// </remarks>

@@ -9,7 +9,7 @@ public record CompactSignature : IValueObject
 
     public CompactSignature(byte[] value)
     {
-        ArgumentNullException.ThrowIfNull(value, nameof(value));
+        ArgumentNullException.ThrowIfNull(value);
         if (value.Length is < CryptoConstants.MinSignatureSize or > CryptoConstants.MaxSignatureSize)
             throw new ArgumentOutOfRangeException(nameof(value),
                                                   $"Signature must be less than or equal to {CryptoConstants.MaxSignatureSize} bytes");

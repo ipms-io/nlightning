@@ -3,7 +3,7 @@ using NBitcoin;
 namespace NLightning.Infrastructure.Bitcoin.Services;
 
 using Domain.Bitcoin.Interfaces;
-using Domain.Protocol.Services;
+using Domain.Protocol.Interfaces;
 
 public class DustService : IDustService
 {

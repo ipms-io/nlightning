@@ -231,7 +231,7 @@ public class BitcoinNetworkTests
         var net = new BitcoinNetwork("foo");
         var ch = DummyChainHash(0x77);
 
-        Assert.Throws<ArgumentNullException>(() => net.Register(null, ch));
+        Assert.Throws<ArgumentNullException>(() => net.Register(null!, ch));
         Assert.Throws<ArgumentNullException>(() => net.Register("", ch));
         Assert.Throws<ArgumentNullException>(() => net.Register("   ", ch));
     }

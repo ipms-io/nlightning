@@ -1,4 +1,4 @@
-namespace NLightning.Domain.Protocol.Services;
+namespace NLightning.Domain.Protocol.Interfaces;
 
 public interface IDustService
 {
@@ -7,5 +7,4 @@ public interface IDustService
     ulong CalculateP2WpkhDustLimit();
     ulong CalculateP2WshDustLimit();
     ulong CalculateUnknownSegwitVersionDustLimit();
-
 }

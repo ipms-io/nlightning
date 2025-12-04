@@ -1,7 +1,7 @@
 namespace NLightning.Domain.Bitcoin.ValueObjects;
 
 using Domain.Interfaces;
-using Domain.Utils.Extensions;
+using Utils.Extensions;
 
 public readonly struct BitcoinScript : IValueObject, IEquatable<BitcoinScript>
 {

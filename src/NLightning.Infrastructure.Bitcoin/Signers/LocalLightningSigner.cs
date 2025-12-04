@@ -211,7 +211,7 @@ public class LocalLightningSigner : ILightningSigner
 
             // Get the signature hash for SegWit
             var signatureHash = nBitcoinTx.GetSignatureHash(fundingOutput.RedeemScript,
-                                                            (int)signingInfo.FundingOutputIndex, SigHash.All,
+                                                            signingInfo.FundingOutputIndex, SigHash.All,
                                                             spentOutput, HashVersion.WitnessV0);
 
             // Get the funding private key
@@ -288,7 +288,7 @@ public class LocalLightningSigner : ILightningSigner
             var spentOutput = fundingOutput.ToTxOut();
 
             var signatureHash = nBitcoinTx.GetSignatureHash(fundingOutput.RedeemScript,
-                                                            (int)signingInfo.FundingOutputIndex, SigHash.All,
+                                                            signingInfo.FundingOutputIndex, SigHash.All,
                                                             spentOutput, HashVersion.WitnessV0);
 
             if (!pubKey.Verify(signatureHash, txSignature))

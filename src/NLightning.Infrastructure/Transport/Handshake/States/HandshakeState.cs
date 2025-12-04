@@ -55,7 +55,7 @@ internal sealed class HandshakeState : IHandshakeState
         if (rs.Length != CryptoConstants.CompactPubkeyLen)
             throw new ArgumentException("Invalid remote static public key.", nameof(rs));
 
-        ArgumentNullException.ThrowIfNull(dh, nameof(dh));
+        ArgumentNullException.ThrowIfNull(dh);
 
         _dh = dh;
 

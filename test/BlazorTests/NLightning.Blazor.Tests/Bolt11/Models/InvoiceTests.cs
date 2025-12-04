@@ -1,20 +1,12 @@
-using NLightning.Blazor.Tests.Helpers;
-using NLightning.Blazor.Tests.Infrastructure;
-using NLightning.Blazor.Tests.TestCollections;
-using Xunit.Abstractions;
-
 namespace NLightning.Blazor.Tests.Bolt11.Models;
+
+using Helpers;
+using Infrastructure;
+using TestCollections;
 
 [Collection(BlazorTestCollection.Name)]
 public class InvoiceTests : BlazorTestBase
 {
-    private readonly ITestOutputHelper _testOutputHelper;
-
-    public InvoiceTests(ITestOutputHelper testOutputHelper)
-    {
-        _testOutputHelper = testOutputHelper;
-    }
-
     [Fact]
     public async Task GivenExampleInvoice_WhenDecodeButtonIsClicked_ThenInvoiceIsDecodedCorrectly()
     {

@@ -2,14 +2,14 @@ using NLightning.Domain.Utils;
 
 namespace NLightning.Bolt11.Tests.Mocks;
 
-using Bolt11.Enums;
-using Bolt11.Interfaces;
+using Enums;
+using Interfaces;
 
 public class MockTaggedField : ITaggedField
 {
     public TaggedFieldTypes Type { get; init; }
     public short Length { get; init; }
-    public bool Valid { get; set; } = true;  // controls IsValid()
+    public bool Valid { get; set; } = true; // controls IsValid()
 
     public bool IsValid() => Valid;
 

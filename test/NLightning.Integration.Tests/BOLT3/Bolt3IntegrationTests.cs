@@ -3,6 +3,8 @@ using Microsoft.Extensions.Options;
 using NLightning.Domain.Protocol.Models;
 using NLightning.Tests.Utils.Vectors;
 
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+
 namespace NLightning.Integration.Tests.BOLT3;
 
 using Domain.Bitcoin.Transactions.Enums;
@@ -1178,7 +1180,7 @@ public class Bolt3IntegrationTests
                                  Bolt3AppendixCVectors.Htlc3PaymentHash, HtlcState.Offered);
         _offeredHtlc5 = new Htlc(LightningMoney.Satoshis(5_000), null, HtlcDirection.Outgoing, 506, 5, 0,
                                  Bolt3AppendixCVectors.Htlc5PaymentHash, HtlcState.Offered);
-        _offeredHtlc6 = new Htlc(LightningMoney.MilliSatoshis(5_000_001), null, HtlcDirection.Outgoing, 505, 6, 0,
+        _offeredHtlc6 = new Htlc(LightningMoney.MilliSatoshis(5_000_001), null!, HtlcDirection.Outgoing, 505, 6, 0,
                                  Bolt3AppendixCVectors.Htlc6PaymentHash, HtlcState.Offered);
 
         _receivedHtlc0 = new Htlc(LightningMoney.Satoshis(1_000), null, HtlcDirection.Incoming, 500, 0, 0,

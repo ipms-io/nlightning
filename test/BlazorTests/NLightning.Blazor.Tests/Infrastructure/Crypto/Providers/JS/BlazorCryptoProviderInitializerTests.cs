@@ -1,5 +1,3 @@
-using Xunit.Abstractions;
-
 namespace NLightning.Blazor.Tests.Infrastructure.Crypto.Providers.JS;
 
 using TestCollections;
@@ -7,13 +5,6 @@ using TestCollections;
 [Collection(BlazorTestCollection.Name)]
 public class BlazorCryptoProviderInitializerTests : BlazorTestBase
 {
-    private readonly ITestOutputHelper _testOutputHelper;
-
-    public BlazorCryptoProviderInitializerTests(ITestOutputHelper testOutputHelper)
-    {
-        _testOutputHelper = testOutputHelper;
-    }
-
     [Fact]
     public async Task GivenHomepage_WhenItLoads_ThenContentIsDisplayedCorrectly()
     {

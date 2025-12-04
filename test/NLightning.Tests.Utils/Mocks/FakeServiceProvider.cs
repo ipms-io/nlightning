@@ -11,7 +11,7 @@ public class FakeServiceProvider : IServiceProvider
         _services.Add(typeof(IServiceScopeFactory), new FakeServiceScopeFactory(this));
     }
 
-    public object? GetService(Type serviceType)
+    public object GetService(Type serviceType)
     {
         return _services[serviceType] ?? throw new Exception("You should add the service first.");
     }

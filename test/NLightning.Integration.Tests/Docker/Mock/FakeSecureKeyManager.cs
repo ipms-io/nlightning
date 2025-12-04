@@ -11,6 +11,7 @@ public class FakeSecureKeyManager : ISecureKeyManager
     private readonly ExtKey _nodeKey;
 
     public BitcoinKeyPath KeyPath => new BitcoinKeyPath([]);
+    // ReSharper disable once UnassignedGetOnlyAutoProperty
     public uint HeightOfBirth { get; }
 
     public FakeSecureKeyManager()

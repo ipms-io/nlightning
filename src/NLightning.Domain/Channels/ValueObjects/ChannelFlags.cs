@@ -7,7 +7,7 @@ using Domain.Interfaces;
 /// Only the least-significant bit of channel_flags is currently defined: announce_channel. This indicates whether
 /// the initiator of the funding flow wishes to advertise this channel publicly to the network
 /// </summary>
-public readonly record struct ChannelFlags : IValueObject, IEquatable<ChannelFlags>
+public readonly record struct ChannelFlags : IValueObject
 {
     private readonly byte _value;
 

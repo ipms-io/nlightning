@@ -2,6 +2,8 @@ using Microsoft.Extensions.Logging;
 using NBitcoin;
 using NLightning.Tests.Utils.Vectors;
 
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+
 namespace NLightning.Integration.Tests.BOLT3.Mocks;
 
 using Domain.Bitcoin.Interfaces;

@@ -46,9 +46,6 @@ public class CommitmentKeyDerivationService : ICommitmentKeyDerivationService
         var revocationPubKey =
             _keyDerivationService.DeriveRevocationPubKey(remoteBasepoints.RevocationBasepoint, perCommitmentPoint);
 
-        // - remotepubkey = simply their payment_basepoint (NOT derived!)
-        var remotePubKey = remoteBasepoints.PaymentBasepoint;
-
         return new CommitmentKeys(
             localPubKey, // localpubkey (for to_local output)
             localDelayedPubKey, // local_delayedpubkey (for to_local output with delay)
@@ -66,7 +63,7 @@ public class CommitmentKeyDerivationService : ICommitmentKeyDerivationService
                                                      CompactPubKey remotePerCommitmentPoint, ulong commitmentNumber)
     {
         // For their commitment transaction, we use their provided per-commitment point
-        // This should be provided by them via commitment_signed or update messages
+        // they should provide this via commitment_signed or update messages
 
         // For their remote commitment transaction:
         // - localpubkey (from their perspective) = their payment_basepoint + SHA256(their_per_commitment_point || their_payment_basepoint) * G
@@ -89,9 +86,6 @@ public class CommitmentKeyDerivationService : ICommitmentKeyDerivationService
         // - remote_htlcpubkey (from their perspective) = our htlc_basepoint + SHA256(their_per_commitment_point || our_htlc_basepoint) * G
         var ourHtlcPubKey = _keyDerivationService.DerivePublicKey(
             localBasepoints.HtlcBasepoint, remotePerCommitmentPoint);
-
-        // - remotepubkey (from their perspective) = simply our payment_basepoint (NOT derived!)
-        var ourPubKey = localBasepoints.PaymentBasepoint;
 
         return new CommitmentKeys(
             theirLocalPubKey, // localpubkey (from their perspective, for their to_local output)

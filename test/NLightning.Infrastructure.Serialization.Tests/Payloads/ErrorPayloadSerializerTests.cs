@@ -4,7 +4,7 @@ namespace NLightning.Infrastructure.Serialization.Tests.Payloads;
 
 using Converters;
 using Domain.Protocol.Payloads;
-using Infrastructure.Serialization.Factories;
+using Factories;
 using Infrastructure.Serialization.Payloads;
 
 public class ErrorPayloadSerializerTests
