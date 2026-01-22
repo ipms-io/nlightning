@@ -117,6 +117,7 @@ public class FallbackAddressTaggedFieldTests
         var taggedField = FallbackAddressTaggedField.FromBitReader(bitReader, bitLength, BitcoinNetwork.Mainnet);
 
         // Assert
+        Assert.NotNull(taggedField);
         Assert.Equal(expectedAddress, taggedField.Value.ToString());
     }
 
@@ -132,15 +133,45 @@ public class FallbackAddressTaggedFieldTests
         Assert.True(taggedField.IsValid());
     }
 
-    [Fact]
-    public void FromBitReader_ThrowsArgumentException_ForInvalidAddressType()
+    [Theory]
+    [InlineData(1)]  // Witness v1 (Taproot) - not yet supported
+    [InlineData(2)]  // Future witness version
+    [InlineData(16)] // Future witness version
+    [InlineData(19)] // Reserved per BOLT 11
+    [InlineData(20)] // Reserved per BOLT 11
+    [InlineData(31)] // Reserved per BOLT 11 (max 5-bit value)
+    public void FromBitReader_ReturnsNull_ForUnknownVersion(byte version)
     {
-        // Arrange
-        var invalidData = new byte[] { 255, 0x00, 0x00, 0x00 };
-        var bitReader = new BitReader(invalidData);
+        // Arrange - Create data with the version in the first 5 bits
+        // Version is stored in 5 bits, followed by 20 bytes (160 bits) of address data
+        // Total: 5 + 160 = 165 bits = 33 5-bit units
+        var data = new byte[21]; // (165 bits + 7) / 8 = 21 bytes
+        data[0] = (byte)(version << 3); // Version in first 5 bits (shifted to align)
+        // Fill remaining with dummy address data
+        for (var i = 1; i < data.Length; i++)
+            data[i] = 0xAB;
 
-        // Act & Assert
-        Assert.Throws<ArgumentException>(() => FallbackAddressTaggedField.FromBitReader(
-                                             bitReader, 4, BitcoinNetwork.Mainnet));
+        var bitReader = new BitReader(data);
+
+        // Act
+        var result = FallbackAddressTaggedField.FromBitReader(bitReader, 33, BitcoinNetwork.Mainnet);
+
+        // Assert - Per BOLT 11: "MUST skip over `f` fields that use an unknown `version`"
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void FromBitReader_ReturnsNull_ForVersion0WithInvalidDataLength()
+    {
+        // Arrange - Version 0 but with 15-byte data (not 20 or 32)
+        // This should return null since it's not a valid P2WPKH (20) or P2WSH (32)
+        var data = new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09 };
+        var bitReader = new BitReader(data);
+
+        // Act
+        var result = FallbackAddressTaggedField.FromBitReader(bitReader, 13, BitcoinNetwork.Mainnet);
+
+        // Assert
+        Assert.Null(result);
     }
 }
