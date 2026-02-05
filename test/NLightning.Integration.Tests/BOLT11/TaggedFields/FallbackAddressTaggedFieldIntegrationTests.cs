@@ -73,6 +73,7 @@ public class FallbackAddressTaggedFieldIntegrationTests
 
         var parsed = FallbackAddressTaggedField.FromBitReader(reader, length, BitcoinNetwork.Mainnet);
 
+        Assert.NotNull(parsed);
         Assert.Equal(expected.ToString(), parsed.Value.ToString());
     }
 
@@ -86,6 +87,7 @@ public class FallbackAddressTaggedFieldIntegrationTests
 
         var parsed = FallbackAddressTaggedField.FromBitReader(reader, length, BitcoinNetwork.Mainnet);
 
+        Assert.NotNull(parsed);
         Assert.Equal(expected.ToString(), parsed.Value.ToString());
     }
 
@@ -99,6 +101,7 @@ public class FallbackAddressTaggedFieldIntegrationTests
 
         var parsed = FallbackAddressTaggedField.FromBitReader(reader, length, BitcoinNetwork.Mainnet);
 
+        Assert.NotNull(parsed);
         Assert.Equal(expected.ToString(), parsed.Value.ToString());
     }
 
@@ -112,6 +115,7 @@ public class FallbackAddressTaggedFieldIntegrationTests
 
         var parsed = FallbackAddressTaggedField.FromBitReader(reader, length, BitcoinNetwork.Mainnet);
 
+        Assert.NotNull(parsed);
         Assert.Equal(expected.ToString(), parsed.Value.ToString());
     }
 
@@ -125,6 +129,7 @@ public class FallbackAddressTaggedFieldIntegrationTests
 
         var parsed = FallbackAddressTaggedField.FromBitReader(reader, length, BitcoinNetwork.Mainnet);
 
+        Assert.NotNull(parsed);
         Assert.Equal(expected.ToString(), parsed.Value.ToString());
     }
 
@@ -138,6 +143,7 @@ public class FallbackAddressTaggedFieldIntegrationTests
 
         var parsed = FallbackAddressTaggedField.FromBitReader(reader, length, BitcoinNetwork.Mainnet);
 
+        Assert.NotNull(parsed);
         Assert.Equal(expected.ToString(), parsed.Value.ToString());
     }
 }

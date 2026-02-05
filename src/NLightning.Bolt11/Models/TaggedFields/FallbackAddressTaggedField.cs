@@ -84,12 +84,12 @@ internal sealed class FallbackAddressTaggedField : ITaggedField
     /// <param name="bitReader">The BitReader to read from</param>
     /// <param name="length">The length of the field</param>
     /// <param name="bitcoinNetwork">The network type</param>
-    /// <returns>The FallbackAddressTaggedField</returns>
-    /// <exception cref="ArgumentException">Thrown when the address is unknown or invalid</exception>
-    internal static FallbackAddressTaggedField FromBitReader(BitReader bitReader, short length,
-                                                             BitcoinNetwork bitcoinNetwork)
+    /// <returns>The FallbackAddressTaggedField, or null if the version is unknown (per BOLT 11, unknown versions should be skipped)</returns>
+    /// <exception cref="ArgumentException">Thrown when the network is invalid</exception>
+    internal static FallbackAddressTaggedField? FromBitReader(BitReader bitReader, short length,
+                                                              BitcoinNetwork bitcoinNetwork)
     {
-        // Get Address Type
+        // Get Address Type (witness version)
         var addressType = bitReader.ReadByteFromBits(5);
         var newLength = length - 1;
 
@@ -102,7 +102,11 @@ internal sealed class FallbackAddressTaggedField : ITaggedField
 
         var network = Network.GetNetwork(bitcoinNetwork) ??
                       throw new ArgumentException("Network is unknown or invalid.", nameof(bitcoinNetwork));
-        BitcoinAddress address = addressType switch
+
+        // Per BOLT 11: "MUST skip over `f` fields that use an unknown `version`"
+        // Supported versions: 0 (P2WPKH/P2WSH), 17 (P2PKH), 18 (P2SH)
+        // Unknown versions (1-16 for future witness versions, 19-31 reserved) should be skipped
+        BitcoinAddress? address = addressType switch
         {
             // Witness P2WPKH
             0 when data.Length == 20 => new WitKeyId(data).GetAddress(network),
@@ -112,9 +116,10 @@ internal sealed class FallbackAddressTaggedField : ITaggedField
             17 => new KeyId(data).GetAddress(network),
             // P2SH
             18 => new ScriptId(data).GetAddress(network),
-            _ => throw new ArgumentException("Address is unknown or invalid.", nameof(bitReader))
+            // Unknown version - skip per BOLT 11 spec
+            _ => null
         };
 
-        return new FallbackAddressTaggedField(address);
+        return address is null ? null : new FallbackAddressTaggedField(address);
     }
 }
